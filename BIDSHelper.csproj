@@ -21,7 +21,9 @@
     <DefineTrace>true</DefineTrace>
     <IncrementalBuild>true</IncrementalBuild>
     <OutputPath>bin\</OutputPath>
-    <DocumentationFile>BIDSHelper.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -40,8 +42,20 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Design, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\program files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Design.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -70,11 +84,19 @@
     </Compile>
     <Compile Include="DeployMDXScriptPlugin.cs" />
     <Compile Include="DeploymentSettings.cs" />
-    <Compile Include="Resources\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
+    <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="VisualizeAttributeLattice.cs" />
+    <Compile Include="VisualizeAttributeLatticeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VisualizeAttributeLatticeForm.Designer.cs">
+      <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="VisualizeAttributeLatticePlugin.cs" />
     <COMReference Include="EnvDTE">
       <Lcid>0</Lcid>
       <VersionMinor>0</VersionMinor>
@@ -109,11 +131,14 @@
     </COMReference>
     <Content Include="BIDSHelper.AddIn" />
     <EmbeddedResource Include="DeployMdxScript.xslt" />
-    <EmbeddedResource Include="Resources\Resources.resx">
-      <CustomToolNamespace>My.Resources</CustomToolNamespace>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>
-      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VisualizeAttributeLatticeForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

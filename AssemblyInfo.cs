@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Resources;
 
 
 // General Information about an assembly is controlled through the following 
@@ -30,3 +31,4 @@ using System.Runtime.InteropServices;
 
 
 [assembly: ComVisible(true)]
+[assembly: NeutralResourcesLanguageAttribute("")]
