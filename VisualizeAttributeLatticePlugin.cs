@@ -24,7 +24,7 @@ namespace BIDSHelper
 
         public override int Bitmap
         {
-            get { return 2605; }
+            get { return 702; }
         }
 
         public override string ButtonText
@@ -76,8 +76,6 @@ namespace BIDSHelper
                 VisualizeAttributeLatticeForm frm = new VisualizeAttributeLatticeForm();
                 frm.dimension = dim;
                 frm.Show();
-
-                //could use the icon from MicrosoftXMLEditor.CreateSchema command
             }
             catch (System.Exception ex)
             {
