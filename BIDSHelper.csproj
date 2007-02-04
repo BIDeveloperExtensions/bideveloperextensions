@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="DeployMDXScriptPlugin.cs" />
     <Compile Include="DeploymentSettings.cs" />
+    <Compile Include="DimensionHealthCheckPlugin.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

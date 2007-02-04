@@ -37,6 +37,11 @@ namespace BIDSHelper
             get { return "Displays a visualization of the attribute relationships in a dimension"; }
         }
 
+        public override bool ShouldPositionAtEnd
+        {
+            get { return true; }
+        }
+
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
@@ -46,16 +51,15 @@ namespace BIDSHelper
         {
             try
             {
-                bool bFoundRightItem = false;
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                foreach (UIHierarchyItem hierItem in ((System.Array)solExplorer.SelectedItems))
-                {
-                    if (hierItem.Name.ToLower().EndsWith(".dim"))
-                        bFoundRightItem = true;
-                    else
-                        return false;
-                }
-                return bFoundRightItem;
+                if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                    return false;
+
+                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                if (hierItem.Name.ToLower().EndsWith(".dim"))
+                    return true;
+                else
+                    return false;
             }
             catch
             {
@@ -76,6 +80,8 @@ namespace BIDSHelper
                 VisualizeAttributeLatticeForm frm = new VisualizeAttributeLatticeForm();
                 frm.dimension = dim;
                 frm.Show();
+
+                //could use the icon from MicrosoftXMLEditor.CreateSchema command
             }
             catch (System.Exception ex)
             {

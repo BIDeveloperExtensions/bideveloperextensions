@@ -39,10 +39,8 @@ namespace BIDSHelper
         #endregion
 
         #region "Helper Functions"
-        /// <summary>
-        /// 
-        /// </summary>
-        public void AddCommand(string commandBarName, int commandPosition)
+
+        public void AddCommand()
         {
             try
             {
@@ -78,7 +76,14 @@ namespace BIDSHelper
                 else
                 {
                     pluginCmd = cmdTmp;
-                    pluginCmd.AddControl(pluginCmdBar, 1);
+                    if (!ShouldPositionAtEnd)
+                    {
+                        pluginCmd.AddControl(pluginCmdBar, 1);
+                    }
+                    else
+                    {
+                        pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1);
+                    }
                 }
             }
             catch (System.Exception e)
@@ -86,14 +91,6 @@ namespace BIDSHelper
                 MessageBox.Show("Problem registering " + this.FullName + " command: " + e.Message);
             }
 
-        }
-
-        /// <summary>
-        /// By Default the AddCommand method ads the command to the item commandbar at position 0
-        /// </summary>
-        public void AddCommand()
-        {
-            AddCommand("Item", 0);
         }
 
 
@@ -120,7 +117,7 @@ namespace BIDSHelper
             //Dynamically enable & disable the command. If the selected file name is File1.cs, then make the command visible.
             if (this.DisplayCommand(item))
             {
-                //\\ Enabled for .cube files
+                //\\ Enabled
                 return (vsCommandStatus)vsCommandStatus.vsCommandStatusEnabled | vsCommandStatus.vsCommandStatusSupported;
             }
             else
@@ -133,71 +130,50 @@ namespace BIDSHelper
         #endregion
 
         # region "Public Properties"
-        /// <summary>
-        /// 
-        /// </summary>
         public string FullName
         {
             get { return BASE_NAME + this.ShortName; }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         public DTE2 ApplicationObject
         {
             get { return appObj; }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         public AddIn AddInInstance
         {
             get { return addIn; }
         }
+
         #endregion
 
         #region "methods that must be overridden"
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="item"></param>
-        ///// <returns></returns>
-        //public abstract EnvDTE.vsCommandStatus QueryStatus(EnvDTE.UIHierarchyItem item);
 
-        /// <summary>
-        /// 
-        /// </summary>
         public abstract string ShortName
         {
             get;
         }
-        /// <summary>
-        /// 
-        /// </summary>
+
         public abstract string ButtonText
         {
             get;
         }
-        /// <summary>
-        /// 
-        /// </summary>
+
         public abstract string ToolTip
         {
             get;
         }
-        /// <summary>
-        /// 
-        /// </summary>
+
         public abstract int Bitmap
         {
             get;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        public abstract bool ShouldPositionAtEnd
+        {
+            get;
+        }
+
         public abstract void Exec();
 
         public abstract bool DisplayCommand(UIHierarchyItem item);
