@@ -16,6 +16,9 @@ namespace BIDSHelper
 
         private System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> addins = new System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase>();
 
+
+        public const string REGISTRY_BASE_PATH = "SOFTWARE\\BIDS Helper";
+
         ///<summary>Implements the constructor for the Add-in object. Place your initialization code within this method.</summary>
         public Connect()
         {
@@ -29,40 +32,46 @@ namespace BIDSHelper
         ///<remarks></remarks>
         void IDTExtensibility2.OnConnection(object application, ext_ConnectMode connectMode, object addInInst, ref Array custom)
         {
-            _applicationObject = (DTE2)application;
-            _addInInstance = (AddIn)addInInst;
-
-
-            foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
+            try
             {
-                if (typeof(BIDSHelperPluginBase).IsAssignableFrom(t) && (!object.ReferenceEquals(t, typeof(BIDSHelperPluginBase))))
+                _applicationObject = (DTE2)application;
+                _addInInstance = (AddIn)addInInst;
+
+
+                foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
                 {
-                    BIDSHelperPluginBase ext;
-                    System.Type[] @params = { typeof(DTE2), typeof(AddIn) };
-                    System.Reflection.ConstructorInfo con;
+                    if (typeof(BIDSHelperPluginBase).IsAssignableFrom(t) && (!object.ReferenceEquals(t, typeof(BIDSHelperPluginBase))))
+                    {
+                        BIDSHelperPluginBase ext;
+                        System.Type[] @params = { typeof(DTE2), typeof(AddIn) };
+                        System.Reflection.ConstructorInfo con;
 
-                    con = t.GetConstructor(@params);
-                    ext = (BIDSHelperPluginBase)con.Invoke(new object[] { _applicationObject, _addInInstance });
+                        con = t.GetConstructor(@params);
+                        ext = (BIDSHelperPluginBase)con.Invoke(new object[] { _applicationObject, _addInInstance });
 
-                    addins.Add(ext.FullName, ext);
+                        addins.Add(ext.FullName, ext);
+                    }
+                }
+
+                switch (connectMode)
+                {
+                    case ext_ConnectMode.ext_cm_Startup:
+                    case ext_ConnectMode.ext_cm_AfterStartup:
+
+
+                        foreach (BIDSHelperPluginBase iExt in addins.Values)
+                        {
+                            //Create a Command with name SolnExplContextMenuVB and then add it to the "Item" menubar for the SolutionExplorer
+                            iExt.AddCommand();
+                        }
+
+                        break;
                 }
             }
-
-            switch (connectMode)
+            catch (Exception ex)
             {
-                case ext_ConnectMode.ext_cm_Startup:
-                case ext_ConnectMode.ext_cm_AfterStartup:
-
-
-                    foreach (BIDSHelperPluginBase iExt in addins.Values)
-                    {
-                        //Create a Command with name SolnExplContextMenuVB and then add it to the "Item" menubar for the SolutionExplorer
-                        iExt.AddCommand();
-                    }
-
-                    break;
+                System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message);
             }
-
         }
 
         ///<summary>Implements the OnDisconnection method of the IDTExtensibility2 interface. Receives notification that the Add-in is being unloaded.</summary>
@@ -110,31 +119,46 @@ namespace BIDSHelper
 
         void EnvDTE.IDTCommandTarget.Exec(string CmdName, EnvDTE.vsCommandExecOption ExecuteOption, ref object VariantIn, ref object VariantOut, ref bool Handled)
         {
-            Handled = false;
-            if (ExecuteOption == vsCommandExecOption.vsCommandExecOptionDoDefault)
+            try
             {
-                BIDSHelperPluginBase iExt = addins[CmdName];
-                Handled = true;
-                iExt.Exec();
+                Handled = false;
+                if (ExecuteOption == vsCommandExecOption.vsCommandExecOptionDoDefault)
+                {
+                    BIDSHelperPluginBase iExt = addins[CmdName];
+                    Handled = true;
+                    iExt.Exec();
+                }
             }
+            catch { }
         }
 
         void EnvDTE.IDTCommandTarget.QueryStatus(string CmdName, EnvDTE.vsCommandStatusTextWanted NeededText, ref EnvDTE.vsCommandStatus StatusOption, ref object CommandText)
         {
-            if (NeededText == EnvDTE.vsCommandStatusTextWanted.vsCommandStatusTextWantedNone)
+            try
             {
-                //Dynamically enable & disable the command. If the selected file name is File1.cs, then make the command visible.
-                UIHierarchyItem item = GetSelectedProjectItem(_applicationObject);
-                StatusOption = addins[CmdName].QueryStatus(item);
+                if (NeededText == EnvDTE.vsCommandStatusTextWanted.vsCommandStatusTextWantedNone)
+                {
+                    //Dynamically enable & disable the command. If the selected file name is File1.cs, then make the command visible.
+                    UIHierarchyItem item = GetSelectedProjectItem(_applicationObject);
+                    StatusOption = addins[CmdName].QueryStatus(item);
+                }
             }
+            catch { }
         }
 
         private UIHierarchyItem GetSelectedProjectItem(DTE2 appObj)
         {
-            UIHierarchyItem item;
-            UIHierarchy UIH = _applicationObject.ToolWindows.SolutionExplorer;
-            item = (UIHierarchyItem)((System.Array)UIH.SelectedItems).GetValue(0);
-            return item;
+            try
+            {
+                UIHierarchyItem item;
+                UIHierarchy UIH = _applicationObject.ToolWindows.SolutionExplorer;
+                item = (UIHierarchyItem)((System.Array)UIH.SelectedItems).GetValue(0);
+                return item;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
     }

@@ -13,6 +13,7 @@ namespace BIDSHelper
         private const string BASE_NAME = "BIDSHelper.Connect.";
         private Command pluginCmd;
         private CommandBar pluginCmdBar;
+        private CommandBarPopup toolsCommandBarPopup;
         private DTE2 appObj;
         private AddIn addIn;
         private const int UNKNOWN_CMD_ID = -1;
@@ -57,7 +58,7 @@ namespace BIDSHelper
 
                 // this is an empty array for passing into the AddNamedCommand method
                 object[] contextUIGUIDs = null;
-
+                
                 cmdTmp = appObj.Commands.AddNamedCommand(
                             this.addIn,
                             this.ShortName,
@@ -68,21 +69,36 @@ namespace BIDSHelper
                             ref contextUIGUIDs,
                             (int)vsCommandStatus.vsCommandStatusSupported + (int)vsCommandStatus.vsCommandStatusEnabled);
 
-                pluginCmdBar = cmdBars["Item"];
+                pluginCmdBar = cmdBars[this.MenuName];
                 if (pluginCmdBar == null)
                 {
-                    System.Windows.Forms.MessageBox.Show("Cannot get the Item menubar");
+                    System.Windows.Forms.MessageBox.Show("Cannot get the " + this.MenuName + " menubar");
                 }
                 else
                 {
                     pluginCmd = cmdTmp;
-                    if (!ShouldPositionAtEnd)
+
+                    if (this.MenuName == "Tools")
                     {
-                        pluginCmd.AddControl(pluginCmdBar, 1);
+                        if (toolsCommandBarPopup == null)
+                        {
+                            toolsCommandBarPopup = (CommandBarPopup)pluginCmdBar.Controls.Add(MsoControlType.msoControlPopup, System.Type.Missing, System.Type.Missing, 1, true);
+                            toolsCommandBarPopup.CommandBar.Name = "BIDSHelperToolsCommandBarPopup";
+                            toolsCommandBarPopup.Caption = "BIDS Helper";
+                        }
+                        pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1);
+                        toolsCommandBarPopup.Visible = true;
                     }
                     else
                     {
-                        pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1);
+                        if (!ShouldPositionAtEnd)
+                        {
+                            pluginCmd.AddControl(pluginCmdBar, 1);
+                        }
+                        else
+                        {
+                            pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1);
+                        }
                     }
                 }
             }
@@ -105,6 +121,10 @@ namespace BIDSHelper
                 {
                     pluginCmd.Delete();
                 }
+                if (toolsCommandBarPopup != null)
+                {
+                    toolsCommandBarPopup.Delete(true);
+                }
             }
             catch
             {
@@ -117,8 +137,10 @@ namespace BIDSHelper
             //Dynamically enable & disable the command. If the selected file name is File1.cs, then make the command visible.
             if (this.DisplayCommand(item))
             {
-                //\\ Enabled
-                return (vsCommandStatus)vsCommandStatus.vsCommandStatusEnabled | vsCommandStatus.vsCommandStatusSupported;
+                if (this.Checked) //enabled and checked
+                    return (vsCommandStatus)vsCommandStatus.vsCommandStatusEnabled | vsCommandStatus.vsCommandStatusSupported | vsCommandStatus.vsCommandStatusLatched;
+                else //enabled and unchecked
+                    return (vsCommandStatus)vsCommandStatus.vsCommandStatusEnabled | vsCommandStatus.vsCommandStatusSupported;
             }
             else
             {
@@ -170,6 +192,16 @@ namespace BIDSHelper
         }
 
         public abstract bool ShouldPositionAtEnd
+        {
+            get;
+        }
+
+        public abstract string MenuName
+        {
+            get;
+        }
+
+        public abstract bool Checked
         {
             get;
         }

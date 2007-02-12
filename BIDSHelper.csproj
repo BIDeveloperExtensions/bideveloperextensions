@@ -56,6 +56,11 @@
     <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.DataWarehouse.VsIntegration, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -63,6 +68,7 @@
     <Reference Include="System.Data">
       <Name>System.Data</Name>
     </Reference>
+    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml">
@@ -85,6 +91,7 @@
     <Compile Include="DeployMDXScriptPlugin.cs" />
     <Compile Include="DeploymentSettings.cs" />
     <Compile Include="DimensionHealthCheckPlugin.cs" />
+    <Compile Include="ExtraPropertiesPlugin.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
