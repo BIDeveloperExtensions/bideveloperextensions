@@ -185,25 +185,42 @@ namespace BIDSHelper
             get;
         }
 
-        public abstract bool ShouldPositionAtEnd
+        /*public abstract bool ShouldPositionAtEnd
         {
             get;
-        }
+        }*/
 
-        public abstract string MenuName
+        /*public abstract string MenuName
         {
             get;
-        }
+        }*/
 
-        public abstract bool Checked
+        /*public abstract bool Checked
         {
             get;
-        }
+        }*/
 
         public abstract void Exec();
 
         public abstract bool DisplayCommand(UIHierarchyItem item);
 
+        #endregion
+
+        #region "virtual methods/properties
+        public virtual bool ShouldPositionAtEnd
+        {
+            get { return false; }
+        }
+
+        public virtual string MenuName
+        {
+            get { return "Item"; }
+        }
+
+        public virtual bool Checked
+        {
+            get { return false; }
+        }
         #endregion
     }
 }

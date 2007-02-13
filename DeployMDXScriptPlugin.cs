@@ -39,20 +39,7 @@ namespace BIDSHelper
             get { return "Deploys just the MDX Script for this cube"; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return false; }
-        }
 
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
-
-        public override bool Checked
-        {
-            get { return false; }
-        }
 
         /// <summary>
         /// Determines if the command should be displayed or not.
