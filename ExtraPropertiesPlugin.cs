@@ -36,6 +36,16 @@ namespace BIDSHelper
             //add an event handler to fire whenever a window opens... need this run the code that shows the extra properties and keep them visible
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
+            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+        }
+
+        void windowEvents_WindowCreated(Window Window)
+        {
+            try
+            {
+                ConfigureProjectItemExtraProperties(Window.ProjectItem);
+            }
+            catch { }
         }
 
         void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
@@ -143,70 +153,63 @@ namespace BIDSHelper
 
         private static void InternalSetAttribute(System.ComponentModel.MemberDescriptor memb, string property, System.Attribute newattrib, bool on)
         {
-            try
+            System.Attribute oldattrib = memb.Attributes[newattrib.GetType()];
+            System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+            System.Reflection.BindingFlags setflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.SetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+            System.Attribute[] oldattribs = (System.Attribute[])typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributes", getflags, null, memb, null);
+            if (oldattrib != null)
             {
-                System.Attribute oldattrib = memb.Attributes[newattrib.GetType()];
-                System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                System.Reflection.BindingFlags setflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.SetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                System.Attribute[] oldattribs = (System.Attribute[])typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributes", getflags, null, memb, null);
-                if (oldattrib != null)
+                if (on)
                 {
-                    if (on)
+                    for (int i = 0; i < oldattribs.Length; i++)
                     {
-                        for (int i = 0; i < oldattribs.Length; i++)
+                        if (oldattribs[i].GetType().FullName == newattrib.GetType().FullName)
                         {
-                            if (oldattribs[i].GetType().FullName == newattrib.GetType().FullName)
-                            {
-                                oldattribs[i] = newattrib;
-                                break;
-                            }
-                        }
-                        typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributeCollection", setflags, null, memb, new object[] { new System.ComponentModel.AttributeCollection(oldattribs) });
-                        typeof(System.ComponentModel.MemberDescriptor).InvokeMember("originalAttributes", setflags, null, memb, new object[] { oldattribs });
-                        if (newattrib is System.ComponentModel.EditorAttribute)
-                        {
-                            object[] editors = new object[1];
-                            System.ComponentModel.EditorAttribute editor = (System.ComponentModel.EditorAttribute)newattrib;
-                            editors[0] = Type.GetType(editor.EditorTypeName).GetConstructors()[0].Invoke(new object[] { });
-                            typeof(System.ComponentModel.PropertyDescriptor).InvokeMember("editors", setflags, null, memb, new object[] { editors });
-                            typeof(System.ComponentModel.PropertyDescriptor).InvokeMember("editorCount", setflags, null, memb, new object[] { 1 });
-                            Type[] editorTypes = new Type[1] { Type.GetType(editor.EditorBaseTypeName) };
-                            typeof(System.ComponentModel.PropertyDescriptor).InvokeMember("editorTypes", setflags, null, memb, new object[] { editorTypes });
+                            oldattribs[i] = newattrib;
+                            break;
                         }
                     }
-                    else
+                    typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributeCollection", setflags, null, memb, new object[] { new System.ComponentModel.AttributeCollection(oldattribs) });
+                    typeof(System.ComponentModel.MemberDescriptor).InvokeMember("originalAttributes", setflags, null, memb, new object[] { oldattribs });
+                    if (newattrib is System.ComponentModel.EditorAttribute)
                     {
-                        System.Attribute[] newattribs = new System.Attribute[oldattribs.Length - 1];
-                        int i = 0;
-                        foreach (System.Attribute a in oldattribs)
-                        {
-                            if (a.GetType().FullName != newattrib.GetType().FullName)
-                            {
-                                newattribs[i++] = a;
-                            }
-                        }
-                        typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributes", setflags, null, memb, new object[] { newattribs });
-                        typeof(System.ComponentModel.MemberDescriptor).InvokeMember("originalAttributes", setflags, null, memb, new object[] { newattribs });
-                        typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributeCollection", setflags, null, memb, new object[] { new System.ComponentModel.AttributeCollection(newattribs) });
+                        object[] editors = new object[1];
+                        System.ComponentModel.EditorAttribute editor = (System.ComponentModel.EditorAttribute)newattrib;
+                        editors[0] = Type.GetType(editor.EditorTypeName).GetConstructors()[0].Invoke(new object[] { });
+                        typeof(System.ComponentModel.PropertyDescriptor).InvokeMember("editors", setflags, null, memb, new object[] { editors });
+                        typeof(System.ComponentModel.PropertyDescriptor).InvokeMember("editorCount", setflags, null, memb, new object[] { 1 });
+                        Type[] editorTypes = new Type[1] { Type.GetType(editor.EditorBaseTypeName) };
+                        typeof(System.ComponentModel.PropertyDescriptor).InvokeMember("editorTypes", setflags, null, memb, new object[] { editorTypes });
                     }
                 }
-                else if (on)
+                else
                 {
-                    System.Attribute[] newattribs = new System.Attribute[oldattribs.Length + 1];
+                    System.Attribute[] newattribs = new System.Attribute[oldattribs.Length - 1];
                     int i = 0;
                     foreach (System.Attribute a in oldattribs)
                     {
-                        newattribs[i++] = a;
+                        if (a.GetType().FullName != newattrib.GetType().FullName)
+                        {
+                            newattribs[i++] = a;
+                        }
                     }
-                    newattribs[i++] = newattrib;
                     typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributes", setflags, null, memb, new object[] { newattribs });
                     typeof(System.ComponentModel.MemberDescriptor).InvokeMember("originalAttributes", setflags, null, memb, new object[] { newattribs });
                     typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributeCollection", setflags, null, memb, new object[] { new System.ComponentModel.AttributeCollection(newattribs) });
                 }
             }
-            catch (Exception ex)
+            else if (on)
             {
-                MessageBox.Show(ex.Message);
+                System.Attribute[] newattribs = new System.Attribute[oldattribs.Length + 1];
+                int i = 0;
+                foreach (System.Attribute a in oldattribs)
+                {
+                    newattribs[i++] = a;
+                }
+                newattribs[i++] = newattrib;
+                typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributes", setflags, null, memb, new object[] { newattribs });
+                typeof(System.ComponentModel.MemberDescriptor).InvokeMember("originalAttributes", setflags, null, memb, new object[] { newattribs });
+                typeof(System.ComponentModel.MemberDescriptor).InvokeMember("attributeCollection", setflags, null, memb, new object[] { new System.ComponentModel.AttributeCollection(newattribs) });
             }
         }
 

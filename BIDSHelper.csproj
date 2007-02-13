@@ -48,9 +48,19 @@
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Controls, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.AnalysisServices.Design, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\program files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Design.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DataWarehouse, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -85,6 +95,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="BIDSHelperPluginBase.cs" />
+    <Compile Include="CalcHelpersPlugin.cs" />
     <Compile Include="Connect.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -19,20 +19,12 @@ namespace BIDSHelper
         private const int UNKNOWN_CMD_ID = -1;
 
         #region "Constructors"
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="appObject"></param>
-        /// <param name="addinInstance"></param>
         public BIDSHelperPluginBase(DTE2 appObject, AddIn addinInstance)
         {
             appObj = appObject;
             addIn = addinInstance;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         public BIDSHelperPluginBase()
         {
 
@@ -45,6 +37,8 @@ namespace BIDSHelper
         {
             try
             {
+                if (this.MenuName == "") return;
+
                 Command cmdTmp;
                 CommandBars cmdBars;
                 cmdBars = (CommandBars)appObj.CommandBars;
