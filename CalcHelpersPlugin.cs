@@ -10,6 +10,7 @@ using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
 using System;
+using Microsoft.Win32;
 
 namespace BIDSHelper
 {
@@ -17,7 +18,11 @@ namespace BIDSHelper
     {
         private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        private System.Collections.Generic.List<string> projectItemPathsFixedForCalcProperties = new System.Collections.Generic.List<string>();
+        private System.Collections.Generic.List<string> windowHandlesFixedForCalcProperties = new System.Collections.Generic.List<string>();
+        private System.Collections.Generic.List<string> windowHandlesFixedDefaultCalcScriptView = new System.Collections.Generic.List<string>();
+
+        private const string REGISTRY_EXTENDED_PATH = "CalcHelpersPlugin";
+        private const string REGISTRY_SCRIPT_VIEW_SETTING_NAME = "CalcScriptDefaultView";
 
         public CalcHelpersPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
@@ -36,68 +41,107 @@ namespace BIDSHelper
         {
             try
             {
-                if (GotFocus != null)
+                if (GotFocus == null) return;
+                IDesignerHost designer = (IDesignerHost)GotFocus.Object;
+                if (designer == null) return;
+                ProjectItem pi = GotFocus.ProjectItem;
+                if (!pi.Name.ToLower().EndsWith(".cube")) return;
+                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
+
+                IntPtr ptr = win.Handle;
+                string sHandle = ptr.ToInt64().ToString();
+
+                if (!windowHandlesFixedForCalcProperties.Contains(sHandle))
                 {
-                    IDesignerHost designer = (IDesignerHost)GotFocus.Object;
-                    if (designer == null) return;
-                    ProjectItem pi = GotFocus.ProjectItem;
-                    if (!pi.Name.ToLower().EndsWith(".cube")) return;
-                    EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-                    VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
+                    windowHandlesFixedForCalcProperties.Add(sHandle);
+                    win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
+                }
 
-                    IntPtr ptr = win.Handle;
-                    string sHandle = ptr.ToInt64().ToString();
-
-                    string projectItemPath = pi.get_FileNames(1);
-                    if (!projectItemPathsFixedForCalcProperties.Contains(sHandle))
-                    {
-                        projectItemPathsFixedForCalcProperties.Add(sHandle);
-                        win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
-                    }
-
-                    ToolBarButton newButton = null;
+                if (win.SelectedView.Caption == "Calculations")
+                {
+                    ToolBarButton newCalcPropButton = null;
+                    ToolBarButton newDeployMdxScriptButton = null;
                     int iMicrosoftCalcPropertiesIndex = 0;
+                    bool bFlipScriptViewButton = false;
                     foreach (ToolBarButton b in toolbar.Buttons)
                     {
                         if (b.ToolTipText.StartsWith("Calculation Properties"))
                         {
                             if (b.Tag == null || b.Tag.ToString() != this.FullName + ".CommandProperties")
                             {
-                                if (win.SelectedView.Caption == "Calculations" && !toolbar.Buttons.ContainsKey(this.FullName + ".CommandProperties"))
+                                if (!toolbar.Buttons.ContainsKey(this.FullName + ".CommandProperties"))
                                 {
+                                    //if we haven't created it yet
                                     iMicrosoftCalcPropertiesIndex = toolbar.Buttons.IndexOf(b);
                                     b.Visible = false;
-                                    newButton = new ToolBarButton();
-                                    newButton.ToolTipText = "Calculation Properties (BIDS Helper)";
-                                    newButton.Name = this.FullName + ".CommandProperties";
-                                    newButton.Tag = newButton.Name;
-                                    newButton.ImageIndex = 11;
-                                    newButton.Enabled = true;
-                                    newButton.Style = ToolBarButtonStyle.PushButton;
-                                    toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                if (win.SelectedView.Caption == "Calculations")
-                                {
 
-                                }
-                                else
-                                {
-                                    b.Visible = false;
+                                    newCalcPropButton = new ToolBarButton();
+                                    newCalcPropButton.ToolTipText = "Calculation Properties (BIDS Helper)";
+                                    newCalcPropButton.Name = this.FullName + ".CommandProperties";
+                                    newCalcPropButton.Tag = newCalcPropButton.Name;
+                                    newCalcPropButton.ImageIndex = 11;
+                                    newCalcPropButton.Enabled = true;
+                                    newCalcPropButton.Style = ToolBarButtonStyle.PushButton;
+
+                                    toolbar.ImageList.Images.Add(Properties.Resources.DeployMdxScriptIcon);
+
+                                    newDeployMdxScriptButton = new ToolBarButton();
+                                    newDeployMdxScriptButton.ToolTipText = "Deploy MDX Script (BIDS Helper)";
+                                    newDeployMdxScriptButton.Name = this.FullName + ".DeployMdxScript";
+                                    newDeployMdxScriptButton.Tag = newDeployMdxScriptButton.Name;
+                                    newDeployMdxScriptButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+                                    newDeployMdxScriptButton.Enabled = true;
+                                    newDeployMdxScriptButton.Style = ToolBarButtonStyle.PushButton;
+
+                                    //catch the button clicks of the new buttons we just added
+                                    toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
+
+                                    //catch the mouse clicks... the only way to catch the button click for the Microsoft buttons
+                                    toolbar.Click += new EventHandler(toolbar_Click);
                                 }
                             }
                         }
+                        else if (b.ToolTipText == "Form View" && ScriptViewDefault && !windowHandlesFixedDefaultCalcScriptView.Contains(sHandle))
+                        {
+                            Control control = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
+                            System.Reflection.BindingFlags getfieldflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+                            object controlMgr = control.GetType().InvokeMember("calcControlMgr", getfieldflags, null, control, null);
+                            System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+                            controlMgr.GetType().InvokeMember("ViewScript", getmethodflags, null, controlMgr, new object[] { });
+                            bFlipScriptViewButton = true;
+                            b.Pushed = false;
+                            windowHandlesFixedDefaultCalcScriptView.Add(sHandle);
+                        }
+                        else if (b.ToolTipText == "Script View" && bFlipScriptViewButton)
+                        {
+                            b.Pushed = true;
+                        }
                     }
-                    if (newButton != null)
+                    if (newDeployMdxScriptButton != null)
                     {
-                        toolbar.Buttons.Insert(iMicrosoftCalcPropertiesIndex, newButton);
+                        toolbar.Buttons.Insert(iMicrosoftCalcPropertiesIndex, newDeployMdxScriptButton);
+                    }
+                    if (newCalcPropButton != null)
+                    {
+                        toolbar.Buttons.Insert(iMicrosoftCalcPropertiesIndex, newCalcPropButton);
                     }
                 }
             }
             catch { }
+        }
+
+        private void DeployMdxScript()
+        {
+            IDesignerHost designer = (IDesignerHost)ApplicationObject.ActiveWindow.Object;
+            if (designer == null) return;
+            ProjectItem pi = ApplicationObject.ActiveWindow.ProjectItem;
+            EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+
+            if (win.SelectedView.Caption == "Calculations")
+            {
+                DeployMDXScriptPlugin.DeployScript(pi, this.ApplicationObject);
+            }
         }
 
         void win_ActiveViewChanged(object sender, EventArgs e)
@@ -105,19 +149,70 @@ namespace BIDSHelper
             windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
         }
 
+        public bool ScriptViewDefault
+        {
+            get
+            {
+                bool bScriptViewDefault = false;
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
+                if (rk != null)
+                {
+                    bScriptViewDefault = (1 == (int)rk.GetValue(REGISTRY_SCRIPT_VIEW_SETTING_NAME, 0));
+                    rk.Close();
+                }
+                return bScriptViewDefault;
+            }
+            set
+            {
+                string path = Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
+                settingKey.SetValue(REGISTRY_SCRIPT_VIEW_SETTING_NAME, value, RegistryValueKind.DWord);
+                settingKey.Close();
+            }
+        }
+
         void toolbar_ButtonClick(object sender, ToolBarButtonClickEventArgs e)
         {
             try
             {
-                if (e.Button.Tag != null && e.Button.Tag.ToString() == this.FullName + ".CommandProperties")
+                if (e.Button.Tag != null)
                 {
-                    OpenCalcPropertiesDialog();
+                    string sButtonTag = e.Button.Tag.ToString();
+                    if (sButtonTag == this.FullName + ".CommandProperties")
+                    {
+                        OpenCalcPropertiesDialog();
+                    }
+                    else if (sButtonTag == this.FullName + ".DeployMdxScript")
+                    {
+                        DeployMdxScript();
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        void toolbar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ToolBar toolbar = (ToolBar)sender;
+                System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+                int hotItem = (int)typeof(ToolBar).InvokeMember("hotItem", getflags, null, toolbar, null);
+                ToolBarButton button = toolbar.Buttons[hotItem];
+                if (button.ToolTipText == "Script View")
+                {
+                    ScriptViewDefault = true;
+                }
+                else if (button.ToolTipText == "Form View")
+                {
+                    ScriptViewDefault = false;
+                }
+            }
+            catch { }
         }
 
         void OpenCalcPropertiesDialog()
@@ -331,19 +426,9 @@ namespace BIDSHelper
             get { return ""; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
-
         public override string MenuName
         {
             get { return ""; } //no need to have a menu command
-        }
-
-        public override bool Checked
-        {
-            get { return false; }
         }
 
         /// <summary>

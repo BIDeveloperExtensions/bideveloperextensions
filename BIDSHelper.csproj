@@ -56,6 +56,7 @@
     <Reference Include="Microsoft.AnalysisServices.Design, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Program Files\Microsoft SQL Server\90\Tools\Binn\VSShell\Common7\IDE\Microsoft.AnalysisServices.Design.DLL</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataWarehouse, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -148,6 +149,7 @@
       <Isolated>False</Isolated>
     </COMReference>
     <Content Include="BIDSHelper.AddIn" />
+    <Content Include="Resources\DeployMdxScript.ico" />
     <EmbeddedResource Include="DeployMdxScript.xslt" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>

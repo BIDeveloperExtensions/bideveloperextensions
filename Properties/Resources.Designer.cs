@@ -80,5 +80,12 @@ namespace BIDSHelper.Properties {
                 return ResourceManager.GetString("DeployMdxScript", resourceCulture);
             }
         }
+        
+        internal static System.Drawing.Icon DeployMdxScriptIcon {
+            get {
+                object obj = ResourceManager.GetObject("DeployMdxScriptIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

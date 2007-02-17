@@ -42,16 +42,6 @@ namespace BIDSHelper
             get { return true; }
         }
 
-        /*public override string MenuName
-        {
-            get { return "Item"; }
-        }
-
-        public override bool Checked
-        {
-            get { return false; }
-        }*/
-
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
@@ -90,8 +80,6 @@ namespace BIDSHelper
                 VisualizeAttributeLatticeForm frm = new VisualizeAttributeLatticeForm();
                 frm.dimension = dim;
                 frm.Show();
-
-                //could use the icon from MicrosoftXMLEditor.CreateSchema command
             }
             catch (System.Exception ex)
             {

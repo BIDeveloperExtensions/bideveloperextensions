@@ -78,19 +78,7 @@ namespace BIDSHelper
                     if (hierItem.Name.ToLower().EndsWith(".cube") && hierItem.Object is ProjectItem)
                     {
                         ProjectItem projItem = (ProjectItem)hierItem.Object;
-                        Microsoft.AnalysisServices.Cube oCube = (Microsoft.AnalysisServices.Cube)projItem.Object;
-                        try
-                        {
-                            //validate the script because deploying an invalid script makes cube unusable
-                            Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);
-                        }
-                        catch (Microsoft.AnalysisServices.Design.ScriptParsingFailed ex)
-                        {
-                            string throwaway = ex.Message;
-                            MessageBox.Show("MDX Script in " + oCube.Name + " is not valid.","Problem Deploying MDX Script");
-                            return;
-                        }
-                        DeployScript(projItem);
+                        DeployScript(projItem, this.ApplicationObject);
                     }
                 }
             }
@@ -100,10 +88,24 @@ namespace BIDSHelper
             }
         }
 
-        private void DeployScript(ProjectItem projItem) {
+        public static void DeployScript(ProjectItem projItem, DTE2 ApplicationObject)
+        {
+            Microsoft.AnalysisServices.Cube oCube = (Microsoft.AnalysisServices.Cube)projItem.Object;
             try
             {
-                this.ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                //validate the script because deploying an invalid script makes cube unusable
+                Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);
+            }
+            catch (Microsoft.AnalysisServices.Design.ScriptParsingFailed ex)
+            {
+                string throwaway = ex.Message;
+                MessageBox.Show("MDX Script in " + oCube.Name + " is not valid.", "Problem Deploying MDX Script");
+                return;
+            }
+
+            try
+            {
+                ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 1, 5);
 
                 //\\Save the cube
@@ -158,16 +160,7 @@ namespace BIDSHelper
             {
                 ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(false, "Deploying MdxScript", 5, 5);
-                //_addInInstance.DTE.StatusBar.Clear()
             }
         }
-
-        //other icons:
-        //    '133	green right arrow
-        //    '317	page & blue down arrow
-        //    '1591	yellow page and right blue arrow
-        //    '1795
-        //    '1924
-        //    '2605
     }
 }
