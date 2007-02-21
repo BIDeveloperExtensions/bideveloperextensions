@@ -136,7 +136,7 @@ namespace BIDSHelper
             System.Data.Common.DbCommand cmd;
             System.Data.Common.DbConnection conn;
             System.Data.Common.DbDataReader dr = null;
-            if (d.DataSource.ConnectionString.Contains("Provider=SQLNCLI.1;"))
+            if (d.DataSource.ConnectionString.Contains("Provider=SQLNCLI.1;") || !d.DataSource.ConnectionString.Contains("Provider="))
             {
                 cmd = new System.Data.SqlClient.SqlCommand();
                 conn = new System.Data.SqlClient.SqlConnection(d.DataSource.ConnectionString.Replace("Provider=SQLNCLI.1;", ""));
