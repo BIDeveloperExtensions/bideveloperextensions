@@ -82,7 +82,7 @@ namespace BIDSHelper
                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(true, "Checking Dimension Health...", 0, d.Attributes.Count * 2);
 
-                string[] errors = Check(d);
+                DimensionError[] errors = Check(d);
 
                 EnvDTE80.Windows2 toolWins;
                 EnvDTE.Window toolWin;
@@ -97,10 +97,29 @@ namespace BIDSHelper
                 if (errors.Length > 0)
                 {
                     browser.Document.Write("<b>Problems</b><br>");
-                    foreach (string s in errors)
+                    int iErrorCnt = 0;
+                    foreach (DimensionError e in errors)
                     {
+                        iErrorCnt++;
                         browser.Document.Write("<li>");
-                        browser.Document.Write(s);
+                        browser.Document.Write(e.ErrorDescription);
+                        if (e.ErrorTable != null)
+                        {
+                            browser.Document.Write(" <a href=\"javascript:void(document.all.error" + iErrorCnt + ".style.display = (document.all.error" + iErrorCnt + ".style.display==''?'none':''))\" style='color:blue'>Show/hide problem rows</a><br>\r\n");
+                            browser.Document.Write("<table id=error" + iErrorCnt + " cellspacing=0 style='display:none;font-family:Arial;font-size:10pt'>");
+                            foreach (DataRow dr in e.ErrorTable.Rows)
+                            {
+                                browser.Document.Write("<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>");
+                                for (int i = 0; i < e.ErrorTable.Columns.Count; i++)
+                                {
+                                    browser.Document.Write("<td nowrap>");
+                                    browser.Document.Write(System.Web.HttpUtility.HtmlEncode(dr[i].ToString()));
+                                    browser.Document.Write("</td><td>&nbsp;&nbsp;</td>");
+                                }
+                                browser.Document.Write("</tr>");
+                            }
+                            browser.Document.Write("</table>");
+                        }
                     }
                 }
                 else
@@ -125,26 +144,28 @@ namespace BIDSHelper
                 ApplicationObject.StatusBar.Progress(false, "Checking Dimension Health...", 2, 2);
             }
         }
-        
-        
-        
-        private string[] Check(Dimension d)
+
+
+
+        private DimensionError[] Check(Dimension d)
         {
-            if (d.MiningModelID != null) return new string[] { };
-            List<string> problems = new List<string>();
+            if (d.MiningModelID != null) return new DimensionError[] { };
+            List<DimensionError> problems = new List<DimensionError>();
             //TODO: need to add in code to allow you to cancel such that it will stop an executing query
             System.Data.Common.DbCommand cmd;
             System.Data.Common.DbConnection conn;
-            System.Data.Common.DbDataReader dr = null;
+            System.Data.Common.DataAdapter adp = null;
             if (d.DataSource.ConnectionString.Contains("Provider=SQLNCLI.1;") || !d.DataSource.ConnectionString.Contains("Provider="))
             {
                 cmd = new System.Data.SqlClient.SqlCommand();
                 conn = new System.Data.SqlClient.SqlConnection(d.DataSource.ConnectionString.Replace("Provider=SQLNCLI.1;", ""));
+                adp = new System.Data.SqlClient.SqlDataAdapter((System.Data.SqlClient.SqlCommand)cmd);
             }
             else
             {
                 cmd = new System.Data.OleDb.OleDbCommand();
                 conn = new System.Data.OleDb.OleDbConnection(d.DataSource.ConnectionString);
+                adp = new System.Data.OleDb.OleDbDataAdapter((System.Data.OleDb.OleDbCommand)cmd);
             }
             //TODO: try other datasource types like ODBC???
 
@@ -167,22 +188,25 @@ namespace BIDSHelper
                     {
                         bGotSQL = true;
                         cmd.CommandText = sql;
-                        dr = cmd.ExecuteReader();
-                        if (dr.HasRows)
+                        DataSet ds = new DataSet();
+                        adp.Fill(ds);
+                        if (ds.Tables[0].Rows.Count > 0)
                         {
-                            problems.Add("Attribute [" + da.Name + "] has key values with multiple names.");
+                            string problem = "Attribute [" + da.Name + "] has key values with multiple names.";
+                            DimensionError err = new DimensionError();
+                            err.ErrorDescription = problem;
+                            err.ErrorTable = ds.Tables[1];
+                            problems.Add(err);
                         }
-                        dr.Close();
                     }
                     ApplicationObject.StatusBar.Progress(true, "Checking Attribute Key Uniqueness...", ++iProgressCount, d.Attributes.Count * 2);
                 }
                 catch (Exception ex)
                 {
-                    problems.Add("Attempt to validate key and name relationship for attribute [" + da.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : ""));
-                }
-                finally
-                {
-                    if (dr != null && !dr.IsClosed) dr.Close();
+                    string problem = "Attempt to validate key and name relationship for attribute [" + da.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : "");
+                    DimensionError err = new DimensionError();
+                    err.ErrorDescription = problem;
+                    problems.Add(err);
                 }
             }
             foreach (DimensionAttribute da in d.Attributes)
@@ -197,20 +221,24 @@ namespace BIDSHelper
                         {
                             bGotSQL = true;
                             cmd.CommandText = sql;
-                            dr = cmd.ExecuteReader();
-                            if (dr.HasRows)
+                            DataSet ds = new DataSet();
+                            adp.Fill(ds);
+                            if (ds.Tables[0].Rows.Count > 0)
                             {
-                                problems.Add("Attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] is not valid because it results in a many-to-many relationship.");
+                                string problem = "Attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] is not valid because it results in a many-to-many relationship.";
+                                DimensionError err = new DimensionError();
+                                err.ErrorDescription = problem;
+                                err.ErrorTable = ds.Tables[1];
+                                problems.Add(err);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        problems.Add("Attempt to validate attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : ""));
-                    }
-                    finally
-                    {
-                        if (dr != null && !dr.IsClosed) dr.Close();
+                        string problem = "Attempt to validate attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : "");
+                        DimensionError err = new DimensionError();
+                        err.ErrorDescription = problem;
+                        problems.Add(err);
                     }
                 }
                 ApplicationObject.StatusBar.Progress(true, "Checking Attribute Relationships...", ++iProgressCount, d.Attributes.Count * 2);
@@ -322,6 +350,7 @@ namespace BIDSHelper
             StringBuilder select = new StringBuilder();
             StringBuilder outerSelect = new StringBuilder();
             StringBuilder groupBy = new StringBuilder();
+            StringBuilder join = new StringBuilder();
             Dictionary<DataTable, JoinedTable> tables = new Dictionary<DataTable, JoinedTable>();
             List<string> previousColumns = new List<string>();
             foreach (ColumnBinding col in child)
@@ -333,6 +362,7 @@ namespace BIDSHelper
                     groupBy.Append((select.Length == 0 ? "group by " : ","));
                     outerSelect.Append((select.Length == 0 ? "select " : ","));
                     select.Append((select.Length == 0 ? "select distinct " : ","));
+                    join.Append((join.Length == 0 ? "on " : "and ")).Append("y.[").Append(colAlias).Append("] = z.[").Append(colAlias).AppendLine("]");
                     groupBy.Append("[").Append(colAlias).AppendLine("]");
                     outerSelect.Append("[").Append(colAlias).AppendLine("]");
                     if (!dc.ExtendedProperties.ContainsKey("ComputedColumnExpression"))
@@ -378,9 +408,17 @@ namespace BIDSHelper
                     previousColumns.Add("[" + col.TableID + "].[" + col.ColumnID + "]");
                 }
             }
-            foreach (JoinedTable t in tables.Values)
+
+            int iLastTableCount = 0;
+            while (iLastTableCount != tables.Values.Count)
             {
-                TraverseParentRelationshipsAndAddNewTables(tables, t.table);
+                iLastTableCount = tables.Values.Count;
+                JoinedTable[] arrJt = new JoinedTable[iLastTableCount];
+                tables.Values.CopyTo(arrJt, 0); //because you can't iterate the dictionary keys while they are changing
+                foreach (JoinedTable jt in arrJt)
+                {
+                    TraverseParentRelationshipsAndAddNewTables(tables, jt.table);
+                }
             }
 
             //check that all but one table have a valid join path to them
@@ -404,7 +442,12 @@ namespace BIDSHelper
             select.Append("\r\nfrom ").AppendLine(GetFromClauseForTable(baseTable));
             select.Append(TraverseParentRelationshipsAndGetFromClause(tables, baseTable));
 
-            return outerSelect.AppendLine("\r\nfrom (").Append(select).AppendLine(") x").Append(groupBy).Append("\r\nhaving count(*)>1").ToString();
+            outerSelect.AppendLine("\r\nfrom (").Append(select).AppendLine(") x").Append(groupBy).AppendLine("\r\nhaving count(*)>1");
+
+            string invalidValuesInner = outerSelect.ToString();
+            outerSelect.AppendLine("select y.* from (").Append(select).AppendLine(") as y");
+            outerSelect.AppendLine("join (").AppendLine(invalidValuesInner).AppendLine(") z").AppendLine(join.ToString());
+            return outerSelect.ToString();
         }
 
         //traverse all the parent relationships looking for connections to other tables we need
@@ -418,8 +461,8 @@ namespace BIDSHelper
                 {
                     if (!tables.ContainsKey(r.ParentTable) && TraverseParentRelationshipsAndAddNewTables(tables, r.ParentTable))
                     {
-                        tables[r.ParentTable].Joined = true;
                         tables.Add(r.ParentTable, new JoinedTable(r.ParentTable));
+                        tables[r.ParentTable].Joined = true;
                         bReturn = true;
                     }
                     else if (tables.ContainsKey(r.ParentTable))
@@ -476,6 +519,12 @@ namespace BIDSHelper
             {
                 table = t;
             }
+        }
+
+        class DimensionError
+        {
+            public string ErrorDescription;
+            public DataTable ErrorTable;
         }
     }
 }
