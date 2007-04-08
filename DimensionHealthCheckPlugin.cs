@@ -195,7 +195,7 @@ namespace BIDSHelper
                             string problem = "Attribute [" + da.Name + "] has key values with multiple names.";
                             DimensionError err = new DimensionError();
                             err.ErrorDescription = problem;
-                            err.ErrorTable = ds.Tables[1];
+                            err.ErrorTable = ds.Tables[0];
                             problems.Add(err);
                         }
                     }
@@ -228,7 +228,7 @@ namespace BIDSHelper
                                 string problem = "Attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] is not valid because it results in a many-to-many relationship.";
                                 DimensionError err = new DimensionError();
                                 err.ErrorDescription = problem;
-                                err.ErrorTable = ds.Tables[1];
+                                err.ErrorTable = ds.Tables[0];
                                 problems.Add(err);
                             }
                         }
@@ -445,6 +445,7 @@ namespace BIDSHelper
             outerSelect.AppendLine("\r\nfrom (").Append(select).AppendLine(") x").Append(groupBy).AppendLine("\r\nhaving count(*)>1");
 
             string invalidValuesInner = outerSelect.ToString();
+            outerSelect = new StringBuilder();
             outerSelect.AppendLine("select y.* from (").Append(select).AppendLine(") as y");
             outerSelect.AppendLine("join (").AppendLine(invalidValuesInner).AppendLine(") z").AppendLine(join.ToString());
             return outerSelect.ToString();
