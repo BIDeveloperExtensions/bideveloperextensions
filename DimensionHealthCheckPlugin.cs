@@ -58,10 +58,7 @@ namespace BIDSHelper
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (hierItem.Name.ToLower().EndsWith(".dim"))
-                    return true;
-                else
-                    return false;
+                return (((ProjectItem)hierItem.Object).Object is Dimension);
             }
             catch
             {

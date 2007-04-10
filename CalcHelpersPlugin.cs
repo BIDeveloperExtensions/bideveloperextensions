@@ -45,7 +45,7 @@ namespace BIDSHelper
                 IDesignerHost designer = (IDesignerHost)GotFocus.Object;
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
-                if (!pi.Name.ToLower().EndsWith(".cube")) return;
+                if (!(pi.Object is Cube)) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
 
@@ -86,13 +86,16 @@ namespace BIDSHelper
 
                                     toolbar.ImageList.Images.Add(Properties.Resources.DeployMdxScriptIcon);
 
-                                    newDeployMdxScriptButton = new ToolBarButton();
-                                    newDeployMdxScriptButton.ToolTipText = "Deploy MDX Script (BIDS Helper)";
-                                    newDeployMdxScriptButton.Name = this.FullName + ".DeployMdxScript";
-                                    newDeployMdxScriptButton.Tag = newDeployMdxScriptButton.Name;
-                                    newDeployMdxScriptButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
-                                    newDeployMdxScriptButton.Enabled = true;
-                                    newDeployMdxScriptButton.Style = ToolBarButtonStyle.PushButton;
+                                    if (pi.Name.ToLower().EndsWith(".cube")) //only show feature if we're in offline mode
+                                    {
+                                        newDeployMdxScriptButton = new ToolBarButton();
+                                        newDeployMdxScriptButton.ToolTipText = "Deploy MDX Script (BIDS Helper)";
+                                        newDeployMdxScriptButton.Name = this.FullName + ".DeployMdxScript";
+                                        newDeployMdxScriptButton.Tag = newDeployMdxScriptButton.Name;
+                                        newDeployMdxScriptButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+                                        newDeployMdxScriptButton.Enabled = true;
+                                        newDeployMdxScriptButton.Style = ToolBarButtonStyle.PushButton;
+                                    }
 
                                     //catch the button clicks of the new buttons we just added
                                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);

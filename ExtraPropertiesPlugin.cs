@@ -61,7 +61,7 @@ namespace BIDSHelper
         //the decisions about what extra properties are show are configured here
         void ConfigureProjectItemExtraProperties(ProjectItem pi)
         {
-            if (pi.Name.ToLower().EndsWith(".dim"))
+            if (pi.Object is Dimension)
             {
                 Microsoft.AnalysisServices.Dimension dim = (Microsoft.AnalysisServices.Dimension)pi.Object;
                 System.ComponentModel.TypeDescriptor.Refresh(dim);
@@ -82,7 +82,7 @@ namespace BIDSHelper
                 SetAttribute(typeof(Translation), "Annotations", new System.ComponentModel.BrowsableAttribute(bInEffect), true);
                 SetAttribute(typeof(Translation), "Annotations", new System.ComponentModel.EditorAttribute(typeof(AttributeCollectionEditor), typeof(System.Drawing.Design.UITypeEditor)), bInEffect);
             }
-            else if (pi.Name.ToLower().EndsWith(".cube"))
+            else if (pi.Object is Cube)
             {
                 Microsoft.AnalysisServices.Cube cube = (Microsoft.AnalysisServices.Cube)pi.Object;
                 System.ComponentModel.TypeDescriptor.Refresh(cube);

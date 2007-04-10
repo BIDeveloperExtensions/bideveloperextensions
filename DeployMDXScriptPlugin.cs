@@ -54,7 +54,7 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 foreach (UIHierarchyItem hierItem in ((System.Array)solExplorer.SelectedItems))
                 {
-                    if (hierItem.Name.ToLower().EndsWith(".cube"))
+                    if (hierItem.Name.ToLower().EndsWith(".cube")) //checking the file extension is adequate because this feature is not needed for in online mode (when live connected to the server)
                         bFoundRightItem = true;
                     else
                         return false;
@@ -75,7 +75,7 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 foreach (UIHierarchyItem hierItem in ((System.Array)solExplorer.SelectedItems))
                 {
-                    if (hierItem.Name.ToLower().EndsWith(".cube") && hierItem.Object is ProjectItem)
+                    if (hierItem.Name.ToLower().EndsWith(".cube") && hierItem.Object is ProjectItem) //checking the file extension is adequate because this feature is not needed for in online mode (when live connected to the server)
                     {
                         ProjectItem projItem = (ProjectItem)hierItem.Object;
                         DeployScript(projItem, this.ApplicationObject);
