@@ -38,16 +38,16 @@ namespace AggManager
             // textBoxNewAggDesign
             // 
             this.textBoxNewAggDesign.Location = new System.Drawing.Point(178, 24);
-            this.textBoxNewAggDesign.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBoxNewAggDesign.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxNewAggDesign.Name = "textBoxNewAggDesign";
-            this.textBoxNewAggDesign.Size = new System.Drawing.Size(175, 20);
+            this.textBoxNewAggDesign.Size = new System.Drawing.Size(233, 20);
             this.textBoxNewAggDesign.TabIndex = 0;
             this.textBoxNewAggDesign.Text = "New Aggregation Design";
             // 
             // buttonOK
             // 
-            this.buttonOK.Location = new System.Drawing.Point(189, 63);
-            this.buttonOK.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonOK.Location = new System.Drawing.Point(221, 62);
+            this.buttonOK.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(94, 25);
             this.buttonOK.TabIndex = 1;
@@ -67,8 +67,9 @@ namespace AggManager
             // 
             // buttonCancel
             // 
-            this.buttonCancel.Location = new System.Drawing.Point(302, 63);
-            this.buttonCancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.buttonCancel.Location = new System.Drawing.Point(319, 62);
+            this.buttonCancel.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(92, 25);
             this.buttonCancel.TabIndex = 3;
@@ -80,13 +81,16 @@ namespace AggManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(422, 98);
+            this.ControlBox = false;
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.textBoxNewAggDesign);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "InputForm";
             this.Text = "Add New Aggregation Design";
             this.ResumeLayout(false);

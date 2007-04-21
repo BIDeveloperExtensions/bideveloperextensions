@@ -17,8 +17,8 @@ SetCompressor lzma
 
 ; MUI Settings
 !define MUI_ABORTWARNING
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
+!define MUI_ICON "BIDSHelper.ico" #"${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
+!define MUI_UNICON "BIDSHelper.ico" #"${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
@@ -79,11 +79,12 @@ FunctionEnd
 Section Uninstall
   Delete "$INSTDIR\uninst.exe"
   Delete "$DOCUMENTS\Visual Studio 2005\Addins\BIDSHelper.dll"
-
-  RMDir "$DOCUMENTS\Visual Studio 2005\Addins"
+  Delete "$DOCUMENTS\Visual Studio 2005\Addins\BIDSHelper.Addin"
+  
+  #RMDir "$DOCUMENTS\Visual Studio 2005\Addins"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
-  DeleteRegKey $(PRODUCT_SETTINGS_ROOT_KEY) "$(PRODUCT_SETTINGS_KEY)"
+  DeleteRegKey ${PRODUCT_SETTINGS_ROOT_KEY} "${PRODUCT_SETTINGS_KEY}"
   
   SetAutoClose true
 SectionEnd

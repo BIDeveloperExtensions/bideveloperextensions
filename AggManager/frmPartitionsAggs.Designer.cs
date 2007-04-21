@@ -57,22 +57,22 @@ namespace AggManager
             this.dataGrid1.HeaderBackColor = System.Drawing.Color.Silver;
             this.dataGrid1.HeaderForeColor = System.Drawing.Color.Black;
             this.dataGrid1.LinkColor = System.Drawing.Color.Navy;
-            this.dataGrid1.Location = new System.Drawing.Point(9, 59);
-            this.dataGrid1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.dataGrid1.Location = new System.Drawing.Point(9, 41);
+            this.dataGrid1.Margin = new System.Windows.Forms.Padding(2);
             this.dataGrid1.Name = "dataGrid1";
             this.dataGrid1.ParentRowsBackColor = System.Drawing.Color.White;
             this.dataGrid1.ParentRowsForeColor = System.Drawing.Color.Black;
             this.dataGrid1.PreferredColumnWidth = 400;
             this.dataGrid1.SelectionBackColor = System.Drawing.Color.Navy;
             this.dataGrid1.SelectionForeColor = System.Drawing.Color.White;
-            this.dataGrid1.Size = new System.Drawing.Size(524, 382);
+            this.dataGrid1.Size = new System.Drawing.Size(522, 414);
             this.dataGrid1.TabIndex = 3;
             // 
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.Location = new System.Drawing.Point(275, 461);
-            this.buttonOK.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonOK.Location = new System.Drawing.Point(311, 459);
+            this.buttonOK.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(108, 31);
             this.buttonOK.TabIndex = 6;
@@ -83,8 +83,8 @@ namespace AggManager
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonCancel.Location = new System.Drawing.Point(416, 461);
-            this.buttonCancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonCancel.Location = new System.Drawing.Point(423, 459);
+            this.buttonCancel.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(108, 31);
             this.buttonCancel.TabIndex = 5;
@@ -140,7 +140,7 @@ namespace AggManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(542, 513);
+            this.ClientSize = new System.Drawing.Size(540, 501);
             this.Controls.Add(this.lblSize);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lablPartName);
@@ -149,7 +149,7 @@ namespace AggManager
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.dataGrid1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "PartitionsAggsForm";
             this.Text = "Partitions Aggregations";
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).EndInit();

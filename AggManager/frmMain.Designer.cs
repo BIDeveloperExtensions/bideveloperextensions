@@ -67,7 +67,7 @@ namespace AggManager
             this.treeView1.Margin = new System.Windows.Forms.Padding(2);
             this.treeView1.Name = "treeView1";
             this.treeView1.SelectedImageIndex = 0;
-            this.treeView1.Size = new System.Drawing.Size(453, 476);
+            this.treeView1.Size = new System.Drawing.Size(457, 464);
             this.treeView1.TabIndex = 0;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
@@ -153,7 +153,7 @@ namespace AggManager
             this.listBoxReport.Location = new System.Drawing.Point(0, 0);
             this.listBoxReport.Margin = new System.Windows.Forms.Padding(2);
             this.listBoxReport.Name = "listBoxReport";
-            this.listBoxReport.Size = new System.Drawing.Size(201, 485);
+            this.listBoxReport.Size = new System.Drawing.Size(252, 485);
             this.listBoxReport.TabIndex = 8;
             // 
             // contextMenuStripSave
@@ -204,17 +204,17 @@ namespace AggManager
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.listBoxReport);
-            this.splitContainer1.Size = new System.Drawing.Size(658, 476);
-            this.splitContainer1.SplitterDistance = 453;
+            this.splitContainer1.Size = new System.Drawing.Size(713, 464);
+            this.splitContainer1.SplitterDistance = 457;
             this.splitContainer1.TabIndex = 9;
             // 
             // btnOk
             // 
             this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(510, 490);
+            this.btnOk.Location = new System.Drawing.Point(560, 478);
             this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(75, 23);
+            this.btnOk.Size = new System.Drawing.Size(80, 31);
             this.btnOk.TabIndex = 10;
             this.btnOk.Text = "Ok";
             this.btnOk.UseVisualStyleBackColor = true;
@@ -224,9 +224,9 @@ namespace AggManager
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(591, 490);
+            this.btnCancel.Location = new System.Drawing.Point(646, 478);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.Size = new System.Drawing.Size(75, 31);
             this.btnCancel.TabIndex = 11;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -236,7 +236,7 @@ namespace AggManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(675, 525);
+            this.ClientSize = new System.Drawing.Size(730, 521);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);

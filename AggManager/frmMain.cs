@@ -256,7 +256,7 @@ namespace AggManager
             else
                 form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Tag);
 
-            form1.ShowDialog(this.Owner);
+            form1.ShowDialog(this);
             
 
             //Refresh nodes tree
@@ -486,7 +486,7 @@ namespace AggManager
         {
             AggManager.PartitionsAggsForm form1 = new AggManager.PartitionsAggsForm();
 
-            form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Parent.Tag, treeView1.SelectedNode.Text);
+            form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Parent.Tag, treeView1.SelectedNode.Text, mProjItem);
 
             form1.ShowDialog(this);
 

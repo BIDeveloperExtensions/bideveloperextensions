@@ -54,7 +54,7 @@ namespace AggManager
             this.checkBoxConnction.AutoSize = true;
             this.checkBoxConnction.Checked = true;
             this.checkBoxConnction.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxConnction.Location = new System.Drawing.Point(8, 8);
+            this.checkBoxConnction.Location = new System.Drawing.Point(149, 37);
             this.checkBoxConnction.Margin = new System.Windows.Forms.Padding(2);
             this.checkBoxConnction.Name = "checkBoxConnction";
             this.checkBoxConnction.Size = new System.Drawing.Size(184, 17);
@@ -65,7 +65,8 @@ namespace AggManager
             // 
             // buttonConnectToSQL
             // 
-            this.buttonConnectToSQL.Location = new System.Drawing.Point(9, 84);
+            this.buttonConnectToSQL.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonConnectToSQL.Location = new System.Drawing.Point(640, 90);
             this.buttonConnectToSQL.Margin = new System.Windows.Forms.Padding(2);
             this.buttonConnectToSQL.Name = "buttonConnectToSQL";
             this.buttonConnectToSQL.Size = new System.Drawing.Size(86, 48);
@@ -99,7 +100,7 @@ namespace AggManager
             this.dataGrid1.ReadOnly = true;
             this.dataGrid1.SelectionBackColor = System.Drawing.Color.Navy;
             this.dataGrid1.SelectionForeColor = System.Drawing.Color.White;
-            this.dataGrid1.Size = new System.Drawing.Size(705, 252);
+            this.dataGrid1.Size = new System.Drawing.Size(729, 246);
             this.dataGrid1.TabIndex = 28;
             // 
             // textBoxSQLConnectionString
@@ -108,47 +109,49 @@ namespace AggManager
             this.textBoxSQLConnectionString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSQLConnectionString.Enabled = false;
-            this.textBoxSQLConnectionString.Location = new System.Drawing.Point(210, 25);
+            this.textBoxSQLConnectionString.Location = new System.Drawing.Point(149, 11);
             this.textBoxSQLConnectionString.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxSQLConnectionString.Name = "textBoxSQLConnectionString";
-            this.textBoxSQLConnectionString.Size = new System.Drawing.Size(467, 20);
+            this.textBoxSQLConnectionString.Size = new System.Drawing.Size(491, 20);
             this.textBoxSQLConnectionString.TabIndex = 29;
             // 
             // textBoxSQLQuery
             // 
             this.textBoxSQLQuery.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxSQLQuery.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxSQLQuery.Location = new System.Drawing.Point(180, 84);
+            this.textBoxSQLQuery.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxSQLQuery.Location = new System.Drawing.Point(148, 82);
             this.textBoxSQLQuery.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxSQLQuery.Multiline = true;
             this.textBoxSQLQuery.Name = "textBoxSQLQuery";
-            this.textBoxSQLQuery.Size = new System.Drawing.Size(515, 56);
+            this.textBoxSQLQuery.Size = new System.Drawing.Size(488, 56);
             this.textBoxSQLQuery.TabIndex = 32;
             this.textBoxSQLQuery.Text = "Select distinct dataset from  OLAPQueryLog";
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(79, 28);
+            this.label1.Location = new System.Drawing.Point(7, 14);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(138, 15);
             this.label1.TabIndex = 30;
             this.label1.Text = "SQL Server Connection";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(104, 84);
+            this.label5.Location = new System.Drawing.Point(44, 87);
             this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(98, 15);
             this.label5.TabIndex = 31;
             this.label5.Text = "SQL Query";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.Location = new System.Drawing.Point(355, 413);
+            this.buttonOK.Location = new System.Drawing.Point(533, 395);
             this.buttonOK.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(94, 31);
@@ -160,7 +163,7 @@ namespace AggManager
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonCancel.Location = new System.Drawing.Point(484, 413);
+            this.buttonCancel.Location = new System.Drawing.Point(631, 395);
             this.buttonCancel.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(85, 31);
@@ -211,12 +214,13 @@ namespace AggManager
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(7, 58);
+            this.label2.Location = new System.Drawing.Point(11, 61);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(131, 13);
             this.label2.TabIndex = 39;
             this.label2.Text = "Aggregation Design Name";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // textBoxNewAggDesign
             // 
@@ -239,10 +243,12 @@ namespace AggManager
             // 
             // textBoxAggregationPrefix
             // 
+            this.textBoxAggregationPrefix.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxAggregationPrefix.Location = new System.Drawing.Point(467, 58);
             this.textBoxAggregationPrefix.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxAggregationPrefix.Name = "textBoxAggregationPrefix";
-            this.textBoxAggregationPrefix.Size = new System.Drawing.Size(145, 20);
+            this.textBoxAggregationPrefix.Size = new System.Drawing.Size(169, 20);
             this.textBoxAggregationPrefix.TabIndex = 42;
             this.textBoxAggregationPrefix.Text = "Aggregation_";
             // 
@@ -250,7 +256,7 @@ namespace AggManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(703, 462);
+            this.ClientSize = new System.Drawing.Size(727, 437);
             this.Controls.Add(this.textBoxAggregationPrefix);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBoxNewAggDesign);

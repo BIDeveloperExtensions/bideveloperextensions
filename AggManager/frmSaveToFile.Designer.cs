@@ -37,8 +37,8 @@ namespace AggManager
             // 
             // buttonCancel
             // 
-            this.buttonCancel.Location = new System.Drawing.Point(311, 49);
-            this.buttonCancel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonCancel.Location = new System.Drawing.Point(271, 49);
+            this.buttonCancel.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(92, 25);
             this.buttonCancel.TabIndex = 7;
@@ -49,7 +49,7 @@ namespace AggManager
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(53, 9);
+            this.label1.Location = new System.Drawing.Point(11, 12);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(54, 13);
@@ -58,8 +58,8 @@ namespace AggManager
             // 
             // buttonOK
             // 
-            this.buttonOK.Location = new System.Drawing.Point(199, 49);
-            this.buttonOK.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonOK.Location = new System.Drawing.Point(173, 49);
+            this.buttonOK.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(94, 25);
             this.buttonOK.TabIndex = 5;
@@ -69,10 +69,10 @@ namespace AggManager
             // 
             // textBoxFile
             // 
-            this.textBoxFile.Location = new System.Drawing.Point(188, 9);
-            this.textBoxFile.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBoxFile.Location = new System.Drawing.Point(82, 9);
+            this.textBoxFile.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxFile.Name = "textBoxFile";
-            this.textBoxFile.Size = new System.Drawing.Size(175, 20);
+            this.textBoxFile.Size = new System.Drawing.Size(281, 20);
             this.textBoxFile.TabIndex = 4;
             this.textBoxFile.Text = "_AggDesign.xmla";
             // 
@@ -80,13 +80,15 @@ namespace AggManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(439, 87);
+            this.ClientSize = new System.Drawing.Size(374, 87);
+            this.ControlBox = false;
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.textBoxFile);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "SaveToFileForm";
             this.Text = "Save Measure Group To File";
             this.ResumeLayout(false);
