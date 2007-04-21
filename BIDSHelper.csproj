@@ -14,6 +14,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <ApplicationIcon>BIDSHelper.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -48,6 +49,7 @@
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.AnalysisServices.Controls, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>c:\Program Files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
@@ -71,6 +73,8 @@
       <HintPath>c:\Program Files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -81,6 +85,7 @@
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
@@ -92,6 +97,56 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Compile Include="AggManager\EditAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AggManager\EditAggs.Designer.cs">
+      <DependentUpon>EditAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AggManager\frmAddPartitions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AggManager\frmAddPartitions.Designer.cs">
+      <DependentUpon>frmAddPartitions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AggManager\frmInput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AggManager\frmInput.Designer.cs">
+      <DependentUpon>frmInput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AggManager\frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AggManager\frmMain.Designer.cs">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AggManager\frmPartitionsAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AggManager\frmPartitionsAggs.Designer.cs">
+      <DependentUpon>frmPartitionsAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AggManager\frmQueryLog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AggManager\frmQueryLog.Designer.cs">
+      <DependentUpon>frmQueryLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AggManager\frmSaveToFile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AggManager\frmSaveToFile.Designer.cs">
+      <DependentUpon>frmSaveToFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AggManager\Properties\Resources.Designer.cs" />
+    <Compile Include="AggManager\Properties\Settings.Designer.cs" />
+    <Compile Include="AggManager\Settings.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AggregationManagerPlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -104,6 +159,16 @@
     <Compile Include="DeploymentSettings.cs" />
     <Compile Include="DimensionHealthCheckPlugin.cs" />
     <Compile Include="ExtraPropertiesPlugin.cs" />
+    <Compile Include="PrinterFriendlyDimensionUsage.cs" />
+    <Compile Include="PrinterFriendlyDimensionUsagePlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReportViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ReportViewerForm.Designer.cs">
+      <DependentUpon>ReportViewerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -149,9 +214,54 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <Content Include="AggManager\Graphics\AggDesign.ico" />
+    <Content Include="AggManager\Graphics\Connected.ico" />
+    <Content Include="AggManager\Graphics\Cube.ico" />
+    <Content Include="AggManager\Graphics\Database.ico" />
+    <Content Include="AggManager\Graphics\Disconnected.ico" />
+    <Content Include="AggManager\Graphics\Folder.ico" />
+    <Content Include="AggManager\Graphics\MeasureGroup.ico" />
+    <Content Include="AggManager\Graphics\Partition.ico" />
     <Content Include="BIDSHelper.AddIn" />
+    <EmbeddedResource Include="BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
+    <EmbeddedResource Include="AggManager\EditAggs.resx">
+      <DependentUpon>EditAggs.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AggManager\frmAddPartitions.resx">
+      <DependentUpon>frmAddPartitions.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AggManager\frmInput.resx">
+      <DependentUpon>frmInput.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AggManager\frmMain.resx">
+      <DependentUpon>frmMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AggManager\frmPartitionsAggs.resx">
+      <DependentUpon>frmPartitionsAggs.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AggManager\frmQueryLog.resx">
+      <DependentUpon>frmQueryLog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AggManager\frmSaveToFile.resx">
+      <DependentUpon>frmSaveToFile.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AggManager\Properties\Resources.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="DeployMdxScript.xslt" />
+    <EmbeddedResource Include="PrinterFriendlyDimensionUsage.rdlc" />
+    <EmbeddedResource Include="ReportViewerForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ReportViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
@@ -161,5 +271,11 @@
       <SubType>Designer</SubType>
       <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AggManager\Properties\Settings.settings" />
+    <None Include="BIDSHelperSetup.nsi" />
+    <None Include="License.rtf" />
+    <None Include="Properties\DataSources\DimensionUsage.datasource" />
   </ItemGroup>
 </Project>
