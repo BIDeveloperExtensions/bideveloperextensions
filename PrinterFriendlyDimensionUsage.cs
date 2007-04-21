@@ -19,12 +19,7 @@ namespace BIDSHelper
                 foreach (MeasureGroupDimension mgdim in mg.Dimensions)
                 {
                     System.Diagnostics.Trace.Write(",mgdim " + mgdim.Dimension.Name);
-                    if (mgdim is RegularMeasureGroupDimension)
-                    {
-                        RegularMeasureGroupDimension regMDdim = (RegularMeasureGroupDimension)mgdim;
-                        getRegularMeasureGroupAttributeUsage(dimUsage, mg, regMDdim);
-                    }
-                    else if (mgdim is ReferenceMeasureGroupDimension)
+                    if (mgdim is ReferenceMeasureGroupDimension)
                     {
                         ReferenceMeasureGroupDimension refMgDim = (ReferenceMeasureGroupDimension)mgdim;
                         getReferencedMeasureGroupAttributeUsage(dimUsage, mg, refMgDim);
@@ -43,6 +38,11 @@ namespace BIDSHelper
                     {
                         DataMiningMeasureGroupDimension dmMgDim = (DataMiningMeasureGroupDimension)mgdim;
                         getDataMiningMeasureGroupAttributeUsage(dimUsage, mg, dmMgDim);
+                    }
+                    else if (mgdim is RegularMeasureGroupDimension)
+                    {
+                        RegularMeasureGroupDimension regMDdim = (RegularMeasureGroupDimension)mgdim;
+                        getRegularMeasureGroupAttributeUsage(dimUsage, mg, regMDdim);
                     }
                 }
             
