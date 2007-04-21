@@ -14,7 +14,8 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <ApplicationIcon>BIDSHelper.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -223,7 +224,6 @@
     <Content Include="AggManager\Graphics\MeasureGroup.ico" />
     <Content Include="AggManager\Graphics\Partition.ico" />
     <Content Include="BIDSHelper.AddIn" />
-    <EmbeddedResource Include="BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
     <EmbeddedResource Include="AggManager\EditAggs.resx">
       <DependentUpon>EditAggs.cs</DependentUpon>
@@ -256,6 +256,7 @@
     <EmbeddedResource Include="AggManager\Properties\Resources.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="BIDSHelper.ico" />
     <EmbeddedResource Include="DeployMdxScript.xslt" />
     <EmbeddedResource Include="PrinterFriendlyDimensionUsage.rdlc" />
     <EmbeddedResource Include="ReportViewerForm.resx">
