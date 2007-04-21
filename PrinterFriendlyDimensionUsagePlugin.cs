@@ -77,7 +77,7 @@ namespace BIDSHelper
                 ReportViewerForm frm = new ReportViewerForm();
                 frm.ReportBindingSource.DataSource = PrinterFriendlyDimensionUsage.GetDimensionUsage(cub);
                 frm.Report = "PrinterFriendlyDimensionUsage.rdlc";
-                frm.Caption = "Pinter Friendly Dimension Usage";
+                frm.Caption = "Printer Friendly Dimension Usage";
                 frm.Show();
             }
             catch (System.Exception ex)

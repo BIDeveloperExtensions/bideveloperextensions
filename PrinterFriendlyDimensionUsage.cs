@@ -23,22 +23,26 @@ namespace BIDSHelper
                     {
                         RegularMeasureGroupDimension regMDdim = (RegularMeasureGroupDimension)mgdim;
                         getRegularMeasureGroupAttributeUsage(dimUsage, mg, regMDdim);
-                        //getMeasureGroupAttributeUsage(dimUsage, mg, mgdim);
                     }
-                    if (mgdim is ReferenceMeasureGroupDimension)
+                    else if (mgdim is ReferenceMeasureGroupDimension)
                     {
                         ReferenceMeasureGroupDimension refMgDim = (ReferenceMeasureGroupDimension)mgdim;
                         getReferencedMeasureGroupAttributeUsage(dimUsage, mg, refMgDim);
                     }
-                    if (mgdim is DegenerateMeasureGroupDimension)
+                    else if (mgdim is DegenerateMeasureGroupDimension)
                     {
                         DegenerateMeasureGroupDimension degMgDim = (DegenerateMeasureGroupDimension)mgdim;
                         getFactMeasureGroupAttributeUsage(dimUsage, mg, degMgDim);
                     }
-                    if (mgdim is ManyToManyMeasureGroupDimension)
+                    else if (mgdim is ManyToManyMeasureGroupDimension)
                     {
                         ManyToManyMeasureGroupDimension m2mMgDim = (ManyToManyMeasureGroupDimension)mgdim;
-                        getManyToManyMeasureGroupAttributeUsage(dimUsage,mg,m2mMgDim);
+                        getManyToManyMeasureGroupAttributeUsage(dimUsage, mg, m2mMgDim);
+                    }
+                    else if (mgdim is DataMiningMeasureGroupDimension)
+                    {
+                        DataMiningMeasureGroupDimension dmMgDim = (DataMiningMeasureGroupDimension)mgdim;
+                        getDataMiningMeasureGroupAttributeUsage(dimUsage, mg, dmMgDim);
                     }
                 }
             
@@ -126,9 +130,21 @@ namespace BIDSHelper
          */
         private static void getManyToManyMeasureGroupAttributeUsage(List<DimensionUsage> dimUsage, MeasureGroup mg, ManyToManyMeasureGroupDimension m2mMDdim)
         {
-            DimensionUsage usage = new DimensionUsage("Many to Many",mg, m2mMDdim.CubeDimension, m2mMDdim.Dimension);
+            DimensionUsage usage = new DimensionUsage("Many to Many", mg, m2mMDdim.CubeDimension, m2mMDdim.Dimension);
             usage.Column1Name = "Intermediate Measure Group";
             usage.Column1Value = m2mMDdim.MeasureGroup.Name;
+            dimUsage.Add(usage);
+        }
+
+        /*
+         * DataMining    Col1 - Source Dimension Name
+         * 
+         */
+        private static void getDataMiningMeasureGroupAttributeUsage(List<DimensionUsage> dimUsage, MeasureGroup mg, DataMiningMeasureGroupDimension dmMDdim)
+        {
+            DimensionUsage usage = new DimensionUsage("Data Mining", mg, dmMDdim.CubeDimension, dmMDdim.Dimension);
+            usage.Column1Name = "Source Dimension";
+            usage.Column1Value = dmMDdim.Dimension.Name;
             dimUsage.Add(usage);
         }
 
