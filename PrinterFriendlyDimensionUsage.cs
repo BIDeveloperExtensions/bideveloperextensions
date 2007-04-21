@@ -181,37 +181,6 @@ namespace BIDSHelper
             usage.Column4Value = refMgDim.Materialization.ToString();
             usage.Materialized = (refMgDim.Materialization == ReferenceDimensionMaterialization.Regular);
 
-            foreach (MeasureGroupAttribute mga in refMgDim.Attributes)
-            {
-                //mga.
-                if (mga.Type == MeasureGroupAttributeType.Granularity)
-                {
-                    System.Diagnostics.Trace.Write(",mga " + mga.CubeAttribute.Attribute.Name);
-                    foreach (DataItem di in mga.KeyColumns)
-                    {
-                        ColumnBinding cb = (ColumnBinding)di.Source;
-
-                        foreach (DataItem di2 in mga.Attribute.KeyColumns)
-                        {
-                            tableId = ((ColumnBinding)di2.Source).TableID;
-                            DataSourceView dsv = mga.Parent.Dimension.DataSourceView;
-                            DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
-                            if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
-                            {
-                                usage.Column1Value += oTable.ExtendedProperties["FriendlyName"] + ".";
-                            }
-                            else
-                            {
-                                usage.Column1Value += tableId + ".";
-                            }
-                                usage.Column1Value += ((ColumnBinding)di2.Source).ColumnID + "\n";
-                        }
-
-
-
-                    }
-                }
-            }
             dimUsage.Add(usage);
         }
 
