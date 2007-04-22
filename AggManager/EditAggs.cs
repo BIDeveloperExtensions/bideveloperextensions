@@ -205,7 +205,7 @@ namespace AggManager
             catch (Exception ex)
             {
                 this.Cursor = Cursors.Default;
-                MessageBox.Show("Error: " + ex.Message);
+                if (!String.IsNullOrEmpty(ex.Message)) MessageBox.Show("Error: " + ex.Message);
             }
         }
 
@@ -274,52 +274,59 @@ namespace AggManager
 
         Boolean AddAggregationToAggDesign(AggregationDesign aggDesign, string instr, string aggName)
         {
-
-            Aggregation agg;
-            agg = aggDesign.Aggregations.Find(aggName);
-
-            if (agg != null)
-                aggName = "Aggregation " + aggDesign.Aggregations.Count.ToString();
-
-            if (aggName == "")
-                aggName = "Aggregation " + aggDesign.Aggregations.Count.ToString();
-            
-            agg = aggDesign.Aggregations.Add(aggName, aggName);
-
-            string a1;
-            int dimNum = 0;
-            int attrNum = 0;
-            bool newDim = true;
-
-            for (int i = 0; i < instr.Length; i++)
+            try
             {
-                a1 = instr[i].ToString();
-                switch (a1)
+                Aggregation agg;
+                agg = aggDesign.Aggregations.Find(aggName);
+
+                if (agg != null)
+                    aggName = "Aggregation " + aggDesign.Aggregations.Count.ToString();
+
+                if (aggName == "")
+                    aggName = "Aggregation " + aggDesign.Aggregations.Count.ToString();
+
+                agg = aggDesign.Aggregations.Add(aggName, aggName);
+
+                string a1;
+                int dimNum = 0;
+                int attrNum = 0;
+                bool newDim = true;
+
+                for (int i = 0; i < instr.Length; i++)
                 {
-                    case ",":
-                        dimNum++;
-                        attrNum = -1;
-                        newDim = true;
+                    a1 = instr[i].ToString();
+                    switch (a1)
+                    {
+                        case ",":
+                            dimNum++;
+                            attrNum = -1;
+                            newDim = true;
 
-                        break;
-                    case "0":
-                        break;
-                    case "1":
+                            break;
+                        case "0":
+                            break;
+                        case "1":
 
-                        if (newDim)
-                        {
-                            agg.Dimensions.Add(dimIDs[dimNum]);
-                            newDim = false;
-                        }
-                        agg.Dimensions[dimIDs[dimNum]].Attributes.Add(dimAttributes[dimNum, attrNum]);
-                        break;
-                    default:
-                        break;
+                            if (newDim)
+                            {
+                                agg.Dimensions.Add(dimIDs[dimNum]);
+                                newDim = false;
+                            }
+                            agg.Dimensions[dimIDs[dimNum]].Attributes.Add(dimAttributes[dimNum, attrNum]);
+                            break;
+                        default:
+                            break;
+                    }
+                    attrNum++;
                 }
-                attrNum++;
-            }
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Problem saving " + aggName + ": " + ex.Message);
+                throw new Exception(""); //blank exception means not to report it
+            }
         }
 
 
@@ -331,14 +338,21 @@ namespace AggManager
             treeViewAggregation.SuspendLayout();
             treeViewAggregation.Nodes.Clear();
 
-            if (!checkBoxRelationships.Checked )
+            if (!checkBoxRelationships.Checked)
             {
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
                     TreeNode parentNode = treeViewAggregation.Nodes.Add(mgDim.CubeDimensionID, mgDim.CubeDimension.Name);
                     parentNode.StateImageIndex = 2;
                     foreach (CubeAttribute cubeDimAttr in mgDim.CubeDimension.Attributes)
-                        parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.Attribute.Name);
+                    {
+                        TreeNode childNode = parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.Attribute.Name);
+                        if (!cubeDimAttr.AttributeHierarchyEnabled)
+                        {
+                            childNode.NodeFont = new Font(treeViewAggregation.Font, FontStyle.Italic);
+                            childNode.ForeColor = Color.Gray;
+                        }
+                    }
 
                 }
             }
@@ -374,6 +388,11 @@ namespace AggManager
                 CubeAttribute childAttr = cubeDimAttr.Parent.Attributes.Find(attRel.AttributeID);
                 if (childAttr == null) break; 
                 TreeNode childNode = node.Nodes.Add(childAttr.AttributeID, childAttr.Attribute.Name);
+                if (!childAttr.AttributeHierarchyEnabled)
+                {
+                    childNode.NodeFont = new Font(treeViewAggregation.Font, FontStyle.Italic);
+                    childNode.ForeColor = Color.Gray;
+                }
                 childNode.Tag = attRel;
                 AddTreeViewNodeChildren( childNode, childAttr);
             }
@@ -748,9 +767,16 @@ namespace AggManager
                 TreeNode node = treeViewAggregation.GetNodeAt(me.Location);
                 if (node.StateImageIndex == 2) //this node is a dimension, so ignore clicks
                     return;
-                boolHandleClick = true;
-                node.Checked = !node.Checked;
-                boolHandleClick = false;
+                if (node.NodeFont != null && node.NodeFont.Italic && !node.Checked)
+                {
+                    MessageBox.Show("The cube dimension attribute " + node.Text + " is marked AttributeHierarchyEnabled=false");
+                }
+                else
+                {
+                    boolHandleClick = true;
+                    node.Checked = !node.Checked;
+                    boolHandleClick = false;
+                }
             }
         }
 

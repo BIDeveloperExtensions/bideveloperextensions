@@ -188,7 +188,10 @@ namespace AggManager
                     foreach (MeasureGroup mg in cb1.MeasureGroups)
                     {
                         nd = CreateStaticNode(node.Nodes, mg.Name, mg, ImgListMetadataMeasureGroupIndex);
-                        CreateNode(nd.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
+                        if (mg.IsLinked)
+                            nd.ForeColor = System.Drawing.Color.Gray;
+                        else
+                            CreateNode(nd.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
                     }
                     this.Cursor = Cursors.Default;
                     break;
@@ -239,9 +242,7 @@ namespace AggManager
                     case "Measure Groups":
                         break;
                     case "Aggregation Designs":
-                        listBoxReport.Items.Add("Aggregation count");
-                        AggregationDesign aggdes = ((MeasureGroup)nd.Parent.Parent.Tag).AggregationDesigns[(string)nd.Tag];
-                        listBoxReport.Items.Add(aggdes.Aggregations.Count);
+                        UpdateAggCountInListBox(nd);
                        break;
 
                     default:
@@ -252,6 +253,17 @@ namespace AggManager
             {
             }
 
+        }
+
+        private void UpdateAggCountInListBox(TreeNode nd)
+        {
+            listBoxReport.Items.Clear();
+            if (nd.Parent != null && nd.Parent.Parent != null && nd.Parent.Parent.Tag != null && nd.Parent.Parent.Tag is MeasureGroup)
+            {
+                listBoxReport.Items.Add("Aggregation count");
+                AggregationDesign aggdes = ((MeasureGroup)nd.Parent.Parent.Tag).AggregationDesigns[(string)nd.Tag];
+                listBoxReport.Items.Add(aggdes.Aggregations.Count);
+            }
         }
 
         private void cmdAddAggregationDesignToolStripMenuItem_Click(object sender, EventArgs e)
@@ -282,7 +294,7 @@ namespace AggManager
  
         }
 
-   
+
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -303,13 +315,13 @@ namespace AggManager
                     else if ((string)e.Node.Parent.Tag == "Aggregation Designs")
                         contextMenuStripAggDes.Show(treeView1, pt);
 
-                    if (((string)e.Node.Parent.Parent.Tag == "Aggregation Designs") && 
+                    if (((string)e.Node.Parent.Parent.Tag == "Aggregation Designs") &&
                         ((string)e.Node.Parent.Tag != TagNoAggdesign))
                         contextMenuStripPartitionAggs.Show(treeView1, pt);
-                    
+
                 }
                 catch { }
-        }
+            }
         }
 
         private void cmdEditAggDes_Click(object sender, EventArgs e)
@@ -323,6 +335,7 @@ namespace AggManager
             form1.Init(node.Name, (MeasureGroup) node.Parent.Parent.Tag , dimAttributes, dimNames, dimIDs);
             form1.ShowDialog(this);
 
+            UpdateAggCountInListBox(treeView1.SelectedNode);
             if (!treeView1.SelectedNode.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
                 treeView1.SelectedNode.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Text + MODIFIED_SUFFIX;
         }
@@ -395,6 +408,7 @@ namespace AggManager
 
             form1.ShowDialog(this);
 
+            UpdateAggCountInListBox(treeView1.SelectedNode);
             if (!treeView1.SelectedNode.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
                 treeView1.SelectedNode.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Text + MODIFIED_SUFFIX;
 
@@ -538,7 +552,34 @@ namespace AggManager
                     if ((nd.Tag is MeasureGroup) && (nd.Text.EndsWith(MODIFIED_SUFFIX)))
                     {
                         MeasureGroup cloneMG = ((MeasureGroup)nd.Tag);
-                        cloneMG.CopyTo(realCube.MeasureGroups[cloneMG.ID]); //no need to run an Update statement from within BIDS
+                        MeasureGroup realMG = realCube.MeasureGroups[cloneMG.ID];
+
+                        //1. Update existing agg designs and add new ones
+                        foreach (AggregationDesign aggDesign in cloneMG.AggregationDesigns)
+                        {
+                            AggregationDesign realAgg = realMG.AggregationDesigns.Find(aggDesign.ID);
+                            if (realAgg == null)
+                                realAgg = realMG.AggregationDesigns.Add(aggDesign.Name, aggDesign.ID);
+                            aggDesign.CopyTo(realAgg);
+                        }
+
+                        //2. fix AggregationDesignID on partitions
+                        foreach (Partition part in cloneMG.Partitions)
+                        {
+                            realMG.Partitions[part.ID].AggregationDesignID = part.AggregationDesignID;
+                        }
+
+                        //3. remove deleted agg designs... do this last so no partition will be invalid
+                        for (int i = 0; i < realMG.AggregationDesigns.Count; i++)
+                        {
+                            AggregationDesign aggDesign = realMG.AggregationDesigns[i];
+                            if (cloneMG.AggregationDesigns.Find(aggDesign.ID) == null)
+                            {
+                                realMG.AggregationDesigns.RemoveAt(i);
+                                i--;
+                            }
+                        }
+                        //no need to run an Update statement from within BIDS
                     }
                 }
                 this.IsDirty = false;

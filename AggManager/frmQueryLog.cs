@@ -78,12 +78,14 @@ namespace AggManager
                                    mg1.ParentDatabase.Name +
                                    "' and  MSOLAP_ObjectPath = '" +
                                    server.Name + "." +
-                                   mg1.ParentDatabase.ID + "." +
+                                   deploySet.TargetDatabase + "." +
                                    mg1.Parent.ID + "." +
-                                   mg1.ID + "'";
+                                   mg1.ID + "'" +
+                                   " and duration >= 100";
 
 
             textBoxSQLConnectionString.Text = server.ServerProperties.Find("Log\\QueryLog\\QueryLogConnectionString").Value.ToString(); ;
+            textBoxSQLConnectionString.Text = MakeConnectionStringRemote(server.Name, textBoxSQLConnectionString.Text);
 
             if (!addNew)
             {
@@ -93,28 +95,47 @@ namespace AggManager
 
         }
 
-        private void buttonConnectToSQL_Click(object sender, EventArgs e)
+        /// <summary>
+        /// If the query log connection string refers to the server using localhost, (local), or "." then it should be changed so that AggManager can connect from another server.
+        /// </summary>
+        /// <param name="ServerName"></param>
+        /// <param name="ConnectionString"></param>
+        /// <returns></returns>
+        private static string MakeConnectionStringRemote(string ServerName, string ConnectionString)
         {
-            string strConncection;
-            try
+            string NewConnectionString = "";
+            foreach (string part in ConnectionString.Split(new char[] { ';' }))
+            {
+                if (NewConnectionString.Length > 0) NewConnectionString += ";";
+                if (part.ToLower() == "data source=(local)"
+                    || part.ToLower() == "data source=."
+                    || part.ToLower() == "data source=localhost")
                 {
-                this.Cursor = Cursors.WaitCursor;
-
-                if (checkBoxConnction.Checked)
-                {
-                    strConncection = server.ServerProperties.Find("Log\\QueryLog\\QueryLogConnectionString").Value.ToString(); ;
-                    if (strConncection == "")
-                    {
-                        Exception ex = new ApplicationException("Query Log connection string is empty");
-                        throw ex;
-                    }
+                    NewConnectionString += "Data Source=" + ServerName;
                 }
                 else
                 {
-                    strConncection = textBoxSQLConnectionString.Text;
+                    NewConnectionString += part;
+                }
+            }
+            return NewConnectionString;
+        }
+
+        private void buttonConnectToSQL_Click(object sender, EventArgs e)
+        {
+            string strConnection;
+            try
+            {
+                this.Cursor = Cursors.WaitCursor;
+
+                strConnection = textBoxSQLConnectionString.Text;
+                if (strConnection == "")
+                {
+                    Exception ex = new ApplicationException("Query Log connection string is empty");
+                    throw ex;
                 }
 
-                sqlConnection1 = new SqlConnection(strConncection.Substring(strConncection.IndexOf(";")));
+                sqlConnection1 = new SqlConnection(strConnection.Substring(strConnection.IndexOf(";")));
                 sqlConnection1.Open();
                 sqlDataAdapter1 = new SqlDataAdapter(textBoxSQLQuery.Text, sqlConnection1);
 
@@ -123,8 +144,20 @@ namespace AggManager
                 DataView source = ds.Tables[textBoxSQLQuery.Text].DefaultView;
 
                 dataGrid1.DataSource = source;
-                this.Cursor = Cursors.Default;
 
+                DataGridTableStyle myGridStyle = new DataGridTableStyle();
+                myGridStyle.MappingName = source.Table.TableName;
+
+                DataGridTextBoxColumn datasetColumnStyle = new DataGridTextBoxColumn();
+                datasetColumnStyle.MappingName = "dataset";
+                datasetColumnStyle.HeaderText = "dataset";
+                datasetColumnStyle.Width = dataGrid1.Width - 45;
+                myGridStyle.GridColumnStyles.Add(datasetColumnStyle);
+
+                dataGrid1.TableStyles.Clear();
+                dataGrid1.TableStyles.Add(myGridStyle);
+
+                this.Cursor = Cursors.Default;
             }
             catch (Exception ex)
             {
@@ -137,41 +170,48 @@ namespace AggManager
 
         private void buttonOK_Click(object sender, EventArgs e)
         {
-            DataView myDataView;
-            myDataView = (DataView)dataGrid1.DataSource;
-
-            int intOrdinal;
-            intOrdinal = myDataView.Table.Columns["Dataset"].Ordinal;
-
-            AggregationDesign aggDes;
-            if (addNew)
+            try
             {
-                if (mg1.AggregationDesigns.Find(textBoxNewAggDesign.Text) != null)
+                DataView myDataView;
+                myDataView = (DataView)dataGrid1.DataSource;
+
+                int intOrdinal;
+                intOrdinal = myDataView.Table.Columns["Dataset"].Ordinal;
+
+                AggregationDesign aggDes;
+                if (addNew)
                 {
-                    MessageBox.Show("Aggregation design: " + textBoxNewAggDesign.Text + " already exists");
-                    return;
+                    if (mg1.AggregationDesigns.Find(textBoxNewAggDesign.Text) != null)
+                    {
+                        MessageBox.Show("Aggregation design: " + textBoxNewAggDesign.Text + " already exists");
+                        return;
+                    }
+                    aggDes = mg1.AggregationDesigns.Add(textBoxNewAggDesign.Text);
+
                 }
-                aggDes = mg1.AggregationDesigns.Add(textBoxNewAggDesign.Text);
+                else
+                    aggDes = mg1.AggregationDesigns[aggDesName];
 
+                int i = 0;
+                foreach (DataRow dRow in myDataView.Table.Rows)
+                {
+                    //Skip over deleted rows
+                    if (dRow.RowState.ToString() != "Deleted")
+                        AddAggregationToAggDesign(
+                            aggDes,
+                            dRow.ItemArray[intOrdinal].ToString(),
+                            i++,
+                            textBoxAggregationPrefix.Text);
+
+                }
+
+                //MessageBox.Show("Aggregation Design '" + aggDes.Name + "' updated with " + aggDes.Aggregations.Count.ToString() + " aggregations.");
+                this.Close();
             }
-            else
-                aggDes = mg1.AggregationDesigns[aggDesName];
-
-            int i = 0;
-            foreach (DataRow dRow in myDataView.Table.Rows)
+            catch (Exception ex)
             {
-                //Skip over deleted rows
-                if (dRow.RowState.ToString() != "Deleted")
-                    AddAggregationToAggDesign(
-                        aggDes,
-                        dRow.ItemArray[intOrdinal].ToString(),
-                        i++,
-                        textBoxNewAggDesign.Text);
-
+                if (!string.IsNullOrEmpty(ex.Message)) MessageBox.Show("Error saving: " + ex.Message);
             }
-
-            MessageBox.Show("Aggregation Design '" + aggDes.Name + "' updated with " + aggDes.Aggregations.Count.ToString() + " aggregations.");
-            this.Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -187,57 +227,60 @@ namespace AggManager
         /// </summary>
         Boolean AddAggregationToAggDesign(AggregationDesign aggDesign, string instr, int aggNum, string strAggPrefix )
         {
-
-            Aggregation agg;
-            string aggName = strAggPrefix + aggNum.ToString();
-            agg = aggDesign.Aggregations.Find(aggName);
-
-            if (agg != null)
-                aggName = strAggPrefix + aggDesign.Aggregations.Count.ToString();
-
-
-            agg = aggDesign.Aggregations.Add(aggName, aggName);
-
-            string a1;
-            int dimNum = 0;
-            int attrNum = 0;
-            bool newDim = true;
-
-            for (int i = 0; i < instr.Length; i++)
+            int originalAggNum = aggNum;
+            try
             {
-                a1 = instr[i].ToString();
-                switch (a1)
+                Aggregation agg;
+                string aggName = strAggPrefix + aggNum.ToString();
+
+                while (aggDesign.Aggregations.Find(aggName) != null)
                 {
-                    case ",":
-                        dimNum++;
-                        attrNum = -1;
-                        newDim = true;
-                        break;
-                    case "0":
-                        break;
-                    case "1":
-
-                        if (newDim)
-                        {
-                            agg.Dimensions.Add(dimIDs[dimNum]);
-                            newDim = false;
-                        }
-                        agg.Dimensions[dimIDs[dimNum]].Attributes.Add(dimAttributes[dimNum, attrNum]);
-
-                        break;
-                    default:
-                        break;
+                    aggName = strAggPrefix + (++aggNum).ToString();
                 }
-                attrNum++;
-            }
 
-            if (agg.Dimensions.Count == 0)
+
+                agg = aggDesign.Aggregations.Add(aggName, aggName);
+
+                string a1;
+                int dimNum = 0;
+                int attrNum = 0;
+                bool newDim = true;
+
+                for (int i = 0; i < instr.Length; i++)
+                {
+                    a1 = instr[i].ToString();
+                    switch (a1)
+                    {
+                        case ",":
+                            dimNum++;
+                            attrNum = -1;
+                            newDim = true;
+                            break;
+                        case "0":
+                            break;
+                        case "1":
+
+                            if (newDim)
+                            {
+                                agg.Dimensions.Add(dimIDs[dimNum]);
+                                newDim = false;
+                            }
+                            agg.Dimensions[dimIDs[dimNum]].Attributes.Add(dimAttributes[dimNum, attrNum]);
+
+                            break;
+                        default:
+                            break;
+                    }
+                    attrNum++;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
             {
-                aggDesign.Aggregations.Remove(agg);
-                return false;
+                MessageBox.Show("Error saving aggregation #" + (originalAggNum + 1) + ": " + ex.Message);
+                throw new Exception(""); //blank exception means not to report again
             }
-            return true;
-
         }
 
         private void checkBoxConnction_CheckedChanged(object sender, EventArgs e)

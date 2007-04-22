@@ -66,10 +66,10 @@ namespace AggManager
             // buttonConnectToSQL
             // 
             this.buttonConnectToSQL.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonConnectToSQL.Location = new System.Drawing.Point(640, 90);
+            this.buttonConnectToSQL.Location = new System.Drawing.Point(695, 82);
             this.buttonConnectToSQL.Margin = new System.Windows.Forms.Padding(2);
             this.buttonConnectToSQL.Name = "buttonConnectToSQL";
-            this.buttonConnectToSQL.Size = new System.Drawing.Size(86, 48);
+            this.buttonConnectToSQL.Size = new System.Drawing.Size(85, 56);
             this.buttonConnectToSQL.TabIndex = 33;
             this.buttonConnectToSQL.Text = "Execute SQL";
             this.buttonConnectToSQL.Click += new System.EventHandler(this.buttonConnectToSQL_Click);
@@ -92,7 +92,7 @@ namespace AggManager
             this.dataGrid1.HeaderBackColor = System.Drawing.Color.Silver;
             this.dataGrid1.HeaderForeColor = System.Drawing.Color.Black;
             this.dataGrid1.LinkColor = System.Drawing.Color.Navy;
-            this.dataGrid1.Location = new System.Drawing.Point(0, 145);
+            this.dataGrid1.Location = new System.Drawing.Point(10, 145);
             this.dataGrid1.Margin = new System.Windows.Forms.Padding(2);
             this.dataGrid1.Name = "dataGrid1";
             this.dataGrid1.ParentRowsBackColor = System.Drawing.Color.White;
@@ -100,7 +100,7 @@ namespace AggManager
             this.dataGrid1.ReadOnly = true;
             this.dataGrid1.SelectionBackColor = System.Drawing.Color.Navy;
             this.dataGrid1.SelectionForeColor = System.Drawing.Color.White;
-            this.dataGrid1.Size = new System.Drawing.Size(729, 246);
+            this.dataGrid1.Size = new System.Drawing.Size(770, 230);
             this.dataGrid1.TabIndex = 28;
             // 
             // textBoxSQLConnectionString
@@ -112,7 +112,7 @@ namespace AggManager
             this.textBoxSQLConnectionString.Location = new System.Drawing.Point(149, 11);
             this.textBoxSQLConnectionString.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxSQLConnectionString.Name = "textBoxSQLConnectionString";
-            this.textBoxSQLConnectionString.Size = new System.Drawing.Size(491, 20);
+            this.textBoxSQLConnectionString.Size = new System.Drawing.Size(542, 20);
             this.textBoxSQLConnectionString.TabIndex = 29;
             // 
             // textBoxSQLQuery
@@ -124,9 +124,10 @@ namespace AggManager
             this.textBoxSQLQuery.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxSQLQuery.Multiline = true;
             this.textBoxSQLQuery.Name = "textBoxSQLQuery";
-            this.textBoxSQLQuery.Size = new System.Drawing.Size(488, 56);
+            this.textBoxSQLQuery.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBoxSQLQuery.Size = new System.Drawing.Size(543, 56);
             this.textBoxSQLQuery.TabIndex = 32;
-            this.textBoxSQLQuery.Text = "Select distinct dataset from  OLAPQueryLog";
+            this.textBoxSQLQuery.Text = "select distinct dataset from OLAPQueryLog";
             // 
             // label1
             // 
@@ -151,7 +152,7 @@ namespace AggManager
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.Location = new System.Drawing.Point(533, 395);
+            this.buttonOK.Location = new System.Drawing.Point(597, 379);
             this.buttonOK.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(94, 31);
@@ -163,7 +164,7 @@ namespace AggManager
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonCancel.Location = new System.Drawing.Point(631, 395);
+            this.buttonCancel.Location = new System.Drawing.Point(695, 379);
             this.buttonCancel.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(85, 31);
@@ -227,36 +228,36 @@ namespace AggManager
             this.textBoxNewAggDesign.Location = new System.Drawing.Point(148, 58);
             this.textBoxNewAggDesign.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxNewAggDesign.Name = "textBoxNewAggDesign";
-            this.textBoxNewAggDesign.Size = new System.Drawing.Size(145, 20);
+            this.textBoxNewAggDesign.Size = new System.Drawing.Size(185, 20);
             this.textBoxNewAggDesign.TabIndex = 40;
             this.textBoxNewAggDesign.Text = "New Aggregation Design";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(363, 58);
+            this.label3.Location = new System.Drawing.Point(363, 61);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(91, 13);
+            this.label3.Size = new System.Drawing.Size(93, 13);
             this.label3.TabIndex = 41;
-            this.label3.Text = "Aggregaton Prefix";
+            this.label3.Text = "Aggregation Prefix";
             // 
             // textBoxAggregationPrefix
             // 
             this.textBoxAggregationPrefix.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxAggregationPrefix.Location = new System.Drawing.Point(467, 58);
+            this.textBoxAggregationPrefix.Location = new System.Drawing.Point(458, 58);
             this.textBoxAggregationPrefix.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxAggregationPrefix.Name = "textBoxAggregationPrefix";
-            this.textBoxAggregationPrefix.Size = new System.Drawing.Size(169, 20);
+            this.textBoxAggregationPrefix.Size = new System.Drawing.Size(233, 20);
             this.textBoxAggregationPrefix.TabIndex = 42;
-            this.textBoxAggregationPrefix.Text = "Aggregation_";
+            this.textBoxAggregationPrefix.Text = "QueryLogAgg_";
             // 
             // QueryLogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(727, 437);
+            this.ClientSize = new System.Drawing.Size(791, 421);
             this.Controls.Add(this.textBoxAggregationPrefix);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBoxNewAggDesign);
