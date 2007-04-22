@@ -74,8 +74,8 @@ namespace BIDSHelper
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
                 Cube cub = (Cube)projItem.Object;
 
-                AggManager.MainForm frm = new AggManager.MainForm(cub,projItem);
-                frm.Show();
+                AggManager.MainForm frm = new AggManager.MainForm(cub, projItem);
+                frm.ShowDialog(); //show as a modal dialog so there's no way to continue editing the cube with the normal designer until you're done with the agg manager
             }
             catch (System.Exception ex)
             {

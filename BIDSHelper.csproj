@@ -14,8 +14,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>BIDSHelper.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -216,14 +215,18 @@
       <Isolated>False</Isolated>
     </COMReference>
     <Content Include="AggManager\Graphics\AggDesign.ico" />
+    <Content Include="AggManager\Graphics\Checked.ico" />
     <Content Include="AggManager\Graphics\Connected.ico" />
     <Content Include="AggManager\Graphics\Cube.ico" />
     <Content Include="AggManager\Graphics\Database.ico" />
+    <Content Include="AggManager\Graphics\Dimension.ico" />
     <Content Include="AggManager\Graphics\Disconnected.ico" />
     <Content Include="AggManager\Graphics\Folder.ico" />
     <Content Include="AggManager\Graphics\MeasureGroup.ico" />
     <Content Include="AggManager\Graphics\Partition.ico" />
+    <Content Include="AggManager\Graphics\Unchecked.ico" />
     <Content Include="BIDSHelper.AddIn" />
+    <EmbeddedResource Include="BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
     <EmbeddedResource Include="AggManager\EditAggs.resx">
       <DependentUpon>EditAggs.cs</DependentUpon>
@@ -256,7 +259,6 @@
     <EmbeddedResource Include="AggManager\Properties\Resources.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="BIDSHelper.ico" />
     <EmbeddedResource Include="DeployMdxScript.xslt" />
     <EmbeddedResource Include="PrinterFriendlyDimensionUsage.rdlc" />
     <EmbeddedResource Include="ReportViewerForm.resx">

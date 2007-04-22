@@ -67,7 +67,7 @@ namespace AggManager
             this.treeView1.Margin = new System.Windows.Forms.Padding(2);
             this.treeView1.Name = "treeView1";
             this.treeView1.SelectedImageIndex = 0;
-            this.treeView1.Size = new System.Drawing.Size(457, 464);
+            this.treeView1.Size = new System.Drawing.Size(457, 459);
             this.treeView1.TabIndex = 0;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
@@ -92,19 +92,19 @@ namespace AggManager
             this.cmdAddAggregationDesign,
             this.cmdAddFromQueryLog});
             this.contextMenuStripMG.Name = "contextMenuStripMG";
-            this.contextMenuStripMG.Size = new System.Drawing.Size(226, 48);
+            this.contextMenuStripMG.Size = new System.Drawing.Size(183, 48);
             // 
             // cmdAddAggregationDesign
             // 
             this.cmdAddAggregationDesign.Name = "cmdAddAggregationDesign";
-            this.cmdAddAggregationDesign.Size = new System.Drawing.Size(225, 22);
+            this.cmdAddAggregationDesign.Size = new System.Drawing.Size(182, 22);
             this.cmdAddAggregationDesign.Text = "Add Empty";
             this.cmdAddAggregationDesign.Click += new System.EventHandler(this.cmdAddAggregationDesignToolStripMenuItem_Click);
             // 
             // cmdAddFromQueryLog
             // 
             this.cmdAddFromQueryLog.Name = "cmdAddFromQueryLog";
-            this.cmdAddFromQueryLog.Size = new System.Drawing.Size(225, 22);
+            this.cmdAddFromQueryLog.Size = new System.Drawing.Size(182, 22);
             this.cmdAddFromQueryLog.Text = "Add from Query Log";
             this.cmdAddFromQueryLog.Click += new System.EventHandler(this.cmdAddFromQueryLog_Click);
             // 
@@ -116,45 +116,46 @@ namespace AggManager
             this.cmdAddAggregationsFromQueryLogToExisting,
             this.addPartitionsToolStripMenuItem});
             this.contextMenuStripAggDes.Name = "contextMenuStripAggDes";
-            this.contextMenuStripAggDes.Size = new System.Drawing.Size(310, 92);
+            this.contextMenuStripAggDes.Size = new System.Drawing.Size(247, 92);
             // 
             // cmdEditAggDes
             // 
             this.cmdEditAggDes.Name = "cmdEditAggDes";
-            this.cmdEditAggDes.Size = new System.Drawing.Size(309, 22);
+            this.cmdEditAggDes.Size = new System.Drawing.Size(246, 22);
             this.cmdEditAggDes.Text = "Edit";
             this.cmdEditAggDes.Click += new System.EventHandler(this.cmdEditAggDes_Click);
             // 
             // cmdDeleteAggDes
             // 
             this.cmdDeleteAggDes.Name = "cmdDeleteAggDes";
-            this.cmdDeleteAggDes.Size = new System.Drawing.Size(309, 22);
+            this.cmdDeleteAggDes.Size = new System.Drawing.Size(246, 22);
             this.cmdDeleteAggDes.Text = "Delete";
             this.cmdDeleteAggDes.Click += new System.EventHandler(this.cmdDeleteAggDes_Click);
             // 
             // cmdAddAggregationsFromQueryLogToExisting
             // 
             this.cmdAddAggregationsFromQueryLogToExisting.Name = "cmdAddAggregationsFromQueryLogToExisting";
-            this.cmdAddAggregationsFromQueryLogToExisting.Size = new System.Drawing.Size(309, 22);
+            this.cmdAddAggregationsFromQueryLogToExisting.Size = new System.Drawing.Size(246, 22);
             this.cmdAddAggregationsFromQueryLogToExisting.Text = "Add Aggregations from QueryLog";
             this.cmdAddAggregationsFromQueryLogToExisting.Click += new System.EventHandler(this.cmdAddAggregationsFromQueryLogToExisting_Click);
             // 
             // addPartitionsToolStripMenuItem
             // 
             this.addPartitionsToolStripMenuItem.Name = "addPartitionsToolStripMenuItem";
-            this.addPartitionsToolStripMenuItem.Size = new System.Drawing.Size(309, 22);
+            this.addPartitionsToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
             this.addPartitionsToolStripMenuItem.Text = "Change Partitions";
             this.addPartitionsToolStripMenuItem.Click += new System.EventHandler(this.addPartitionsToolStripMenuItem_Click);
             // 
             // listBoxReport
             // 
-            this.listBoxReport.Dock = System.Windows.Forms.DockStyle.Top;
+            this.listBoxReport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listBoxReport.FormattingEnabled = true;
             this.listBoxReport.Location = new System.Drawing.Point(0, 0);
             this.listBoxReport.Margin = new System.Windows.Forms.Padding(2);
             this.listBoxReport.Name = "listBoxReport";
-            this.listBoxReport.Size = new System.Drawing.Size(252, 485);
+            this.listBoxReport.Size = new System.Drawing.Size(252, 459);
             this.listBoxReport.TabIndex = 8;
+            this.listBoxReport.SelectedIndexChanged += new System.EventHandler(this.listBoxReport_SelectedIndexChanged);
             // 
             // contextMenuStripSave
             // 
@@ -162,29 +163,29 @@ namespace AggManager
             this.toolStripMenuItemSave,
             this.toolStripMenuItemSaveToFile});
             this.contextMenuStripSave.Name = "contextMenuStripMG";
-            this.contextMenuStripSave.Size = new System.Drawing.Size(84, 48);
+            this.contextMenuStripSave.Size = new System.Drawing.Size(79, 48);
             // 
             // toolStripMenuItemSave
             // 
             this.toolStripMenuItemSave.Name = "toolStripMenuItemSave";
-            this.toolStripMenuItemSave.Size = new System.Drawing.Size(83, 22);
+            this.toolStripMenuItemSave.Size = new System.Drawing.Size(78, 22);
             // 
             // toolStripMenuItemSaveToFile
             // 
             this.toolStripMenuItemSaveToFile.Name = "toolStripMenuItemSaveToFile";
-            this.toolStripMenuItemSaveToFile.Size = new System.Drawing.Size(83, 22);
+            this.toolStripMenuItemSaveToFile.Size = new System.Drawing.Size(78, 22);
             // 
             // contextMenuStripPartitionAggs
             // 
             this.contextMenuStripPartitionAggs.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aggregationSizesToolStripMenuItem});
             this.contextMenuStripPartitionAggs.Name = "contextMenuStripPartitionAggs";
-            this.contextMenuStripPartitionAggs.Size = new System.Drawing.Size(261, 26);
+            this.contextMenuStripPartitionAggs.Size = new System.Drawing.Size(213, 26);
             // 
             // aggregationSizesToolStripMenuItem
             // 
             this.aggregationSizesToolStripMenuItem.Name = "aggregationSizesToolStripMenuItem";
-            this.aggregationSizesToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.aggregationSizesToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.aggregationSizesToolStripMenuItem.Text = "Physical Aggregation Sizes";
             this.aggregationSizesToolStripMenuItem.Click += new System.EventHandler(this.aggregationSizesToolStripMenuItem_Click);
             // 
@@ -204,7 +205,7 @@ namespace AggManager
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.listBoxReport);
-            this.splitContainer1.Size = new System.Drawing.Size(713, 464);
+            this.splitContainer1.Size = new System.Drawing.Size(713, 459);
             this.splitContainer1.SplitterDistance = 457;
             this.splitContainer1.TabIndex = 9;
             // 
@@ -212,7 +213,7 @@ namespace AggManager
             // 
             this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(560, 478);
+            this.btnOk.Location = new System.Drawing.Point(560, 473);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(80, 31);
             this.btnOk.TabIndex = 10;
@@ -224,7 +225,7 @@ namespace AggManager
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(646, 478);
+            this.btnCancel.Location = new System.Drawing.Point(646, 473);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 31);
             this.btnCancel.TabIndex = 11;
@@ -236,7 +237,7 @@ namespace AggManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(730, 521);
+            this.ClientSize = new System.Drawing.Size(730, 516);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
@@ -244,6 +245,7 @@ namespace AggManager
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
             this.Text = "Aggregation Manager";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.frmMain_Load);
             this.contextMenuStripMG.ResumeLayout(false);
             this.contextMenuStripAggDes.ResumeLayout(false);

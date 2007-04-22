@@ -40,7 +40,7 @@ namespace AggManager
         string[,] dimAttributes;
         string[] dimNames;
         string[] dimIDs;
-        bool boolOptimizeAgg = false;
+        bool boolHandleClick = false;
         bool boolIsRigid = false;
         
         enum SynchControls 
@@ -63,7 +63,7 @@ namespace AggManager
             string[] inDimNames ,
             string[] inDimIDs)
         {
-            this.Text = this.Text + " Aggregation Desing :" + strAggDesign; 
+            this.Text = this.Text + " Aggregation Design: " + strAggDesign; 
             mg1 = mg;
             aggDes = mg.AggregationDesigns[strAggDesign];
             dimAttributes = inDimAttributes;
@@ -79,7 +79,6 @@ namespace AggManager
             myTable.Columns.Add(colItem);
             colItem = new DataColumn("Type", Type.GetType("System.String"));
             myTable.Columns.Add(colItem);
-
 
             DataView myDataView = new DataView(myTable);
             dataGrid1.DataSource = myDataView;
@@ -167,42 +166,76 @@ namespace AggManager
 
         private void buttonOK_Click(object sender, EventArgs e)
         {
-
-            DataView myDataView;
-            int i = 0;
-            string strRow;
-            string strAggName;
-
-            this.Cursor = Cursors.WaitCursor;
-
-            aggDes.Aggregations.Clear();
-
-            myDataView = (DataView)dataGrid1.DataSource;
-
-            foreach (DataRow dRow in myDataView.Table.Rows)
+            try
             {
-                if (dRow.RowState.ToString() != "Deleted")
+                DataView myDataView;
+                int i = 0;
+                string strRow;
+                string strAggName;
+
+                if (!AggNamesAreValid()) return;
+
+                this.Cursor = Cursors.WaitCursor;
+
+                aggDes.Aggregations.Clear();
+
+                myDataView = (DataView)dataGrid1.DataSource;
+
+                foreach (DataRow dRow in myDataView.Table.Rows)
                 {
-                    strAggName = dRow.ItemArray[0].ToString();
-                    strRow = dRow.ItemArray[1].ToString();
-                    i++;
+                    if (dRow.RowState.ToString() != "Deleted")
+                    {
+                        strAggName = dRow.ItemArray[0].ToString();
+                        strRow = dRow.ItemArray[1].ToString();
+                        i++;
                         if (AddAggregationToAggDesign(
                             aggDes,
                             strRow,
                             strAggName) == false)
                             i--; // No aggregation has been added
 
+                    }
+
                 }
 
+                this.Cursor = Cursors.Default;
+                //MessageBox.Show("Aggregation design: " + aggDes.Name + "  has been updated with " + i.ToString() + " aggregations");
+                this.Close();
             }
-
-            MessageBox.Show( "Aggregation desing :" + aggDes.Name + "  has been updated with " + i.ToString() + " aggregations ");
-
-            this.Cursor = Cursors.Default;
-            this.Close();
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show("Error: " + ex.Message);
+            }
         }
 
+        private bool AggNamesAreValid()
+        {
+            DataView myDataView = (DataView)dataGrid1.DataSource;
+            string strAggName;
+            List<string> aggNames = new List<string>();
+            string sInvalidChars = ".,;'`:/\\*|?\"&%$!+=()[]{}<>";
 
+            foreach (DataRow dRow in myDataView.Table.Rows)
+            {
+                if (dRow.RowState != DataRowState.Deleted)
+                {
+                    strAggName = dRow.ItemArray[0].ToString();
+                    if (strAggName.IndexOfAny(sInvalidChars.ToCharArray()) > 0)
+                    {
+                        MessageBox.Show(strAggName + " cannot contain any of the following characters: " + sInvalidChars);
+                        return false;
+                    }
+                    if (aggNames.Contains(strAggName))
+                    {
+                        MessageBox.Show(strAggName + " is a duplicate aggregation name.");
+                        return false;
+                    }
+                    aggNames.Add(strAggName);
+                }
+            }
+            return true;
+        }
 
         /// <summary>
         /// Helper function takes aggregation as input and returns string representation of aggregation
@@ -286,11 +319,6 @@ namespace AggManager
                 attrNum++;
             }
 
-            if (agg.Dimensions.Count == 0)
-            {
-                aggDesign.Aggregations.Remove(agg);
-                return false;
-            }
             return true;
         }
 
@@ -300,15 +328,17 @@ namespace AggManager
         /// </summary>
         public void PopulateTreeView()
         {
+            treeViewAggregation.SuspendLayout();
             treeViewAggregation.Nodes.Clear();
 
             if (!checkBoxRelationships.Checked )
             {
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
-                    TreeNode parentNode = treeViewAggregation.Nodes.Add(mgDim.CubeDimensionID, mgDim.CubeDimensionID);
+                    TreeNode parentNode = treeViewAggregation.Nodes.Add(mgDim.CubeDimensionID, mgDim.CubeDimension.Name);
+                    parentNode.StateImageIndex = 2;
                     foreach (CubeAttribute cubeDimAttr in mgDim.CubeDimension.Attributes)
-                        parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.AttributeID);
+                        parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.Attribute.Name);
 
                 }
             }
@@ -316,17 +346,19 @@ namespace AggManager
             {
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
-                    TreeNode parentNode = treeViewAggregation.Nodes.Add(mgDim.CubeDimensionID, mgDim.CubeDimensionID);
-
+                    TreeNode parentNode = treeViewAggregation.Nodes.Add(mgDim.CubeDimensionID, mgDim.CubeDimension.Name);
+                    parentNode.StateImageIndex = 2;
                     foreach (CubeAttribute cubeDimAttr in mgDim.CubeDimension.Attributes)
                         if (cubeDimAttr.Attribute.Usage == AttributeUsage.Key)
                         {
-                            parentNode = parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.AttributeID);
+                            parentNode = parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.Attribute.Name);
                             AddTreeViewNodeChildren(parentNode, cubeDimAttr);
                         }
                 }
             }
             treeViewAggregation.ExpandAll();
+            treeViewAggregation.Nodes[0].EnsureVisible(); //scroll to top
+            treeViewAggregation.ResumeLayout(false);
         }
 
 
@@ -341,7 +373,7 @@ namespace AggManager
             {
                 CubeAttribute childAttr = cubeDimAttr.Parent.Attributes.Find(attRel.AttributeID);
                 if (childAttr == null) break; 
-                TreeNode childNode = node.Nodes.Add(childAttr.AttributeID, childAttr.AttributeID);
+                TreeNode childNode = node.Nodes.Add(childAttr.AttributeID, childAttr.Attribute.Name);
                 childNode.Tag = attRel;
                 AddTreeViewNodeChildren( childNode, childAttr);
             }
@@ -382,10 +414,22 @@ namespace AggManager
             DataRow NewRow = myDataView.Table.NewRow();
             NewRow["Aggregations"] = strAgg;
             NewRow["Name"] = "Aggregation " + myDataView.Table.Rows.Count.ToString();
+
             myDataView.Table.Rows.Add(NewRow);
+            dataGrid1.CurrentRowIndex = NewRow.Table.Rows.IndexOf(NewRow);
+            dataGrid1_Click(null, null);
 
         }
 
+        /// <summary>
+        /// Helps select the correct data source row even when grid is sorted
+        /// </summary>
+        /// <returns></returns>
+        private DataRow GetCurrentDataGridRow()
+        {
+            DataView myDataView = (DataView)dataGrid1.DataSource;
+            return myDataView.Table.Select(null, myDataView.Sort)[dataGrid1.CurrentRowIndex];
+        }
 
         /// <summary>
         /// Helps synchronizing aggregation definition in current row data grid control to
@@ -399,19 +443,16 @@ namespace AggManager
 
             try
             {
-                int intGridOrdinal = dataGrid1.CurrentRowIndex;
-                DataView myDataView;
-                myDataView = (DataView)dataGrid1.DataSource;
-
-                String strAgg = myDataView.Table.Rows[intGridOrdinal].ItemArray[1].ToString();
+                DataRow dr = GetCurrentDataGridRow();
+                String strAgg = dr[1].ToString();
 
                 if (checkBoxRelationships.Checked)
                 {
                     sychContr = SynchControls.SynchGridToTreeView;
                    if (CheckOffTreeView(strAgg))
-                        myDataView.Table.Rows[intGridOrdinal][2] = "Rigid";
+                        dr[2] = "Rigid";
                     else
-                        myDataView.Table.Rows[intGridOrdinal][2] = "Flexible";
+                        dr[2] = "Flexible";
 
                 }
                 else
@@ -461,23 +502,23 @@ namespace AggManager
             if (sychContr == SynchControls.SynchTreeToGrid)
                 return;
 
-            if (e.Action == TreeViewAction.Unknown && !boolOptimizeAgg ) return;
+            if (e.Action == TreeViewAction.Unknown && !boolHandleClick ) return;
             if (e.Node.Parent == null) 
                 return;
 
-            int intGridOrdinal = dataGrid1.CurrentRowIndex;
-            DataView myDataView;
-            myDataView = (DataView)dataGrid1.DataSource;
-
-            String strAgg = myDataView.Table.Rows[intGridOrdinal].ItemArray[1].ToString();
+            DataRow dr = GetCurrentDataGridRow();
+            String strAgg = dr[1].ToString();
 
             int i = 0;
             int intAttrCount = 0;
-            int slashIndex = 0;
-            string parentName = "";
-            slashIndex = e.Node.FullPath.IndexOf("\\");
-            if ( slashIndex > 0 ) parentName = e.Node.FullPath.Substring( 0, slashIndex);
-            else MessageBox.Show ( "Cannot find parent");
+            TreeNode parent = e.Node.Parent;
+            while (parent.Parent != null)
+            {
+                parent = parent.Parent;
+            }
+            if (parent == null) MessageBox.Show("Cannot find parent");
+            string parentName = parent.Name;
+
 
             while (treeViewAggregation.Nodes[i].Name != parentName)
             {
@@ -520,10 +561,10 @@ namespace AggManager
                 strAgg = strAgg.Remove(intAttrCount + 1, 1);
                 e.Node.BackColor = treeViewAggregation.BackColor;
             }
-            myDataView.Table.Rows[intGridOrdinal][1] = strAgg;
+            dr[1] = strAgg;
 
             if (sychContr == SynchControls.SynchTreeToGrid)
-            dataGrid1_Click(null, null);
+                dataGrid1_Click(null, null);
             sychContr = SynchControls.Unknown;
         }
 
@@ -648,7 +689,7 @@ namespace AggManager
             DataView myDataView;
             myDataView = (DataView)dataGrid1.DataSource;
 
-            boolOptimizeAgg = true;
+            boolHandleClick = true;
             int i = 0;
             foreach( DataRow dataGridRow in myDataView.Table.Rows)
             {
@@ -659,7 +700,7 @@ namespace AggManager
                     OptimizeNode(node, false);
                 i++;
             }
-            boolOptimizeAgg = false;
+            boolHandleClick = false;
 
             this.Cursor = Cursors.Default;
         }
@@ -683,21 +724,34 @@ namespace AggManager
         {
             DataView myDataView;
             myDataView = (DataView)dataGrid1.DataSource;
-            myDataView.Sort = "Aggregations";
             int i = 0;
-            try
+            List<string> uniqueAggs = new List<string>();
+            while (i < myDataView.Table.Rows.Count)
             {
-
-                while (i < myDataView.Table.Rows.Count - 1)
+                if (uniqueAggs.Contains(myDataView.Table.Rows[i].ItemArray[1].ToString()))
                 {
-                    while (myDataView.Table.Rows[i].ItemArray[1].ToString() == myDataView.Table.Rows[i + 1].ItemArray[1].ToString())
-                        myDataView.Table.Rows.Remove(myDataView.Table.Rows[i + 1]);
+                    myDataView.Table.Rows.Remove(myDataView.Table.Rows[i]);
+                }
+                else
+                {
+                    uniqueAggs.Add(myDataView.Table.Rows[i].ItemArray[1].ToString());
                     i++;
                 }
             }
-            catch
-            { }
-            myDataView.Sort = "";
+        }
+
+        private void treeViewAggregation_Click(object sender, EventArgs e)
+        {
+            if (e is MouseEventArgs)
+            {
+                MouseEventArgs me = (MouseEventArgs)e;
+                TreeNode node = treeViewAggregation.GetNodeAt(me.Location);
+                if (node.StateImageIndex == 2) //this node is a dimension, so ignore clicks
+                    return;
+                boolHandleClick = true;
+                node.Checked = !node.Checked;
+                boolHandleClick = false;
+            }
         }
 
     }

@@ -28,6 +28,7 @@ namespace AggManager
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditAggs));
             this.dataGrid1 = new System.Windows.Forms.DataGrid();
             this.buttonCancel = new System.Windows.Forms.Button();
@@ -37,6 +38,7 @@ namespace AggManager
             this.checkBoxRelationships = new System.Windows.Forms.CheckBox();
             this.buttonOptimizeAgg = new System.Windows.Forms.Button();
             this.buttonEliminateDupe = new System.Windows.Forms.Button();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -104,13 +106,14 @@ namespace AggManager
             this.treeViewAggregation.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeViewAggregation.CheckBoxes = true;
             this.treeViewAggregation.Location = new System.Drawing.Point(-2, 0);
             this.treeViewAggregation.Margin = new System.Windows.Forms.Padding(2);
             this.treeViewAggregation.Name = "treeViewAggregation";
             this.treeViewAggregation.Size = new System.Drawing.Size(203, 407);
+            this.treeViewAggregation.StateImageList = this.imageList1;
             this.treeViewAggregation.TabIndex = 5;
             this.treeViewAggregation.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterCheck);
+            this.treeViewAggregation.Click += new System.EventHandler(this.treeViewAggregation_Click);
             // 
             // splitContainer1
             // 
@@ -170,6 +173,14 @@ namespace AggManager
             this.buttonEliminateDupe.UseVisualStyleBackColor = true;
             this.buttonEliminateDupe.Click += new System.EventHandler(this.buttonEliminateDupe_Click);
             // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList1.Images.SetKeyName(0, "Unchecked.ico");
+            this.imageList1.Images.SetKeyName(1, "Checked.ico");
+            this.imageList1.Images.SetKeyName(2, "Dimension.ico");
+            // 
             // EditAggs
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -205,6 +216,7 @@ namespace AggManager
         private System.Windows.Forms.CheckBox checkBoxRelationships;
         private System.Windows.Forms.Button buttonOptimizeAgg;
         private System.Windows.Forms.Button buttonEliminateDupe;
+        private System.Windows.Forms.ImageList imageList1;
 
     }
 }

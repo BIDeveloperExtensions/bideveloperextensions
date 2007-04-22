@@ -64,6 +64,8 @@ namespace AggManager
         string[] dimNames;
         string[] dimIDs;
         MeasureGroup mgCurrent;
+        private Cube realCube;
+        private Database cloneDB;
 
         public MainForm()
         {
@@ -73,12 +75,18 @@ namespace AggManager
 
         public MainForm(Cube selectedCube, EnvDTE.ProjectItem projectItm)
         {
+            this.realCube = selectedCube;
+
+            //easiest way to allow changes in this window to be made so they can still be rolled back by the cancel button so they don't show up in BIDS
+            this.cloneDB = selectedCube.Parent.Clone();
+
             InitializeComponent();
             mProjItem = projectItm;
             TreeNode nd;
-            nd = CreateStaticNode(treeView1.Nodes, selectedCube.Name, selectedCube, ImgListMetadataCubeIndex);
-            CreateNode(nd.Nodes, TagMeasureGroups, TagMeasureGroups, ImgListMetadataFolderIndex);
-
+            nd = CreateStaticNode(treeView1.Nodes, selectedCube.Name, cloneDB.Cubes[selectedCube.ID], ImgListMetadataCubeIndex);
+            nd.Expand();
+            nd = CreateNode(nd.Nodes, TagMeasureGroups, TagMeasureGroups, ImgListMetadataFolderIndex);
+            nd.Expand();
         }
 
         public bool IsDirty
@@ -162,17 +170,17 @@ namespace AggManager
                 //    }
                 //    this.Cursor = Cursors.Default;
                 //    break;
-                case "Cubes":
-                    Database db1 = (Database)node.Parent.Tag;
-                    this.Cursor = Cursors.WaitCursor;
+                //case "Cubes":
+                //    Database db1 = (Database)node.Parent.Tag;
+                //    this.Cursor = Cursors.WaitCursor;
 
-                    foreach (Cube cb in db1.Cubes)
-                    {
-                        nd = CreateStaticNode(node.Nodes, cb.Name, cb, ImgListMetadataCubeIndex);
-                        CreateNode(nd.Nodes, TagMeasureGroups, TagMeasureGroups, ImgListMetadataFolderIndex);
-                    }
-                    this.Cursor = Cursors.Default;
-                    break;
+                //    foreach (Cube cb in db1.Cubes)
+                //    {
+                //        nd = CreateStaticNode(node.Nodes, cb.Name, cb, ImgListMetadataCubeIndex);
+                //        CreateNode(nd.Nodes, TagMeasureGroups, TagMeasureGroups, ImgListMetadataFolderIndex);
+                //    }
+                //    this.Cursor = Cursors.Default;
+                //    break;
                 case "Measure Groups":
                     Cube cb1 = (Cube)node.Parent.Tag;
 
@@ -498,6 +506,8 @@ namespace AggManager
         private void btnOk_Click(object sender, EventArgs e)
         {
             saveModifiedMeasureGroups();
+            this.Close();
+            this.Dispose();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -505,25 +515,54 @@ namespace AggManager
             if (this.IsDirty)
             {
                 if (MessageBox.Show("Are you sure you want to cancel without saving changes?", "Save Changes", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                { 
+                {
                     this.Close();
                     this.Dispose();
                 }
             }
+            else
+            {
+                this.Close();
+                this.Dispose();
+            }
+
         }
 
         private void saveModifiedMeasureGroups()
         {
-            this.Cursor = Cursors.WaitCursor;
-            foreach (TreeNode nd in treeView1.Nodes)
+            try
             {
-                if ((nd.Tag is MeasureGroup) && (nd.Text.EndsWith(MODIFIED_SUFFIX)))
+                this.Cursor = Cursors.WaitCursor;
+                foreach (TreeNode nd in treeView1.Nodes[0].Nodes[0].Nodes)
                 {
-                    ((MeasureGroup)nd.Tag).Update(UpdateOptions.ExpandFull);
+                    if ((nd.Tag is MeasureGroup) && (nd.Text.EndsWith(MODIFIED_SUFFIX)))
+                    {
+                        MeasureGroup cloneMG = ((MeasureGroup)nd.Tag);
+                        cloneMG.CopyTo(realCube.MeasureGroups[cloneMG.ID]); //no need to run an Update statement from within BIDS
+                    }
                 }
+                this.IsDirty = false;
+                this.Cursor = Cursors.Default;
             }
-            this.IsDirty = false;
-            this.Cursor = Cursors.Default;
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error during save: " + ex.Message);
+            }
+        }
+
+        private void listBoxReport_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            try
+            {
+                cloneDB.Dispose();
+                cloneDB = null;
+            }
+            catch { }
         }
 
 
