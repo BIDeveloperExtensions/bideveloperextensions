@@ -42,7 +42,9 @@ namespace AggManager
         string[] dimIDs;
         bool boolHandleClick = false;
         bool boolIsRigid = false;
-        
+
+        private Color nonMaterializedColor = Color.SteelBlue;
+
         enum SynchControls 
         { 
             SynchTreeToGrid = 1,
@@ -352,6 +354,14 @@ namespace AggManager
                             childNode.NodeFont = new Font(treeViewAggregation.Font, FontStyle.Italic);
                             childNode.ForeColor = Color.Gray;
                         }
+                        if (mgDim is ReferenceMeasureGroupDimension)
+                        {
+                            ReferenceMeasureGroupDimension refDim = (ReferenceMeasureGroupDimension)mgDim;
+                            if (refDim.Materialization == ReferenceDimensionMaterialization.Indirect)
+                            {
+                                childNode.ForeColor = Color.Red;
+                            }
+                        }
                     }
 
                 }
@@ -366,7 +376,7 @@ namespace AggManager
                         if (cubeDimAttr.Attribute.Usage == AttributeUsage.Key)
                         {
                             parentNode = parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.Attribute.Name);
-                            AddTreeViewNodeChildren(parentNode, cubeDimAttr);
+                            AddTreeViewNodeChildren(parentNode, cubeDimAttr,mgDim);
                         }
                 }
             }
@@ -381,8 +391,16 @@ namespace AggManager
         /// Adds nodes accourding to attribute relationships
         /// </summary>
 
-        private void AddTreeViewNodeChildren(TreeNode node, CubeAttribute cubeDimAttr )
+        private void AddTreeViewNodeChildren(TreeNode node, CubeAttribute cubeDimAttr , MeasureGroupDimension mgDim)
         {
+            if (mgDim is ReferenceMeasureGroupDimension)
+            {
+                ReferenceMeasureGroupDimension refDim = (ReferenceMeasureGroupDimension)mgDim;
+                if (refDim.Materialization == ReferenceDimensionMaterialization.Indirect)
+                {
+                    node.ForeColor = nonMaterializedColor;
+                }
+            }
             foreach (AttributeRelationship attRel in cubeDimAttr.Attribute.AttributeRelationships)
             {
                 CubeAttribute childAttr = cubeDimAttr.Parent.Attributes.Find(attRel.AttributeID);
@@ -393,8 +411,9 @@ namespace AggManager
                     childNode.NodeFont = new Font(treeViewAggregation.Font, FontStyle.Italic);
                     childNode.ForeColor = Color.Gray;
                 }
+
                 childNode.Tag = attRel;
-                AddTreeViewNodeChildren( childNode, childAttr);
+                AddTreeViewNodeChildren( childNode, childAttr,mgDim);
             }
         }
         
@@ -770,6 +789,10 @@ namespace AggManager
                 if (node.NodeFont != null && node.NodeFont.Italic && !node.Checked)
                 {
                     MessageBox.Show("The cube dimension attribute " + node.Text + " is marked AttributeHierarchyEnabled=false");
+                }
+                else if (node.ForeColor == nonMaterializedColor)
+                {
+                    MessageBox.Show("This dimension is related through a non-materialized reference relationship\n\nCreating aggregations on such a relationship is not valid is it can produce incorrect figures.");
                 }
                 else
                 {
