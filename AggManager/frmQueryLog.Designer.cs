@@ -46,6 +46,7 @@ namespace AggManager
             this.textBoxNewAggDesign = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.textBoxAggregationPrefix = new System.Windows.Forms.TextBox();
+            this.txtServerNote = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -253,11 +254,24 @@ namespace AggManager
             this.textBoxAggregationPrefix.TabIndex = 42;
             this.textBoxAggregationPrefix.Text = "QueryLogAgg_";
             // 
+            // txtServerNote
+            // 
+            this.txtServerNote.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtServerNote.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.txtServerNote.Location = new System.Drawing.Point(10, 379);
+            this.txtServerNote.Multiline = true;
+            this.txtServerNote.Name = "txtServerNote";
+            this.txtServerNote.ReadOnly = true;
+            this.txtServerNote.Size = new System.Drawing.Size(582, 37);
+            this.txtServerNote.TabIndex = 43;
+            // 
             // QueryLogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(791, 421);
+            this.Controls.Add(this.txtServerNote);
             this.Controls.Add(this.textBoxAggregationPrefix);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBoxNewAggDesign);
@@ -301,5 +315,6 @@ namespace AggManager
         private System.Windows.Forms.TextBox textBoxNewAggDesign;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBoxAggregationPrefix;
+        private System.Windows.Forms.TextBox txtServerNote;
     }
 }

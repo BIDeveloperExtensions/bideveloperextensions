@@ -36,6 +36,7 @@ namespace AggManager
             this.lablPartName = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.lblSize = new System.Windows.Forms.Label();
+            this.txtServerNote = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -57,7 +58,7 @@ namespace AggManager
             this.dataGrid1.HeaderBackColor = System.Drawing.Color.Silver;
             this.dataGrid1.HeaderForeColor = System.Drawing.Color.Black;
             this.dataGrid1.LinkColor = System.Drawing.Color.Navy;
-            this.dataGrid1.Location = new System.Drawing.Point(9, 41);
+            this.dataGrid1.Location = new System.Drawing.Point(9, 31);
             this.dataGrid1.Margin = new System.Windows.Forms.Padding(2);
             this.dataGrid1.Name = "dataGrid1";
             this.dataGrid1.ParentRowsBackColor = System.Drawing.Color.White;
@@ -65,7 +66,7 @@ namespace AggManager
             this.dataGrid1.PreferredColumnWidth = 400;
             this.dataGrid1.SelectionBackColor = System.Drawing.Color.Navy;
             this.dataGrid1.SelectionForeColor = System.Drawing.Color.White;
-            this.dataGrid1.Size = new System.Drawing.Size(522, 414);
+            this.dataGrid1.Size = new System.Drawing.Size(522, 395);
             this.dataGrid1.TabIndex = 3;
             // 
             // buttonOK
@@ -96,7 +97,7 @@ namespace AggManager
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(25, 19);
+            this.label1.Location = new System.Drawing.Point(25, 9);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(75, 20);
@@ -107,7 +108,7 @@ namespace AggManager
             // 
             this.lablPartName.AutoSize = true;
             this.lablPartName.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lablPartName.Location = new System.Drawing.Point(89, 19);
+            this.lablPartName.Location = new System.Drawing.Point(89, 9);
             this.lablPartName.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lablPartName.Name = "lablPartName";
             this.lablPartName.Size = new System.Drawing.Size(49, 20);
@@ -118,7 +119,7 @@ namespace AggManager
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(320, 19);
+            this.label2.Location = new System.Drawing.Point(320, 9);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(44, 20);
@@ -129,18 +130,31 @@ namespace AggManager
             // 
             this.lblSize.AutoSize = true;
             this.lblSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSize.Location = new System.Drawing.Point(356, 19);
+            this.lblSize.Location = new System.Drawing.Point(356, 9);
             this.lblSize.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblSize.Name = "lblSize";
             this.lblSize.Size = new System.Drawing.Size(37, 20);
             this.lblSize.TabIndex = 10;
             this.lblSize.Text = "size";
             // 
+            // txtServerNote
+            // 
+            this.txtServerNote.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtServerNote.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.txtServerNote.Location = new System.Drawing.Point(9, 431);
+            this.txtServerNote.Multiline = true;
+            this.txtServerNote.Name = "txtServerNote";
+            this.txtServerNote.ReadOnly = true;
+            this.txtServerNote.Size = new System.Drawing.Size(297, 65);
+            this.txtServerNote.TabIndex = 44;
+            // 
             // PartitionsAggsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(540, 501);
+            this.Controls.Add(this.txtServerNote);
             this.Controls.Add(this.lblSize);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lablPartName);
@@ -152,6 +166,7 @@ namespace AggManager
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "PartitionsAggsForm";
             this.Text = "Partitions Aggregations";
+            this.Load += new System.EventHandler(this.PartitionsAggsForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -167,5 +182,6 @@ namespace AggManager
         private System.Windows.Forms.Label lablPartName;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblSize;
+        private System.Windows.Forms.TextBox txtServerNote;
     }
 }

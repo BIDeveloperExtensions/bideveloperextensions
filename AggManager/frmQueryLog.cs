@@ -92,7 +92,8 @@ namespace AggManager
                 textBoxNewAggDesign.Text = inAggDesName;
                 textBoxNewAggDesign.Enabled = false;
             }
-
+            txtServerNote.Text = string.Format("Note: the QueryLog details have been taken from the '{0}' server,\n" +
+             "which is the one currently configured as the deployment target.",server.Name);
         }
 
         /// <summary>
