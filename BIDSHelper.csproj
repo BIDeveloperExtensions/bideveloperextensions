@@ -158,6 +158,7 @@
     <Compile Include="DeployMDXScriptPlugin.cs" />
     <Compile Include="DeploymentSettings.cs" />
     <Compile Include="DimensionHealthCheckPlugin.cs" />
+    <Compile Include="EstimatedCountsPlugin.cs" />
     <Compile Include="ExtraPropertiesPlugin.cs" />
     <Compile Include="PrinterFriendlyDimensionUsage.cs" />
     <Compile Include="PrinterFriendlyDimensionUsagePlugin.cs">
@@ -228,6 +229,8 @@
     <Content Include="BIDSHelper.AddIn" />
     <EmbeddedResource Include="BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
+    <None Include="Resources\EstimatedCounts.ico" />
+    <None Include="Resources\EditAggregations.ico" />
     <EmbeddedResource Include="AggManager\EditAggs.resx">
       <DependentUpon>EditAggs.cs</DependentUpon>
       <SubType>Designer</SubType>
