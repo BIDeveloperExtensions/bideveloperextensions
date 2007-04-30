@@ -280,7 +280,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AggManager\Properties\Settings.settings" />
-    <None Include="BIDSHelperSetup.nsi" />
+    <None Include="SetupScript\BIDSHelperSetup.nsi" />
     <None Include="License.rtf" />
     <None Include="Properties\DataSources\DimensionUsage.datasource" />
   </ItemGroup>

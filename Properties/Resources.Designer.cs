@@ -87,5 +87,19 @@ namespace BIDSHelper.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        internal static System.Drawing.Icon EditAggregations {
+            get {
+                object obj = ResourceManager.GetObject("EditAggregations", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon EstimatedCounts {
+            get {
+                object obj = ResourceManager.GetObject("EstimatedCounts", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }
