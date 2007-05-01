@@ -60,10 +60,23 @@ namespace AggManager
             String inAggDesName )
 
         {
-            DeploymentSettings deploySet = new DeploymentSettings(projItem);
+             bool IsOnlineMode = false;
+            Cube selectedCube = projItem.Object as Cube
+            if ((selectedCube != null) && (selectedCube.ParentServer != null))
+            {
+                // if we are in Online mode there will be a parent server
+                server = selectedCube.ParentServer;
+                IsOnlineMode = true;
+            }
+            else
+            {
+                // if we are in Project mode we will use the server name from 
+                // the deployment settings
+                DeploymentSettings deploySet = new DeploymentSettings(projItem);
+                server = new Server();
+                server.Connect(deploySet.TargetServer);
+            }
 
-            server = new Server();
-            server.Connect(deploySet.TargetServer);
             mg1 = mg;
             dimAttributes = inDimAttributes;
             dimNames = inDimNames;
@@ -94,6 +107,7 @@ namespace AggManager
             }
             txtServerNote.Text = string.Format("Note: the QueryLog details have been taken from the '{0}' server,\n" +
              "which is the one currently configured as the deployment target.",server.Name);
+             txtServerNote.Visible =  !IsOnlineMode; // hide the note if we are in online mode.
         }
 
         /// <summary>
@@ -290,11 +304,6 @@ namespace AggManager
                 textBoxSQLConnectionString.Enabled = true;
             else
                 textBoxSQLConnectionString.Enabled = false;
-        }
-
-        private void QueryLogForm_Load(object sender, EventArgs e)
-        {
-
         }
 
     }
