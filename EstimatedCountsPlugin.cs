@@ -20,8 +20,13 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.List<string> windowHandlesFixedPartitionsView = new System.Collections.Generic.List<string>();
 
+        private const string SET_ESTIMATED_COUNTS_ICON_KEY = "EstimatedCounts";
+        private const string EDIT_AGGREGATIONS_ICON_KEY = "EditAggregations";
+        private const string STOP_ICON_KEY = "Stop";
         private const string EDIT_AGGREGATIONS_BUTTON_SUFFIX = "EditAggregationsButton";
         private const string SET_ESTIMATED_COUNTS_BUTTON = "SetEstimatedCountsButton";
+
+        private bool bCancelEstimatedCountsClicked = false;
 
         public EstimatedCountsPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
@@ -65,25 +70,27 @@ namespace BIDSHelper
                         separator.Style = ToolBarButtonStyle.Separator;
                         toolbar.Buttons.Add(separator);
 
-                        toolbar.ImageList.Images.Add(Properties.Resources.EstimatedCounts);
+                        toolbar.ImageList.Images.Add(SET_ESTIMATED_COUNTS_ICON_KEY, Properties.Resources.EstimatedCounts);
                         ToolBarButton oSetAllEstimatedCountsButton = new ToolBarButton();
                         oSetAllEstimatedCountsButton.ToolTipText = "Update All Estimated Counts (BIDS Helper)";
                         oSetAllEstimatedCountsButton.Name = this.FullName + "." + SET_ESTIMATED_COUNTS_BUTTON;
                         oSetAllEstimatedCountsButton.Tag = oSetAllEstimatedCountsButton.Name;
-                        oSetAllEstimatedCountsButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+                        oSetAllEstimatedCountsButton.ImageIndex = toolbar.ImageList.Images.IndexOfKey(SET_ESTIMATED_COUNTS_ICON_KEY);
                         oSetAllEstimatedCountsButton.Enabled = true;
                         oSetAllEstimatedCountsButton.Style = ToolBarButtonStyle.PushButton;
                         toolbar.Buttons.Add(oSetAllEstimatedCountsButton);
 
-                        toolbar.ImageList.Images.Add(Properties.Resources.EditAggregations);
+                        toolbar.ImageList.Images.Add(EDIT_AGGREGATIONS_ICON_KEY, Properties.Resources.EditAggregations);
                         ToolBarButton oEditAggregationsButton = new ToolBarButton();
                         oEditAggregationsButton.ToolTipText = "Edit Aggregations (BIDS Helper)";
                         oEditAggregationsButton.Name = this.FullName + "." + EDIT_AGGREGATIONS_BUTTON_SUFFIX;
                         oEditAggregationsButton.Tag = oEditAggregationsButton.Name;
-                        oEditAggregationsButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+                        oEditAggregationsButton.ImageIndex = toolbar.ImageList.Images.IndexOfKey(EDIT_AGGREGATIONS_ICON_KEY);
                         oEditAggregationsButton.Enabled = true;
                         oEditAggregationsButton.Style = ToolBarButtonStyle.PushButton;
                         toolbar.Buttons.Add(oEditAggregationsButton);
+
+                        toolbar.ImageList.Images.Add(STOP_ICON_KEY, Properties.Resources.Stop);
 
                         //catch the button clicks of the new buttons we just added
                         toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
@@ -107,7 +114,15 @@ namespace BIDSHelper
                     string sButtonTag = e.Button.Tag.ToString();
                     if (sButtonTag == this.FullName + "." + SET_ESTIMATED_COUNTS_BUTTON)
                     {
-                        SetAllEstimatedCounts();
+                        if (e.Button.ImageIndex == e.Button.Parent.ImageList.Images.IndexOfKey(SET_ESTIMATED_COUNTS_ICON_KEY))
+                        {
+                            bCancelEstimatedCountsClicked = false;
+                            SetAllEstimatedCounts(e.Button);
+                        }
+                        else
+                        {
+                            bCancelEstimatedCountsClicked = true;
+                        }
                     }
                     else if (sButtonTag == this.FullName + "." + EDIT_AGGREGATIONS_BUTTON_SUFFIX)
                     {
@@ -121,12 +136,54 @@ namespace BIDSHelper
             }
         }
 
-        void SetAllEstimatedCounts()
+        private static void StartSetEstimatedCountsOnPartition(object threadInfo)
         {
-            if (MessageBox.Show("Updating all estimated counts with exact counts for all partitions and dimensions\r\ncould take an extremely long time and cannot be cancelled.\r\n\r\nAre you sure you want to continue?", "BIDS Helper - Update All Estimated Counts", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            SetEstimatedCountsOnPartitionThreadInfo info = (SetEstimatedCountsOnPartitionThreadInfo)threadInfo;
+            try
+            {
+                if (info.instance.CheckCancelled()) return;
+                Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInAttributes(info.aggDesign, info.measureGroupDimension, new Partition[] { info.partition }, null);
+                if (info.instance.CheckCancelled()) return;
+                Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInPartition(info.partition, null);
+            }
+            catch { } //silently catch errors... don't want to message box errors because there could be hundreds of them
+            finally
+            {
+                info.done = true;
+                //info.autoResetEvent.Set();
+            }
+        }
+
+        private static void StartSetEstimatedCountsOnDimension(object threadInfo)
+        {
+            SetEstimatedCountsOnDimensionThreadInfo info = (SetEstimatedCountsOnDimensionThreadInfo)threadInfo;
+            try
+            {
+                if (info.instance.CheckCancelled()) return;
+                System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
+                object cnt = typeof(Microsoft.AnalysisServices.Design.PartitionUtilities).InvokeMember("GetAttributeCountInDimension", getflags, null, null, new object[] { info.attribute, info.connection.Cartridge, info.connection });
+                info.attribute.EstimatedCount = Convert.ToInt64(cnt);
+            }
+            catch { } //silently catch errors... don't want to message box errors because there could be hundreds of them
+            finally
+            {
+                info.done = true;
+            }
+        }
+
+
+        void SetAllEstimatedCounts(ToolBarButton button)
+        {
+            //grab the objects I need before the user has a chance to flip to another active window
+            Project proj = ApplicationObject.ActiveWindow.Project;
+            Cube cube = (Cube)this.ApplicationObject.ActiveWindow.ProjectItem.Object;
+            IDesignerHost designer = (IDesignerHost)ApplicationObject.ActiveWindow.Object;
+
+            if (MessageBox.Show("Updating all estimated counts with exact counts for all partitions and dimensions\r\ncould take an extremely long time.\r\n\r\nAre you sure you want to continue?", "BIDS Helper - Update All Estimated Counts", MessageBoxButtons.YesNo) != DialogResult.Yes)
             {
                 return;
             }
+            button.ImageIndex = button.Parent.ImageList.Images.IndexOfKey(STOP_ICON_KEY); //change to a stop icon to allow the user to cancel
             Application.DoEvents();
 
             try
@@ -135,8 +192,6 @@ namespace BIDSHelper
                 {
                     ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
 
-                    Cube cube = (Cube)this.ApplicationObject.ActiveWindow.ProjectItem.Object;
-                    IDesignerHost designer = (IDesignerHost)ApplicationObject.ActiveWindow.Object;
                     IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
                     changesvc.OnComponentChanging(cube, null);
 
@@ -171,8 +226,20 @@ namespace BIDSHelper
                                             {
                                                 try
                                                 {
-                                                    Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInAttributes(aggd, dim, new Partition[] { p }, null);
-                                                    Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInPartition(p, null);
+                                                    SetEstimatedCountsOnPartitionThreadInfo info = new SetEstimatedCountsOnPartitionThreadInfo();
+                                                    info.instance = this;
+                                                    info.aggDesign = aggd;
+                                                    info.measureGroupDimension = dim;
+                                                    info.partition = p;
+
+                                                    //run as a separate thread so that the main app stays responsive (so you can click the cancel button)
+                                                    System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(StartSetEstimatedCountsOnPartition), info);
+                                                    while (!info.done)
+                                                    {
+                                                        System.Threading.Thread.Sleep(100);
+                                                        Application.DoEvents(); //keeps main app responsive
+                                                        if (CheckCancelled()) return;
+                                                    }
                                                 }
                                                 catch { }
                                             }
@@ -185,9 +252,16 @@ namespace BIDSHelper
                     changesvc.OnComponentChanged(cube, null, null, null); //marks the cube designer as dirty
 
                     
-                    foreach (ProjectItem pi in ApplicationObject.ActiveWindow.Project.ProjectItems)
+                    foreach (ProjectItem pi in proj.ProjectItems)
                     {
-                        if (!(pi.Object is Dimension)) continue;
+                        try
+                        {
+                            if (!(pi.Object is Dimension)) continue;
+                        }
+                        catch
+                        {
+                            continue; //doing the above seems to blow up on certain objects because of threading? this fixes the problem
+                        }
                         Dimension dim = (Dimension)pi.Object;
                         ApplicationObject.StatusBar.Progress(true, "Setting Estimated Counts on Dimension: " + dim.Name, ++iProgress, cube.MeasureGroups.Count + cube.Parent.Dimensions.Count);
                         
@@ -214,7 +288,6 @@ namespace BIDSHelper
                         changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
                         changesvc.OnComponentChanging(dim, null);
 
-                        System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
                         if (dim.DataSource != null)
                         {
                             try
@@ -222,8 +295,19 @@ namespace BIDSHelper
                                 DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(dim.DataSource);
                                 foreach (DimensionAttribute attr in dim.Attributes)
                                 {
-                                    object cnt = typeof(Microsoft.AnalysisServices.Design.PartitionUtilities).InvokeMember("GetAttributeCountInDimension", getflags, null, null, new object[] { attr, openedDataSourceConnection.Cartridge, openedDataSourceConnection });
-                                    attr.EstimatedCount = Convert.ToInt64(cnt);
+                                    SetEstimatedCountsOnDimensionThreadInfo info = new SetEstimatedCountsOnDimensionThreadInfo();
+                                    info.instance = this;
+                                    info.attribute = attr;
+                                    info.connection = openedDataSourceConnection;
+
+                                    //run as a separate thread so that the main app stays responsive (so you can click the cancel button)
+                                    System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(StartSetEstimatedCountsOnDimension), info);
+                                    while (!info.done)
+                                    {
+                                        System.Threading.Thread.Sleep(100);
+                                        Application.DoEvents(); //keeps main app responsive
+                                        if (CheckCancelled()) return;
+                                    }
                                 }
                             }
                             catch { }
@@ -236,10 +320,32 @@ namespace BIDSHelper
             {
                 try
                 {
+                    button.ImageIndex = button.Parent.ImageList.Images.IndexOfKey(SET_ESTIMATED_COUNTS_ICON_KEY);
                     ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationGeneral);
                     ApplicationObject.StatusBar.Progress(false, "", 1, 1);
                 }
                 catch { }
+            }
+        }
+
+        private bool CheckCancelled()
+        {
+            if (bCancelEstimatedCountsClicked)
+            {
+                if (MessageBox.Show("Cancelling now could leave many counts set at zero. Are you sure you wish to cancel?", "BIDS Helper - Update All Estimated Counts", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    ApplicationObject.StatusBar.Text = "Cancelling...";
+                    return true;
+                }
+                else
+                {
+                    bCancelEstimatedCountsClicked = false;
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -292,5 +398,23 @@ namespace BIDSHelper
         public override void Exec()
         {
         }
+
+        #region Internal Thread Info Classes
+        public class SetEstimatedCountsOnPartitionThreadInfo {
+            public EstimatedCountsPlugin instance;
+            public AggregationDesign aggDesign;
+            public RegularMeasureGroupDimension measureGroupDimension;
+            public Partition partition;
+            public bool done = false;
+        }
+
+        public class SetEstimatedCountsOnDimensionThreadInfo
+        {
+            public EstimatedCountsPlugin instance;
+            public DimensionAttribute attribute;
+            public DataSourceConnection connection;
+            public bool done = false;
+        }
+        #endregion
     }
 }

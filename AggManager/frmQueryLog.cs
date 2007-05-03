@@ -50,22 +50,23 @@ namespace AggManager
             InitializeComponent();
         }
 
-         public void Init(
-            EnvDTE.ProjectItem projItem,
-            MeasureGroup mg, 
-            string[,] inDimAttributes,  
-            string[] inDimNames ,
-            string[] inDimIDs,
-            bool inAddNew,
-            String inAggDesName )
-
+        public void Init(
+           EnvDTE.ProjectItem projItem,
+           MeasureGroup mg,
+           string[,] inDimAttributes,
+           string[] inDimNames,
+           string[] inDimIDs,
+           bool inAddNew,
+           String inAggDesName)
         {
-             bool IsOnlineMode = false;
-            Cube selectedCube = projItem.Object as Cube
+            bool IsOnlineMode = false;
+            Cube selectedCube = projItem.Object as Cube;
+            string sTargetDatabase = "";
             if ((selectedCube != null) && (selectedCube.ParentServer != null))
             {
                 // if we are in Online mode there will be a parent server
                 server = selectedCube.ParentServer;
+                sTargetDatabase = selectedCube.Parent.Name;
                 IsOnlineMode = true;
             }
             else
@@ -75,6 +76,7 @@ namespace AggManager
                 DeploymentSettings deploySet = new DeploymentSettings(projItem);
                 server = new Server();
                 server.Connect(deploySet.TargetServer);
+                sTargetDatabase = deploySet.TargetDatabase;
             }
 
             mg1 = mg;
@@ -91,7 +93,7 @@ namespace AggManager
                                    mg1.ParentDatabase.Name +
                                    "' and  MSOLAP_ObjectPath = '" +
                                    server.Name + "." +
-                                   deploySet.TargetDatabase + "." +
+                                   sTargetDatabase + "." +
                                    mg1.Parent.ID + "." +
                                    mg1.ID + "'" +
                                    " and duration >= 100";
@@ -106,8 +108,8 @@ namespace AggManager
                 textBoxNewAggDesign.Enabled = false;
             }
             txtServerNote.Text = string.Format("Note: the QueryLog details have been taken from the '{0}' server,\n" +
-             "which is the one currently configured as the deployment target.",server.Name);
-             txtServerNote.Visible =  !IsOnlineMode; // hide the note if we are in online mode.
+             "which is the one currently configured as the deployment target.", server.Name);
+            txtServerNote.Visible = !IsOnlineMode; // hide the note if we are in online mode.
         }
 
         /// <summary>

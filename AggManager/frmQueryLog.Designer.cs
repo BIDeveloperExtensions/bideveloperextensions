@@ -289,7 +289,6 @@ namespace AggManager
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "QueryLogForm";
             this.Text = "Add Aggregations From QueryLog";
-            this.Load += new System.EventHandler(this.QueryLogForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

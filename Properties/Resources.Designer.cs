@@ -101,5 +101,12 @@ namespace BIDSHelper.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        internal static System.Drawing.Icon Stop {
+            get {
+                object obj = ResourceManager.GetObject("Stop", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

@@ -66,13 +66,13 @@ namespace AggManager
             this.dataGrid1.PreferredColumnWidth = 400;
             this.dataGrid1.SelectionBackColor = System.Drawing.Color.Navy;
             this.dataGrid1.SelectionForeColor = System.Drawing.Color.White;
-            this.dataGrid1.Size = new System.Drawing.Size(522, 395);
+            this.dataGrid1.Size = new System.Drawing.Size(538, 403);
             this.dataGrid1.TabIndex = 3;
             // 
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.Location = new System.Drawing.Point(311, 459);
+            this.buttonOK.Location = new System.Drawing.Point(327, 467);
             this.buttonOK.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(108, 31);
@@ -84,7 +84,7 @@ namespace AggManager
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonCancel.Location = new System.Drawing.Point(423, 459);
+            this.buttonCancel.Location = new System.Drawing.Point(439, 467);
             this.buttonCancel.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(108, 31);
@@ -142,18 +142,19 @@ namespace AggManager
             this.txtServerNote.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.txtServerNote.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.txtServerNote.Location = new System.Drawing.Point(9, 431);
+            this.txtServerNote.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtServerNote.Location = new System.Drawing.Point(9, 439);
             this.txtServerNote.Multiline = true;
             this.txtServerNote.Name = "txtServerNote";
             this.txtServerNote.ReadOnly = true;
-            this.txtServerNote.Size = new System.Drawing.Size(297, 65);
+            this.txtServerNote.Size = new System.Drawing.Size(313, 65);
             this.txtServerNote.TabIndex = 44;
             // 
             // PartitionsAggsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(540, 501);
+            this.ClientSize = new System.Drawing.Size(556, 509);
             this.Controls.Add(this.txtServerNote);
             this.Controls.Add(this.lblSize);
             this.Controls.Add(this.label2);
@@ -166,7 +167,6 @@ namespace AggManager
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "PartitionsAggsForm";
             this.Text = "Partitions Aggregations";
-            this.Load += new System.EventHandler(this.PartitionsAggsForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
