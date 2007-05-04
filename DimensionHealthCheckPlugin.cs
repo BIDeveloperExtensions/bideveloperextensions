@@ -110,7 +110,10 @@ namespace BIDSHelper
                                 for (int i = 0; i < e.ErrorTable.Columns.Count; i++)
                                 {
                                     browser.Document.Write("<td nowrap>");
-                                    browser.Document.Write(System.Web.HttpUtility.HtmlEncode(dr[i].ToString()));
+                                    if (!Convert.IsDBNull(dr[i]))
+                                        browser.Document.Write(System.Web.HttpUtility.HtmlEncode(dr[i].ToString()));
+                                    else
+                                        browser.Document.Write("<font color=lightgrey>(null)</font>");
                                     browser.Document.Write("</td><td>&nbsp;&nbsp;</td>");
                                 }
                                 browser.Document.Write("</tr>");
@@ -273,12 +276,12 @@ namespace BIDSHelper
             if (da.KeyColumns.Count == 1 && CompareDataItems(da.KeyColumns[0], da.ValueColumn) && da.NameColumn == null) return null; // no need
 
             DataSourceView oDSV = da.Parent.DataSourceView;
-            ColumnBinding[] keyCols;
-            ColumnBinding[] nameAndValueCols;
+            DataItem[] keyCols;
+            DataItem[] nameAndValueCols;
             if (da.KeyColumns.Count == 0)
             {
-                keyCols = new ColumnBinding[] { GetColumnBindingForDataItem(da.NameColumn) };
-                nameAndValueCols = new ColumnBinding[] { GetColumnBindingForDataItem(da.ValueColumn) }; //value column will be there because of previous check
+                keyCols = new DataItem[] { da.NameColumn };
+                nameAndValueCols = new DataItem[] { da.ValueColumn }; //value column will be there because of previous check
             }
             else if (da.NameColumn == null)
             {
@@ -286,25 +289,25 @@ namespace BIDSHelper
                 {
                     throw new Exception("If no name column is defined, you may not have more than one key column.");
                 }
-                keyCols = new ColumnBinding[] { GetColumnBindingForDataItem(da.KeyColumns[0]) };
+                keyCols = new DataItem[] { da.KeyColumns[0] };
 
                 //use value as "name" column when checking uniqueness
-                nameAndValueCols = new ColumnBinding[] { GetColumnBindingForDataItem(da.ValueColumn) }; //value column will be there because of previous check
+                nameAndValueCols = new DataItem[] { da.ValueColumn }; //value column will be there because of previous check
             }
             else
             {
-                keyCols = new ColumnBinding[da.KeyColumns.Count];
+                keyCols = new DataItem[da.KeyColumns.Count];
                 for (int i = 0; i < da.KeyColumns.Count; i++)
                 {
-                    keyCols[i] = GetColumnBindingForDataItem(da.KeyColumns[i]);
+                    keyCols[i] = da.KeyColumns[i];
                 }
                 if (da.ValueColumn == null)
                 {
-                    nameAndValueCols = new ColumnBinding[] { GetColumnBindingForDataItem(da.NameColumn) };
+                    nameAndValueCols = new DataItem[] { da.NameColumn };
                 }
                 else
                 {
-                    nameAndValueCols = new ColumnBinding[] { GetColumnBindingForDataItem(da.NameColumn), GetColumnBindingForDataItem(da.ValueColumn) };
+                    nameAndValueCols = new DataItem[] { da.NameColumn, da.ValueColumn };
                 }
             }
             return GetQueryToValidateUniqueness(oDSV, keyCols, nameAndValueCols);
@@ -313,15 +316,15 @@ namespace BIDSHelper
         private static string GetQueryToValidateRelationship(AttributeRelationship r)
         {
             DataSourceView oDSV = r.ParentDimension.DataSourceView;
-            ColumnBinding[] cols1 = new ColumnBinding[r.Parent.KeyColumns.Count];
-            ColumnBinding[] cols2 = new ColumnBinding[r.Attribute.KeyColumns.Count];
+            DataItem[] cols1 = new DataItem[r.Parent.KeyColumns.Count];
+            DataItem[] cols2 = new DataItem[r.Attribute.KeyColumns.Count];
             for (int i = 0; i < r.Parent.KeyColumns.Count; i++)
             {
-                cols1[i] = GetColumnBindingForDataItem(r.Parent.KeyColumns[i]);
+                cols1[i] = r.Parent.KeyColumns[i];
             }
             for (int i = 0; i < r.Attribute.KeyColumns.Count; i++)
             {
-                cols2[i] = GetColumnBindingForDataItem(r.Attribute.KeyColumns[i]);
+                cols2[i] = r.Attribute.KeyColumns[i];
             }
             return GetQueryToValidateUniqueness(oDSV, cols1, cols2);
         }
@@ -342,16 +345,18 @@ namespace BIDSHelper
             }
         }
 
-        private static string GetQueryToValidateUniqueness(DataSourceView dsv, ColumnBinding[] child, ColumnBinding[] parent)
+        private static string GetQueryToValidateUniqueness(DataSourceView dsv, DataItem[] child, DataItem[] parent)
         {
+            //need to do GetColumnBindingForDataItem
             StringBuilder select = new StringBuilder();
             StringBuilder outerSelect = new StringBuilder();
             StringBuilder groupBy = new StringBuilder();
             StringBuilder join = new StringBuilder();
             Dictionary<DataTable, JoinedTable> tables = new Dictionary<DataTable, JoinedTable>();
             List<string> previousColumns = new List<string>();
-            foreach (ColumnBinding col in child)
+            foreach (DataItem di in child)
             {
+                ColumnBinding col = GetColumnBindingForDataItem(di);
                 if (!previousColumns.Contains("[" + col.TableID + "].[" + col.ColumnID + "]"))
                 {
                     string colAlias = System.Guid.NewGuid().ToString();
@@ -359,7 +364,23 @@ namespace BIDSHelper
                     groupBy.Append((select.Length == 0 ? "group by " : ","));
                     outerSelect.Append((select.Length == 0 ? "select " : ","));
                     select.Append((select.Length == 0 ? "select distinct " : ","));
-                    join.Append((join.Length == 0 ? "on " : "and ")).Append("y.[").Append(colAlias).Append("] = z.[").Append(colAlias).AppendLine("]");
+                    string sIsNull = "";
+                    //select.Append(" /*" + dc.DataType.FullName + "*/ "); //for troubleshooting data types
+                    if (dc.DataType == typeof(string))
+                    {
+                        if (di.NullProcessing == NullProcessing.Preserve)
+                            sIsNull = "'__BIDS_HELPER_DIMENSION_HEALTH_CHECK_UNIQUE_STRING__'"; //a unique value that shouldn't ever occur in the real data
+                        else
+                            sIsNull = "''";
+                    }
+                    else //numeric
+                    {
+                        if (di.NullProcessing == NullProcessing.Preserve)
+                            sIsNull = "-987654321.123456789"; //a unique value that shouldn't ever occur in the real data
+                        else
+                            sIsNull = "0";
+                    }
+                    join.Append((join.Length == 0 ? "on " : "and ")).Append("isnull(y.[").Append(colAlias).Append("],").Append(sIsNull).Append(") = isnull(z.[").Append(colAlias).Append("],").Append(sIsNull).AppendLine(")");
                     groupBy.Append("[").Append(colAlias).AppendLine("]");
                     outerSelect.Append("[").Append(colAlias).AppendLine("]");
                     if (!dc.ExtendedProperties.ContainsKey("ComputedColumnExpression"))
@@ -380,8 +401,9 @@ namespace BIDSHelper
                 }
             }
 
-            foreach (ColumnBinding col in parent)
+            foreach (DataItem di in parent)
             {
+                ColumnBinding col = GetColumnBindingForDataItem(di);
                 if (!previousColumns.Contains("[" + col.TableID + "].[" + col.ColumnID + "]"))
                 {
                     string colAlias = System.Guid.NewGuid().ToString();
