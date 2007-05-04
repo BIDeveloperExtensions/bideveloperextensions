@@ -34,11 +34,12 @@ namespace AggManager
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOK = new System.Windows.Forms.Button();
             this.treeViewAggregation = new System.Windows.Forms.TreeView();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.checkBoxRelationships = new System.Windows.Forms.CheckBox();
             this.buttonOptimizeAgg = new System.Windows.Forms.Button();
             this.buttonEliminateDupe = new System.Windows.Forms.Button();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.lblEstimatedSize = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -115,6 +116,14 @@ namespace AggManager
             this.treeViewAggregation.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterCheck);
             this.treeViewAggregation.Click += new System.EventHandler(this.treeViewAggregation_Click);
             // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList1.Images.SetKeyName(0, "Unchecked.ico");
+            this.imageList1.Images.SetKeyName(1, "Checked.ico");
+            this.imageList1.Images.SetKeyName(2, "Dimension.ico");
+            // 
             // splitContainer1
             // 
             this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
@@ -173,19 +182,21 @@ namespace AggManager
             this.buttonEliminateDupe.UseVisualStyleBackColor = true;
             this.buttonEliminateDupe.Click += new System.EventHandler(this.buttonEliminateDupe_Click);
             // 
-            // imageList1
+            // lblEstimatedSize
             // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "Unchecked.ico");
-            this.imageList1.Images.SetKeyName(1, "Checked.ico");
-            this.imageList1.Images.SetKeyName(2, "Dimension.ico");
+            this.lblEstimatedSize.AutoSize = true;
+            this.lblEstimatedSize.Location = new System.Drawing.Point(5, 14);
+            this.lblEstimatedSize.Name = "lblEstimatedSize";
+            this.lblEstimatedSize.Size = new System.Drawing.Size(142, 13);
+            this.lblEstimatedSize.TabIndex = 10;
+            this.lblEstimatedSize.Text = "Estimated Aggregation Size: ";
             // 
             // EditAggs
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(669, 493);
+            this.Controls.Add(this.lblEstimatedSize);
             this.Controls.Add(this.buttonEliminateDupe);
             this.Controls.Add(this.buttonOptimizeAgg);
             this.Controls.Add(this.checkBoxRelationships);
@@ -217,6 +228,7 @@ namespace AggManager
         private System.Windows.Forms.Button buttonOptimizeAgg;
         private System.Windows.Forms.Button buttonEliminateDupe;
         private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.Label lblEstimatedSize;
 
     }
 }

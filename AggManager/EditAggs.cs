@@ -72,7 +72,6 @@ namespace AggManager
             dimNames = inDimNames;
             dimIDs = inDimIDs;
 
-
             DataTable myTable = new DataTable("Aggregations");
 
             DataColumn colItem = new DataColumn("Name", Type.GetType("System.String"));
@@ -274,6 +273,94 @@ namespace AggManager
             return outStr.Substring(0, outStr.Length - 1);
         }
 
+        private void SetEstimatedSize(Aggregation agg)
+        {
+            double size = 0;
+            try
+            {
+                AggregationAttribute aggAttr;
+                AggregationDimension aggDim;
+                long iAggCardinality = 1;
+
+                foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
+                {
+                    long iDimGranularityCardinality = 0;
+                    long iDimAggCardinality = 1;
+                    bool bDimAggCardinalityFound = false;
+
+                    if (!(mgDim is RegularMeasureGroupDimension)) continue; //not sure how to handle m2m dimensions
+
+                    RegularMeasureGroupDimension regMgDim = (RegularMeasureGroupDimension)mgDim;
+                    aggDim = agg.Dimensions.Find(mgDim.CubeDimensionID);
+                    foreach (MeasureGroupAttribute mgDimAttr in regMgDim.Attributes)
+                    {
+                        if (mgDimAttr.Type == MeasureGroupAttributeType.Granularity)
+                        {
+                            iDimGranularityCardinality = mgDimAttr.Attribute.EstimatedCount;
+                            break;
+                        }
+                    }
+                    if (aggDim != null)
+                    {
+                        foreach (CubeAttribute cubeAttr in mgDim.CubeDimension.Attributes)
+                        {
+                            aggAttr = aggDim.Attributes.Find(cubeAttr.AttributeID);
+                            if (aggAttr != null && !CanReachAttributeFromChildInAgg(aggAttr,mgDim.Dimension.KeyAttribute, false))
+                            {
+                                iDimAggCardinality *= cubeAttr.Attribute.EstimatedCount;
+                                bDimAggCardinalityFound = true;
+                            }
+                        }
+                    }
+                    if (iDimAggCardinality > iDimGranularityCardinality)
+                    {
+                        //shouldn't be more than granularity cardinality because auto-exists prevents that
+                        iDimAggCardinality = iDimGranularityCardinality;
+                    }
+                    if (bDimAggCardinalityFound)
+                    {
+                        iAggCardinality *= iDimAggCardinality;
+                    }
+                }
+                if (mg1.EstimatedRows != 0 || iAggCardinality != 0)
+                {
+                    size = ((double)iAggCardinality / (double)mg1.EstimatedRows);
+                    if (size > 1) size = 1;
+                }
+            }
+            catch { }
+            finally
+            {
+                if (size != 0)
+                {
+                    lblEstimatedSize.Text = agg.Name + " Estimated Size: " + (size*100).ToString("#0.00") + "% of fact data";
+                    lblEstimatedSize.ForeColor = (size > .3333 ? Color.Red : Color.Black);
+                }
+                else
+                {
+                    lblEstimatedSize.Text = agg.Name + " Estimated Size: Unknown";
+                    lblEstimatedSize.ForeColor = Color.Black;
+                }
+            }
+        }
+
+        private bool CanReachAttributeFromChildInAgg(AggregationAttribute attr, DimensionAttribute current, bool bChildIsInAgg)
+        {
+            bChildIsInAgg = bChildIsInAgg || attr.Parent.Attributes.Contains(current.ID);
+            foreach (AttributeRelationship r in current.AttributeRelationships)
+            {
+                if (r.AttributeID == attr.AttributeID && bChildIsInAgg)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (CanReachAttributeFromChildInAgg(attr, r.Attribute, bChildIsInAgg)) return true;
+                }
+            }
+            return false;
+        }
+
         Boolean AddAggregationToAggDesign(AggregationDesign aggDesign, string instr, string aggName)
         {
             try
@@ -331,6 +418,44 @@ namespace AggManager
             }
         }
 
+        private Aggregation GetAggregationFromString(string aggregationName, string instr)
+        {
+            Aggregation agg = new Aggregation();
+            agg.Name = aggregationName;
+            string a1;
+            int dimNum = 0;
+            int attrNum = 0;
+            bool newDim = true;
+
+            for (int i = 0; i < instr.Length; i++)
+            {
+                a1 = instr[i].ToString();
+                switch (a1)
+                {
+                    case ",":
+                        dimNum++;
+                        attrNum = -1;
+                        newDim = true;
+
+                        break;
+                    case "0":
+                        break;
+                    case "1":
+
+                        if (newDim)
+                        {
+                            agg.Dimensions.Add(dimIDs[dimNum]);
+                            newDim = false;
+                        }
+                        agg.Dimensions[dimIDs[dimNum]].Attributes.Add(dimAttributes[dimNum, attrNum]);
+                        break;
+                    default:
+                        break;
+                }
+                attrNum++;
+            }
+            return agg;
+        }
 
         /// <summary>
         /// Called to populate tree view representing dimension attributes
@@ -483,6 +608,7 @@ namespace AggManager
             {
                 DataRow dr = GetCurrentDataGridRow();
                 String strAgg = dr[1].ToString();
+                String strAggName = dr[0].ToString();
 
                 if (checkBoxRelationships.Checked)
                 {
@@ -517,6 +643,7 @@ namespace AggManager
                         i++;
                     }
                 }
+                SetEstimatedSize(GetAggregationFromString(strAggName, strAgg));
             }
             catch
             { }
@@ -799,6 +926,8 @@ namespace AggManager
                     boolHandleClick = true;
                     node.Checked = !node.Checked;
                     boolHandleClick = false;
+                    DataRow dr = GetCurrentDataGridRow();
+                    SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
                 }
             }
         }
