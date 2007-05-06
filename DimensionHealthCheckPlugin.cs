@@ -81,6 +81,7 @@ namespace BIDSHelper
 
                 DimensionError[] errors = Check(d);
 
+                int iErrorCnt = 0;
                 EnvDTE80.Windows2 toolWins;
                 EnvDTE.Window toolWin;
                 object objTemp = null;
@@ -94,7 +95,6 @@ namespace BIDSHelper
                 if (errors.Length > 0)
                 {
                     browser.Document.Write("<b>Problems</b><br>");
-                    int iErrorCnt = 0;
                     foreach (DimensionError e in errors)
                     {
                         iErrorCnt++;
@@ -102,8 +102,16 @@ namespace BIDSHelper
                         browser.Document.Write(e.ErrorDescription);
                         if (e.ErrorTable != null)
                         {
-                            browser.Document.Write(" <a href=\"javascript:void(document.all.error" + iErrorCnt + ".style.display = (document.all.error" + iErrorCnt + ".style.display==''?'none':''))\" style='color:blue'>Show/hide problem rows</a><br>\r\n");
+                            browser.Document.Write(" <a href=\"javascript:void(null)\" id=expander" + iErrorCnt + " ErrorCnt=" + iErrorCnt + " style='color:blue'>Show/hide problem rows</a><br>\r\n");
                             browser.Document.Write("<table id=error" + iErrorCnt + " cellspacing=0 style='display:none;font-family:Arial;font-size:10pt'>");
+                            browser.Document.Write("<tr><td></td>");
+                            for (int i = 0; i < e.ErrorTable.Columns.Count; i++)
+                            {
+                                browser.Document.Write("<td nowrap><b>");
+                                browser.Document.Write(System.Web.HttpUtility.HtmlEncode(e.ErrorTable.Columns[i].ColumnName));
+                                browser.Document.Write("</b></td><td>&nbsp;&nbsp;</td>");
+                            }
+                            browser.Document.Write("</tr>\r\n");
                             foreach (DataRow dr in e.ErrorTable.Rows)
                             {
                                 browser.Document.Write("<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>");
@@ -128,6 +136,16 @@ namespace BIDSHelper
                 }
                 browser.Document.Write("</font>");
                 browser.IsWebBrowserContextMenuEnabled = false;
+                browser.AllowWebBrowserDrop = false;
+
+                Application.DoEvents();
+
+                for (int i = 1; i <= iErrorCnt; i++)
+                {
+                    //in some of the newer versions of Internet Explorer, javascript is not enabled
+                    //so do the dynamic stuff with C# events and code
+                    browser.Document.GetElementById("expander" + i).Click += new HtmlElementEventHandler(Expander_Click);
+                }
 
                 //setting IsFloating and Linkable to false makes this window tabbed
                 toolWin.IsFloating = false;
@@ -142,6 +160,26 @@ namespace BIDSHelper
             {
                 ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(false, "Checking Dimension Health...", 2, 2);
+            }
+        }
+
+        void Expander_Click(object sender, HtmlElementEventArgs e)
+        {
+            try
+            {
+                HtmlElement el = (HtmlElement)sender;
+                HtmlElement error = el.Document.GetElementById("error" + el.GetAttribute("ErrorCnt"));
+                if (error != null)
+                {
+                    if (error.Style.ToLower().StartsWith("display"))
+                        error.Style = "font-family:Arial;font-size:10pt";
+                    else
+                        error.Style = "display:none;font-family:Arial;font-size:10pt";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
             }
         }
 
@@ -352,6 +390,7 @@ namespace BIDSHelper
             StringBuilder outerSelect = new StringBuilder();
             StringBuilder groupBy = new StringBuilder();
             StringBuilder join = new StringBuilder();
+            StringBuilder topLevelColumns = new StringBuilder();
             Dictionary<DataTable, JoinedTable> tables = new Dictionary<DataTable, JoinedTable>();
             List<string> previousColumns = new List<string>();
             foreach (DataItem di in child)
@@ -383,6 +422,8 @@ namespace BIDSHelper
                     join.Append((join.Length == 0 ? "on " : "and ")).Append("isnull(y.[").Append(colAlias).Append("],").Append(sIsNull).Append(") = isnull(z.[").Append(colAlias).Append("],").Append(sIsNull).AppendLine(")");
                     groupBy.Append("[").Append(colAlias).AppendLine("]");
                     outerSelect.Append("[").Append(colAlias).AppendLine("]");
+                    if (topLevelColumns.Length > 0) topLevelColumns.Append(",");
+                    topLevelColumns.Append("y.[").Append(colAlias).Append("] as [").Append(dc.ColumnName).AppendLine("]");
                     if (!dc.ExtendedProperties.ContainsKey("ComputedColumnExpression"))
                     {
                         select.Append("[").Append(colAlias).Append("] = [").Append(dsv.Schema.Tables[col.TableID].ExtendedProperties["FriendlyName"].ToString()).Append("].[").Append((dc.ExtendedProperties["DbColumnName"] ?? dc.ColumnName).ToString()).AppendLine("]");
@@ -419,6 +460,8 @@ namespace BIDSHelper
                         select.Append("[").Append(colAlias).Append("]");
                         select.Append(" = ").AppendLine(dc.ExtendedProperties["ComputedColumnExpression"].ToString());
                     }
+                    if (topLevelColumns.Length > 0) topLevelColumns.Append(",");
+                    topLevelColumns.Append("y.[").Append(colAlias).Append("] as [").Append(dc.ColumnName).AppendLine("]");
 
                     if (!tables.ContainsKey(dsv.Schema.Tables[col.TableID]))
                     {
@@ -465,7 +508,7 @@ namespace BIDSHelper
 
             string invalidValuesInner = outerSelect.ToString();
             outerSelect = new StringBuilder();
-            outerSelect.AppendLine("select y.* from (").Append(select).AppendLine(") as y");
+            outerSelect.Append("select ").AppendLine(topLevelColumns.ToString()).AppendLine(" from (").Append(select).AppendLine(") as y");
             outerSelect.AppendLine("join (").AppendLine(invalidValuesInner).AppendLine(") z").AppendLine(join.ToString());
             return outerSelect.ToString();
         }
