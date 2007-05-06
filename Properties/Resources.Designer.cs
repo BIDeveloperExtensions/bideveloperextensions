@@ -60,6 +60,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon BIDSHelper {
+            get {
+                object obj = ResourceManager.GetObject("BIDSHelper", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to &lt;xsl:stylesheet version=&quot;1.0&quot; 
         ///	xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;

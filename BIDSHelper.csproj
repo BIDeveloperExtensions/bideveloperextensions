@@ -228,6 +228,7 @@
     <Content Include="AggManager\Graphics\Unchecked.ico" />
     <Content Include="BIDSHelper.AddIn" />
     <EmbeddedResource Include="BIDSHelper.ico" />
+    <EmbeddedResource Include="Resources\BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
