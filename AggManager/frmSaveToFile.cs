@@ -21,6 +21,16 @@
   IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
   PARTICULAR PURPOSE.
 ============================================================================*/
+/*
+ * This file has been incorporated into BIDSHelper. 
+ *    http://www.codeplex.com/BIDSHelper
+ * and may have been altered from the orginal version which was released 
+ * as a Microsoft sample.
+ * 
+ * The official version can be found on the sample website here: 
+ * http://www.codeplex.com/MSFTASProdSamples                                   
+ *                                                                             
+ ============================================================================*/
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
