@@ -10,10 +10,10 @@ using System.Resources;
 //TODO: Review the values of the assembly attributes
 
 [assembly: AssemblyTitle("BIDS Helper")]
-[assembly: AssemblyDescription("Adds some useful features to BIDS")]
-[assembly: AssemblyCompany("Darren Gosbell")]
+[assembly: AssemblyDescription("Provides additional useful features to the BI Development Studio")]
+[assembly: AssemblyCompany("http://www.codeplex.com/bidshelper")]
 [assembly: AssemblyProduct("BIDS Helper")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCopyright("2007")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -27,8 +27,9 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("0.9.*")]
 
 
 [assembly: ComVisible(true)]
 [assembly: NeutralResourcesLanguageAttribute("")]
+[assembly: AssemblyFileVersionAttribute("0.9.0.0")]

@@ -68,6 +68,15 @@ namespace BIDSHelper.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Description Resource.
+        /// </summary>
+        internal static string BIDSHelperDescription {
+            get {
+                return ResourceManager.GetString("BIDSHelperDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;xsl:stylesheet version=&quot;1.0&quot; 
         ///	xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
         ///	xmlns:as=&quot;http://schemas.microsoft.com/analysisservices/2003/engine&quot;&gt;
