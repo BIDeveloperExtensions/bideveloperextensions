@@ -230,6 +230,8 @@
     <EmbeddedResource Include="BIDSHelper.ico" />
     <EmbeddedResource Include="Resources\BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
+    <Content Include="SetupScript\BIDSHelper.bmp" />
+    <Content Include="SetupScript\BIDSHelperHeader.bmp" />
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />

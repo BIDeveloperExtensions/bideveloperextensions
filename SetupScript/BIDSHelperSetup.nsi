@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BIDS Helper"
-!define PRODUCT_VERSION "0.9"
+!define PRODUCT_VERSION "0.9 Beta 1"
 !define PRODUCT_PUBLISHER "BIDS Helper"
 !define PRODUCT_WEB_SITE "http://www.codeplex.com/bidshelper"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -11,15 +11,25 @@
 !define PRODUCT_SETTINGS_ROOT_KEY "HKCU"
 !define VSLOOK_IN_FOLDERS "Software\Microsoft\VisualStudio\8.0\AutomationOptions\LookInFolders"
 
+!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} ${PRODUCT_VERSION} has been installed on your computer.\r\nIt will be activated next time you start the BI Development Studio (BIDS)\r\n\r\nClick Finish to close this wizard."
+!define MUI_FINISHPAGE_TEXT_LARGE ""
+
 SetCompressor lzma
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
+!include Library.nsh
 
 ; MUI Settings
 !define MUI_ABORTWARNING
 !define MUI_ICON "..\BIDSHelper.ico" #"${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
 !define MUI_UNICON "..\BIDSHelper.ico" #"${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "BIDSHelperHeader.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "BIDSHelper.bmp"
+
+!define MUI_FINISHPAGE_LINK "BIDSHelper Homepage"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.codeplex.com/bidshelper"
 
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
@@ -51,11 +61,15 @@ ShowInstDetails show
 ShowUnInstDetails show
 
 Section "MainSection" SEC01
+
+#Call CloseParentWithUserApproval
+
   #SetOutPath "$DOCUMENTS\Visual Studio 2005\Addins"
   SetOutPath $INSTDIR
   SetOverwrite ifnewer
   CreateDirectory "$INSTDIR"
-  File "..\bin\BIDSHelper.dll"
+#  File "..\bin\BIDSHelper.dll"
+!insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BIDSHelper.dll" "$INSTDIR\BIDSHelper.dll" $INSTDIR\Temp
   File "..\BIDSHelper.AddIn"
 
   #WriteUninstaller "uninst.exe"
@@ -84,15 +98,63 @@ Function un.onInit
 FunctionEnd
 
 Section Uninstall
-# cannot fully uninstall if VS.Net is running and has the dll open.
-  Delete "$INSTDIR\BIDSHelper.dll"
-  Delete "$INSTDIR\BIDSHelper.Addin"
-  
-  RMDir "$INSTDIR"
 
+  # check that devenv.exe is not running
+  Call un.CloseParentWithUserApproval
+
+# cannot fully uninstall if VS.Net is running and has the dll open.
+#  Delete "$INSTDIR\BIDSHelper.dll"
+  !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\BIDSHelper.dll
+  
+  Delete "$INSTDIR\BIDSHelper.Addin"
   DeleteRegValue ${PRODUCT_UNINST_ROOT_KEY} "${VSLOOK_IN_FOLDERS}" "$INSTDIR"
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey ${PRODUCT_SETTINGS_ROOT_KEY} "${PRODUCT_SETTINGS_KEY}"
   Delete "$INSTDIR\uninst.exe"
+  RMDir "$INSTDIR"
   SetAutoClose true
 SectionEnd
+
+Function CloseParentWithUserApproval
+Push $5
+
+loop:
+  push "devenv.exe"
+  processwork::existsprocess
+  pop $5
+  IntCmp $5 0 done
+
+  MessageBox MB_RETRYCANCEL|MB_ICONSTOP 'Visual Studio.Net must be closed during this installation.$\r$\nClose Visual Studio.Net now, or press $\r$\n"Retry" to automatically close Visual Studio.Net and continue or press $\r$\n"Cancel" to cancel the installation entirely.'  IDCANCEL BailOut
+  push "devenv.exe"
+  processwork::KillProcess
+  Sleep 2000
+Goto loop
+
+BailOut:
+  Abort
+
+done:
+Pop $5
+FunctionEnd
+
+Function un.CloseParentWithUserApproval
+Push $5
+
+loop:
+  push "devenv.exe"
+  processwork::existsprocess
+  pop $5
+  IntCmp $5 0 done
+
+  MessageBox MB_RETRYCANCEL|MB_ICONSTOP 'Visual Studio.Net must be closed during this installation.$\r$\nClose Visual Studio.Net now, or press $\r$\n"Retry" to automatically close Visual Studio.Net and continue or press $\r$\n"Cancel" to cancel the installation entirely.'  IDCANCEL BailOut
+  push "devenv.exe"
+  processwork::KillProcess
+  Sleep 2000
+Goto loop
+
+BailOut:
+  Abort
+
+done:
+Pop $5
+FunctionEnd
