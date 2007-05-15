@@ -108,9 +108,16 @@ namespace BIDSHelper
                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 1, 5);
 
-                //\\Save the cube
-                //TODO - can I check and maybe prompt before saving?
-                projItem.Save("");
+                
+                // Check if the file is read-only (and probably checked in to a source control system)
+                // before attempting to save. (issue: 10327 )
+                FileAttributes fa = System.IO.File.GetAttributes(projItem.get_FileNames(1));
+                if ((fa & FileAttributes.ReadOnly) != FileAttributes.ReadOnly )
+                {
+                    //TODO - can I check and maybe prompt before saving?
+                    //Save the cube
+                    projItem.Save("");
+                }
 
                 ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 2, 5);
 
