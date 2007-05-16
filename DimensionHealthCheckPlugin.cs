@@ -144,7 +144,11 @@ namespace BIDSHelper
                 {
                     //in some of the newer versions of Internet Explorer, javascript is not enabled
                     //so do the dynamic stuff with C# events and code
-                    browser.Document.GetElementById("expander" + i).Click += new HtmlElementEventHandler(Expander_Click);
+                    try
+                    {
+                        browser.Document.GetElementById("expander" + i).Click += new HtmlElementEventHandler(Expander_Click);
+                    }
+                    catch { }
                 }
 
                 //setting IsFloating and Linkable to false makes this window tabbed
@@ -190,30 +194,10 @@ namespace BIDSHelper
             if (d.MiningModelID != null) return new DimensionError[] { };
             List<DimensionError> problems = new List<DimensionError>();
             //TODO: need to add in code to allow you to cancel such that it will stop an executing query
-            System.Data.Common.DbCommand cmd;
-            System.Data.Common.DbConnection conn;
-            System.Data.Common.DataAdapter adp = null;
-            if (d.DataSource.ConnectionString.Contains("Provider=SQLNCLI.1;") || !d.DataSource.ConnectionString.Contains("Provider="))
-            {
-                cmd = new System.Data.SqlClient.SqlCommand();
-                conn = new System.Data.SqlClient.SqlConnection(d.DataSource.ConnectionString.Replace("Provider=SQLNCLI.1;", ""));
-                adp = new System.Data.SqlClient.SqlDataAdapter((System.Data.SqlClient.SqlCommand)cmd);
-            }
-            else
-            {
-                cmd = new System.Data.OleDb.OleDbCommand();
-                conn = new System.Data.OleDb.OleDbConnection(d.DataSource.ConnectionString);
-                adp = new System.Data.OleDb.OleDbDataAdapter((System.Data.OleDb.OleDbCommand)cmd);
-            }
-            //TODO: try other datasource types like ODBC???
 
-            //don't know how to retrieve password for SQL security, so change this to integrated security
-            conn.ConnectionString = "Data Source=\"" + conn.DataSource + "\";Initial Catalog=\"" + conn.Database + "\";Integrated Security=SSPI;";
-
+            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(d.DataSource);
 
             int iProgressCount = 0;
-            conn.Open();
-            cmd.Connection = conn;
             String sql = "";
             bool bGotSQL = false;
             foreach (DimensionAttribute da in d.Attributes)
@@ -225,9 +209,8 @@ namespace BIDSHelper
                     if (sql != null)
                     {
                         bGotSQL = true;
-                        cmd.CommandText = sql;
                         DataSet ds = new DataSet();
-                        adp.Fill(ds);
+                        openedDataSourceConnection.Fill(ds, sql);
                         if (ds.Tables[0].Rows.Count > 0)
                         {
                             string problem = "Attribute [" + da.Name + "] has key values with multiple names.";
@@ -258,9 +241,8 @@ namespace BIDSHelper
                         if (sql != null)
                         {
                             bGotSQL = true;
-                            cmd.CommandText = sql;
                             DataSet ds = new DataSet();
-                            adp.Fill(ds);
+                            openedDataSourceConnection.Fill(ds, sql);
                             if (ds.Tables[0].Rows.Count > 0)
                             {
                                 string problem = "Attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] is not valid because it results in a many-to-many relationship.";
@@ -281,7 +263,7 @@ namespace BIDSHelper
                 }
                 ApplicationObject.StatusBar.Progress(true, "Checking Attribute Relationships...", ++iProgressCount, d.Attributes.Count * 2);
             }
-            conn.Close();
+            openedDataSourceConnection.Close();
             return problems.ToArray();
         }
 
