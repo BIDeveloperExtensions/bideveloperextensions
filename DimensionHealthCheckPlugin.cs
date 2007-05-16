@@ -401,7 +401,7 @@ namespace BIDSHelper
                         else
                             sIsNull = "0";
                     }
-                    join.Append((join.Length == 0 ? "on " : "and ")).Append("isnull(y.[").Append(colAlias).Append("],").Append(sIsNull).Append(") = isnull(z.[").Append(colAlias).Append("],").Append(sIsNull).AppendLine(")");
+                    join.Append((join.Length == 0 ? "on " : "and ")).Append("coalesce(y.[").Append(colAlias).Append("],").Append(sIsNull).Append(") = coalesce(z.[").Append(colAlias).Append("],").Append(sIsNull).AppendLine(")");
                     groupBy.Append("[").Append(colAlias).AppendLine("]");
                     outerSelect.Append("[").Append(colAlias).AppendLine("]");
                     if (topLevelColumns.Length > 0) topLevelColumns.Append(",");
