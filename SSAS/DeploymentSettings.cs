@@ -6,7 +6,7 @@ using EnvDTE80;
 using System.IO;
 
 // =========================================================================================
-// Class      : DeploymentSettings.vb
+// Class      : DeploymentSettings.cs
 // Author     : Darren Gosbell
 // Date       : 18 Dec 2006
 // Description: This class determines the users currently deployment settings.

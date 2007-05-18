@@ -9,6 +9,10 @@ using System.Windows.Forms;
 using System.IO;
 using System.Resources;
 
+using Microsoft.AnalysisServices;
+using Microsoft.AnalysisServices.AdomdClient;
+
+
 namespace BIDSHelper
 {
     public class DeployMDXScriptPlugin : BIDSHelperPluginBase
@@ -95,6 +99,9 @@ namespace BIDSHelper
             {
                 //validate the script because deploying an invalid script makes cube unusable
                 Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);
+
+                
+
             }
             catch (Microsoft.AnalysisServices.Design.ScriptParsingFailed ex)
             {
@@ -121,45 +128,87 @@ namespace BIDSHelper
 
                 ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 2, 5);
 
-                //\\ extract deployment information
+                // extract deployment information
                 DeploymentSettings deploySet = new DeploymentSettings(projItem);
 
-                //\\ use xlst to create xmla alter command
+                // use xlst to create xmla alter command
                 XslCompiledTransform xslt = new XslCompiledTransform();
                 XmlReader xsltRdr;
                 XmlReader xrdr;
 
-                //\\ read xslt from embedded resource
+                // read xslt from embedded resource
                 xsltRdr = XmlReader.Create(new StringReader(Properties.Resources.DeployMdxScript));
                 using ((xsltRdr))
                 {
-                    //\\ read content from .cube file
+                    // read content from .cube file
                     xrdr = XmlReader.Create(projItem.get_FileNames(1));
                     using (xrdr)
                     {
-                        //\\ Build up the Alter MdxScript command using XSLT against the .cube file
+                        // Build up the Alter MdxScript command using XSLT against the .cube file
                         XslCompiledTransform xslta = new XslCompiledTransform();
                         StringBuilder sb = new StringBuilder();
                         XmlWriterSettings xws = new XmlWriterSettings();
                         xws.OmitXmlDeclaration = true;
                         XmlWriter xwrtr = XmlWriter.Create(sb, xws);
+                        
                         xslta.Load(xsltRdr);
                         XsltArgumentList xslarg = new XsltArgumentList();
                         xslarg.AddParam("TargetDatabase", "", deploySet.TargetDatabase);
                         xslta.Transform(xrdr, xslarg, xwrtr);
                         System.Diagnostics.Debug.Print(sb.ToString());
-
+                        
                         ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 3, 5);
-                        //\\ Connect to Analysis Services
+                        // Connect to Analysis Services
                         Microsoft.AnalysisServices.Server svr = new Microsoft.AnalysisServices.Server();
                         svr.Connect(deploySet.TargetServer);
                         ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 4, 5);
-                        //\\ execute the xmla
-                        svr.Execute(sb.ToString());
-                        ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 5, 5);
-                        //\\ report any results back (status bar?)
-                        svr.Disconnect();
+                        // execute the xmla
+                        try
+                        {
+                            Microsoft.AnalysisServices.Scripter scr = new Microsoft.AnalysisServices.Scripter();
+                            
+                            StringBuilder sbBackup = new StringBuilder();
+                            XmlWriterSettings xwSet = new XmlWriterSettings();
+                            xwSet.ConformanceLevel = ConformanceLevel.Fragment;
+                            xwSet.Indent = true;
+                            XmlWriter xwScript = XmlWriter.Create(sbBackup,xwSet);
 
+                            MdxScript mdxScr = svr.Databases.GetByName(deploySet.TargetDatabase).Cubes.Find(oCube.ID).MdxScripts[0];
+                            scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[]{mdxScr},xwScript,true);
+                            xwScript.Close();
+                            // update the MDX Script
+                            svr.Execute(sb.ToString());
+                            // Test the MDX Script
+                            AdomdConnection cn = new AdomdConnection("Data Source=" + deploySet.TargetServer + ";Initial Catalog=" + deploySet.TargetDatabase);
+                            cn.Open();
+                            AdomdCommand cmd = cn.CreateCommand();
+                            string qry = "SELECT {measures.Members.Item(0)} ON 0 FROM [" + oCube.Name +"];";
+                            cmd.CommandText = qry;
+                            try
+                            {
+                                cmd.Execute();
+                            }
+                            catch (System.Exception ex)
+                            {
+                                // undo the deployment
+                                svr.Execute(sbBackup.ToString());
+                                MessageBox.Show(ex.Message);
+                            }
+                        }
+                        catch (System.Exception ex)
+                        {
+                            if (MessageBox.Show(ex.Message + "\r\nDo you want to see a stack trace?", "", MessageBoxButtons.YesNo , MessageBoxIcon.Error, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+                            {
+                                MessageBox.Show(ex.StackTrace);
+                            }
+                            svr.RollbackTransaction();
+                        }
+                        finally
+                        {
+                            ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 5, 5);
+                            // report any results back (status bar?)
+                            svr.Disconnect();
+                        }
                     }
                 }
             }
@@ -169,5 +218,6 @@ namespace BIDSHelper
                 ApplicationObject.StatusBar.Progress(false, "Deploying MdxScript", 5, 5);
             }
         }
+
     }
 }
