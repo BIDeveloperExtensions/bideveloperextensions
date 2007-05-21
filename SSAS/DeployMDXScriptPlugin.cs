@@ -186,11 +186,20 @@ namespace BIDSHelper
                             cmd.CommandText = qry;
                             try
                             {
+                                // test that we can query the cube without errors
                                 cmd.Execute();
+
+                                // Building the project means that the .asdatabase file gets re-built so that
+                                // we do not break the Deployment Wizard.
+                                // --
+                                // This line is included in this try block so that it is only executed if we can
+                                // successfully query the cube without errors.
+                                projItem.DTE.Solution.SolutionBuild.BuildProject(projItem.DTE.Solution.SolutionBuild.ActiveConfiguration.Name, projItem.ContainingProject.UniqueName, false);
+
                             }
                             catch (System.Exception ex)
                             {
-                                // undo the deployment
+                                // undo the deployment if we caught an exception during the deployment
                                 svr.Execute(sbBackup.ToString());
                                 MessageBox.Show(ex.Message);
                             }
