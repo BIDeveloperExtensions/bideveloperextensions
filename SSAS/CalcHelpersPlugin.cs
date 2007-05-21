@@ -45,7 +45,7 @@ namespace BIDSHelper
                 IDesignerHost designer = (IDesignerHost)GotFocus.Object;
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
-                if (!(pi.Object is Cube)) return;
+                if ((pi==null) || (!(pi.Object is Cube))) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
 
