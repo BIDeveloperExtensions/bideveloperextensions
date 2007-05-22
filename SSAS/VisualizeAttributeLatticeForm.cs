@@ -228,27 +228,30 @@ namespace BIDSHelper
         {
             try
             {
-                int oldIndex = dimension.Parent.Dimensions.IndexOf(dimension);
-                if (oldIndex == 0)
+                lock (dimensionsToolStripMenuItem)
                 {
-                    dimension = dimension.Parent.Dimensions[dimension.Parent.Dimensions.Count - 1];
-                }
-                else
-                {
-                    dimension = dimension.Parent.Dimensions[oldIndex - 1];
-                }
-                foreach (ToolStripItem item in dimensionsToolStripMenuItem.DropDownItems)
-                {
-                    if (item is ToolStripMenuItem)
+                    int oldIndex = dimension.Parent.Dimensions.IndexOf(dimension);
+                    if (oldIndex == 0)
                     {
-                        ToolStripMenuItem menuItem = (ToolStripMenuItem)item;
-                        if (item.Text == dimension.Name)
-                            menuItem.Checked = true;
-                        else
-                            menuItem.Checked = false;
+                        dimension = dimension.Parent.Dimensions[dimension.Parent.Dimensions.Count - 1];
                     }
+                    else
+                    {
+                        dimension = dimension.Parent.Dimensions[oldIndex - 1];
+                    }
+                    foreach (ToolStripItem item in dimensionsToolStripMenuItem.DropDownItems)
+                    {
+                        if (item is ToolStripMenuItem)
+                        {
+                            ToolStripMenuItem menuItem = (ToolStripMenuItem)item;
+                            if (item.Text == dimension.Name)
+                                menuItem.Checked = true;
+                            else
+                                menuItem.Checked = false;
+                        }
+                    }
+                    LayoutImage();
                 }
-                LayoutImage();
             }
             catch (Exception ex)
             {
@@ -260,27 +263,30 @@ namespace BIDSHelper
         {
             try
             {
-                int oldIndex = dimension.Parent.Dimensions.IndexOf(dimension);
-                if (oldIndex == dimension.Parent.Dimensions.Count - 1)
+                lock (dimensionsToolStripMenuItem)
                 {
-                    dimension = dimension.Parent.Dimensions[0];
-                }
-                else
-                {
-                    dimension = dimension.Parent.Dimensions[oldIndex + 1];
-                }
-                foreach (ToolStripItem item in dimensionsToolStripMenuItem.DropDownItems)
-                {
-                    if (item is ToolStripMenuItem)
+                    int oldIndex = dimension.Parent.Dimensions.IndexOf(dimension);
+                    if (oldIndex == dimension.Parent.Dimensions.Count - 1)
                     {
-                        ToolStripMenuItem menuItem = (ToolStripMenuItem)item;
-                        if (item.Text == dimension.Name)
-                            menuItem.Checked = true;
-                        else
-                            menuItem.Checked = false;
+                        dimension = dimension.Parent.Dimensions[0];
                     }
+                    else
+                    {
+                        dimension = dimension.Parent.Dimensions[oldIndex + 1];
+                    }
+                    foreach (ToolStripItem item in dimensionsToolStripMenuItem.DropDownItems)
+                    {
+                        if (item is ToolStripMenuItem)
+                        {
+                            ToolStripMenuItem menuItem = (ToolStripMenuItem)item;
+                            if (item.Text == dimension.Name)
+                                menuItem.Checked = true;
+                            else
+                                menuItem.Checked = false;
+                        }
+                    }
+                    LayoutImage();
                 }
-                LayoutImage();
             }
             catch (Exception ex)
             {

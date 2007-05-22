@@ -61,12 +61,12 @@ namespace BIDSHelper
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
 
-                    string s1 = "";
-                    foreach (Control ctrl in viewControl.Controls["panel1"].Controls)
-                    {
-                        s1 += (ctrl.Name + ":" + ctrl.ToString() + Environment.NewLine);
-                    }
-                    System.Windows.Forms.MessageBox.Show(s1);
+                    //string s1 = "";
+                    //foreach (Control ctrl in viewControl.Controls["panel1"].Controls)
+                    //{
+                    //    s1 += (ctrl.Name + ":" + ctrl.ToString() + Environment.NewLine);
+                    //}
+                    //System.Windows.Forms.MessageBox.Show(s1);
                 }
                 else if (win.SelectedIndex == 1)
                 {

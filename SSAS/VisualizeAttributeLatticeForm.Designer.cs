@@ -61,7 +61,7 @@ namespace BIDSHelper
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(546, 26);
+            this.menuStrip1.Size = new System.Drawing.Size(546, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -71,20 +71,20 @@ namespace BIDSHelper
             this.saveAsToolStripMenuItem,
             this.saveAllDimensionsToFolderToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(40, 22);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(301, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // saveAllDimensionsToFolderToolStripMenuItem
             // 
             this.saveAllDimensionsToFolderToolStripMenuItem.Name = "saveAllDimensionsToFolderToolStripMenuItem";
-            this.saveAllDimensionsToFolderToolStripMenuItem.Size = new System.Drawing.Size(301, 22);
+            this.saveAllDimensionsToFolderToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
             this.saveAllDimensionsToFolderToolStripMenuItem.Text = "Save All Dimensions To Folder...";
             this.saveAllDimensionsToFolderToolStripMenuItem.Click += new System.EventHandler(this.saveAllDimensionsToFolderToolStripMenuItem_Click);
             // 
@@ -95,27 +95,27 @@ namespace BIDSHelper
             this.nextAltRightArrowToolStripMenuItem,
             this.toolStripSeparator1});
             this.dimensionsToolStripMenuItem.Name = "dimensionsToolStripMenuItem";
-            this.dimensionsToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
+            this.dimensionsToolStripMenuItem.Size = new System.Drawing.Size(72, 20);
             this.dimensionsToolStripMenuItem.Text = "Dimensions";
             // 
             // previousAltLeftArrowToolStripMenuItem
             // 
             this.previousAltLeftArrowToolStripMenuItem.Name = "previousAltLeftArrowToolStripMenuItem";
-            this.previousAltLeftArrowToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.previousAltLeftArrowToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.previousAltLeftArrowToolStripMenuItem.Text = "Previous (Alt-Left Arrow)";
             this.previousAltLeftArrowToolStripMenuItem.Click += new System.EventHandler(this.previousAltLeftArrowToolStripMenuItem_Click);
             // 
             // nextAltRightArrowToolStripMenuItem
             // 
             this.nextAltRightArrowToolStripMenuItem.Name = "nextAltRightArrowToolStripMenuItem";
-            this.nextAltRightArrowToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.nextAltRightArrowToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.nextAltRightArrowToolStripMenuItem.Text = "Next (Alt-Right Arrow)";
             this.nextAltRightArrowToolStripMenuItem.Click += new System.EventHandler(this.nextAltRightArrowToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(247, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(202, 6);
             // 
             // optionsToolStripMenuItem
             // 
@@ -123,7 +123,7 @@ namespace BIDSHelper
             this.layoutToolStripMenuItem,
             this.showOnlyMultilevelRelationshipsToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(69, 22);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.optionsToolStripMenuItem.Text = "Options";
             // 
             // layoutToolStripMenuItem
@@ -133,7 +133,7 @@ namespace BIDSHelper
             this.layoutBToolStripMenuItem,
             this.layoutCToolStripMenuItem});
             this.layoutToolStripMenuItem.Name = "layoutToolStripMenuItem";
-            this.layoutToolStripMenuItem.Size = new System.Drawing.Size(313, 22);
+            this.layoutToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
             this.layoutToolStripMenuItem.Text = "Layout Method";
             this.layoutToolStripMenuItem.Visible = false;
             // 
@@ -142,28 +142,28 @@ namespace BIDSHelper
             this.layoutAToolStripMenuItem.Checked = true;
             this.layoutAToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.layoutAToolStripMenuItem.Name = "layoutAToolStripMenuItem";
-            this.layoutAToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
-            this.layoutAToolStripMenuItem.Text = "Layout A";
+            this.layoutAToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.layoutAToolStripMenuItem.Text = "Layout A (Usually the Best)";
             this.layoutAToolStripMenuItem.Click += new System.EventHandler(this.layoutAToolStripMenuItem_Click);
             // 
             // layoutBToolStripMenuItem
             // 
             this.layoutBToolStripMenuItem.Name = "layoutBToolStripMenuItem";
-            this.layoutBToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.layoutBToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.layoutBToolStripMenuItem.Text = "Layout B";
             this.layoutBToolStripMenuItem.Click += new System.EventHandler(this.layoutBToolStripMenuItem_Click);
             // 
             // layoutCToolStripMenuItem
             // 
             this.layoutCToolStripMenuItem.Name = "layoutCToolStripMenuItem";
-            this.layoutCToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.layoutCToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.layoutCToolStripMenuItem.Text = "Layout C";
             this.layoutCToolStripMenuItem.Click += new System.EventHandler(this.layoutCToolStripMenuItem_Click);
             // 
             // showOnlyMultilevelRelationshipsToolStripMenuItem
             // 
             this.showOnlyMultilevelRelationshipsToolStripMenuItem.Name = "showOnlyMultilevelRelationshipsToolStripMenuItem";
-            this.showOnlyMultilevelRelationshipsToolStripMenuItem.Size = new System.Drawing.Size(313, 22);
+            this.showOnlyMultilevelRelationshipsToolStripMenuItem.Size = new System.Drawing.Size(253, 22);
             this.showOnlyMultilevelRelationshipsToolStripMenuItem.Text = "Show Only Multi-level Relationships";
             this.showOnlyMultilevelRelationshipsToolStripMenuItem.Click += new System.EventHandler(this.showOnlyMultilevelRelationshipsToolStripMenuItem_Click);
             // 
@@ -172,13 +172,13 @@ namespace BIDSHelper
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.legendToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(48, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // legendToolStripMenuItem
             // 
             this.legendToolStripMenuItem.Name = "legendToolStripMenuItem";
-            this.legendToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.legendToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.legendToolStripMenuItem.Text = "Legend";
             this.legendToolStripMenuItem.Click += new System.EventHandler(this.legendToolStripMenuItem_Click);
             // 

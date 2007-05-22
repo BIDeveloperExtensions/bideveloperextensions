@@ -101,16 +101,6 @@ class LatticeDrawing
         this.Title = title;
     }
 
-    /* //I think disposing of the image causes problems... need to do the disposing in the window that's displaying the image when the window is closed, probably?????
-    //destructor
-    ~LatticeDrawing()
-    {
-        if (canvas != null)
-        {
-            canvas.Dispose();
-        }
-    }*/
-
     public Bitmap Render()
     {
         canvas = new Bitmap(NODE_WIDTH, 1000);
@@ -277,21 +267,56 @@ class LatticeDrawing
             if (r.MaxRelationshipDepth == MaxRelationshipDepth && r.MinColumnPosition == 0)
             {
                 int pos = (int)Math.Round(maxNodesAcross / 2.0, MidpointRounding.AwayFromZero);
+                bool bColumnSet = false;
+
+                //start by going the only the direction (left or right) that the child node is going
                 for (int j = 0; j < maxNodesAcross / 2.0; j++)
                 {
                     if (!arLayoutMatrix[DistanceFromKey - 1, pos + j - 1])
                     {
-                        arLayoutMatrix[DistanceFromKey - 1, pos + j - 1] = true;
-                        r.MinColumnPosition = pos + j;
-                        r.MaxColumnPosition = pos + j;
-                        break;
+                        if (ln.MaxColumnPosition > pos)
+                        {
+                            bColumnSet = true;
+                            arLayoutMatrix[DistanceFromKey - 1, pos + j - 1] = true;
+                            r.MinColumnPosition = pos + j;
+                            r.MaxColumnPosition = pos + j;
+                            break;
+                        }
                     }
                     else if (!arLayoutMatrix[DistanceFromKey - 1, pos - j - 1])
                     {
-                        arLayoutMatrix[DistanceFromKey - 1, pos - j - 1] = true;
-                        r.MinColumnPosition = pos - j;
-                        r.MaxColumnPosition = pos - j;
-                        break;
+                        if (ln.MinColumnPosition < pos)
+                        {
+                            bColumnSet = true;
+                            arLayoutMatrix[DistanceFromKey - 1, pos - j - 1] = true;
+                            r.MinColumnPosition = pos - j;
+                            r.MaxColumnPosition = pos - j;
+                            break;
+                        }
+                    }
+                }
+
+                //if there's no room going the way that the child node went, then go the other way
+                if (!bColumnSet)
+                {
+                    for (int j = 0; j < maxNodesAcross / 2.0; j++)
+                    {
+                        if (!arLayoutMatrix[DistanceFromKey - 1, pos + j - 1])
+                        {
+                            bColumnSet = true;
+                            arLayoutMatrix[DistanceFromKey - 1, pos + j - 1] = true;
+                            r.MinColumnPosition = pos + j;
+                            r.MaxColumnPosition = pos + j;
+                            break;
+                        }
+                        else if (!arLayoutMatrix[DistanceFromKey - 1, pos - j - 1])
+                        {
+                            bColumnSet = true;
+                            arLayoutMatrix[DistanceFromKey - 1, pos - j - 1] = true;
+                            r.MinColumnPosition = pos - j;
+                            r.MaxColumnPosition = pos - j;
+                            break;
+                        }
                     }
                 }
             }
