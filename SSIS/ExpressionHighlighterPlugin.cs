@@ -19,9 +19,12 @@ namespace BIDSHelper
 {
     public class ExpressionHighlighterPlugin : BIDSHelperPluginBase
     {
+
+
+
         private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        
+
         //TODO: may be needed if we decide to capture the ActiveViewChanged event... see TODO below on this topic
         //private System.Collections.Generic.List<string> windowHandlesFixedPartitionsView = new System.Collections.Generic.List<string>();
 
@@ -41,6 +44,8 @@ namespace BIDSHelper
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
         void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
         {
+            IDTSSequence container = null;
+
             try
             {
                 if (GotFocus == null) return;
@@ -51,19 +56,48 @@ namespace BIDSHelper
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
                 DdsDiagramHostControl diagram = null;
-                if (win.SelectedIndex == 0)
+
+                if (win.SelectedIndex == 0) //Control Flow
                 {
-                    //control flow designer
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
+
+                    string s1 = "";
+                    foreach (Control ctrl in viewControl.Controls["panel1"].Controls)
+                    {
+                        s1 += (ctrl.Name + ":" + ctrl.ToString() + Environment.NewLine);
+                    }
+                    System.Windows.Forms.MessageBox.Show(s1);
                 }
-                    //TODO: add in code to do this for the event handlers tab
-                    //TODO: put indicator on the connection in the connection managers pane?
+                else if (win.SelectedIndex == 1)
+                {
+                    ////data flow designer
+                    //diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
+                    //MainPipe pipe = (MainPipe)((TaskHost)diagram.ComponentDiagram.RootComponent).InnerObject;
+                    //foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
+                    //{
+                    //    if (o.Type == DdsLayoutObjectType.dlotShape)
+                    //    {
+                    //        //bool bHasExpression = false;
+                    //        MSDDS.IDdsExtendedProperty prop = o.IDdsExtendedProperties.Item("LogicalObject");
+                    //        if (prop == null) continue;
+                    //        string sObjectGuid = prop.Value.ToString();
+                    //        IDTSComponentMetaData90 transform = pipe.ComponentMetaDataCollection.GetObjectByID(int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1)));
+                    //        return;
+                    //    }
+                    //}
+                }
+                else if (win.SelectedIndex == 2) //Event Handlers
+                {
+                    diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
+                }
+                //TODO: put indicator on the connection in the connection managers pane?
                 else
                 {
                     return;
                 }
 
-                Package package = (Package)diagram.ComponentDiagram.RootComponent;
+                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
+
 
                 Type managedshapebasetype = GetPrivateType(typeof(Microsoft.DataTransformationServices.Design.ColumnInfo), "Microsoft.DataTransformationServices.Design.ManagedShapeBase");
                 if (managedshapebasetype == null) return;
@@ -79,30 +113,17 @@ namespace BIDSHelper
                         string sObjectGuid = prop.Value.ToString();
                         try
                         {
-                            //TODO: any better way to get the Executable?
-                            Executable executable = FindCorrespondingExecutable(package, sObjectGuid);
+                            Executable executable = FindCorrespondingExecutable(container, sObjectGuid);
                             if (executable is IDTSPropertiesProvider)
                             {
-                                IDTSPropertiesProvider task = (IDTSPropertiesProvider)executable;
-                                foreach (DtsProperty p in task.Properties)
-                                {
-                                    try
-                                    {
-                                        //TODO: any better way to see if this task has expressions?
-                                        if (task.GetExpression(p.Name) != null)
-                                        {
-                                            bHasExpression = true;
-                                            break;
-                                        }
-                                    }
-                                    catch { }
-                                }
+                                bHasExpression = HasExpression(executable);
                             }
                         }
                         catch
                         {
                             continue;
                         }
+
                         object managedShape = managedshapebasetype.InvokeMember("GetManagedShape", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, null, new object[] { o });
                         if (managedShape != null)
                         {
@@ -120,52 +141,7 @@ namespace BIDSHelper
 
                                 //now update the icon to note this one has an expression
                                 //TODO: need better indicator???
-                                icon.SetPixel(0, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 2, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 3, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 4, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 5, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 6, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 7, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 8, System.Drawing.Color.Magenta);
-                                icon.SetPixel(0, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(2, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(3, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(4, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(5, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(6, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(7, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(8, 0, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 2, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 3, System.Drawing.Color.Magenta);
-                                icon.SetPixel(2, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(3, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(2, 2, System.Drawing.Color.Magenta);
-                                icon.SetPixel(3, 2, System.Drawing.Color.Magenta);
-                                icon.SetPixel(2, 3, System.Drawing.Color.Magenta);
-                                icon.SetPixel(3, 3, System.Drawing.Color.Magenta);
-                                icon.SetPixel(3, 4, System.Drawing.Color.Magenta);
-                                icon.SetPixel(2, 4, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 4, System.Drawing.Color.Magenta);
-                                icon.SetPixel(4, 4, System.Drawing.Color.Magenta);
-                                icon.SetPixel(4, 3, System.Drawing.Color.Magenta);
-                                icon.SetPixel(4, 2, System.Drawing.Color.Magenta);
-                                icon.SetPixel(4, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 5, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 6, System.Drawing.Color.Magenta);
-                                icon.SetPixel(1, 7, System.Drawing.Color.Magenta);
-                                icon.SetPixel(2, 5, System.Drawing.Color.Magenta);
-                                icon.SetPixel(2, 6, System.Drawing.Color.Magenta);
-                                icon.SetPixel(5, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(6, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(7, 1, System.Drawing.Color.Magenta);
-                                icon.SetPixel(5, 2, System.Drawing.Color.Magenta);
-                                icon.SetPixel(6, 2, System.Drawing.Color.Magenta);
-                                icon.SetPixel(5, 3, System.Drawing.Color.Magenta);
-                                icon.SetPixel(3, 5, System.Drawing.Color.Magenta);
+                                ModifyIcon(icon, System.Drawing.Color.Magenta);
 
                                 //TODO: change tooltip and put listing of all properties and their expressions?
                             }
@@ -173,12 +149,12 @@ namespace BIDSHelper
                     }
                 }
                 return;
-                
-                
-                
-                
-                
-                
+
+
+
+
+
+
                 //TODO: decide whether we need to monitor the ActiveViewChanged event to catch when we flip to a new tab
                 //TODO: does the above code run too slow? should it be put in a BackgroundWorker thread? will that cause threads to step on each other?
 
@@ -194,25 +170,56 @@ namespace BIDSHelper
             catch { }
         }
 
+        private static void ModifyIcon(System.Drawing.Bitmap icon, System.Drawing.Color color)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 8-i; j > -1; j--)
+                {
+                    icon.SetPixel(i, j, color);
+                }
+            }
+        }
+
+        //Determine if the task has an expression
+        private bool HasExpression(Executable executable)
+        {
+            IDTSPropertiesProvider task = (IDTSPropertiesProvider)executable;
+            bool returnValue = false;
+
+            foreach (DtsProperty p in task.Properties)
+            {
+                try
+                {
+                    if (task.GetExpression(p.Name) != null)
+                    {
+                        returnValue = true;
+                        break;
+                    }
+                }
+                catch { }
+            }
+            return returnValue;
+        }
+
         //recursively looks in executables to find executable with the specified GUID
         Executable FindCorrespondingExecutable(IDTSSequence parentExecutable, string sObjectGuid)
         {
-            try
+            Executable matchingExecutable = null;
+
+            if (parentExecutable.Executables.Contains(sObjectGuid))
             {
-                return parentExecutable.Executables[sObjectGuid];
+                matchingExecutable = parentExecutable.Executables[sObjectGuid];
             }
-            catch
+            else
             {
                 foreach (Executable e in parentExecutable.Executables)
                 {
-                    try
-                    {
-                        return FindCorrespondingExecutable((IDTSSequence)e, sObjectGuid);
-                    }
-                    catch { }
+                    matchingExecutable = FindCorrespondingExecutable((IDTSSequence) e, sObjectGuid);
                 }
             }
-            throw new Exception("not found");
+
+            return matchingExecutable;
         }
 
         Type GetPrivateType(Type publicTypeInSameAssembly, string FullName)
