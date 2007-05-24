@@ -43,10 +43,6 @@ namespace BIDSHelper
             // reportViewer1
             // 
             this.reportViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            reportDataSource1.Name = "BIDSHelper_DimensionUsage";
-            reportDataSource1.Value = this.ReportBindingSource;
-            this.reportViewer1.LocalReport.DataSources.Add(reportDataSource1);
-            this.reportViewer1.LocalReport.ReportEmbeddedResource = "BIDSHelper.PrinterFriendlyDimensionUsage.rdlc";
             this.reportViewer1.Location = new System.Drawing.Point(0, 0);
             this.reportViewer1.Name = "reportViewer1";
             this.reportViewer1.Size = new System.Drawing.Size(782, 461);
@@ -69,7 +65,7 @@ namespace BIDSHelper
 
         #endregion
 
-        private Microsoft.Reporting.WinForms.ReportViewer reportViewer1;
+        public Microsoft.Reporting.WinForms.ReportViewer reportViewer1;
         public System.Windows.Forms.BindingSource ReportBindingSource;
     }
 }

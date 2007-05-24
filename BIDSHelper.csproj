@@ -288,6 +288,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
+    <EmbeddedResource Include="SSAS\VisualizeAttributeLattice.rdlc" />
     <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsage.rdlc" />
     <EmbeddedResource Include="Core\ReportViewerForm.resx">
       <SubType>Designer</SubType>
@@ -304,9 +305,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\DataSources\DimensionUsage.datasource" />
+    <None Include="Properties\DataSources\VisualizeAttributeLatticeImageForReport.datasource" />
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
     <None Include="SetupScript\BIDSHelperSetup.nsi" />
     <None Include="SetupScript\License.rtf" />
-    <None Include="Properties\DataSources\DimensionUsage.datasource" />
   </ItemGroup>
 </Project>

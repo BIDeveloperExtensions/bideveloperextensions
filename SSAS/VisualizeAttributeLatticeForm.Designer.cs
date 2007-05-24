@@ -47,6 +47,7 @@ namespace BIDSHelper
             this.legendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.openReportWithAllDimensionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -69,7 +70,8 @@ namespace BIDSHelper
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveAsToolStripMenuItem,
-            this.saveAllDimensionsToFolderToolStripMenuItem});
+            this.saveAllDimensionsToFolderToolStripMenuItem,
+            this.openReportWithAllDimensionsToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -77,14 +79,14 @@ namespace BIDSHelper
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // saveAllDimensionsToFolderToolStripMenuItem
             // 
             this.saveAllDimensionsToFolderToolStripMenuItem.Name = "saveAllDimensionsToFolderToolStripMenuItem";
-            this.saveAllDimensionsToFolderToolStripMenuItem.Size = new System.Drawing.Size(239, 22);
+            this.saveAllDimensionsToFolderToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
             this.saveAllDimensionsToFolderToolStripMenuItem.Text = "Save All Dimensions To Folder...";
             this.saveAllDimensionsToFolderToolStripMenuItem.Click += new System.EventHandler(this.saveAllDimensionsToFolderToolStripMenuItem_Click);
             // 
@@ -204,6 +206,13 @@ namespace BIDSHelper
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
+            // openReportWithAllDimensionsToolStripMenuItem
+            // 
+            this.openReportWithAllDimensionsToolStripMenuItem.Name = "openReportWithAllDimensionsToolStripMenuItem";
+            this.openReportWithAllDimensionsToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.openReportWithAllDimensionsToolStripMenuItem.Text = "Open Report With All Dimensions...";
+            this.openReportWithAllDimensionsToolStripMenuItem.Click += new System.EventHandler(this.openReportWithAllDimensionsToolStripMenuItem_Click);
+            // 
             // VisualizeAttributeLatticeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -247,5 +256,6 @@ namespace BIDSHelper
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem legendToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAllDimensionsToFolderToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openReportWithAllDimensionsToolStripMenuItem;
     }
 }

@@ -31,10 +31,7 @@ namespace BIDSHelper
                 dlg.InitialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                 {
-                    System.Drawing.Imaging.EncoderParameters parameters1 = new System.Drawing.Imaging.EncoderParameters(3);
-                    parameters1.Param[0] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Compression, 2L);
-                    parameters1.Param[1] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 95L);
-                    parameters1.Param[2] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.ColorDepth, 24L);
+                    System.Drawing.Imaging.EncoderParameters parameters1 = GetEncoderParameters();
                     pictureBox1.Image.Save(dlg.FileName, VisualizeAttributeLattice.GetJpegCodec(), parameters1);
                 }
             }
@@ -42,6 +39,15 @@ namespace BIDSHelper
             {
                 MessageBox.Show("Error: " + ex.Message);
             }
+        }
+
+        public static System.Drawing.Imaging.EncoderParameters GetEncoderParameters()
+        {
+            System.Drawing.Imaging.EncoderParameters parameters1 = new System.Drawing.Imaging.EncoderParameters(3);
+            parameters1.Param[0] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Compression, 2L);
+            parameters1.Param[1] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 95L);
+            parameters1.Param[2] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.ColorDepth, 24L);
+            return parameters1;
         }
 
         private void saveAllDimensionsToFolderToolStripMenuItem_Click(object sender, EventArgs e)
@@ -431,6 +437,36 @@ namespace BIDSHelper
             catch (Exception ex)
             {
                 MessageBox.Show("Error: " + ex.Message);
+            }
+        }
+
+        private void openReportWithAllDimensionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<VisualizeAttributeLatticeImageForReport> images = new List<VisualizeAttributeLatticeImageForReport>();
+                foreach (Microsoft.AnalysisServices.Dimension d in dimension.Parent.Dimensions)
+                {
+                    Bitmap img = VisualizeAttributeLattice.Render(d, VisualizeAttributeLattice.LatticeLayoutMethod.DeepestPathsFirst, showOnlyMultilevelRelationshipsToolStripMenuItem.Checked);
+                    images.Add(new VisualizeAttributeLatticeImageForReport(d.Name, img));
+                    img.Dispose();
+                }
+
+                ReportViewerForm frm = new ReportViewerForm();
+                frm.ReportBindingSource.DataSource = images;
+                frm.Report = "SSAS.VisualizeAttributeLattice.rdlc";
+                Microsoft.Reporting.WinForms.ReportDataSource reportDataSource1 = new Microsoft.Reporting.WinForms.ReportDataSource();
+                reportDataSource1.Name = "VisualizeAttributeLatticeImageForReport";
+                reportDataSource1.Value = frm.ReportBindingSource;
+                frm.reportViewer1.LocalReport.DataSources.Add(reportDataSource1);
+                frm.reportViewer1.LocalReport.ReportEmbeddedResource = "SSAS.VisualizeAttributeLattice.rdlc";
+
+                frm.Caption = "Visualize All Attribute Lattices";
+                frm.Show();
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 

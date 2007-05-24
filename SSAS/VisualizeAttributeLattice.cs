@@ -475,3 +475,37 @@ class LatticeRelationship
     }
 }
 
+public class VisualizeAttributeLatticeImageForReport
+{
+    public VisualizeAttributeLatticeImageForReport(string DimensionName, Bitmap image)
+    {
+        double reportWidthInches = 10.25;
+        if (image.Width < reportWidthInches * image.HorizontalResolution)
+        {
+            Bitmap newimg = new Bitmap(Convert.ToInt32(reportWidthInches * image.HorizontalResolution), image.Height);
+            Graphics g = Graphics.FromImage(newimg);
+            g.FillRectangle(new SolidBrush(Color.White), 0, 0, newimg.Width, newimg.Height);
+            g.DrawImage(image, new Point(newimg.Width / 2 - image.Width / 2, 0));
+            image.Dispose();
+            image = newimg;
+        }
+        MemoryStream mem = new MemoryStream();
+        System.Drawing.Imaging.EncoderParameters parameters1 = BIDSHelper.VisualizeAttributeLatticeForm.GetEncoderParameters();
+        image.Save(mem, VisualizeAttributeLattice.GetJpegCodec(), parameters1);
+        _ImageBase64 = Convert.ToBase64String(mem.ToArray());
+        _DimensionName = DimensionName;
+    }
+    
+    private string _DimensionName;
+    public string DimensionName
+    {
+        get { return _DimensionName; }
+        set { _DimensionName = value; }
+    }
+
+    public string _ImageBase64;
+    public string ImageBase64
+    {
+        get { return _ImageBase64; }
+    }
+}
