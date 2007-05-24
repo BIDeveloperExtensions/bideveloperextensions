@@ -20,11 +20,11 @@ namespace BIDSHelper
 
         private void PrinterFriendlyDimensionUsage_Load(object sender, EventArgs e)
         {
-            this.reportViewer1.ProcessingMode = Microsoft.Reporting.WinForms.ProcessingMode.Local;
-            this.reportViewer1.LocalReport.ReportEmbeddedResource = "BIDSHelper." + Report;
+            this.ReportViewerControl.ProcessingMode = Microsoft.Reporting.WinForms.ProcessingMode.Local;
+            this.ReportViewerControl.LocalReport.ReportEmbeddedResource = "BIDSHelper." + Report;
             //TODO - set the form caption, either via a property or by parsing the report name
             this.Text = Caption;
-            this.reportViewer1.RefreshReport();
+            this.ReportViewerControl.RefreshReport();
         }
 
 

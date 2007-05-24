@@ -458,8 +458,8 @@ namespace BIDSHelper
                 Microsoft.Reporting.WinForms.ReportDataSource reportDataSource1 = new Microsoft.Reporting.WinForms.ReportDataSource();
                 reportDataSource1.Name = "VisualizeAttributeLatticeImageForReport";
                 reportDataSource1.Value = frm.ReportBindingSource;
-                frm.reportViewer1.LocalReport.DataSources.Add(reportDataSource1);
-                frm.reportViewer1.LocalReport.ReportEmbeddedResource = "SSAS.VisualizeAttributeLattice.rdlc";
+                frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource1);
+                frm.ReportViewerControl.LocalReport.ReportEmbeddedResource = "SSAS.VisualizeAttributeLattice.rdlc";
 
                 frm.Caption = "Visualize All Attribute Lattices";
                 frm.Show();
