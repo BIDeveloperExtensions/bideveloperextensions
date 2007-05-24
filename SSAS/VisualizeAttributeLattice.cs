@@ -19,6 +19,14 @@ public class VisualizeAttributeLattice
 
     public static Bitmap Render(Dimension d, LatticeLayoutMethod method, bool ShowOnlyMultilevelRelationships)
     {
+        if (ShowOnlyMultilevelRelationships)
+        {
+            if (d.Attributes.Count == 1)
+            {
+                //avoid an error
+                ShowOnlyMultilevelRelationships = false;
+            }
+        }
         LatticeDrawing ld = new LatticeDrawing(d.Name);
         ld.LayoutMethod = method;
         foreach (DimensionAttribute a in d.Attributes)
@@ -194,7 +202,7 @@ class LatticeDrawing
         //draw title
         Font titleFont = new Font(FontFamily.GenericSansSerif, 14, FontStyle.Bold);
         SizeF titleSize = g.MeasureString(this.Title, titleFont, canvas.Width, centered);
-        g.DrawString(this.Title, titleFont, new SolidBrush(Color.Black), new RectangleF(0, 50 / 2 - titleSize.Height / 2, canvas.Width, 50), centered);
+        g.DrawString(this.Title, titleFont, new SolidBrush(Color.Black), new RectangleF(0, Math.Max(50 / 2 - titleSize.Height / 2, 0), canvas.Width, Math.Max(50, titleSize.Height)), centered);
 
         //draw the relationships
         TraverseRelationshipsAndDraw(key, g);
@@ -270,11 +278,11 @@ class LatticeDrawing
                 bool bColumnSet = false;
 
                 //start by going the only the direction (left or right) that the child node is going
-                for (int j = 0; j < maxNodesAcross / 2.0; j++)
+                if (DistanceFromKey > 1)
                 {
-                    if (!arLayoutMatrix[DistanceFromKey - 1, pos + j - 1])
+                    for (int j = 0; j < maxNodesAcross / 2.0; j++)
                     {
-                        if (ln.MaxColumnPosition > pos)
+                        if (ln.MaxColumnPosition > pos && !arLayoutMatrix[DistanceFromKey - 1, pos + j - 1])
                         {
                             bColumnSet = true;
                             arLayoutMatrix[DistanceFromKey - 1, pos + j - 1] = true;
@@ -282,10 +290,7 @@ class LatticeDrawing
                             r.MaxColumnPosition = pos + j;
                             break;
                         }
-                    }
-                    else if (!arLayoutMatrix[DistanceFromKey - 1, pos - j - 1])
-                    {
-                        if (ln.MinColumnPosition < pos)
+                        else if (ln.MinColumnPosition < pos && !arLayoutMatrix[DistanceFromKey - 1, pos - j - 1])
                         {
                             bColumnSet = true;
                             arLayoutMatrix[DistanceFromKey - 1, pos - j - 1] = true;
