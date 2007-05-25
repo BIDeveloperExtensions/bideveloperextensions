@@ -400,6 +400,13 @@ namespace BIDSHelper
                         else
                             sIsNull = "''";
                     }
+                    else if (dc.DataType == typeof(DateTime))
+                    {
+                        if (di.NullProcessing == NullProcessing.Preserve)
+                            sIsNull = "'1/1/1899 01:02:03 AM'"; //a unique value that shouldn't ever occur in the real data
+                        else
+                            sIsNull = "'12/30/1899'"; //think this is what SSAS converts null dates to
+                    }
                     else //numeric
                     {
                         if (di.NullProcessing == NullProcessing.Preserve)
