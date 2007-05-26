@@ -186,6 +186,7 @@
     <Compile Include="SSAS\DeploymentSettings.cs" />
     <Compile Include="SSAS\DimensionHealthCheckPlugin.cs" />
     <Compile Include="SSAS\EstimatedCountsPlugin.cs" />
+    <Compile Include="SSAS\TriStatePerspectivesPlugin.cs" />
     <Compile Include="SSIS\dtsConfigFormatterPlugin.cs" />
     <Compile Include="SSIS\ExpressionHighlighterPlugin.cs" />
     <Compile Include="SSAS\ExtraPropertiesPlugin.cs" />
