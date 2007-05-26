@@ -22,7 +22,6 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.List<string> windowHandlesFixedForPerspectives = new System.Collections.Generic.List<string>();
         private System.Collections.Generic.List<string> windowHandlesFixedForGridEvents = new System.Collections.Generic.List<string>();
-        private System.ComponentModel.BackgroundWorker backgroundWorker = new System.ComponentModel.BackgroundWorker();
 
         public TriStatePerspectivesPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
@@ -30,7 +29,6 @@ namespace BIDSHelper
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
             windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
-            backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(backgroundWorker_DoWork);
         }
 
         void windowEvents_WindowCreated(Window Window)
@@ -153,7 +151,7 @@ namespace BIDSHelper
                                     {
                                         foreach (CubeAttribute a in cd.Attributes)
                                         {
-                                            if (a.AttributeHierarchyVisible && a.AttributeHierarchyEnabled && !pcd.Attributes.Contains(a.AttributeID))
+                                            if (a.AttributeHierarchyVisible && a.AttributeHierarchyEnabled && a.Attribute.AttributeHierarchyVisible && a.Attribute.AttributeHierarchyEnabled && !pcd.Attributes.Contains(a.AttributeID))
                                             {
                                                 bHighlight = true;
                                                 break;
@@ -184,24 +182,11 @@ namespace BIDSHelper
             catch { }
         }
 
-        void backgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-            try
-            {
-                //Application.DoEvents();
-                //System.Threading.Thread.Sleep(1000);
-                //Application.DoEvents();
-                windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
-            }
-            catch { }
-        }
-
         void grid_KeyPress(object sender, KeyPressEventArgs e)
         {
             try
             {
                 windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
-                //backgroundWorker.RunWorkerAsync();
             }
             catch { }
         }
@@ -210,7 +195,6 @@ namespace BIDSHelper
         {
             try
             {
-                //backgroundWorker.RunWorkerAsync();
                 windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
             }
             catch { }
