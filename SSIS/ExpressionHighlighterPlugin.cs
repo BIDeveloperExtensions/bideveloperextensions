@@ -19,9 +19,6 @@ namespace BIDSHelper
 {
     public class ExpressionHighlighterPlugin : BIDSHelperPluginBase
     {
-
-
-
         private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
 
@@ -56,13 +53,16 @@ namespace BIDSHelper
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
                 DdsDiagramHostControl diagram = null;
+                ListView lvwConnMgrs = null;
 
                 if (win.SelectedIndex == 0) //Control Flow
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
 
+                    lvwConnMgrs = (ListView) viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+
                     //string s1 = "";
-                    //foreach (Control ctrl in viewControl.Controls["panel1"].Controls)
+                    //foreach (Control ctrl in viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"].Controls)
                     //{
                     //    s1 += (ctrl.Name + ":" + ctrl.ToString() + Environment.NewLine);
                     //}
@@ -96,12 +96,12 @@ namespace BIDSHelper
                     return;
                 }
 
-                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
 
+                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
 
                 Type managedshapebasetype = GetPrivateType(typeof(Microsoft.DataTransformationServices.Design.ColumnInfo), "Microsoft.DataTransformationServices.Design.ManagedShapeBase");
                 if (managedshapebasetype == null) return;
-
+                
                 foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
                 {
                     if (o.Type == DdsLayoutObjectType.dlotShape)
@@ -113,7 +113,8 @@ namespace BIDSHelper
                         string sObjectGuid = prop.Value.ToString();
                         try
                         {
-                            Executable executable = FindCorrespondingExecutable(container, sObjectGuid);
+                            Executable executable = FindExecutable(container, sObjectGuid);
+
                             if (executable is IDTSPropertiesProvider)
                             {
                                 bHasExpression = HasExpression(executable);
@@ -140,7 +141,6 @@ namespace BIDSHelper
                                 icon.Tag = icon.Clone();
 
                                 //now update the icon to note this one has an expression
-                                //TODO: need better indicator???
                                 ModifyIcon(icon, System.Drawing.Color.Magenta);
 
                                 //TODO: change tooltip and put listing of all properties and their expressions?
@@ -148,6 +148,16 @@ namespace BIDSHelper
                         }
                     }
                 }
+                foreach (ListViewItem lviConn in lvwConnMgrs.Items)
+                {
+                    ConnectionManager conn = FindConnectionManager((Package)container, lviConn.Text);
+                    if (HasExpression(conn))
+                    {
+                        
+                    }
+
+                }
+
                 return;
 
 
@@ -202,8 +212,29 @@ namespace BIDSHelper
             return returnValue;
         }
 
+        private bool HasExpression(ConnectionManager connectionManager)
+        {
+            IDTSPropertiesProvider dtsObject = (IDTSPropertiesProvider)connectionManager;
+            bool returnValue = false;
+
+            foreach (DtsProperty p in dtsObject.Properties)
+            {
+                try
+                {
+                    if (dtsObject.GetExpression(p.Name) != null)
+                    {
+                        returnValue = true;
+                        break;
+                    }
+                }
+                catch { }
+            }
+            return returnValue;
+        }
+
+
         //recursively looks in executables to find executable with the specified GUID
-        Executable FindCorrespondingExecutable(IDTSSequence parentExecutable, string sObjectGuid)
+        Executable FindExecutable(IDTSSequence parentExecutable, string sObjectGuid)
         {
             Executable matchingExecutable = null;
 
@@ -215,12 +246,25 @@ namespace BIDSHelper
             {
                 foreach (Executable e in parentExecutable.Executables)
                 {
-                    matchingExecutable = FindCorrespondingExecutable((IDTSSequence) e, sObjectGuid);
+                    matchingExecutable = FindExecutable((IDTSSequence) e, sObjectGuid);
                 }
             }
 
             return matchingExecutable;
         }
+
+        ConnectionManager FindConnectionManager(Package package, string connectionManagerName)
+        {
+            ConnectionManager matchingConnectionManager = null;
+
+            if (package.Connections.Contains(connectionManagerName))
+            {
+                matchingConnectionManager = package.Connections[connectionManagerName];
+            }
+
+            return matchingConnectionManager;
+        }
+
 
         Type GetPrivateType(Type publicTypeInSameAssembly, string FullName)
         {
