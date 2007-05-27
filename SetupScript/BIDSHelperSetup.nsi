@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BIDS Helper"
-!define PRODUCT_VERSION "0.9 Beta 1"
+!define PRODUCT_VERSION "1.0.0.0"
 !define PRODUCT_PUBLISHER "BIDS Helper"
 !define PRODUCT_WEB_SITE "http://www.codeplex.com/bidshelper"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -54,7 +54,7 @@ SetCompressor lzma
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "BIDSHelperSetup.exe"
+OutFile "BIDSHelperSetup(${PRODUCT_VERSION}).exe"
 InstallDir "$PROGRAMFILES\BIDS Helper"
 InstallDirRegKey HKLM "${PRODUCT_SETTINGS_KEY}" "$INSTDIR"
 ShowInstDetails show
@@ -62,7 +62,7 @@ ShowUnInstDetails show
 
 Section "MainSection" SEC01
 
-#Call CloseParentWithUserApproval
+  Call CloseParentWithUserApproval
 
   #SetOutPath "$DOCUMENTS\Visual Studio 2005\Addins"
   SetOutPath $INSTDIR
