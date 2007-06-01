@@ -21,7 +21,10 @@ namespace BIDSHelper
     {
         private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+        private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
+
         EditorWindow win = null;
+        System.ComponentModel.BackgroundWorker processPackage = null;
 
         public ExpressionHighlighterPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
@@ -29,6 +32,26 @@ namespace BIDSHelper
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
             windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+
+            processPackage = new System.ComponentModel.BackgroundWorker();
+            processPackage.DoWork += new System.ComponentModel.DoWorkEventHandler(processPackage_DoWork);
+            processPackage.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(processPackage_ProgressChanged);
+            processPackage.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
+        }
+
+        void processPackage_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            throw new Exception("The method or operation is not implemented.");
+        }
+
+        void processPackage_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            throw new Exception("The method or operation is not implemented.");
+        }
+
+        void processPackage_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            throw new Exception("The method or operation is not implemented.");
         }
 
         void windowEvents_WindowCreated(Window Window)
@@ -37,7 +60,7 @@ namespace BIDSHelper
         }
 
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
-		//The DtsPackageView object seems to have the appropriate methods, but it's internal to the Microsoft.DataTransformationServices.Design assembly.
+        //The DtsPackageView object seems to have the appropriate methods, but it's internal to the Microsoft.DataTransformationServices.Design assembly.
         void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
         {
             IDTSSequence container = null;
@@ -45,25 +68,31 @@ namespace BIDSHelper
             try
             {
                 if (GotFocus == null) return;
-                //if (GotFocus.HWnd != win.Handle.ToInt32())
-                //{
-                    IDesignerHost designer = (IDesignerHost)GotFocus.Object;
-                    if (designer == null) return;
-                    ProjectItem pi = GotFocus.ProjectItem;
-                    if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
-                    //EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-                    win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-                //}
+                IDesignerHost designer = (IDesignerHost)GotFocus.Object;
+                if (designer == null) return;
+                ProjectItem pi = GotFocus.ProjectItem;
+                if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
+                //EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
                 DdsDiagramHostControl diagram = null;
                 ListView lvwConnMgrs = null;
 
-                //win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
+                IntPtr ptr = win.Handle;
+                string sHandle = ptr.ToInt64().ToString();
+
+                if (!windowHandlesFixedForExpressionHighlighter.Contains(sHandle))
+                {
+                    windowHandlesFixedForExpressionHighlighter.Add(sHandle);
+                    win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
+                }
+
+
                 if (win.SelectedIndex == 0) //Control Flow
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
 
-                    lvwConnMgrs = (ListView) viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+                    lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
 
                 }
                 else if (win.SelectedIndex == 1)
@@ -95,7 +124,6 @@ namespace BIDSHelper
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
                 }
-                //TODO: put indicator on the connection in the connection managers pane?
                 else
                 {
                     return;
@@ -106,7 +134,7 @@ namespace BIDSHelper
 
                 Type managedshapebasetype = GetPrivateType(typeof(Microsoft.DataTransformationServices.Design.ColumnInfo), "Microsoft.DataTransformationServices.Design.ManagedShapeBase");
                 if (managedshapebasetype == null) return;
-                
+
                 foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
                 {
                     if (o.Type == DdsLayoutObjectType.dlotShape)
@@ -188,12 +216,6 @@ namespace BIDSHelper
 
                 return;
 
-
-
-
-
-
-                //TODO: decide whether we need to monitor the ActiveViewChanged event to catch when we flip to a new tab
                 //TODO: does the above code run too slow? should it be put in a BackgroundWorker thread? will that cause threads to step on each other?
 
             }
@@ -204,7 +226,7 @@ namespace BIDSHelper
         {
             for (int i = 0; i < 9; i++)
             {
-                for (int j = 8-i; j > -1; j--)
+                for (int j = 8 - i; j > -1; j--)
                 {
                     icon.SetPixel(i, j, color);
                 }
@@ -266,7 +288,7 @@ namespace BIDSHelper
             {
                 foreach (Executable e in parentExecutable.Executables)
                 {
-                    matchingExecutable = FindExecutable((IDTSSequence) e, sObjectGuid);
+                    matchingExecutable = FindExecutable((IDTSSequence)e, sObjectGuid);
                 }
             }
 
