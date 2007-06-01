@@ -21,9 +21,7 @@ namespace BIDSHelper
     {
         private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-
-        //TODO: may be needed if we decide to capture the ActiveViewChanged event... see TODO below on this topic
-        //private System.Collections.Generic.List<string> windowHandlesFixedPartitionsView = new System.Collections.Generic.List<string>();
+        EditorWindow win = null;
 
         public ExpressionHighlighterPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
@@ -39,6 +37,7 @@ namespace BIDSHelper
         }
 
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
+		//The DtsPackageView object seems to have the appropriate methods, but it's internal to the Microsoft.DataTransformationServices.Design assembly.
         void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
         {
             IDTSSequence container = null;
@@ -46,31 +45,37 @@ namespace BIDSHelper
             try
             {
                 if (GotFocus == null) return;
-                IDesignerHost designer = (IDesignerHost)GotFocus.Object;
-                if (designer == null) return;
-                ProjectItem pi = GotFocus.ProjectItem;
-                if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
-                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                //if (GotFocus.HWnd != win.Handle.ToInt32())
+                //{
+                    IDesignerHost designer = (IDesignerHost)GotFocus.Object;
+                    if (designer == null) return;
+                    ProjectItem pi = GotFocus.ProjectItem;
+                    if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
+                    //EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                    win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                //}
                 Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
                 DdsDiagramHostControl diagram = null;
                 ListView lvwConnMgrs = null;
 
+                //win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                 if (win.SelectedIndex == 0) //Control Flow
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
 
                     lvwConnMgrs = (ListView) viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
 
-                    //string s1 = "";
-                    //foreach (Control ctrl in viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"].Controls)
-                    //{
-                    //    s1 += (ctrl.Name + ":" + ctrl.ToString() + Environment.NewLine);
-                    //}
-                    //System.Windows.Forms.MessageBox.Show(s1);
                 }
                 else if (win.SelectedIndex == 1)
                 {
                     ////data flow designer
+                    //string s1 = "";
+                    //foreach (Control ctrl in viewControl.Controls["panel2"].Controls["pilelineDetailsControl"].Controls)
+                    //{
+                    //    s1 += (ctrl.Name + ":" + ctrl.ToString() + Environment.NewLine);
+                    //}
+                    //System.Windows.Forms.MessageBox.Show(s1);
+
                     //diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
                     //MainPipe pipe = (MainPipe)((TaskHost)diagram.ComponentDiagram.RootComponent).InnerObject;
                     //foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
@@ -151,10 +156,33 @@ namespace BIDSHelper
                 foreach (ListViewItem lviConn in lvwConnMgrs.Items)
                 {
                     ConnectionManager conn = FindConnectionManager((Package)container, lviConn.Text);
-                    if (HasExpression(conn))
+                    bool bHasExpression = HasExpression(conn);
+
+                    System.Drawing.Bitmap icon = (System.Drawing.Bitmap)lviConn.ImageList.Images[lviConn.ImageIndex];
+
+                    if (!bHasExpression && icon.Tag != null)
                     {
-                        
+
+                        lviConn.ImageIndex = (int)icon.Tag;
+
                     }
+
+                    else if (bHasExpression && icon.Tag == null)
+                    {
+
+                        System.Drawing.Bitmap newicon = new System.Drawing.Bitmap(lviConn.ImageList.Images[lviConn.ImageIndex]);
+
+                        newicon.Tag = lviConn.ImageIndex; //save the old index
+
+                        ModifyIcon(newicon, System.Drawing.Color.Magenta);
+
+                        lviConn.ImageList.Images.Add(newicon);
+
+                        lviConn.ImageIndex = lviConn.ImageList.Images.Count - 1;
+
+                    }
+
+
 
                 }
 
@@ -168,14 +196,6 @@ namespace BIDSHelper
                 //TODO: decide whether we need to monitor the ActiveViewChanged event to catch when we flip to a new tab
                 //TODO: does the above code run too slow? should it be put in a BackgroundWorker thread? will that cause threads to step on each other?
 
-                //IntPtr ptr = win.Handle;
-                //string sHandle = ptr.ToInt64().ToString();
-
-                //if (!windowHandlesFixedPartitionsView.Contains(sHandle))
-                //{
-                //    windowHandlesFixedPartitionsView.Add(sHandle);
-                //    win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
-                //}
             }
             catch { }
         }
