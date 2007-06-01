@@ -98,12 +98,6 @@ namespace BIDSHelper
                 else if (win.SelectedIndex == 1)
                 {
                     ////data flow designer
-                    //string s1 = "";
-                    //foreach (Control ctrl in viewControl.Controls["panel2"].Controls["pilelineDetailsControl"].Controls)
-                    //{
-                    //    s1 += (ctrl.Name + ":" + ctrl.ToString() + Environment.NewLine);
-                    //}
-                    //System.Windows.Forms.MessageBox.Show(s1);
 
                     //diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
                     //MainPipe pipe = (MainPipe)((TaskHost)diagram.ComponentDiagram.RootComponent).InnerObject;
@@ -119,10 +113,12 @@ namespace BIDSHelper
                     //        return;
                     //    }
                     //}
+                    lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                 }
                 else if (win.SelectedIndex == 2) //Event Handlers
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
+                    lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                 }
                 else
                 {
@@ -183,7 +179,8 @@ namespace BIDSHelper
                 }
                 foreach (ListViewItem lviConn in lvwConnMgrs.Items)
                 {
-                    ConnectionManager conn = FindConnectionManager((Package)container, lviConn.Text);
+                    ConnectionManager conn = FindConnectionManager(GetPackageFromContainer((DtsContainer)container), lviConn.Text);
+    
                     bool bHasExpression = HasExpression(conn);
 
                     System.Drawing.Bitmap icon = (System.Drawing.Bitmap)lviConn.ImageList.Images[lviConn.ImageIndex];
@@ -220,6 +217,15 @@ namespace BIDSHelper
 
             }
             catch { }
+        }
+
+        private Package GetPackageFromContainer(DtsContainer container)
+        {
+            while (! (container is Package))
+            {
+                container = container.Parent;
+            }
+            return (Package)container;
         }
 
         private static void ModifyIcon(System.Drawing.Bitmap icon, System.Drawing.Color color)
