@@ -24,7 +24,7 @@ namespace BIDSHelper
         private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
 
         EditorWindow win = null;
-        System.ComponentModel.BackgroundWorker processPackage = null;
+        //System.ComponentModel.BackgroundWorker processPackage = null;
 
         public ExpressionHighlighterPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
@@ -33,26 +33,26 @@ namespace BIDSHelper
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
             windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
 
-            processPackage = new System.ComponentModel.BackgroundWorker();
-            processPackage.DoWork += new System.ComponentModel.DoWorkEventHandler(processPackage_DoWork);
-            processPackage.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(processPackage_ProgressChanged);
-            processPackage.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
+            //processPackage = new System.ComponentModel.BackgroundWorker();
+            //processPackage.DoWork += new System.ComponentModel.DoWorkEventHandler(processPackage_DoWork);
+            //processPackage.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(processPackage_ProgressChanged);
+            //processPackage.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
         }
 
-        void processPackage_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
+        //void processPackage_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        //{
+        //    throw new Exception("The method or operation is not implemented.");
+        //}
 
-        void processPackage_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
+        //void processPackage_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        //{
+        //    throw new Exception("The method or operation is not implemented.");
+        //}
 
-        void processPackage_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
+        //void processPackage_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        //{
+        //    throw new Exception("The method or operation is not implemented.");
+        //}
 
         void windowEvents_WindowCreated(Window Window)
         {
@@ -64,6 +64,8 @@ namespace BIDSHelper
         void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
         {
             IDTSSequence container = null;
+            MainPipe pipe = null;
+            TaskHost taskHost = null;
 
             try
             {
@@ -91,34 +93,22 @@ namespace BIDSHelper
                 if (win.SelectedIndex == 0) //Control Flow
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-
                     lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-
+                    container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
                 }
-                else if (win.SelectedIndex == 1)
+                else if (win.SelectedIndex == 1) //Data Flow
                 {
-                    ////data flow designer
-
-                    //diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                    //MainPipe pipe = (MainPipe)((TaskHost)diagram.ComponentDiagram.RootComponent).InnerObject;
-                    //foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
-                    //{
-                    //    if (o.Type == DdsLayoutObjectType.dlotShape)
-                    //    {
-                    //        //bool bHasExpression = false;
-                    //        MSDDS.IDdsExtendedProperty prop = o.IDdsExtendedProperties.Item("LogicalObject");
-                    //        if (prop == null) continue;
-                    //        string sObjectGuid = prop.Value.ToString();
-                    //        IDTSComponentMetaData90 transform = pipe.ComponentMetaDataCollection.GetObjectByID(int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1)));
-                    //        return;
-                    //    }
-                    //}
+                    diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
+                    taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent; 
+                    pipe = (MainPipe)taskHost.InnerObject;
+                    container = (IDTSSequence) taskHost.Parent;
                     lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                 }
                 else if (win.SelectedIndex == 2) //Event Handlers
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
                     lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+                    container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
                 }
                 else
                 {
@@ -126,8 +116,7 @@ namespace BIDSHelper
                 }
 
 
-                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-
+                
                 Type managedshapebasetype = GetPrivateType(typeof(Microsoft.DataTransformationServices.Design.ColumnInfo), "Microsoft.DataTransformationServices.Design.ManagedShapeBase");
                 if (managedshapebasetype == null) return;
 
@@ -140,20 +129,31 @@ namespace BIDSHelper
                         MSDDS.IDdsExtendedProperty prop = o.IDdsExtendedProperties.Item("LogicalObject");
                         if (prop == null) continue;
                         string sObjectGuid = prop.Value.ToString();
-                        try
-                        {
-                            Executable executable = FindExecutable(container, sObjectGuid);
 
-                            if (executable is IDTSPropertiesProvider)
+
+                        if (pipe == null) //Not a data flow
+                        {
+                            try
                             {
-                                bHasExpression = HasExpression(executable);
-                            }
-                        }
-                        catch
-                        {
-                            continue;
-                        }
+                                Executable executable = FindExecutable(container, sObjectGuid);
 
+                                if (executable is IDTSPropertiesProvider)
+                                {
+                                    bHasExpression = HasExpression(executable);
+                                }
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+
+                        }
+                        else
+                        {
+                            IDTSComponentMetaData90 transform = pipe.ComponentMetaDataCollection.GetObjectByID(int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1)));
+                            bHasExpression = HasExpression(taskHost, transform.Name);
+                        }
+                        
                         object managedShape = managedshapebasetype.InvokeMember("GetManagedShape", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, null, new object[] { o });
                         if (managedShape != null)
                         {
@@ -177,39 +177,7 @@ namespace BIDSHelper
                         }
                     }
                 }
-                foreach (ListViewItem lviConn in lvwConnMgrs.Items)
-                {
-                    ConnectionManager conn = FindConnectionManager(GetPackageFromContainer((DtsContainer)container), lviConn.Text);
-    
-                    bool bHasExpression = HasExpression(conn);
-
-                    System.Drawing.Bitmap icon = (System.Drawing.Bitmap)lviConn.ImageList.Images[lviConn.ImageIndex];
-
-                    if (!bHasExpression && icon.Tag != null)
-                    {
-
-                        lviConn.ImageIndex = (int)icon.Tag;
-
-                    }
-
-                    else if (bHasExpression && icon.Tag == null)
-                    {
-
-                        System.Drawing.Bitmap newicon = new System.Drawing.Bitmap(lviConn.ImageList.Images[lviConn.ImageIndex]);
-
-                        newicon.Tag = lviConn.ImageIndex; //save the old index
-
-                        ModifyIcon(newicon, System.Drawing.Color.Magenta);
-
-                        lviConn.ImageList.Images.Add(newicon);
-
-                        lviConn.ImageIndex = lviConn.ImageList.Images.Count - 1;
-
-                    }
-
-
-
-                }
+                HighlighConnectionManagers(container, lvwConnMgrs);
 
                 return;
 
@@ -217,6 +185,43 @@ namespace BIDSHelper
 
             }
             catch { }
+        }
+
+        private void HighlighConnectionManagers(IDTSSequence container, ListView lvwConnMgrs)
+        {
+            foreach (ListViewItem lviConn in lvwConnMgrs.Items)
+            {
+                ConnectionManager conn = FindConnectionManager(GetPackageFromContainer((DtsContainer)container), lviConn.Text);
+
+                bool bHasExpression = HasExpression(conn);
+
+                System.Drawing.Bitmap icon = (System.Drawing.Bitmap)lviConn.ImageList.Images[lviConn.ImageIndex];
+
+                if (!bHasExpression && icon.Tag != null)
+                {
+
+                    lviConn.ImageIndex = (int)icon.Tag;
+
+                }
+
+                else if (bHasExpression && icon.Tag == null)
+                {
+
+                    System.Drawing.Bitmap newicon = new System.Drawing.Bitmap(lviConn.ImageList.Images[lviConn.ImageIndex]);
+
+                    newicon.Tag = lviConn.ImageIndex; //save the old index
+
+                    ModifyIcon(newicon, System.Drawing.Color.Magenta);
+
+                    lviConn.ImageList.Images.Add(newicon);
+
+                    lviConn.ImageIndex = lviConn.ImageList.Images.Count - 1;
+
+                }
+
+
+
+            }
         }
 
         private Package GetPackageFromContainer(DtsContainer container)
@@ -280,6 +285,25 @@ namespace BIDSHelper
             return returnValue;
         }
 
+        private bool HasExpression(TaskHost taskHost, string transformName)
+        {
+            IDTSPropertiesProvider dtsObject = (IDTSPropertiesProvider)taskHost;
+            bool returnValue = false;
+
+            foreach (DtsProperty p in dtsObject.Properties)
+            {
+                try
+                {
+                    if (dtsObject.GetExpression(p.Name) != null && p.Name.Contains(transformName))
+                    {
+                        returnValue = true;
+                        break;
+                    }
+                }
+                catch { }
+            }
+            return returnValue;
+        }
 
         //recursively looks in executables to find executable with the specified GUID
         Executable FindExecutable(IDTSSequence parentExecutable, string sObjectGuid)
