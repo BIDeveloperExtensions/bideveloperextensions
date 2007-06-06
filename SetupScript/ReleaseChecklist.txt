@@ -1,0 +1,17 @@
+Doing a release of BIDSHelper
+=============================
+
+1. Update Version number in:
+   a. AssemblyInfo.cs           (Assembly and File versions)
+   b. BIDSHelper.Addin          (AboutBox details)
+   c. Setup\BIDSHelperSetup.nsi ($PRODUCT_VERSION variable)
+
+2. Exclude any files still being worked on from the solution
+
+3. Build the Solution
+
+4. Build the install
+
+5. Label the file in the SCC system with the release version number
+
+6. Add the files back that were excluded from the project in step 2.

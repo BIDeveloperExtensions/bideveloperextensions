@@ -98,9 +98,7 @@ namespace BIDSHelper
             try
             {
                 //validate the script because deploying an invalid script makes cube unusable
-                Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);
-
-                
+                Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);               
 
             }
             catch (Microsoft.AnalysisServices.Design.ScriptParsingFailed ex)
@@ -144,18 +142,8 @@ namespace BIDSHelper
                     xrdr = XmlReader.Create(projItem.get_FileNames(1));
                     using (xrdr)
                     {
-                        // Build up the Alter MdxScript command using XSLT against the .cube file
-                        XslCompiledTransform xslta = new XslCompiledTransform();
-                        StringBuilder sb = new StringBuilder();
-                        XmlWriterSettings xws = new XmlWriterSettings();
-                        xws.OmitXmlDeclaration = true;
-                        XmlWriter xwrtr = XmlWriter.Create(sb, xws);
-                        
-                        xslta.Load(xsltRdr);
-                        XsltArgumentList xslarg = new XsltArgumentList();
-                        xslarg.AddParam("TargetDatabase", "", deploySet.TargetDatabase);
-                        xslta.Transform(xrdr, xslarg, xwrtr);
-                        System.Diagnostics.Debug.Print(sb.ToString());
+
+
                         
                         ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 3, 5);
                         // Connect to Analysis Services
@@ -167,17 +155,58 @@ namespace BIDSHelper
                         {
                             Microsoft.AnalysisServices.Scripter scr = new Microsoft.AnalysisServices.Scripter();
                             
+                            // Build up the Alter MdxScript command using XSLT against the .cube file
+                            XslCompiledTransform xslta = new XslCompiledTransform();
+                            StringBuilder sb = new StringBuilder();
+                            XmlWriterSettings xws = new XmlWriterSettings();
+                            xws.OmitXmlDeclaration = true;
+                            xws.ConformanceLevel = ConformanceLevel.Fragment;
+                            XmlWriter xwrtr = XmlWriter.Create(sb, xws);
+
+                            xslta.Load(xsltRdr);
+                            XsltArgumentList xslarg = new XsltArgumentList();
+
+                            Database targetDB = svr.Databases.FindByName(deploySet.TargetDatabase);
+                            if (targetDB == null)
+                            {
+                                throw new System.Exception(string.Format("A database called {0} could not be found on the {1} server", deploySet.TargetDatabase, deploySet.TargetServer));
+                            }
+                            string targetDatabaseID = targetDB.ID;
+                            xslarg.AddParam("TargetDatabase", "", targetDatabaseID);
+                            xslta.Transform(xrdr, xslarg, xwrtr);
+
+                            // Extract the current script from the server and keep a temporary backup copy of it
                             StringBuilder sbBackup = new StringBuilder();
                             XmlWriterSettings xwSet = new XmlWriterSettings();
                             xwSet.ConformanceLevel = ConformanceLevel.Fragment;
+                            xwSet.OmitXmlDeclaration = true;
                             xwSet.Indent = true;
                             XmlWriter xwScript = XmlWriter.Create(sbBackup,xwSet);
 
                             MdxScript mdxScr = svr.Databases.GetByName(deploySet.TargetDatabase).Cubes.Find(oCube.ID).MdxScripts[0];
                             scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[]{mdxScr},xwScript,true);
                             xwScript.Close();
+
                             // update the MDX Script
-                            svr.Execute(sb.ToString());
+                            XmlaResultCollection xmlaRC = svr.Execute(sb.ToString());
+                            if (xmlaRC.Count == 1 && xmlaRC[0].Messages.Count == 0)
+                            {
+                                // all OK - 1 result - no messages    
+                            }
+                            else
+                            {
+                                    StringBuilder sbErr = new StringBuilder();
+                                for (int iRC = 0; iRC < xmlaRC.Count;iRC ++)
+                                {
+                                    for (int iMsg = 0; iMsg < xmlaRC[iRC].Messages.Count; iMsg++)
+                                    {
+                                        sbErr.AppendLine(xmlaRC[iRC].Messages[iMsg].Description);
+                                    }
+                                }
+                                MessageBox.Show(sbErr.ToString(),"BIDSHelper - Deploy MDX Script" );
+                            }
+
+                            
                             // Test the MDX Script
                             AdomdConnection cn = new AdomdConnection("Data Source=" + deploySet.TargetServer + ";Initial Catalog=" + deploySet.TargetDatabase);
                             cn.Open();
@@ -206,11 +235,16 @@ namespace BIDSHelper
                         }
                         catch (System.Exception ex)
                         {
-                            if (MessageBox.Show(ex.Message + "\r\nDo you want to see a stack trace?", "", MessageBoxButtons.YesNo , MessageBoxIcon.Error, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+                            if (MessageBox.Show("The following error occured while trying to deploy the MDX Script\r\n" 
+                                                + ex.Message 
+                                                + "\r\n\r\nDo you want to see a stack trace?"
+                                            ,"BIDSHelper - Deploy MDX Script"
+                                            , MessageBoxButtons.YesNo 
+                                            , MessageBoxIcon.Error
+                                            , MessageBoxDefaultButton.Button2) == DialogResult.Yes)
                             {
                                 MessageBox.Show(ex.StackTrace);
                             }
-                            svr.RollbackTransaction();
                         }
                         finally
                         {

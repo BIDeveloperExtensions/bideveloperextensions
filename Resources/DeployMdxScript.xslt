@@ -18,13 +18,36 @@
 				</MdxScriptID>
 			</Object>
 			<ObjectDefinition>
-				<xsl:copy-of select="/as:Cube/as:MdxScripts/as:MdxScript"/>
+				<MdxScript>
+					<ID>
+						<xsl:value-of select="/as:Cube/as:MdxScripts/as:MdxScript/as:ID"/>
+					</ID>
+					<Name>
+						<xsl:value-of select="/as:Cube/as:MdxScripts/as:MdxScript/as:Name"/>
+					</Name>
+					<xsl:copy-of select="/as:Cube/as:MdxScripts/as:MdxScript/as:Commands"/>
+					<xsl:copy-of select="/as:Cube/as:MdxScripts/as:MdxScript/as:CalculationProperties"/>
+				</MdxScript>
+				<!--<xsl:copy-of select="/as:Cube/as:MdxScripts/as:MdxScript"/>-->
 				
 			</ObjectDefinition>
 			
 		</Alter>
 	</xsl:template>
-<!--
+
+	<xsl:template match="/as:Cube/as:MdxScripts/as:MdxScript">
+		<xsl:apply-templates />
+	</xsl:template>
+
+	<!-- effectively remove these two child nodes-->
+	<xsl:template match="//as:CreatedTimestamp"></xsl:template>
+	<xsl:template match="//as:LastSchemaUpdate"></xsl:template>
+
+	<xsl:template match="//as:MdxScript">
+		<xsl:copy-of select="//as:MdxScript" />
+	</xsl:template>
+	
+	<!--
 	<MdxScript>
 		<ID>
 			<xsl:value-of select="/as:Cube/as:MdxScripts/as:MdxScript/as:ID"/>
