@@ -203,6 +203,8 @@
       <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\VisualizeAttributeLatticePlugin.cs" />
+    <Compile Include="SSIS\dtsConfigFormatterPlugin.cs" />
+    <Compile Include="SSIS\ExpressionHighlighterPlugin.cs" />
     <COMReference Include="EnvDTE">
       <Lcid>0</Lcid>
       <VersionMinor>0</VersionMinor>
