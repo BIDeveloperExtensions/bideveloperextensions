@@ -58,7 +58,15 @@ namespace BIDSHelper.SSIS
                 if (GotFocus == null) return;
                 //IDesignerHost designer = (IDesignerHost)GotFocus.Object;
                 //if (designer == null) return;
-                ProjectItem pi = GotFocus.ProjectItem;
+                ProjectItem pi = null;
+                try
+                {
+                    pi = GotFocus.ProjectItem;
+                }
+                catch
+                {
+                    return;
+                }
                 
                 if ((pi == null) || (!(pi.Name.ToLower().EndsWith(".dtsconfig")))) return;
 
