@@ -22,6 +22,7 @@ namespace BIDSHelper
         private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
+        private System.Collections.Generic.List<string> windowHandlesInProgressStatus = new System.Collections.Generic.List<string>();
 
         EditorWindow win = null;
         //System.ComponentModel.BackgroundWorker processPackage = null;
@@ -66,6 +67,7 @@ namespace BIDSHelper
             IDTSSequence container = null;
             MainPipe pipe = null;
             TaskHost taskHost = null;
+            string sHandle = String.Empty;
 
             try
             {
@@ -81,7 +83,7 @@ namespace BIDSHelper
                 ListView lvwConnMgrs = null;
 
                 IntPtr ptr = win.Handle;
-                string sHandle = ptr.ToInt64().ToString();
+                sHandle = ptr.ToInt64().ToString();
 
                 if (!windowHandlesFixedForExpressionHighlighter.Contains(sHandle))
                 {
@@ -89,6 +91,11 @@ namespace BIDSHelper
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                 }
 
+                if (windowHandlesInProgressStatus.Contains(sHandle))
+                {
+                    return;
+                }
+                windowHandlesInProgressStatus.Add(sHandle);
 
                 if (win.SelectedIndex == 0) //Control Flow
                 {
@@ -99,9 +106,9 @@ namespace BIDSHelper
                 else if (win.SelectedIndex == 1) //Data Flow
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                    taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent; 
+                    taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
                     pipe = (MainPipe)taskHost.InnerObject;
-                    container = (IDTSSequence) taskHost.Parent;
+                    container = (IDTSSequence)taskHost.Parent;
                     lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                 }
                 else if (win.SelectedIndex == 2) //Event Handlers
@@ -116,7 +123,7 @@ namespace BIDSHelper
                 }
 
 
-                
+
                 Type managedshapebasetype = GetPrivateType(typeof(Microsoft.DataTransformationServices.Design.ColumnInfo), "Microsoft.DataTransformationServices.Design.ManagedShapeBase");
                 if (managedshapebasetype == null) return;
 
@@ -153,7 +160,7 @@ namespace BIDSHelper
                             IDTSComponentMetaData90 transform = pipe.ComponentMetaDataCollection.GetObjectByID(int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1)));
                             bHasExpression = HasExpression(taskHost, transform.Name);
                         }
-                        
+
                         object managedShape = managedshapebasetype.InvokeMember("GetManagedShape", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, null, new object[] { o });
                         if (managedShape != null)
                         {
@@ -185,6 +192,13 @@ namespace BIDSHelper
 
             }
             catch { }
+            finally
+            {
+                if (windowHandlesInProgressStatus.Contains(sHandle))
+                {
+                    windowHandlesInProgressStatus.Remove(sHandle);
+                }
+            }
         }
 
         private void HighlighConnectionManagers(IDTSSequence container, ListView lvwConnMgrs)
@@ -289,12 +303,13 @@ namespace BIDSHelper
         {
             IDTSPropertiesProvider dtsObject = (IDTSPropertiesProvider)taskHost;
             bool returnValue = false;
+            transformName = "[" + transformName + "]";
 
             foreach (DtsProperty p in dtsObject.Properties)
             {
                 try
                 {
-                    if (dtsObject.GetExpression(p.Name) != null && p.Name.Contains(transformName))
+                    if (p.Name.StartsWith(transformName) && dtsObject.GetExpression(p.Name) != null)
                     {
                         returnValue = true;
                         break;
