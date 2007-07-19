@@ -23,9 +23,10 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
         private System.Collections.Generic.List<string> windowHandlesInProgressStatus = new System.Collections.Generic.List<string>();
+        private Window expressionListWindow = null;
 
         EditorWindow win = null;
-        //System.ComponentModel.BackgroundWorker processPackage = null;
+        System.ComponentModel.BackgroundWorker processPackage = null;
 
         public ExpressionHighlighterPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
@@ -35,25 +36,95 @@ namespace BIDSHelper
             windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
 
             //processPackage = new System.ComponentModel.BackgroundWorker();
+            //processPackage.WorkerReportsProgress = true;
             //processPackage.DoWork += new System.ComponentModel.DoWorkEventHandler(processPackage_DoWork);
             //processPackage.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(processPackage_ProgressChanged);
             //processPackage.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
+            
+            //object programmableObject = null;
+
+            ////This guid must be unique for each different tool window,
+            //// but you may use the same guid for the same tool window.
+            ////This guid can be used for indexing the windows collection,
+            //// for example: applicationObject.Windows.Item(guidstr)
+            //String guidstr = "{6679390F-A712-40EA-8729-E2184A1436BF}";
+            //EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)appObject.Windows;
+            //System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
+            //expressionListWindow = windows2.CreateToolWindow2(addinInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
+
+            ////Set the picture displayed when the window is tab docked
+            ////expressionListWindow.SetTabPicture(BIDSHelper.Resources.Resource.ExpressionList.ToBitmap().GetHbitmap());
+
+
+            ////When using the hosting control, you must set visible to true before calling HostUserControl,
+            //// otherwise the UserControl cannot be hosted properly.
+            //expressionListWindow.Visible = true;
+
         }
 
         //void processPackage_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         //{
-        //    throw new Exception("The method or operation is not implemented.");
+        //    //throw new Exception("The method or operation is not implemented.");
         //}
 
         //void processPackage_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         //{
-        //    throw new Exception("The method or operation is not implemented.");
+        //    ExpressionInfo info = (ExpressionInfo)e.UserState;
+
+        //    System.Diagnostics.Debug.Print(info.PropertyName);
         //}
 
         //void processPackage_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         //{
-        //    throw new Exception("The method or operation is not implemented.");
+        //    System.ComponentModel.BackgroundWorker worker = (System.ComponentModel.BackgroundWorker)sender;
+
+        //    IDTSSequence sequence = (IDTSSequence)e.Argument;
+
+        //    IterateContainer(sequence, worker);
         //}
+
+        //private void IterateContainer(IDTSSequence sequence, System.ComponentModel.BackgroundWorker worker)
+        //{
+        //    if (sequence is IDTSPropertiesProvider)
+        //    {
+        //        ScanProperties(worker, "Test", "Test", "Test", "Test", (IDTSPropertiesProvider)sequence);
+        //    }
+            
+        //    foreach (Executable exec in sequence.Executables)
+        //    {
+        //        if (exec is IDTSSequence)
+        //        {
+        //            IterateContainer((IDTSSequence)exec, worker);
+        //        }
+        //        else if (exec is IDTSPropertiesProvider)
+        //        {
+        //            ScanProperties(worker, "Test", "Test", "Test", "Test", (IDTSPropertiesProvider)sequence);
+        //        }
+        //    }
+        //}
+
+
+        //private void ScanProperties(System.ComponentModel.BackgroundWorker worker, string objectPath, string objectType, string objectID, string objectName, IDTSPropertiesProvider provider)
+        //{
+        //    foreach (DtsProperty p in provider.Properties)
+        //    {
+        //        try
+        //        {
+        //            ExpressionInfo info = new ExpressionInfo();
+        //            info.ObjectID = objectID;
+        //            info.ObjectName = objectName;
+        //            info.ObjectPath = objectPath;
+        //            info.ObjectType = objectType;
+        //            info.PropertyName = p.Name;
+        //            info.Expression = provider.GetExpression(p.Name);
+
+        //            worker.ReportProgress(0, info);
+        //        }
+        //        catch { }
+        //    }
+        //}
+
+
 
         void windowEvents_WindowCreated(Window Window)
         {
@@ -72,6 +143,7 @@ namespace BIDSHelper
             try
             {
                 if (GotFocus == null) return;
+                if (GotFocus.DTE.Mode == vsIDEMode.vsIDEModeDebug) return;
                 IDesignerHost designer = (IDesignerHost)GotFocus.Object;
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
@@ -121,6 +193,8 @@ namespace BIDSHelper
                 {
                     return;
                 }
+
+                //processPackage.RunWorkerAsync(container);
 
 
 
@@ -403,6 +477,16 @@ namespace BIDSHelper
         public override bool DisplayCommand(UIHierarchyItem item)
         {
             return false; //TODO: decide whether to have a menu option where you can turn on/off this feature like the ShowExtraProperties feature
+        }
+
+        private struct ExpressionInfo
+        {
+            public string ObjectType;
+            public string ObjectName;
+            public string ObjectID;
+            public string ObjectPath;
+            public string PropertyName;
+            public string Expression;
         }
 
 
