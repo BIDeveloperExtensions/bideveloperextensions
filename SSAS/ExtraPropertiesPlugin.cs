@@ -571,8 +571,16 @@ namespace BIDSHelper
                     textValue.Enabled = false;
                     deleteButton.Enabled = false;
                 }
+                System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
                 textName.Text = a.Name ?? "";
-                textValue.Text = (a.Value != null ? a.Value.OuterXml : "");
+                try
+                {
+                    textValue.Text = (string)a.GetType().InvokeMember("TextValue", getflags, null, a, null);
+                }
+                catch
+                {
+                    textValue.Text = (a.Value != null ? a.Value.OuterXml : "");
+                }
             }
             else
             {
