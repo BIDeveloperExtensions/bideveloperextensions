@@ -213,6 +213,7 @@
     <Compile Include="SSIS\ExpressionListControl.Designer.cs">
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSIS\ExpressionListPlugin.cs" />
     <COMReference Include="EnvDTE">
       <Lcid>0</Lcid>
       <VersionMinor>0</VersionMinor>
