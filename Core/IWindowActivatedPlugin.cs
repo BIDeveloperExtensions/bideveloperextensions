@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using EnvDTE;
 
 namespace BIDSHelper.Core
 {
@@ -8,6 +9,6 @@ namespace BIDSHelper.Core
     {
         void HookWindowActivation();
         void UnHookWindowActivation();
-        void WindowActivated(Window GotFocus, Window LostFocus);
+        void OnWindowActivated(Window GotFocus, Window LostFocus);
     }
 }

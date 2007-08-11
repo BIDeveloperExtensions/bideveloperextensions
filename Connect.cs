@@ -4,15 +4,24 @@ using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Reflection;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
     public class Connect : IDTExtensibility2, IDTCommandTarget
     {
 
+        public enum enumIDEMode
+        {
+            Design = 1,
+            Debug = 2,
+            Run = 3
+        }
 
         private DTE2 _applicationObject;
         private AddIn _addInInstance;
+        private DebuggerEvents _debuggerEvents;
+        private enumIDEMode _ideMode = enumIDEMode.Design;
 
         private System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> addins = new System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase>();
 
@@ -37,10 +46,16 @@ namespace BIDSHelper
                 _applicationObject = (DTE2)application;
                 _addInInstance = (AddIn)addInInst;
 
+                _debuggerEvents = _applicationObject.Events.DebuggerEvents;
+                _debuggerEvents.OnEnterBreakMode += new _dispDebuggerEvents_OnEnterBreakModeEventHandler(_debuggerEvents_OnEnterBreakMode);
+                _debuggerEvents.OnEnterDesignMode += new _dispDebuggerEvents_OnEnterDesignModeEventHandler(_debuggerEvents_OnEnterDesignMode);
+                _debuggerEvents.OnEnterRunMode += new _dispDebuggerEvents_OnEnterRunModeEventHandler(_debuggerEvents_OnEnterRunMode);
 
                 foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
                 {
-                    if (typeof(BIDSHelperPluginBase).IsAssignableFrom(t) && (!object.ReferenceEquals(t, typeof(BIDSHelperPluginBase))))
+                    if (typeof(BIDSHelperPluginBase).IsAssignableFrom(t) 
+                        && (!object.ReferenceEquals(t, typeof(BIDSHelperPluginBase)))
+                        && (!t.IsAbstract))
                     {
                         BIDSHelperPluginBase ext;
                         System.Type[] @params = { typeof(DTE2), typeof(AddIn) };
@@ -74,6 +89,24 @@ namespace BIDSHelper
             }
         }
 
+        void _debuggerEvents_OnEnterRunMode(dbgEventReason Reason)
+        {
+            _ideMode = enumIDEMode.Run;
+            dettachWindowEvents();
+        }
+
+        void _debuggerEvents_OnEnterDesignMode(dbgEventReason Reason)
+        {
+            _ideMode = enumIDEMode.Design;
+            dettachWindowEvents();
+        }
+
+        void _debuggerEvents_OnEnterBreakMode(dbgEventReason Reason, ref dbgExecutionAction ExecutionAction)
+        {
+            _ideMode = enumIDEMode.Debug;
+            attachWindowEvents();
+        }
+
         ///<summary>Implements the OnDisconnection method of the IDTExtensibility2 interface. Receives notification that the Add-in is being unloaded.</summary>
         ///<param name='disconnectMode'>Describes how the Add-in is being unloaded.</param>
         ///<param name='custom'>Array of parameters that are host application specific.</param>
@@ -85,6 +118,11 @@ namespace BIDSHelper
                 foreach (BIDSHelperPluginBase iExt in addins.Values)
                 {
                     iExt.DeleteCommand();
+                    
+                    if (iExt is IWindowActivatedPlugin)
+                    {
+                        ((IWindowActivatedPlugin)iExt).UnHookWindowActivation();
+                    }
                 }
             }
 
@@ -161,5 +199,25 @@ namespace BIDSHelper
             }
         }
 
+        private void attachWindowEvents()
+        {
+            foreach (BIDSHelperPluginBase plugIn in addins.Values)
+            {
+                if (plugIn is IWindowActivatedPlugin)
+                {
+                    //TODO
+                }
+            }
+        }
+
+        private void dettachWindowEvents()
+        {
+            //TODO
+        }
+
+        public enumIDEMode IdeMode
+        {
+            get { return _ideMode; }
+        }
     }
 }

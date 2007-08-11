@@ -118,6 +118,7 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Compile Include="Core\BIDSHelperWindowActivatedPluginBase.cs" />
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\ReportViewerForm.Designer.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

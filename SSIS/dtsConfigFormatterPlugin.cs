@@ -12,6 +12,7 @@ namespace BIDSHelper.SSIS
     {
         private WindowEvents windowEvents;
         private DocumentEvents docEvents;
+
         private Timer t = new Timer();
         private int mRetryCnt = 0;
         private const int MAX_RETRY = 5;
@@ -24,6 +25,10 @@ namespace BIDSHelper.SSIS
         public dtsConfigFormatterPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
         {
+            appObject.Events.SolutionItemsEvents.ItemAdded += new _dispProjectItemsEvents_ItemAddedEventHandler(SolutionItemsEvents_ItemAdded);
+            //appObject.Events.MiscFilesEvents.ItemAdded += null;
+            
+
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
             windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
@@ -31,6 +36,11 @@ namespace BIDSHelper.SSIS
             docEvents.DocumentOpened += new _dispDocumentEvents_DocumentOpenedEventHandler(docEvents_DocumentOpened);
             t.Tick += new EventHandler(t_Tick);
             t.Interval = 500;
+        }
+
+        void SolutionItemsEvents_ItemAdded(ProjectItem ProjectItem)
+        {
+            throw new Exception("The method or operation is not implemented.");
         }
 
         void docEvents_DocumentOpened(Document doc)
