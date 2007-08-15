@@ -291,6 +291,7 @@ namespace AggManager
                 AggregationAttribute aggAttr;
                 AggregationDimension aggDim;
                 long iAggCardinality = 1;
+                long iNumSurrogateKeysInAgg = 0;
 
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
@@ -307,6 +308,7 @@ namespace AggManager
                         if (mgDimAttr.Type == MeasureGroupAttributeType.Granularity)
                         {
                             iDimGranularityCardinality = mgDimAttr.Attribute.EstimatedCount;
+                            iNumSurrogateKeysInAgg++;
                             break;
                         }
                     }
@@ -334,7 +336,41 @@ namespace AggManager
                 }
                 if (mg1.EstimatedRows != 0 || iAggCardinality != 0)
                 {
-                    size = ((double)iAggCardinality / (double)mg1.EstimatedRows);
+                    long iMeasureBytes = 0;
+                    foreach (Microsoft.AnalysisServices.Measure m in mg1.Measures)
+                    {
+                        if (m.DataType == MeasureDataType.Inherited)
+                        {
+                            if (m.Source.DataSize > 0)
+                                iMeasureBytes += m.Source.DataSize;
+                            else if (m.Source.DataType == System.Data.OleDb.OleDbType.Integer)
+                                iMeasureBytes += 4;
+                            else if (m.Source.DataType == System.Data.OleDb.OleDbType.SmallInt)
+                                iMeasureBytes += 2;
+                            else if (m.Source.DataType == System.Data.OleDb.OleDbType.TinyInt)
+                                iMeasureBytes += 1;
+                            else
+                                iMeasureBytes += 8;
+                        }
+                        else
+                        {
+                            if (m.DataType == MeasureDataType.Integer)
+                                iMeasureBytes += 4;
+                            else if (m.DataType == MeasureDataType.SmallInt)
+                                iMeasureBytes += 2;
+                            else if (m.DataType == MeasureDataType.TinyInt)
+                                iMeasureBytes += 1;
+                            else
+                                iMeasureBytes += 8;
+                        }
+                    }
+
+                    //the size of each row is 4 bytes for each surrogate key plus the size of measures
+                    long lngFactTableRowSize = (mg1.Dimensions.Count * 4 + iMeasureBytes);
+                    long lngAggRowSize = (iNumSurrogateKeysInAgg * 4 + iMeasureBytes);
+
+                    //multiply the estimated rows by the size of each row
+                    size = ((double)(iAggCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
                     if (size > 1) size = 1;
                 }
             }
