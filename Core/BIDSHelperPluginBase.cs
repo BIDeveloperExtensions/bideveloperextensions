@@ -13,7 +13,7 @@ namespace BIDSHelper
         private const string BASE_NAME = "BIDSHelper.Connect.";
         private Command pluginCmd;
         private CommandBar pluginCmdBar;
-        private CommandBarPopup toolsCommandBarPopup;
+        static CommandBarPopup toolsCommandBarPopup;
         private DTE2 appObj;
         private AddIn addIn;
         private const int UNKNOWN_CMD_ID = -1;
