@@ -17,12 +17,24 @@ namespace BIDSHelper
         private DTE2 appObj;
         private AddIn addIn;
         private const int UNKNOWN_CMD_ID = -1;
+        private Connect addinCore;
 
         #region "Constructors"
         public BIDSHelperPluginBase(DTE2 appObject, AddIn addinInstance)
         {
             appObj = appObject;
             addIn = addinInstance;
+        }
+
+        public Connect AddinCore
+        {
+            set { addinCore = value; }
+            get { return addinCore; }
+        }
+
+        public enumIDEMode IdeMode
+        {
+            get { return addinCore.IdeMode; }
         }
 
         public BIDSHelperPluginBase()
@@ -145,6 +157,11 @@ namespace BIDSHelper
                 //\\ disabled
                 return (vsCommandStatus)vsCommandStatus.vsCommandStatusUnsupported | vsCommandStatus.vsCommandStatusInvisible;
             }
+        }
+
+        public string PluginRegistryPath
+        {
+            get { return this.AddinCore.PluginRegistryPath(this.GetType()); }
         }
 
         #endregion

@@ -5,7 +5,7 @@ using System.Xml;
 using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.AnalysisServices;
+//using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
@@ -17,23 +17,23 @@ using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
 namespace BIDSHelper
 {
-    public class ExpressionHighlighterPlugin : BIDSHelperPluginBase
+    public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
     {
-        private WindowEvents windowEvents;
+        //private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
         private System.Collections.Generic.List<string> windowHandlesInProgressStatus = new System.Collections.Generic.List<string>();
-        private Window expressionListWindow = null;
+        //private Window expressionListWindow = null;
 
         EditorWindow win = null;
-        System.ComponentModel.BackgroundWorker processPackage = null;
+        //System.ComponentModel.BackgroundWorker processPackage = null;
 
         public ExpressionHighlighterPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
         {
-            windowEvents = appObject.Events.get_WindowEvents(null);
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+            //windowEvents = appObject.Events.get_WindowEvents(null);
+            //windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
+            //windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
 
             //processPackage = new System.ComponentModel.BackgroundWorker();
             //processPackage.WorkerReportsProgress = true;
@@ -125,15 +125,18 @@ namespace BIDSHelper
         //}
 
 
+        
+        
 
-        void windowEvents_WindowCreated(Window Window)
-        {
-            windowEvents_WindowActivated(Window, null);
-        }
+        //void windowEvents_WindowCreated(Window Window)
+        //{
+        //    windowEvents_WindowActivated(Window, null);
+        //}
 
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
         //The DtsPackageView object seems to have the appropriate methods, but it's internal to the Microsoft.DataTransformationServices.Design assembly.
-        void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        //void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        public override void OnWindowActivated(Window GotFocus, Window lostFocus)
         {
             IDTSSequence container = null;
             MainPipe pipe = null;
@@ -441,7 +444,7 @@ namespace BIDSHelper
 
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
-            windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+            OnActiveViewChanged();
         }
 
         public override string ShortName
@@ -481,12 +484,14 @@ namespace BIDSHelper
 
         private struct ExpressionInfo
         {
+#pragma warning disable 649
             public string ObjectType;
             public string ObjectName;
             public string ObjectID;
             public string ObjectPath;
             public string PropertyName;
             public string Expression;
+#pragma warning restore 649
         }
 
 

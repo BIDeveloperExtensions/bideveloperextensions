@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using EnvDTE;
 
-namespace BIDSHelper.Core
+namespace BIDSHelper
 {
     public interface IWindowActivatedPlugin
     {

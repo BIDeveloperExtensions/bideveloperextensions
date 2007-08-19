@@ -4,19 +4,21 @@ using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Reflection;
-using BIDSHelper.Core;
+//using BIDSHelper
 
 namespace BIDSHelper
 {
+    public enum enumIDEMode
+    {
+        Design = 1,
+        Debug = 2,
+        Run = 3
+    }
+
     public class Connect : IDTExtensibility2, IDTCommandTarget
     {
 
-        public enum enumIDEMode
-        {
-            Design = 1,
-            Debug = 2,
-            Run = 3
-        }
+
 
         private DTE2 _applicationObject;
         private AddIn _addInInstance;
@@ -31,6 +33,16 @@ namespace BIDSHelper
         ///<summary>Implements the constructor for the Add-in object. Place your initialization code within this method.</summary>
         public Connect()
         {
+        }
+
+        public string RegistryBasePath
+        {
+            get { return REGISTRY_BASE_PATH; }
+        }
+
+        public string PluginRegistryPath(Type t)
+        {
+            return RegistryBasePath + "\\" + t.Name;
         }
 
         ///<summary>Implements the OnConnection method of the IDTExtensibility2 interface. Receives notification that the Add-in is being loaded.</summary>
@@ -63,8 +75,13 @@ namespace BIDSHelper
 
                         con = t.GetConstructor(@params);
                         ext = (BIDSHelperPluginBase)con.Invoke(new object[] { _applicationObject, _addInInstance });
-
+                        ext.AddinCore = this;
                         addins.Add(ext.FullName, ext);
+
+                        if (ext is IWindowActivatedPlugin)
+                        {
+                            ((IWindowActivatedPlugin)ext).HookWindowActivation();
+                        }
                     }
                 }
 
@@ -98,13 +115,13 @@ namespace BIDSHelper
         void _debuggerEvents_OnEnterDesignMode(dbgEventReason Reason)
         {
             _ideMode = enumIDEMode.Design;
-            dettachWindowEvents();
+            attachWindowEvents();
         }
 
         void _debuggerEvents_OnEnterBreakMode(dbgEventReason Reason, ref dbgExecutionAction ExecutionAction)
         {
             _ideMode = enumIDEMode.Debug;
-            attachWindowEvents();
+            dettachWindowEvents();
         }
 
         ///<summary>Implements the OnDisconnection method of the IDTExtensibility2 interface. Receives notification that the Add-in is being unloaded.</summary>
@@ -206,13 +223,21 @@ namespace BIDSHelper
                 if (plugIn is IWindowActivatedPlugin)
                 {
                     //TODO
+                    ((IWindowActivatedPlugin)plugIn).HookWindowActivation();
                 }
             }
         }
 
         private void dettachWindowEvents()
         {
-            //TODO
+            foreach (BIDSHelperPluginBase plugIn in addins.Values)
+            {
+                if (plugIn is IWindowActivatedPlugin)
+                {
+                    //TODO
+                    ((IWindowActivatedPlugin)plugIn).UnHookWindowActivation();
+                }
+            }
         }
 
         public enumIDEMode IdeMode

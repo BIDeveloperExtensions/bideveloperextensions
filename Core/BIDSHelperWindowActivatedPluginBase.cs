@@ -2,14 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using EnvDTE;
+using EnvDTE80;
 
-namespace BIDSHelper.Core
+namespace BIDSHelper
 {
-    abstract class BIDSHelperWindowActivatedPluginBase
+    public abstract class BIDSHelperWindowActivatedPluginBase
         : BIDSHelperPluginBase
         , IWindowActivatedPlugin
     {
         private WindowEvents windowEvents;
+
+                #region "Constructors"
+        public BIDSHelperWindowActivatedPluginBase(DTE2 appObject, AddIn addinInstance)
+            : base(appObject, addinInstance)
+        {
+            //appObj = appObject;
+            //addIn = addinInstance;
+        }
+
+        public BIDSHelperWindowActivatedPluginBase()
+        {
+
+        }
+        #endregion
 
         public void HookWindowActivation()
         {
@@ -23,8 +38,16 @@ namespace BIDSHelper.Core
             windowEvents.WindowActivated -= windowEvents_WindowActivated;
             windowEvents.WindowCreated += windowEvents_WindowCreated;
         }
-        public void OnWindowActivated(Window GotFocus, Window LostFocus)
+        public virtual void OnWindowActivated(Window GotFocus, Window LostFocus)
         { }
+
+        public void OnActiveViewChanged()
+        {
+            if (this.IdeMode == enumIDEMode.Design)
+            {
+                OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
+            }
+        }
 
         private void windowEvents_WindowCreated(Window Window)
         {
