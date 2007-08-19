@@ -410,10 +410,12 @@ namespace BIDSHelper
             {
                 foreach (Executable e in parentExecutable.Executables)
                 {
-                    matchingExecutable = FindExecutable((IDTSSequence)e, sObjectGuid);
+                    if (e is IDTSSequence)
+                    {
+                        matchingExecutable = FindExecutable((IDTSSequence)e, sObjectGuid);
+                    }
                 }
             }
-
             return matchingExecutable;
         }
 
