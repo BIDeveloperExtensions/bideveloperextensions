@@ -345,6 +345,7 @@ namespace BIDSHelper
                     }
 
                     Form descForm = new Form();
+                    descForm.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
                     descForm.Text = "BIDS Helper Description Editor";
                     descForm.MaximizeBox = true;
                     descForm.MinimizeBox = false;

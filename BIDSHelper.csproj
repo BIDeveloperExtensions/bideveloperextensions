@@ -49,6 +49,7 @@
     <Reference Include="Konesans.Dts.CommonLibrary, Version=2.9.0.11, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>SSIS\Konesans.Dts.CommonLibrary.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -193,6 +194,13 @@
     <Compile Include="SSAS\DimensionHealthCheckPlugin.cs" />
     <Compile Include="SSAS\EstimatedCountsPlugin.cs" />
     <Compile Include="SSAS\ExtraPropertiesPlugin.cs" />
+    <Compile Include="SSAS\MeasureGroupHealthCheckForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\MeasureGroupHealthCheckForm.Designer.cs">
+      <DependentUpon>MeasureGroupHealthCheckForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\MeasureGroupHealthCheckPlugin.cs" />
     <Compile Include="SSAS\PrinterFriendlyDimensionUsage.cs" />
     <Compile Include="SSAS\PrinterFriendlyDimensionUsagePlugin.cs">
       <SubType>Code</SubType>
@@ -268,6 +276,9 @@
     <Content Include="Resources\DeployMdxScript.ico" />
     <Content Include="SetupScript\BIDSHelper.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
+    <Content Include="SSIS\ExpressionEditor.xml">
+    </Content>
+    <Content Include="SSIS\Konesans.Dts.CommonLibrary.dll" />
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
@@ -303,6 +314,10 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
+    <EmbeddedResource Include="SSAS\MeasureGroupHealthCheckForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MeasureGroupHealthCheckForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\VisualizeAttributeLattice.rdlc" />
     <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsage.rdlc" />
     <EmbeddedResource Include="Core\ReportViewerForm.resx">
@@ -325,6 +340,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\DimensionUsage.datasource" />
+    <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
+    <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
     <None Include="Properties\DataSources\VisualizeAttributeLatticeImageForReport.datasource" />
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
     <None Include="SetupScript\BIDSHelperSetup.nsi" />
