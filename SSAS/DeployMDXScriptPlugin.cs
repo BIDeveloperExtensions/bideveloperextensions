@@ -183,6 +183,12 @@ namespace BIDSHelper
                             xwSet.Indent = true;
                             XmlWriter xwScript = XmlWriter.Create(sbBackup,xwSet);
 
+                            if (svr.Databases.GetByName(deploySet.TargetDatabase).Cubes.Find(oCube.ID).MdxScripts.Count == 0)
+                            {
+                                MessageBox.Show("There is no MDX script defined in this cube yet.");
+                                return;
+                            }
+
                             MdxScript mdxScr = svr.Databases.GetByName(deploySet.TargetDatabase).Cubes.Find(oCube.ID).MdxScripts[0];
                             scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[]{mdxScr},xwScript,true);
                             xwScript.Close();

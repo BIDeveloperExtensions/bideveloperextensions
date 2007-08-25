@@ -252,6 +252,12 @@ namespace BIDSHelper
                     return;
                 }
 
+                if (cube.MdxScripts.Count == 0)
+                {
+                    MessageBox.Show("There is no MDX script defined in this cube yet.");
+                    return;
+                }
+
                 System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
                 form1.GetType().InvokeMember("Initialize", getmethodflags, null, form1, new object[] { cube.MdxScripts[0], script1, cube, null });
 

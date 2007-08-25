@@ -104,7 +104,7 @@ namespace BIDSHelper
                         foreach (DataItem di3 in mga.KeyColumns)
                         {
                             tableId = ((ColumnBinding)di3.Source).TableID;
-                            DataSourceView dsv = mga.Parent.Dimension.DataSourceView;
+                            DataSourceView dsv = mga.ParentCube.DataSourceView;
                             DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
                             if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
                             {
@@ -205,7 +205,7 @@ namespace BIDSHelper
                     foreach (DataItem di in mga.KeyColumns)
                     {
                         usage.Column2Value = ((ColumnBinding)di.Source).TableID;
-                        DataSourceView dsv = mga.Parent.Dimension.DataSourceView;
+                        DataSourceView dsv = mga.ParentCube.DataSourceView;
                         DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(usage.Column2Value)];
                         if (oTable.ExtendedProperties.ContainsKey("FriendlyName")) 
                         {

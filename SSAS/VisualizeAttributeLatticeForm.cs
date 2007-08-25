@@ -318,6 +318,7 @@ namespace BIDSHelper
             try
             {
                 Form legend = new Form();
+                legend.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
                 legend.Text = "Visualize Attribute Lattice - Legend";
                 legend.MaximizeBox = false;
                 legend.MinimizeBox = false;
