@@ -108,6 +108,12 @@ namespace BIDSHelper
                 return;
             }
 
+            if (oCube.MdxScripts.Count == 0)
+            {
+                MessageBox.Show("There is no MDX script defined in this cube yet.");
+                return;
+            }
+
             try
             {
                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
@@ -183,14 +189,26 @@ namespace BIDSHelper
                             xwSet.Indent = true;
                             XmlWriter xwScript = XmlWriter.Create(sbBackup,xwSet);
 
-                            if (svr.Databases.GetByName(deploySet.TargetDatabase).Cubes.Find(oCube.ID).MdxScripts.Count == 0)
+                            Cube oServerCube = targetDB.Cubes.Find(oCube.ID);
+                            if (oServerCube == null)
                             {
-                                MessageBox.Show("There is no MDX script defined in this cube yet.");
+                                throw new System.Exception(string.Format("The {0} cube is not yet deployed to the {1} server.", oCube.Name, deploySet.TargetServer));
                                 return;
                             }
-
-                            MdxScript mdxScr = svr.Databases.GetByName(deploySet.TargetDatabase).Cubes.Find(oCube.ID).MdxScripts[0];
-                            scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[]{mdxScr},xwScript,true);
+                            else if (oServerCube.State == AnalysisState.Unprocessed)
+                            {
+                                throw new System.Exception(string.Format("The {0} cube is not processed the {1} server.", oCube.Name, deploySet.TargetServer));
+                                return;
+                            }
+                            if (oServerCube.MdxScripts.Count == 0)
+                            {
+                                scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[] { oServerCube }, xwScript, true);
+                            }
+                            else
+                            {
+                                MdxScript mdxScr = oServerCube.MdxScripts[0];
+                                scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[] { mdxScr }, xwScript, true);
+                            }
                             xwScript.Close();
 
                             // update the MDX Script

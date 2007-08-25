@@ -5,7 +5,7 @@
 
 	<xsl:output indent="yes" omit-xml-declaration="yes" />
 	<xsl:template match="/">
-		<Alter ObjectExpansion="ExpandFull" xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
+		<Alter AllowCreate="true" ObjectExpansion="ExpandFull" xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
 			<Object>
 				<DatabaseID>
 					<xsl:value-of select="$TargetDatabase"></xsl:value-of>
