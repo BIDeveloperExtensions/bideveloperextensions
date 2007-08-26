@@ -187,7 +187,11 @@ namespace BIDSHelper
             }
         }
 
-
+        //making these static allows me not to have to change all the function signatures below... and it is fine as static because multiple dimension health checks can't be run in parallel
+        private static string sq = "[";
+        private static string fq = "]";
+        private static Microsoft.DataWarehouse.Design.RDMSCartridge cartridge = null;
+        private static string DBServerName = ""; //will say Oracle or Microsoft SQL Server
 
         private DimensionError[] Check(Dimension d)
         {
@@ -196,6 +200,10 @@ namespace BIDSHelper
             //TODO: need to add in code to allow you to cancel such that it will stop an executing query
 
             Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(d.DataSource);
+            sq = openedDataSourceConnection.Cartridge.IdentStartQuote;
+            fq = openedDataSourceConnection.Cartridge.IdentEndQuote;
+            DBServerName = openedDataSourceConnection.DBServerName;
+            cartridge = openedDataSourceConnection.Cartridge;
 
             int iProgressCount = 0;
             String sql = "";
@@ -269,6 +277,7 @@ namespace BIDSHelper
                 }
                 ApplicationObject.StatusBar.Progress(true, "Checking Attribute Relationships...", ++iProgressCount, d.Attributes.Count * 2);
             }
+            cartridge = null;
             openedDataSourceConnection.Close();
             return problems.ToArray();
         }
@@ -359,16 +368,29 @@ namespace BIDSHelper
         {
             if (!oTable.ExtendedProperties.ContainsKey("QueryDefinition") && oTable.ExtendedProperties.ContainsKey("DbTableName") && oTable.ExtendedProperties.ContainsKey("DbSchemaName"))
             {
-                return "[" + oTable.ExtendedProperties["DbSchemaName"].ToString() + "].[" + oTable.ExtendedProperties["DbTableName"].ToString() + "] as [" + oTable.ExtendedProperties["FriendlyName"].ToString() + "]";
+                return sq + oTable.ExtendedProperties["DbSchemaName"].ToString() + fq + "." + sq + oTable.ExtendedProperties["DbTableName"].ToString() + fq + " " + sq + oTable.ExtendedProperties["FriendlyName"].ToString() + fq;
             }
             else if (oTable.ExtendedProperties.ContainsKey("QueryDefinition"))
             {
-                return "(\r\n " + oTable.ExtendedProperties["QueryDefinition"].ToString() + "\r\n) as [" + oTable.ExtendedProperties["FriendlyName"].ToString() + "]\r\n";
+                return "(\r\n " + oTable.ExtendedProperties["QueryDefinition"].ToString() + "\r\n) " + sq + oTable.ExtendedProperties["FriendlyName"].ToString() + fq + "\r\n";
             }
             else
             {
                 throw new Exception("Unexpected query definition for table binding.");
             }
+        }
+
+        private static string GetNextUniqueColumnIdentifier()
+        {
+            string colAlias = System.Guid.NewGuid().ToString("N"); //no dashes
+
+            //oracle identifiers can't be more than 30 chars... so the first 30 of 32 chars in the GUID will probably be unique
+            long maxLen = 32;
+            if (cartridge != null)
+                maxLen = cartridge.GetLimit(Microsoft.DataWarehouse.Design.RDMSCartridge.LimitEnum.ColumnIdentifierLength);
+            colAlias = colAlias.Substring(0, Math.Min(colAlias.Length,(int)maxLen));
+            
+            return colAlias;
         }
 
         private static string GetQueryToValidateUniqueness(DataSourceView dsv, DataItem[] child, DataItem[] parent)
@@ -386,7 +408,7 @@ namespace BIDSHelper
                 ColumnBinding col = GetColumnBindingForDataItem(di);
                 if (!previousColumns.Contains("[" + col.TableID + "].[" + col.ColumnID + "]"))
                 {
-                    string colAlias = System.Guid.NewGuid().ToString();
+                    string colAlias = GetNextUniqueColumnIdentifier();
                     DataColumn dc = dsv.Schema.Tables[col.TableID].Columns[col.ColumnID];
                     groupBy.Append((select.Length == 0 ? "group by " : ","));
                     outerSelect.Append((select.Length == 0 ? "select " : ","));
@@ -395,17 +417,37 @@ namespace BIDSHelper
                     //select.Append(" /*" + dc.DataType.FullName + "*/ "); //for troubleshooting data types
                     if (dc.DataType == typeof(string))
                     {
-                        if (di.NullProcessing == NullProcessing.Preserve)
-                            sIsNull = "'__BIDS_HELPER_DIMENSION_HEALTH_CHECK_UNIQUE_STRING__'"; //a unique value that shouldn't ever occur in the real data
+                        if (DBServerName == "Oracle")
+                        {
+                            if (di.NullProcessing == NullProcessing.Preserve)
+                                sIsNull = "'__BIDS_HELPER_DIMENSION_HEALTH_CHECK_UNIQUE_STRING__'"; //a unique value that shouldn't ever occur in the real data
+                            else
+                                sIsNull = "' '"; //oracle treats empty string as null
+                        }
                         else
-                            sIsNull = "''";
+                        {
+                            if (di.NullProcessing == NullProcessing.Preserve)
+                                sIsNull = "'__BIDS_HELPER_DIMENSION_HEALTH_CHECK_UNIQUE_STRING__'"; //a unique value that shouldn't ever occur in the real data
+                            else
+                                sIsNull = "''";
+                        }
                     }
                     else if (dc.DataType == typeof(DateTime))
                     {
-                        if (di.NullProcessing == NullProcessing.Preserve)
-                            sIsNull = "'1/1/1899 01:02:03 AM'"; //a unique value that shouldn't ever occur in the real data
+                        if (DBServerName == "Oracle")
+                        {
+                            if (di.NullProcessing == NullProcessing.Preserve)
+                                sIsNull = "to_date('1/1/1899 01:02:03','MM/DD/YYYY HH:MI:SS')"; //a unique value that shouldn't ever occur in the real data
+                            else
+                                sIsNull = "to_date('12/30/1899','MM/DD/YYYY')"; //think this is what SSAS converts null dates to
+                        }
                         else
-                            sIsNull = "'12/30/1899'"; //think this is what SSAS converts null dates to
+                        {
+                            if (di.NullProcessing == NullProcessing.Preserve)
+                                sIsNull = "'1/1/1899 01:02:03 AM'"; //a unique value that shouldn't ever occur in the real data
+                            else
+                                sIsNull = "'12/30/1899'"; //think this is what SSAS converts null dates to
+                        }
                     }
                     else //numeric
                     {
@@ -414,19 +456,19 @@ namespace BIDSHelper
                         else
                             sIsNull = "0";
                     }
-                    join.Append((join.Length == 0 ? "on " : "and ")).Append("coalesce(y.[").Append(colAlias).Append("],").Append(sIsNull).Append(") = coalesce(z.[").Append(colAlias).Append("],").Append(sIsNull).AppendLine(")");
-                    groupBy.Append("[").Append(colAlias).AppendLine("]");
-                    outerSelect.Append("[").Append(colAlias).AppendLine("]");
+                    join.Append((join.Length == 0 ? "on " : "and ")).Append("coalesce(y.").Append(sq).Append(colAlias).Append(fq).Append(",").Append(sIsNull).Append(") = coalesce(z.").Append(sq).Append(colAlias).Append(fq).Append(",").Append(sIsNull).AppendLine(")");
+                    groupBy.Append(sq).Append(colAlias).AppendLine(fq);
+                    outerSelect.Append(sq).Append(colAlias).AppendLine(fq);
                     if (topLevelColumns.Length > 0) topLevelColumns.Append(",");
-                    topLevelColumns.Append("y.[").Append(colAlias).Append("] as [").Append(dc.ColumnName).AppendLine("]");
+                    topLevelColumns.Append("y.").Append(sq).Append(colAlias).Append(fq).Append(" as ").Append(sq).Append(dc.ColumnName).AppendLine(fq);
                     if (!dc.ExtendedProperties.ContainsKey("ComputedColumnExpression"))
                     {
-                        select.Append("[").Append(colAlias).Append("] = [").Append(dsv.Schema.Tables[col.TableID].ExtendedProperties["FriendlyName"].ToString()).Append("].[").Append((dc.ExtendedProperties["DbColumnName"] ?? dc.ColumnName).ToString()).AppendLine("]");
+                        select.Append(sq).Append(dsv.Schema.Tables[col.TableID].ExtendedProperties["FriendlyName"].ToString()).Append(fq).Append(".").Append(sq).Append((dc.ExtendedProperties["DbColumnName"] ?? dc.ColumnName).ToString()).Append(fq).Append(" as ").Append(sq).Append(colAlias).AppendLine(fq);
                     }
                     else
                     {
-                        select.Append("[").Append(colAlias).Append("]");
-                        select.Append(" = ").AppendLine(dc.ExtendedProperties["ComputedColumnExpression"].ToString());
+                        select.AppendLine(dc.ExtendedProperties["ComputedColumnExpression"].ToString());
+                        select.Append(" as ").Append(sq).Append(colAlias).AppendLine(fq);
                     }
 
                     if (!tables.ContainsKey(dsv.Schema.Tables[col.TableID]))
@@ -442,21 +484,21 @@ namespace BIDSHelper
                 ColumnBinding col = GetColumnBindingForDataItem(di);
                 if (!previousColumns.Contains("[" + col.TableID + "].[" + col.ColumnID + "]"))
                 {
-                    string colAlias = System.Guid.NewGuid().ToString();
+                    string colAlias = GetNextUniqueColumnIdentifier();
                     DataColumn dc = dsv.Schema.Tables[col.TableID].Columns[col.ColumnID];
                     select.Append(",");
                     //use the __PARENT__ prefix in case there's a column with the same name but different table
                     if (!dc.ExtendedProperties.ContainsKey("ComputedColumnExpression"))
                     {
-                        select.Append("[").Append(colAlias).Append("] = [").Append(dsv.Schema.Tables[col.TableID].ExtendedProperties["FriendlyName"].ToString()).Append("].[").Append((dc.ExtendedProperties["DbColumnName"] ?? dc.ColumnName).ToString()).AppendLine("]");
+                        select.Append(sq).Append(dsv.Schema.Tables[col.TableID].ExtendedProperties["FriendlyName"].ToString()).Append(fq).Append(".").Append(sq).Append((dc.ExtendedProperties["DbColumnName"] ?? dc.ColumnName).ToString()).Append(fq).Append(" as ").Append(sq).Append(colAlias).AppendLine(fq);
                     }
                     else
                     {
-                        select.Append("[").Append(colAlias).Append("]");
-                        select.Append(" = ").AppendLine(dc.ExtendedProperties["ComputedColumnExpression"].ToString());
+                        select.AppendLine(dc.ExtendedProperties["ComputedColumnExpression"].ToString());
+                        select.Append(" as ").Append(sq).Append(colAlias).AppendLine(fq);
                     }
                     if (topLevelColumns.Length > 0) topLevelColumns.Append(",");
-                    topLevelColumns.Append("y.[").Append(colAlias).Append("] as [").Append(dc.ColumnName).AppendLine("]");
+                    topLevelColumns.Append("y.").Append(sq).Append(colAlias).Append(fq).Append(" as ").Append(sq).Append(dc.ColumnName).AppendLine(fq);
 
                     if (!tables.ContainsKey(dsv.Schema.Tables[col.TableID]))
                     {
@@ -494,6 +536,12 @@ namespace BIDSHelper
                     }
                 }
             }
+            if (baseTable == null)
+            {
+                //there are joins to and from the base table, so guess at the base table based on the child parameter to this function
+                ColumnBinding col = GetColumnBindingForDataItem(child[0]);
+                baseTable = dsv.Schema.Tables[col.TableID];
+            }
 
             //by now, all tables needed for joins will be in the dictionary
             select.Append("\r\nfrom ").AppendLine(GetFromClauseForTable(baseTable));
@@ -503,7 +551,7 @@ namespace BIDSHelper
 
             string invalidValuesInner = outerSelect.ToString();
             outerSelect = new StringBuilder();
-            outerSelect.Append("select ").AppendLine(topLevelColumns.ToString()).AppendLine(" from (").Append(select).AppendLine(") as y");
+            outerSelect.Append("select ").AppendLine(topLevelColumns.ToString()).AppendLine(" from (").Append(select).AppendLine(") y");
             outerSelect.AppendLine("join (").AppendLine(invalidValuesInner).AppendLine(") z").AppendLine(join.ToString());
             return outerSelect.ToString();
         }
@@ -535,6 +583,7 @@ namespace BIDSHelper
 
         private static string TraverseParentRelationshipsAndGetFromClause(Dictionary<DataTable, JoinedTable> tables, DataTable t)
         {
+            tables[t].AddedToQuery = true;
             StringBuilder joins = new StringBuilder();
             foreach (DataRelation r in t.ParentRelations)
             {
@@ -544,13 +593,12 @@ namespace BIDSHelper
                     for (int i = 0; i < r.ParentColumns.Length; i++)
                     {
                         joins.Append((i == 0 ? " on " : " and "));
-                        joins.Append("[").Append(r.ParentTable.ExtendedProperties["FriendlyName"].ToString()).Append("].[").Append(r.ParentColumns[i].ColumnName).Append("]");
-                        joins.Append(" = [").Append(r.ChildTable.ExtendedProperties["FriendlyName"].ToString()).Append("].[").Append(r.ChildColumns[i].ColumnName).AppendLine("]");
+                        joins.Append(sq).Append(r.ParentTable.ExtendedProperties["FriendlyName"].ToString()).Append(fq).Append(".").Append(sq).Append(r.ParentColumns[i].ColumnName).Append(fq);
+                        joins.Append(" = ").Append(sq).Append(r.ChildTable.ExtendedProperties["FriendlyName"].ToString()).Append(fq).Append(".").Append(sq).Append(r.ChildColumns[i].ColumnName).AppendLine(fq);
                     }
                     joins.Append(TraverseParentRelationshipsAndGetFromClause(tables, r.ParentTable));
                 }
             }
-            tables[t].AddedToQuery = true;
             return joins.ToString();
         }
 
