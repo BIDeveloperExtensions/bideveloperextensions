@@ -137,10 +137,28 @@ namespace BIDSHelper
             new MeasureDataTypeOption(MeasureDataType.UnsignedTinyInt, typeof(Byte), Byte.MinValue, Byte.MaxValue, false)
         };
 
+        //making these static allows me not to have to change all the function signatures below... and it is fine as static because multiple dimension health checks can't be run in parallel
+        private static string sq = "[";
+        private static string fq = "]";
+
         public static void Check(MeasureGroup mg, IDesignerHost designer)
         {
             if (mg.Measures.Count == 0) throw new Exception(mg.Name + " has no measures.");
             if (mg.IsLinked) throw new Exception(mg.Name + " is a linked measure group. Run this Measure Group Health Check on the source measure group.");
+
+            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(mg.Parent.DataSource);
+            sq = openedDataSourceConnection.Cartridge.IdentStartQuote;
+            fq = openedDataSourceConnection.Cartridge.IdentEndQuote;
+
+            string sBitSqlDatatype = "bit";
+            string sCountBig = "count_big";
+
+            if (openedDataSourceConnection.DBServerName == "Oracle")
+            {
+                sBitSqlDatatype = "number(1,0)";
+                sCountBig = "count";
+            }
+
             string sFactQuery = GetQueryDefinition(mg.ParentDatabase, mg, new DsvTableBinding(mg.Parent.DataSourceView.ID, GetTableIdForDataItem(mg.Measures[0].Source)), null);
 
             StringBuilder sOuterQuery = new StringBuilder();
@@ -176,12 +194,12 @@ namespace BIDSHelper
                     if (m.AggregateFunction == AggregationFunction.Min
                     || m.AggregateFunction == AggregationFunction.Max
                     || m.AggregateFunction == AggregationFunction.None)
-                        sOuterQuery.Append("max(").Append(sNegativeSign).Append("cast([").Append(cb.ColumnID).Append("] as float))").AppendLine();
+                        sOuterQuery.Append("max(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
                     else
-                        sOuterQuery.Append("sum(").Append(sNegativeSign).Append("cast([").Append(cb.ColumnID).Append("] as float))").AppendLine();
-                    sOuterQuery.Append(",min(").Append(sNegativeSign).Append("cast([").Append(cb.ColumnID).Append("] as float))").AppendLine();
-                    sOuterQuery.Append(",max(").Append(sNegativeSign).Append("cast([").Append(cb.ColumnID).Append("] as float))").AppendLine();
-                    sOuterQuery.Append(",cast(max(case when floor([").Append(cb.ColumnID).Append("]) <> [").Append(cb.ColumnID).Append("] then 1 else 0 end) as bit)").AppendLine();
+                        sOuterQuery.Append("sum(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
+                    sOuterQuery.Append(",min(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
+                    sOuterQuery.Append(",max(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
+                    sOuterQuery.Append(",cast(max(case when floor(").Append(sq).Append(cb.ColumnID).Append(fq).Append(") <> ").Append(sq).Append(cb.ColumnID).Append(fq).Append(" then 1 else 0 end) as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                 }
                 else if (m.AggregateFunction == AggregationFunction.Count
                 || m.AggregateFunction == AggregationFunction.DistinctCount
@@ -196,24 +214,24 @@ namespace BIDSHelper
                         if (m.AggregateFunction == AggregationFunction.DistinctCount)
                             throw new Exception("RowBinding on a distinct count not allowed by Analysis Services");
                         else
-                            sOuterQuery.Append("count_big(*)").AppendLine();
+                            sOuterQuery.Append(sCountBig).Append("(*)").AppendLine();
                         sOuterQuery.Append(",0").AppendLine();
                         sOuterQuery.Append(",1").AppendLine();
-                        sOuterQuery.Append(",cast(0 as bit)").AppendLine();
+                        sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                     }
                     else
                     {
                         ColumnBinding cb = GetColumnBindingForDataItem(m.Source);
                         DataColumn col = mg.Parent.DataSourceView.Schema.Tables[cb.TableID].Columns[cb.ColumnID];
                         if (m.AggregateFunction == AggregationFunction.DistinctCount)
-                            sOuterQuery.Append("count_big(distinct [").Append(cb.ColumnID).Append("])").AppendLine();
+                            sOuterQuery.Append(sCountBig).Append("(distinct ").Append(sq).Append(cb.ColumnID).Append(fq).Append(")").AppendLine();
                         else if (col.DataType == typeof(Byte[]))
-                            sOuterQuery.Append("count_big(cast(case when [").Append(cb.ColumnID).Append("] is not null then 1 else 0 end as bigint))").AppendLine();
+                            sOuterQuery.Append("sum(cast(case when ").Append(sq).Append(cb.ColumnID).Append(fq).Append(" is not null then 1 else 0 end as float))").AppendLine();
                         else
-                            sOuterQuery.Append("count_big([").Append(cb.ColumnID).Append("])").AppendLine();
+                            sOuterQuery.Append(sCountBig).Append("(").Append(sq).Append(cb.ColumnID).Append(fq).Append(")").AppendLine();
                         sOuterQuery.Append(",0").AppendLine();
                         sOuterQuery.Append(",1").AppendLine();
-                        sOuterQuery.Append(",cast(0 as bit)").AppendLine();
+                        sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                     }
                 }
                 else
@@ -223,8 +241,8 @@ namespace BIDSHelper
             }
             if (sOuterQuery.Length == 0) return;
 
-            sOuterQuery.AppendLine("from (").Append(sFactQuery).AppendLine(") as fact");
-            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(mg.Parent.DataSource);
+            sOuterQuery.AppendLine("from (").Append(sFactQuery).AppendLine(") fact");
+
             DataSet ds = new DataSet();
             //openedDataSourceConnection.QueryTimeOut = 0; //just inherit from the datasource
             openedDataSourceConnection.Fill(ds, sOuterQuery.ToString());
@@ -295,7 +313,6 @@ namespace BIDSHelper
                             {
                                 recommendedMaxValue = option.max;
                             }
-                            //TODO: if we've got nulls, only recommend a datatype which allows decimals like the dsvDatatype
                             //TODO: parameterize the "free space factor" which is currently hardcoded to 20x
                         }
                     }
@@ -331,7 +348,6 @@ namespace BIDSHelper
             form.measureHealthCheckResultBindingSource.DataSource = measureResults;
             form.Text = "Measure Group Health Check: " + mg.Name;
             DialogResult dialogResult = form.ShowDialog();
-            //TODO: put a "copy all to clipboard" menu option there (so you don't have to enable multi-select)
 
             if (dialogResult == DialogResult.OK)
             {
@@ -453,11 +469,11 @@ namespace BIDSHelper
                             }
                             if (!oColumn.ExtendedProperties.ContainsKey("ComputedColumnExpression"))
                             {
-                                sQuery.Append("[").Append(oColumn.ExtendedProperties["DbColumnName"].ToString()).AppendLine("]");
+                                sQuery.Append(sq).Append((oColumn.ExtendedProperties["DbColumnName"] ?? oColumn.ColumnName).ToString()).AppendLine(fq);
                             }
                             else
                             {
-                                sQuery.Append("[").Append(oColumn.ExtendedProperties["DbColumnName"].ToString()).Append("] = ").AppendLine(oColumn.ExtendedProperties["ComputedColumnExpression"].ToString());
+                                sQuery.Append(oColumn.ExtendedProperties["ComputedColumnExpression"].ToString()).Append(" as ").Append(sq).Append((oColumn.ExtendedProperties["DbColumnName"] ?? oColumn.ColumnName).ToString()).AppendLine(fq);
                             }
                         }
                     }
@@ -466,9 +482,9 @@ namespace BIDSHelper
                         throw new Exception("There was a problem constructing the query.");
                     }
                     sQuery.Append("from ");
-                    if (oTable.ExtendedProperties.ContainsKey("DbSchemaName")) sQuery.Append("[").Append(oTable.ExtendedProperties["DbSchemaName"].ToString()).Append("].");
-                    sQuery.Append("[").Append(oTable.ExtendedProperties["DbTableName"].ToString());
-                    sQuery.Append("] as [").Append(oTable.ExtendedProperties["FriendlyName"].ToString()).AppendLine("]");
+                    if (oTable.ExtendedProperties.ContainsKey("DbSchemaName")) sQuery.Append(sq).Append(oTable.ExtendedProperties["DbSchemaName"].ToString()).Append(fq).Append(".");
+                    sQuery.Append(sq).Append(oTable.ExtendedProperties["DbTableName"].ToString());
+                    sQuery.Append(fq).Append(" ").Append(sq).Append(oTable.ExtendedProperties["FriendlyName"].ToString()).AppendLine(fq);
                 }
                 else if (oTable.ExtendedProperties.ContainsKey("QueryDefinition"))
                 {
