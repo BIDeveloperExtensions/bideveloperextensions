@@ -193,12 +193,10 @@ namespace BIDSHelper
                             if (oServerCube == null)
                             {
                                 throw new System.Exception(string.Format("The {0} cube is not yet deployed to the {1} server.", oCube.Name, deploySet.TargetServer));
-                                return;
                             }
                             else if (oServerCube.State == AnalysisState.Unprocessed)
                             {
                                 throw new System.Exception(string.Format("The {0} cube is not processed the {1} server.", oCube.Name, deploySet.TargetServer));
-                                return;
                             }
                             if (oServerCube.MdxScripts.Count == 0)
                             {

@@ -209,6 +209,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SSAS\TriStatePerspectivesPlugin.cs" />
+    <Compile Include="SSAS\UnusedColumnsPlugin.cs" />
     <Compile Include="SSAS\VisualizeAttributeLattice.cs" />
     <Compile Include="SSAS\VisualizeAttributeLatticeForm.cs">
       <SubType>Form</SubType>
@@ -314,6 +315,8 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
+    <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />
+    <EmbeddedResource Include="SSAS\UnusedColumns.rdlc" />
     <EmbeddedResource Include="SSAS\MeasureGroupHealthCheckForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>MeasureGroupHealthCheckForm.cs</DependentUpon>
@@ -342,6 +345,8 @@
     <None Include="Properties\DataSources\DimensionUsage.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
+    <None Include="Properties\DataSources\UnusedColumnsPlugin.UnusedColumn.datasource" />
+    <None Include="Properties\DataSources\UnusedColumnsPlugin.UsedColumn.datasource" />
     <None Include="Properties\DataSources\VisualizeAttributeLatticeImageForReport.datasource" />
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
     <None Include="SetupScript\BIDSHelperSetup.nsi" />
