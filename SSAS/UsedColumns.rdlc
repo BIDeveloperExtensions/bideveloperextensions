@@ -69,18 +69,6 @@
                 <SortExpression>=Fields!TableName.Value</SortExpression>
                 <Direction>Ascending</Direction>
               </SortBy>
-              <SortBy>
-                <SortExpression>=Fields!ColumnName.Value</SortExpression>
-                <Direction>Ascending</Direction>
-              </SortBy>
-              <SortBy>
-                <SortExpression>=Fields!UsageType.Value</SortExpression>
-                <Direction>Ascending</Direction>
-              </SortBy>
-              <SortBy>
-                <SortExpression>=Fields!UsageObjectName.Value</SortExpression>
-                <Direction>Ascending</Direction>
-              </SortBy>
             </Sorting>
             <Grouping Name="TableColumn">
               <GroupExpressions>
@@ -136,6 +124,16 @@
                 </TableRow>
               </TableRows>
             </Header>
+            <Sorting>
+              <SortBy>
+                <SortExpression>=Fields!TableName.Value</SortExpression>
+                <Direction>Ascending</Direction>
+              </SortBy>
+              <SortBy>
+                <SortExpression>=Fields!ColumnName.Value</SortExpression>
+                <Direction>Ascending</Direction>
+              </SortBy>
+            </Sorting>
             <Grouping Name="table1_Group2">
               <GroupExpressions>
                 <GroupExpression>=Fields!TableName.Value</GroupExpression>
