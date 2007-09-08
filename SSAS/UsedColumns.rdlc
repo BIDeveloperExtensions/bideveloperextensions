@@ -31,7 +31,7 @@
                       <ReportItems>
                         <Textbox Name="TableName_1">
                           <rd:DefaultName>TableName_1</rd:DefaultName>
-                          <ZIndex>6</ZIndex>
+                          <ZIndex>9</ZIndex>
                           <Style>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingBottom>2pt</PaddingBottom>
@@ -47,7 +47,7 @@
                       <ReportItems>
                         <Textbox Name="textbox10">
                           <rd:DefaultName>textbox10</rd:DefaultName>
-                          <ZIndex>5</ZIndex>
+                          <ZIndex>8</ZIndex>
                           <Style>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingBottom>2pt</PaddingBottom>
@@ -56,6 +56,23 @@
                           </Style>
                           <CanGrow>true</CanGrow>
                           <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox6">
+                          <rd:DefaultName>textbox6</rd:DefaultName>
+                          <ZIndex>7</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <Format>N0</Format>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=CountRows()</Value>
                         </Textbox>
                       </ReportItems>
                     </TableCell>
@@ -90,7 +107,7 @@
                       <ReportItems>
                         <Textbox Name="ColumnName">
                           <rd:DefaultName>ColumnName</rd:DefaultName>
-                          <ZIndex>4</ZIndex>
+                          <ZIndex>6</ZIndex>
                           <Style>
                             <PaddingLeft>10pt</PaddingLeft>
                             <PaddingBottom>2pt</PaddingBottom>
@@ -107,7 +124,7 @@
                       <ReportItems>
                         <Textbox Name="DataTypeName">
                           <rd:DefaultName>DataTypeName</rd:DefaultName>
-                          <ZIndex>3</ZIndex>
+                          <ZIndex>5</ZIndex>
                           <Style>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingBottom>2pt</PaddingBottom>
@@ -116,6 +133,22 @@
                           </Style>
                           <CanGrow>true</CanGrow>
                           <Value>=IIf(First(Fields!IsInvalidBinding.Value),"Invalid",First(Fields!DataTypeName.Value))</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox11">
+                          <ZIndex>4</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <Format>N0</Format>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=CountRows()</Value>
                         </Textbox>
                       </ReportItems>
                     </TableCell>
@@ -151,7 +184,7 @@
                   <ReportItems>
                     <Textbox Name="UsageType">
                       <rd:DefaultName>UsageType</rd:DefaultName>
-                      <ZIndex>2</ZIndex>
+                      <ZIndex>3</ZIndex>
                       <Style>
                         <PaddingLeft>35pt</PaddingLeft>
                         <PaddingBottom>2pt</PaddingBottom>
@@ -168,7 +201,7 @@
                   <ReportItems>
                     <Textbox Name="UsageObjectName">
                       <rd:DefaultName>UsageObjectName</rd:DefaultName>
-                      <ZIndex>1</ZIndex>
+                      <ZIndex>2</ZIndex>
                       <Style>
                         <PaddingLeft>2pt</PaddingLeft>
                         <PaddingBottom>2pt</PaddingBottom>
@@ -185,6 +218,7 @@
                   <ReportItems>
                     <Textbox Name="BindingDataTypeName">
                       <rd:DefaultName>BindingDataTypeName</rd:DefaultName>
+                      <ZIndex>1</ZIndex>
                       <Style>
                         <PaddingLeft>2pt</PaddingLeft>
                         <PaddingBottom>2pt</PaddingBottom>
@@ -193,6 +227,21 @@
                       </Style>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!BindingDataTypeName.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox8">
+                      <rd:DefaultName>textbox8</rd:DefaultName>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <Color>=IIf(First(Fields!IsInvalidBinding.Value),"Red","Black")</Color>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
                     </Textbox>
                   </ReportItems>
                 </TableCell>
@@ -231,7 +280,7 @@
                   <ReportItems>
                     <Textbox Name="textbox2">
                       <rd:DefaultName>textbox2</rd:DefaultName>
-                      <ZIndex>9</ZIndex>
+                      <ZIndex>13</ZIndex>
                       <Style>
                         <PaddingLeft>2pt</PaddingLeft>
                         <PaddingBottom>2pt</PaddingBottom>
@@ -248,7 +297,7 @@
                   <ReportItems>
                     <Textbox Name="textbox14">
                       <rd:DefaultName>textbox14</rd:DefaultName>
-                      <ZIndex>8</ZIndex>
+                      <ZIndex>12</ZIndex>
                       <Style>
                         <PaddingLeft>2pt</PaddingLeft>
                         <PaddingBottom>2pt</PaddingBottom>
@@ -264,7 +313,7 @@
                   <ReportItems>
                     <Textbox Name="textbox5">
                       <rd:DefaultName>textbox5</rd:DefaultName>
-                      <ZIndex>7</ZIndex>
+                      <ZIndex>11</ZIndex>
                       <Style>
                         <PaddingLeft>2pt</PaddingLeft>
                         <PaddingBottom>2pt</PaddingBottom>
@@ -274,6 +323,27 @@
                       </Style>
                       <CanGrow>true</CanGrow>
                       <Value>Data Type</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox4">
+                      <rd:DefaultName>textbox4</rd:DefaultName>
+                      <ZIndex>10</ZIndex>
+                      <Style>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontWeight>700</FontWeight>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <UserSort>
+                        <SortExpression>=CountRows()</SortExpression>
+                        <SortExpressionScope>TableColumn</SortExpressionScope>
+                      </UserSort>
+                      <Value>Cnt</Value>
                     </Textbox>
                   </ReportItems>
                 </TableCell>
@@ -288,10 +358,13 @@
             <Width>2.625in</Width>
           </TableColumn>
           <TableColumn>
-            <Width>6.375in</Width>
+            <Width>5.75in</Width>
           </TableColumn>
           <TableColumn>
             <Width>1.25in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>0.625in</Width>
           </TableColumn>
         </TableColumns>
         <Height>1in</Height>
