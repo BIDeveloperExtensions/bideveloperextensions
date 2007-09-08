@@ -501,5 +501,10 @@ namespace BIDSHelper
         {
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            win.ActiveViewChanged -= win_ActiveViewChanged;
+        }
     }
 }

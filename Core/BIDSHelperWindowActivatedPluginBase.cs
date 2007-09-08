@@ -36,7 +36,7 @@ namespace BIDSHelper
         public void UnHookWindowActivation()
         {
             windowEvents.WindowActivated -= windowEvents_WindowActivated;
-            windowEvents.WindowCreated += windowEvents_WindowCreated;
+            windowEvents.WindowCreated -= windowEvents_WindowCreated;
         }
         public virtual void OnWindowActivated(Window GotFocus, Window LostFocus)
         { }
