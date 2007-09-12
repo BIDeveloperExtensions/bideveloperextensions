@@ -26,17 +26,30 @@ namespace BIDSHelper
         }
         #endregion
 
+        public virtual bool ShouldHookWindowCreated
+        {
+            get { return false; }
+        }
+        public virtual bool ShouldHookWindowActivated
+        {
+            get { return true; }
+        }
+
         public void HookWindowActivation()
         {
             windowEvents = base.GetWindowEvents();
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+            if (ShouldHookWindowActivated)
+                windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
+            if (ShouldHookWindowCreated)
+                windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
         }
 
         public void UnHookWindowActivation()
         {
-            windowEvents.WindowActivated -= windowEvents_WindowActivated;
-            windowEvents.WindowCreated -= windowEvents_WindowCreated;
+            if (ShouldHookWindowActivated)
+                windowEvents.WindowActivated -= windowEvents_WindowActivated;
+            if (ShouldHookWindowCreated)
+                windowEvents.WindowCreated -= windowEvents_WindowCreated;
         }
         public virtual void OnWindowActivated(Window GotFocus, Window LostFocus)
         { }
