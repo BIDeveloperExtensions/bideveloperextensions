@@ -15,6 +15,8 @@ using MSDDS;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using System.ComponentModel;
+using Konesans.Dts.Design.Controls;
+using Konesans.Dts.Design.PropertyHelp;
 
 namespace BIDSHelper
 {
@@ -31,7 +33,7 @@ namespace BIDSHelper
         private DTE2 appObject = null;
         Window toolWindow = null;
 
-            
+
         EditorWindow win = null;
         System.ComponentModel.BackgroundWorker processPackage = null;
         bool windowIsVisible = false;
@@ -46,7 +48,7 @@ namespace BIDSHelper
                 rk.Close();
             }
 
-            this.appObject= appObject;
+            this.appObject = appObject;
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
             windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
@@ -71,12 +73,73 @@ namespace BIDSHelper
             toolWindow = windows2.CreateToolWindow2(addinInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
             expressionListWindow = (ExpressionListControl)programmableObject;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
+            expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);
 
             //Set the picture displayed when the window is tab docked
             //expressionListWindow.SetTabPicture(BIDSHelper.Resources.Resource.ExpressionList.ToBitmap().GetHbitmap());
 
             //toolWindow.Visible = true;
 
+        }
+
+        void expressionListWindow_EditExpressionSelected(object sender, EditExpressionSelectedEventArgs e)
+        {
+            try
+            {
+
+
+                IDTSSequence container = null;
+                if (win == null) return;
+
+                try
+                {
+                    Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
+                    DdsDiagramHostControl diagram = null;
+
+                    if (win.SelectedIndex == 0) //Control Flow
+                    {
+                        diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
+                        container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
+                    }
+                    else if (win.SelectedIndex == 1) //data flow
+                    {
+                        diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
+                        container = (IDTSSequence)((TaskHost)diagram.ComponentDiagram.RootComponent).Parent;
+                    }
+                    else if (win.SelectedIndex == 2) //Event Handlers
+                    {
+                        diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
+                        container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    container = (IDTSSequence)GetPackageFromContainer((DtsContainer)container);
+                }
+                catch (Exception)
+                {
+                    return;
+                }
+
+                TaskHost taskHost = FindTaskHost(container, e.ObjectID);
+
+                PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(taskHost);
+                PropertyDescriptor property = properties.Find(e.Property, false);
+
+                ExpressionEditorPublic editor = new ExpressionEditorPublic(e.Expression, new ExpressionsPropertyBag(taskHost), property);
+                if (editor.ShowDialog() == DialogResult.OK)
+                {
+                    taskHost.SetExpression(e.Property, editor.Expression);
+                    expressionListWindow_RefreshExpressions(null, null);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
         void expressionListWindow_RefreshExpressions(object sender, EventArgs e)
@@ -193,10 +256,7 @@ namespace BIDSHelper
 
             if (info.HasExpression)
             {
-                string[] newRow = { info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Expression };
-
-                DataGridView dgv = (DataGridView)expressionListWindow.Controls["DataGridView1"];
-                dgv.Rows.Add(newRow);
+                expressionListWindow.AddExpression(info.ObjectID, info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Expression);
             }
         }
 
@@ -243,6 +303,14 @@ namespace BIDSHelper
             }
         }
 
+        private Package GetPackageFromContainer(DtsContainer container)
+        {
+            while (!(container is Package))
+            {
+                container = container.Parent;
+            }
+            return (Package)container;
+        }
         private void CheckConnectionManagers(Package package, BackgroundWorker worker, string path)
         {
             if (worker.CancellationPending) return;
@@ -306,7 +374,7 @@ namespace BIDSHelper
                     ExpressionInfo info = new ExpressionInfo();
                     info.ObjectID = objectID;
                     info.ObjectName = objectName;
-                    info.ObjectPath = objectPath + "Properties["+p.Name+"]";
+                    info.ObjectPath = objectPath + "Properties[" + p.Name + "]";
                     info.ObjectType = objectType;
                     info.PropertyName = p.Name;
                     info.Expression = expression;
@@ -315,6 +383,27 @@ namespace BIDSHelper
                 }
                 catch { }
             }
+        }
+
+        TaskHost FindTaskHost(IDTSSequence parentExecutable, string sObjectGuid)
+        {
+            TaskHost matchingExecutable = null;
+
+            if (parentExecutable.Executables.Contains(sObjectGuid))
+            {
+                matchingExecutable = (TaskHost)parentExecutable.Executables[sObjectGuid];
+            }
+            else
+            {
+                foreach (Executable e in parentExecutable.Executables)
+                {
+                    if (e is IDTSSequence)
+                    {
+                        matchingExecutable = FindTaskHost((IDTSSequence)e, sObjectGuid);
+                    }
+                }
+            }
+            return matchingExecutable;
         }
 
         #endregion
@@ -346,7 +435,7 @@ namespace BIDSHelper
 
         public override string MenuName
         {
-            get { return "Tools"; } 
+            get { return "Tools"; }
         }
 
         public override bool Checked
@@ -361,7 +450,7 @@ namespace BIDSHelper
         /// <returns></returns>
         public override bool DisplayCommand(UIHierarchyItem item)
         {
-            return true; 
+            return true;
         }
 
         public override void Exec()

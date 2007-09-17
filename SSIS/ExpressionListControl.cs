@@ -5,11 +5,15 @@ using System.Drawing;
 using System.Data;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.SqlServer.Dts.Runtime;
 
 namespace BIDSHelper
 {
     public partial class ExpressionListControl : UserControl
     {
+        //TODO: Add "Live Update" - automatically filter diplay based on currently selected object.
+        //TODO: Reformat type column to put the object first, then the namespace
+        //TODO: Expose methods on ExpressionList Control for adding and removing rows, rather than direct access to the grid.
         public ExpressionListControl()
         {
             InitializeComponent();
@@ -51,18 +55,33 @@ namespace BIDSHelper
             }
         }
 
+        public void AddExpression(string objectID, string objectType, string objectPath, string objectName, string propertyName, string expression)
+        {
+            int lastPart = objectType.LastIndexOf(".") + 1;
+
+            string objectTypeAdjusted = objectType.Substring(lastPart, objectType.Length - lastPart) //TODO: Adjust Length
+                + " [" + objectType.Substring(0, objectType.LastIndexOf(".")) + "]";
+            string[] newRow = { objectID, objectTypeAdjusted, objectPath, objectName, propertyName, expression };
+
+            dataGridView1.Rows.Add(newRow);
+        }
+
         void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             try
             {
                 if (dataGridView1.Columns[e.ColumnIndex].Name == "EditorBtn")
                 {
-                    OnRaiseEditExpressionSelected(new EditExpressionSelectedEventArgs(dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectPath"].Index].Value.ToString()));
+                    OnRaiseEditExpressionSelected(
+                        new EditExpressionSelectedEventArgs(dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectPath"].Index].Value.ToString(),
+                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["Expression"].Index].Value.ToString(),
+                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["Property"].Index].Value.ToString(), 
+                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectID"].Index].Value.ToString()));
                 }
             }
             catch (Exception ex)
             {
-
+                MessageBox.Show("Error occured while editing the expression: " + ex.Message);
             }
         }
 
@@ -80,17 +99,36 @@ namespace BIDSHelper
         }
 
     }
-
+    
     public class EditExpressionSelectedEventArgs : EventArgs
     {
-        public EditExpressionSelectedEventArgs(string objectPath)
+        public EditExpressionSelectedEventArgs(string objectPath, string expression, string property, string objectID)
         {
-            this.objectPath = objectPath;
+            this.path = objectPath;
+            this.expression = expression;
+            this.property = property;
+            this.objectID = objectID;
         }
-        private string objectPath;
-        public string ObjectPath
+        private string expression;
+        private string property;
+        private string path;
+        private string objectID;
+
+        public string TaskPath
         {
-            get { return objectPath; }
+            get { return path; }
+        }
+        public string Expression
+        {
+            get { return expression; }
+        }
+        public string Property
+        {
+            get { return property; }
+        }
+        public string ObjectID
+        {
+            get { return objectID; }
         }
     }
 

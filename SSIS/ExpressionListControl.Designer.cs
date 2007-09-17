@@ -33,6 +33,7 @@ namespace BIDSHelper
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnRefresh = new System.Windows.Forms.ToolStripButton();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.objectID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -52,6 +53,7 @@ namespace BIDSHelper
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.objectID,
             this.ObjectType,
             this.ObjectPath,
             this.ObjectName,
@@ -92,6 +94,14 @@ namespace BIDSHelper
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
             this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 22);
             this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            // 
+            // objectID
+            // 
+            this.objectID.Frozen = true;
+            this.objectID.HeaderText = "Object ID";
+            this.objectID.Name = "objectID";
+            this.objectID.ReadOnly = true;
+            this.objectID.Visible = false;
             // 
             // ObjectType
             // 
@@ -160,6 +170,7 @@ namespace BIDSHelper
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnRefresh;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn objectID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectType;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectPath;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectName;
