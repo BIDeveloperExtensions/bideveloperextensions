@@ -144,11 +144,12 @@ namespace BIDSHelper
 
         void expressionListWindow_RefreshExpressions(object sender, EventArgs e)
         {
+            expressionListWindow.StartProgressBar();
+
             IDTSSequence container = null;
             TaskHost taskHost = null;
 
-            DataGridView dgv = (DataGridView)expressionListWindow.Controls["DataGridView1"];
-            dgv.Rows.Clear();
+            expressionListWindow.ClearResults();
 
             if (win == null) return;
 

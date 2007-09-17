@@ -46,11 +46,7 @@
     <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Konesans.Dts.CommonLibrary, Version=2.9.0.11, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>SSIS\Konesans.Dts.CommonLibrary.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="Konesans.Dts.CommonLibrary, Version=2.9.0.11, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -259,6 +255,7 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <Content Include="Resources\RefreshExpressions.ico" />
     <Content Include="SetupScript\ReleaseChecklist.txt" />
     <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
     <Content Include="SSAS\AggManager\Graphics\Checked.ico" />
@@ -278,6 +275,7 @@
     <Content Include="SetupScript\BIDSHelper.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
     <Content Include="SSIS\ExpressionEditor.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SSIS\Konesans.Dts.CommonLibrary.dll" />
     <None Include="Resources\stop.ico" />

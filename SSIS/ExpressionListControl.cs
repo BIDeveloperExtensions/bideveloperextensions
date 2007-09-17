@@ -17,9 +17,12 @@ namespace BIDSHelper
         public ExpressionListControl()
         {
             InitializeComponent();
-            toolStripProgressBar1.Enabled = false;
-            toolStripProgressBar1.Style = ProgressBarStyle.Blocks;
+            StopProgressBar();
+            btnRefresh.Image = (Image) BIDSHelper.Properties.Resources.RefreshExpressions.ToBitmap();
+
             dataGridView1.CellContentClick += new DataGridViewCellEventHandler(dataGridView1_CellContentClick);
+
+
         }
 
         public event EventHandler RefreshExpressions;
@@ -66,6 +69,11 @@ namespace BIDSHelper
             dataGridView1.Rows.Add(newRow);
         }
 
+        public void ClearResults()
+        {
+            dataGridView1.Rows.Clear();
+        }
+
         void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             try
@@ -87,9 +95,13 @@ namespace BIDSHelper
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            OnRaiseRefreshExpression();
+        }
+
+        public void StartProgressBar()
+        {
             toolStripProgressBar1.Enabled = true;
             toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
-            OnRaiseRefreshExpression();
         }
 
         public void StopProgressBar()
