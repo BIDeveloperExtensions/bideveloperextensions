@@ -121,20 +121,23 @@ namespace BIDSHelper
                 Package package = GetPackageFromContainer((DtsContainer)container);
                 List<PackageConfigurationSetting> listConfigs = new List<PackageConfigurationSetting>();
                 List<string> listConfigPaths = new List<string>();
-                foreach (Microsoft.SqlServer.Dts.Runtime.Configuration c in package.Configurations)
+                if (package.EnableConfigurations)
                 {
-                    try
+                    foreach (Microsoft.SqlServer.Dts.Runtime.Configuration c in package.Configurations)
                     {
-                        PackageConfigurationSetting[] configs = PackageConfigurationLoader.GetPackageConfigurationSettings(c, package, sVisualStudioRelativePath, bOfflineMode);
-                        listConfigs.AddRange(configs);
-                        foreach (PackageConfigurationSetting config in configs)
+                        try
                         {
-                            listConfigPaths.Add(config.Path);
+                            PackageConfigurationSetting[] configs = PackageConfigurationLoader.GetPackageConfigurationSettings(c, package, sVisualStudioRelativePath, bOfflineMode);
+                            listConfigs.AddRange(configs);
+                            foreach (PackageConfigurationSetting config in configs)
+                            {
+                                listConfigPaths.Add(config.Path);
+                            }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        warnings.Add("BIDS Helper was unable to load package configuration " + c.Name + ". Objects controlled by this configuration will not be highlighted. Error: " + ex.Message);
+                        catch (Exception ex)
+                        {
+                            warnings.Add("BIDS Helper was unable to load package configuration " + c.Name + ". Objects controlled by this configuration will not be highlighted. Error: " + ex.Message);
+                        }
                     }
                 }
 
