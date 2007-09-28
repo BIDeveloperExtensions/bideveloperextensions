@@ -42,7 +42,7 @@ namespace BIDSHelper
             try
             {
                 if (GotFocus == null) return;
-                IDesignerHost designer = (IDesignerHost)GotFocus.Object;
+                IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if ((pi==null) || (!(pi.Object is Cube))) return;
@@ -159,7 +159,7 @@ namespace BIDSHelper
                 bool bScriptViewDefault = false;
                 RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
                 if (rk != null)
-                {
+                {   
                     bScriptViewDefault = (1 == (int)rk.GetValue(REGISTRY_SCRIPT_VIEW_SETTING_NAME, 0));
                     rk.Close();
                 }
