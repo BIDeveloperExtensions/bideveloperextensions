@@ -117,6 +117,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static byte[] Konesans_Dts_CommonLibrary {
+            get {
+                object obj = ResourceManager.GetObject("Konesans_Dts_CommonLibrary", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon RefreshExpressions {
             get {
                 object obj = ResourceManager.GetObject("RefreshExpressions", resourceCulture);
@@ -127,14 +134,14 @@ namespace BIDSHelper.Properties {
         /// <summary>
         ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///&lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:DTS=&quot;www.microsoft.com/SqlServer/Dts&quot;&gt;
-        ///  &lt;xsl:output cdata-section-elements=&quot;ProjectItem arrayElement&quot;/&gt;
+        ///	&lt;xsl:output cdata-section-elements=&quot;ProjectItem arrayElement&quot;/&gt;
         ///
+        ///	&lt;xsl:template match=&quot;node()&quot;&gt;
+        ///		&lt;xsl:copy&gt;
+        ///			&lt;!-- leave default sort order --&gt;
+        ///			&lt;xsl:apply-templates select=&quot;@*|node()[name()!=&apos;DTS:LogProvider&apos; and name()!=&apos;DTS:Executable&apos; and name()!=&apos;DTS:ConnectionManager&apos; and name()!=&apos;component&apos;]&quot;/&gt;
         ///
-        ///  &lt;!--STEP 1: DUPLICATE DTSX FILE EXACTLY--&gt;
-        ///  &lt;xsl:template match=&quot;node()&quot;&gt;
-        ///    &lt;xsl:copy&gt;
-        ///      &lt;xsl:apply-templates select=&quot;@*|node()[name()!=&apos;DTS:LogProvider&apos; and name()!=&apos;DTS:Executable&apos; and name()!=&apos;DTS:ConnectionManager&apos; and name()!=&apos;component&apos;]&quot;/&gt;
-        ///      &lt;xsl:apply [rest of string was truncated]&quot;;.
+        ///			&lt;!-- customize sort order -- [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SmartDiffDtsx {
             get {

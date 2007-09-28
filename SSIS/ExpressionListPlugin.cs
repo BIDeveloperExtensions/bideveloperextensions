@@ -35,6 +35,7 @@ namespace BIDSHelper
 
 
         EditorWindow win = null;
+        IDesignerHost designer = null;
         System.ComponentModel.BackgroundWorker processPackage = null;
         bool windowIsVisible = false;
 
@@ -124,15 +125,27 @@ namespace BIDSHelper
                 }
 
                 TaskHost taskHost = FindTaskHost(container, e.ObjectID);
+                if (taskHost == null) throw new Exception("Expression editing not supported on this object."); //will usually be when trying to edit an expression on the Package object itself; TODO: figure out a way to see if this is possible
 
                 PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(taskHost);
                 PropertyDescriptor property = properties.Find(e.Property, false);
 
-                ExpressionEditorPublic editor = new ExpressionEditorPublic(e.Expression, new ExpressionsPropertyBag(taskHost), property);
+                System.Reflection.Assembly konesansAssembly = System.Reflection.Assembly.Load(BIDSHelper.Properties.Resources.Konesans_Dts_CommonLibrary);
+                Type typeExpressionEditorPublic = konesansAssembly.GetType("Konesans.Dts.Design.Controls.ExpressionEditorPublic");
+                Type typeExpressionsPropertyBag = konesansAssembly.GetType("Konesans.Dts.Design.PropertyHelp.ExpressionsPropertyBag");
+                object bag = typeExpressionsPropertyBag.GetConstructors()[0].Invoke(new object[] { taskHost });
+                Form editor = (Form)typeExpressionEditorPublic.GetConstructors()[0].Invoke(new object[] { e.Expression, bag, property });
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
-                    taskHost.SetExpression(e.Property, editor.Expression);
+                    System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
+                    string sExpression = (string)editor.GetType().InvokeMember("Expression", getpropflags, null, editor, null);
+                    taskHost.SetExpression(e.Property, sExpression);
                     expressionListWindow_RefreshExpressions(null, null);
+
+                    //mark package object as dirty
+                    IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
+                    changesvc.OnComponentChanging(container, null);
+                    changesvc.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
                 }
             }
             catch (Exception ex)
@@ -220,7 +233,7 @@ namespace BIDSHelper
                 {
                     return;
                 }
-                IDesignerHost designer = (IDesignerHost)GotFocus.Object;
+                designer = (IDesignerHost)GotFocus.Object;
                 if (designer == null)
                 {
                     return;
