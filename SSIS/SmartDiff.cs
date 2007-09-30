@@ -13,6 +13,7 @@ namespace BIDSHelper.SSIS
         public string DefaultSourceSafePath;
         public string DefaultWindowsPath;
         public string SourceSafeIniDirectory;
+        public string SourceControlProvider;
 
         public SmartDiff()
         {
@@ -30,20 +31,34 @@ namespace BIDSHelper.SSIS
 
         private void button1_Click(object sender, EventArgs e)
         {
-            bContextButton1 = true;
-            if (!string.IsNullOrEmpty(SourceSafeIniDirectory))
-                this.browseContextMenuStrip1.Show(this, new Point(button1.Left, button1.Bottom));
-            else
-                windowsFolderToolStripMenuItem_Click(null, null);
+            try
+            {
+                bContextButton1 = true;
+                if (!string.IsNullOrEmpty(SourceSafeIniDirectory))
+                    this.browseContextMenuStrip1.Show(this, new Point(button1.Left, button1.Bottom));
+                else
+                    windowsFolderToolStripMenuItem_Click(null, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            bContextButton1 = false;
-            if (!string.IsNullOrEmpty(SourceSafeIniDirectory))
-                this.browseContextMenuStrip1.Show(this, new Point(button2.Left, button2.Bottom));
-            else
-                windowsFolderToolStripMenuItem_Click(null, null);
+            try
+            {
+                bContextButton1 = false;
+                if (!string.IsNullOrEmpty(SourceSafeIniDirectory))
+                    this.browseContextMenuStrip1.Show(this, new Point(button2.Left, button2.Bottom));
+                else
+                    windowsFolderToolStripMenuItem_Click(null, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void sourceSafeFolderToolStripMenuItem_Click(object sender, EventArgs e)
@@ -92,7 +107,7 @@ namespace BIDSHelper.SSIS
                 }
 
                 bool bFoundVersion = false;
-                foreach (string option in SmartDiffPlugin.GetSourceSafeVersions(SourceSafeIniDirectory, sSourceSafePath))
+                foreach (string option in SmartDiffPlugin.GetSourceControlVersions(SourceSafeIniDirectory, sSourceSafePath, SourceControlProvider))
                 {
                     int i = combo.Items.Add(option);
                     if (option.StartsWith(iVersion + " "))
@@ -113,7 +128,7 @@ namespace BIDSHelper.SSIS
                 versionForm.Controls.Add(ok);
 
                 versionForm.AcceptButton = ok;
-                DialogResult res = versionForm.ShowDialog();
+                DialogResult res = versionForm.ShowDialog(this);
                 if (res != DialogResult.OK) return;
 
 

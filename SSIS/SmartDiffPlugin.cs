@@ -58,7 +58,8 @@ namespace BIDSHelper
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                return (((ProjectItem)hierItem.Object).Name.ToLower().EndsWith(".dtsx"));
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                return (sFileName.EndsWith(".dtsx"));
             }
             catch
             {
@@ -66,7 +67,9 @@ namespace BIDSHelper
             }
         }
 
-        //TODO: support TFS
+        public static string PROVIDER_NAME_SOURCESAFE = "MSSCCI:Microsoft Visual SourceSafe";
+        public static string PROVIDER_NAME_TFS = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
+
         //TODO: SSAS and SSRS filetypes
         public override void Exec()
         {
@@ -96,8 +99,15 @@ namespace BIDSHelper
                         sProvider = bindings.ProviderName;
                         sSourceControlServerName = bindings.ServerName;
                         sServerBinding = bindings.ServerBinding;
-                        if (sServerBinding.IndexOf("\",") <= 0) throw new Exception("Can't find SourceSafe project path.");
-                        sProject = sServerBinding.Substring(1, sServerBinding.IndexOf("\",") - 1);
+                        if (sProvider == PROVIDER_NAME_SOURCESAFE)
+                        {
+                            if (sServerBinding.IndexOf("\",") <= 0) throw new Exception("Can't find SourceSafe project path.");
+                            sProject = sServerBinding.Substring(1, sServerBinding.IndexOf("\",") - 1);
+                        }
+                        else if (sProvider == PROVIDER_NAME_TFS)
+                        {
+                            sProject = sServerBinding;
+                        }
                         if (oSourceControl.IsItemUnderSCC(projItem.get_FileNames(0)))
                         {
                             sDefaultSourceSafePath = sProject + "/" + projItem.Name;
@@ -106,8 +116,9 @@ namespace BIDSHelper
                 }
 
                 SSIS.SmartDiff form = new BIDSHelper.SSIS.SmartDiff();
+                form.SourceControlProvider = sProvider;
                 form.DefaultWindowsPath = projItem.get_FileNames(0);
-                if (sProvider == "MSSCCI:Microsoft Visual SourceSafe")
+                if (sProvider == PROVIDER_NAME_SOURCESAFE || sProvider == PROVIDER_NAME_TFS)
                 {
                     form.DefaultSourceSafePath = sDefaultSourceSafePath;
                     form.SourceSafeIniDirectory = sSourceControlServerName;
@@ -125,7 +136,10 @@ namespace BIDSHelper
 
                     if (form.txtCompare.Text.StartsWith("$/"))
                     {
-                        GetSourceSafeFile(sSourceControlServerName, form.txtCompare.Text, sOldFile);
+                        if (sProvider == PROVIDER_NAME_SOURCESAFE)
+                            GetSourceSafeFile(sSourceControlServerName, form.txtCompare.Text, sOldFile);
+                        else if (sProvider == PROVIDER_NAME_TFS)
+                            GetTFSFile(sSourceControlServerName, form.txtCompare.Text, sOldFile);
                         sOldFileName += " (server)";
                     }
                     else
@@ -136,7 +150,10 @@ namespace BIDSHelper
 
                     if (form.txtTo.Text.StartsWith("$/"))
                     {
-                        GetSourceSafeFile(sSourceControlServerName, form.txtTo.Text, sNewFile);
+                        if (sProvider == PROVIDER_NAME_SOURCESAFE)
+                            GetSourceSafeFile(sSourceControlServerName, form.txtTo.Text, sNewFile);
+                        else if (sProvider == PROVIDER_NAME_TFS)
+                            GetTFSFile(sSourceControlServerName, form.txtTo.Text, sNewFile);
                         sNewFileName += " (server)";
                     }
                     else
@@ -166,6 +183,20 @@ namespace BIDSHelper
                 MessageBox.Show(ex.Message);
             }
         }
+
+        public static string[] GetSourceControlVersions(string sIniDirectory, string sSourceSafePath, string sProvider)
+        {
+            if (sProvider == PROVIDER_NAME_SOURCESAFE)
+            {
+                return GetSourceSafeVersions(sIniDirectory, sSourceSafePath);
+            }
+            else if (sProvider == PROVIDER_NAME_TFS)
+            {
+                return GetTFSVersions(sIniDirectory, sSourceSafePath);
+            }
+            throw new Exception("Invalid provider");
+        }
+
 
         #region SourceSafe Access Methods
         //allows late-binding so that you don't have to have SourceSafe installed to compile BIDS Helper
@@ -212,7 +243,7 @@ namespace BIDSHelper
             }
         }
 
-        public static string[] GetSourceSafeVersions(string sIniDirectory, string sSourceSafePath)
+        private static string[] GetSourceSafeVersions(string sIniDirectory, string sSourceSafePath)
         {
             System.Collections.Generic.List<string> list = new System.Collections.Generic.List<string>();
 
@@ -276,6 +307,74 @@ namespace BIDSHelper
         }
         #endregion
 
+        #region TFS Access Methods
+        private static string TFS_ASSEMBLY_FULL_NAME = "Microsoft.TeamFoundation.Client";
+        private static string TFS_VERSION_CONTROL_ASSEMBLY_FULL_NAME = "Microsoft.TeamFoundation.VersionControl.Client";
+
+        private static void GetTFSFile(string sServer, string sPath, string sLocalPath)
+        {
+            System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
+            System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+            System.Reflection.Assembly tfsAssembly = System.Reflection.Assembly.Load(TFS_ASSEMBLY_FULL_NAME);
+            System.Reflection.Assembly tfsVersionControlAssembly = System.Reflection.Assembly.Load(TFS_VERSION_CONTROL_ASSEMBLY_FULL_NAME);
+            Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TeamFoundationServerFactory");
+            System.IServiceProvider server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+            object versionControl = server.GetService(tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer"));
+
+            Type typeVersionSpec = tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionSpec");
+            object versionSpec = null;
+
+            int iVersion = -1;
+            if (sPath.Contains(":"))
+            {
+                iVersion = int.Parse(sPath.Substring(sPath.IndexOf(':') + 1));
+                sPath = sPath.Substring(0, sPath.IndexOf(':'));
+                versionSpec = typeVersionSpec.InvokeMember("ParseSingleSpec", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { iVersion.ToString(), null });
+            }
+            else
+            {
+                versionSpec = typeVersionSpec.InvokeMember("Latest", getpropflags | System.Reflection.BindingFlags.Static, null, null, null);
+            }
+            versionControl.GetType().InvokeMember("DownloadFile", getmethodflags, null, versionControl, new object[] { sPath, 0, versionSpec, sLocalPath });
+        }
+
+        private static string[] GetTFSVersions(string sServer, string sPath)
+        {
+            System.Collections.Generic.List<string> list = new System.Collections.Generic.List<string>();
+
+            System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
+            System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+            System.Reflection.Assembly tfsAssembly = System.Reflection.Assembly.Load(TFS_ASSEMBLY_FULL_NAME);
+            System.Reflection.Assembly tfsVersionControlAssembly = System.Reflection.Assembly.Load(TFS_VERSION_CONTROL_ASSEMBLY_FULL_NAME);
+            Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TeamFoundationServerFactory");
+            System.IServiceProvider server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+            object versionControl = server.GetService(tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer"));
+
+            int iVersion = -1;
+            if (sPath.Contains(":"))
+            {
+                iVersion = int.Parse(sPath.Substring(sPath.IndexOf(':') + 1));
+                sPath = sPath.Substring(0, sPath.IndexOf(':'));
+            }
+
+            Type typeVersionSpec = tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionSpec");
+            object latest = typeVersionSpec.InvokeMember("Latest", getpropflags | System.Reflection.BindingFlags.Static, null, null, null);
+
+            Type typeRecursionType = tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.RecursionType");
+            object full = Enum.Parse(typeRecursionType, "Full");
+
+            System.Collections.IEnumerable enumerable = (System.Collections.IEnumerable)versionControl.GetType().InvokeMember("QueryHistory", getmethodflags, null, versionControl, new object[] { sPath, latest, 0, full, null, null, null, int.MaxValue, false, false });
+            foreach (object version in enumerable)
+            {
+                int iVersionNumber = (int)version.GetType().InvokeMember("ChangesetId", getpropflags, null, version, null);
+                DateTime dtVersionDate = (DateTime)version.GetType().InvokeMember("CreationDate", getpropflags, null, version, null);
+                string sVersionUsername = (string)version.GetType().InvokeMember("Committer", getpropflags, null, version, null);
+                list.Add(iVersionNumber + "  -  " + dtVersionDate.ToString() + "  -  " + sVersionUsername);
+            }
+            return list.ToArray();
+        }
+        #endregion
+
         private void PrepXmlForDiff(string sFilename, string sXSL)
         {
             System.IO.File.SetAttributes(sFilename, System.IO.FileAttributes.Normal); //unhide the file so you can overwrite it
@@ -321,7 +420,6 @@ namespace BIDSHelper
             MSDiff_ShowDiffUI(IntPtr.Zero, oldFile, newFile, fFlags, sOldFileName, sNewFileName);
         }
 
-        //TODO: test this on x64
         [DllImport("msdiff", CharSet = CharSet.Unicode)]
         private static extern void MSDiff_ShowDiffUI(IntPtr hwndParent, string pszFileName1, string pszFileName2, int fFlags, string pszOrigNameFile1, string pszOrigNameFile2);
         
