@@ -145,6 +145,9 @@ namespace AggManager
             this.grpProgress.Visible = true;
             this.treeViewAggregation.Visible = false;
             this.lblUnusedAggregationsToDelete.Visible = false;
+            this.iAggHits = 0;
+            this.iQueries = 0;
+            this.dtTraceStarted = DateTime.Now;
 
             timer1_Tick(null, null);
             this.btnExecute.Enabled = false;
@@ -189,9 +192,7 @@ namespace AggManager
                     try
                     {
                         reader = cmd.ExecuteReader();
-                        if (!ReaderContainsColumn(reader, "DatabaseName"))
-                            MessageBox.Show("Table " + Table + " must contain DatabaseName column");
-                        else if (!ReaderContainsColumn(reader, "EventClass"))
+                        if (!ReaderContainsColumn(reader, "EventClass"))
                             MessageBox.Show("Table " + Table + " must contain EventClass column");
                         else if (!ReaderContainsColumn(reader, "EventSubclass"))
                             MessageBox.Show("Table " + Table + " must contain EventSubclass column");
@@ -218,13 +219,12 @@ namespace AggManager
                                     DateTime dt = Convert.ToDateTime(reader[sDateColumnName]);
                                     if (dtMin > dt) dtMin = dt;
                                     if (dtMax < dt) dtMax = dt;
+                                    long iSecondsDiff = Microsoft.VisualBasic.DateAndTime.DateDiff(Microsoft.VisualBasic.DateInterval.Second, dtMin, dtMax, Microsoft.VisualBasic.FirstDayOfWeek.System, Microsoft.VisualBasic.FirstWeekOfYear.Jan1);
+                                    this.dtTraceStarted = Microsoft.VisualBasic.DateAndTime.DateAdd(Microsoft.VisualBasic.DateInterval.Second, -iSecondsDiff, DateTime.Now);
                                 }
                                 timer1_Tick(null, null);
                                 Application.DoEvents();
                             }
-                            long iSecondsDiff = Microsoft.VisualBasic.DateAndTime.DateDiff(Microsoft.VisualBasic.DateInterval.Second, dtMin, dtMax, Microsoft.VisualBasic.FirstDayOfWeek.System, Microsoft.VisualBasic.FirstWeekOfYear.Jan1);
-                            this.dtTraceStarted = Microsoft.VisualBasic.DateAndTime.DateAdd(Microsoft.VisualBasic.DateInterval.Second, -iSecondsDiff, DateTime.Now);
-                            timer1_Tick(null, null);
                             FinishExecute(true);
                             return;
                         }
@@ -302,7 +302,6 @@ namespace AggManager
                 {
                     string[] pathParts = reader["ObjectPath"].ToString().Split('.');
                     DatabaseName = pathParts[1];
-                    DatabaseName = reader["DatabaseName"].ToString();
                 }
                 else if (ReaderContainsColumn(reader, "DatabaseName") && !Convert.IsDBNull(reader["DatabaseName"]))
                 {
@@ -455,27 +454,38 @@ namespace AggManager
                 }
                 else
                 {
-                    if (sMeasureGroupID != cloneMG.ID)
+                    if (mg == null || sMeasureGroupID != cloneMG.ID)
                         return;
                 }
-                Partition partition = mg.Partitions.Find(sPartitionID);
+                MeasureGroup liveMG = this.liveCube.MeasureGroups.Find(sMeasureGroupID);
+                if (liveMG == null) return;
+
+                Partition livePartition = liveMG.Partitions.Find(sPartitionID);
+                if (livePartition == null) return;
+
                 string sAggID = e.TextData.Split(new char[] { '\r', '\n' })[0];
-                Aggregation agg = partition.AggregationDesign.Aggregations.Find(sAggID);
-                if (agg != null)
+                Aggregation liveAgg = livePartition.AggregationDesign.Aggregations.Find(sAggID);
+                if (liveAgg == null) return;
+
+                //found this aggregation on the live cube... now find the equivalent agg in the cloned (local) cube
+                AggregationDesign cloneAggDesign = mg.AggregationDesigns.Find(liveAgg.Parent.ID);
+                if (cloneAggDesign == null) return;
+
+                Aggregation cloneAgg = cloneAggDesign.Aggregations.Find(sAggID);
+                if (cloneAgg == null) return;
+
+                lock (dictHitAggs)
                 {
-                    lock (dictHitAggs)
+                    if (dictHitAggs.ContainsKey(cloneAgg))
                     {
-                        if (dictHitAggs.ContainsKey(agg))
-                        {
-                            dictHitAggs[agg]++;
-                        }
-                        else
-                        {
-                            dictHitAggs.Add(agg, 1);
-                        }
+                        dictHitAggs[cloneAgg]++;
                     }
-                    iAggHits++;
+                    else
+                    {
+                        dictHitAggs.Add(cloneAgg, 1);
+                    }
                 }
+                iAggHits++;
             }
         }
 
