@@ -77,7 +77,7 @@ namespace AggManager
         {
             this.Text = this.Text + " Aggregation Design: " + strAggDesign; 
             mg1 = mg;
-            aggDes = mg.AggregationDesigns[strAggDesign];
+            aggDes = mg.AggregationDesigns.GetByName(strAggDesign);
             dimAttributes = inDimAttributes;
             dimNames = inDimNames;
             dimIDs = inDimIDs;

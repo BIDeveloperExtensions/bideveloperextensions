@@ -271,7 +271,7 @@ namespace AggManager
             if (nd.Parent != null && nd.Parent.Parent != null && nd.Parent.Parent.Tag != null && nd.Parent.Parent.Tag is MeasureGroup)
             {
                 listBoxReport.Items.Add("Aggregation count");
-                AggregationDesign aggdes = ((MeasureGroup)nd.Parent.Parent.Tag).AggregationDesigns[(string)nd.Tag];
+                AggregationDesign aggdes = ((MeasureGroup)nd.Parent.Parent.Tag).AggregationDesigns.GetByName((string)nd.Tag);
                 listBoxReport.Items.Add(aggdes.Aggregations.Count);
             }
         }
@@ -320,7 +320,9 @@ namespace AggManager
                     //if (e.Node.Text.EndsWith(MODIFIED_SUFFIX))
                     //    contextMenuStripSave.Show(treeView1, pt);
 
-                    if ((string)e.Node.Tag == "Aggregation Designs" || (string)e.Node.Tag == TagNoAggdesign)
+                    if (e.Node.Tag is Cube)
+                        contextMenuStripCube.Show(treeView1, pt); 
+                    else if ((string)e.Node.Tag == "Aggregation Designs" || (string)e.Node.Tag == TagNoAggdesign)
                         contextMenuStripMG.Show(treeView1, pt);
                     else if ((string)e.Node.Parent.Tag == "Aggregation Designs")
                         contextMenuStripAggDes.Show(treeView1, pt);
@@ -616,8 +618,75 @@ namespace AggManager
             catch { }
         }
 
+        //clicked on this menu option from the Aggregation Designs node under a measure group
+        private void deleteUnusedAggregationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MeasureGroup mg = (MeasureGroup)treeView1.SelectedNode.Parent.Tag;
+                PopupDeleteUnusedAggsForm(mg);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
+        //clicked on this menu option from the Cube node
+        private void deleteUnusedAggregationsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                PopupDeleteUnusedAggsForm(null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
+        private void PopupDeleteUnusedAggsForm(MeasureGroup mg)
+        {
+            MeasureGroup cloneMG = null;
+            if (mg != null)
+                cloneMG = this.cloneDB.Cubes[mg.Parent.ID].MeasureGroups[mg.ID];
+            AggManager.DeleteUnusedAggs form1 = new AggManager.DeleteUnusedAggs();
+            form1.Init(mProjItem, cloneDB, cloneMG);
+            if (form1.ShowDialog(this) == DialogResult.OK)
+            {
+                foreach (TreeNode node in form1.treeViewAggregation.Nodes)
+                    DeleteAggsAndRecurse(node);
+            }
+        }
+
+        private void DeleteAggsAndRecurse(TreeNode node)
+        {
+            foreach (TreeNode child in node.Nodes)
+            {
+                if (child.Checked && child.Tag is Aggregation)
+                {
+                    Aggregation agg = child.Tag as Aggregation;
+                    foreach (TreeNode childNode in treeView1.Nodes)
+                        MarkMeasureGroupAsModified(childNode, agg.Parent.Parent);
+                    agg.Parent.Aggregations.Remove(agg);
+                }
+                DeleteAggsAndRecurse(child);
+            }
+        }
+
+        private void MarkMeasureGroupAsModified(TreeNode node, MeasureGroup mg)
+        {
+            if (node.Tag is MeasureGroup && ((MeasureGroup)node.Tag).ID == mg.ID)
+            {
+                if (!node.Text.EndsWith(MODIFIED_SUFFIX))
+                    node.Text = node.Text + MODIFIED_SUFFIX;
+                return;
+            }
+            foreach (TreeNode child in node.Nodes)
+            {
+                MarkMeasureGroupAsModified(child, mg);
+            }
+        }
 
     }
 }

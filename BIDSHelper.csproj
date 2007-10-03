@@ -97,6 +97,7 @@
     <Reference Include="Microsoft.SQLServer.ManagedDTS, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="msddsp, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>c:\Program Files\Common Files\Microsoft Shared\MSDesigners8\msddsp.dll</HintPath>
@@ -130,6 +131,18 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmTraceTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmTraceTable.Designer.cs">
+      <DependentUpon>frmTraceTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmDeleteUnusedAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmDeleteUnusedAggs.Designer.cs">
+      <DependentUpon>frmDeleteUnusedAggs.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\AggManager\EditAggs.cs">
       <SubType>Form</SubType>
@@ -270,6 +283,7 @@
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <Content Include="SetupScript\ReleaseChecklist.txt" />
     <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />
     <Content Include="SSAS\AggManager\Graphics\Checked.ico" />
     <Content Include="SSAS\AggManager\Graphics\Connected.ico" />
     <Content Include="SSAS\AggManager\Graphics\Cube.ico" />
@@ -291,6 +305,14 @@
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
+    <EmbeddedResource Include="SSAS\AggManager\frmTraceTable.resx">
+      <DependentUpon>frmTraceTable.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmDeleteUnusedAggs.resx">
+      <DependentUpon>frmDeleteUnusedAggs.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\AggManager\EditAggs.resx">
       <DependentUpon>EditAggs.cs</DependentUpon>
       <SubType>Designer</SubType>
