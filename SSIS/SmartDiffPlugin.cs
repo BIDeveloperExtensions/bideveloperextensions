@@ -79,12 +79,6 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
 
-                if (projItem.Document != null && !projItem.Document.Saved)
-                {
-                    if (MessageBox.Show("This command compares the disk version of a file. Do you want to save your changes to disk before proceeding?", "Save Changes?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                        projItem.Save("");
-                }
-
                 SourceControl2 oSourceControl = ((SourceControl2)this.ApplicationObject.SourceControl);
                 string sProvider = "";
                 string sSourceControlServerName = "";
@@ -93,7 +87,16 @@ namespace BIDSHelper
                 string sDefaultSourceSafePath = "";
                 if (oSourceControl != null)
                 {
-                    SourceControlBindings bindings = oSourceControl.GetBindings(projItem.ContainingProject.FileName);
+                    SourceControlBindings bindings = null;
+                    try
+                    {
+                        bindings = oSourceControl.GetBindings(projItem.ContainingProject.FileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("You must have either Microsoft Visual SourceSafe 2005 or Microsoft Visual Studio 2005 Team Explorer Client installed.\r\n\r\nError was: " + ex.Message);
+                        return;
+                    }
                     if (bindings != null)
                     {
                         sProvider = bindings.ProviderName;
@@ -113,6 +116,12 @@ namespace BIDSHelper
                             sDefaultSourceSafePath = sProject + "/" + projItem.Name;
                         }
                     }
+                }
+
+                if (projItem.Document != null && !projItem.Document.Saved)
+                {
+                    if (MessageBox.Show("This command compares the disk version of a file. Do you want to save your changes to disk before proceeding?", "Save Changes?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        projItem.Save("");
                 }
 
                 SSIS.SmartDiff form = new BIDSHelper.SSIS.SmartDiff();
@@ -413,16 +422,62 @@ namespace BIDSHelper
         private void ShowDiff(string oldFile, string newFile, bool bIgnoreCase, bool bIgnoreEOL, bool bIgnoreWhiteSpace, string sOldFileName, string sNewFileName)
         {
             int fFlags = 0;
-            if (bIgnoreCase) fFlags |= 1;
-            if (bIgnoreEOL) fFlags |= 4;
-            if (bIgnoreWhiteSpace) fFlags |= 2;
+            string sFlags = "";
+            if (bIgnoreCase)
+            {
+                fFlags |= 1;
+                sFlags += " -ic";
+            }
+            if (bIgnoreEOL)
+            {
+                fFlags |= 4;
+                sFlags += " -ie";
+            }
+            if (bIgnoreWhiteSpace)
+            {
+                fFlags |= 2;
+                sFlags += " -iw";
+            }
 
-            MSDiff_ShowDiffUI(IntPtr.Zero, oldFile, newFile, fFlags, sOldFileName, sNewFileName);
+            try
+            {
+                MSDiff_ShowDiffUI(IntPtr.Zero, oldFile, newFile, fFlags, sOldFileName, sNewFileName);
+                MSDiff_Cleanup();
+            }
+            catch (Exception exMSDiff)
+            {
+                //couldn't use MSDiff (which gets intalled with TFS)
+                //try VSS EXE
+                try
+                {
+                    string sVSSDir = "";
+                    Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\8.0\Setup\VS\VSS");
+                    if (rk != null)
+                    {
+                        sVSSDir = (string)rk.GetValue("ProductDir", "");
+                        rk.Close();
+                    }
+                    if (string.IsNullOrEmpty(sVSSDir))
+                    {
+                        throw new Exception("");
+                    }
+                    else
+                    {
+                        Microsoft.VisualBasic.Interaction.Shell("\"" + sVSSDir + "ssexp.exe\" /diff" + sFlags + " \"" + oldFile + "\" \"" + newFile + "\"", Microsoft.VisualBasic.AppWinStyle.MaximizedFocus, true, -1);
+                    }
+                }
+                catch (Exception exVSS)
+                {
+                    throw new Exception("Could not start Microsoft Visual SourceSafe 2005 to view diff. " + exVSS.Message + "\r\n\r\nCould not utilize Microsoft Team Foundation Server to view diff. " + exMSDiff.Message);
+                }
+            }
         }
 
         [DllImport("msdiff", CharSet = CharSet.Unicode)]
         private static extern void MSDiff_ShowDiffUI(IntPtr hwndParent, string pszFileName1, string pszFileName2, int fFlags, string pszOrigNameFile1, string pszOrigNameFile2);
-        
+
+        [DllImport("msdiff")]
+        private static extern void MSDiff_Cleanup();
     }
 
 
