@@ -202,6 +202,7 @@
     <Compile Include="Connect.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SSAS\DeployAggDesignsPlugin.cs" />
     <Compile Include="SSAS\DeployMDXScriptPlugin.cs" />
     <Compile Include="SSAS\DeploymentSettings.cs" />
     <Compile Include="SSAS\DimensionHealthCheckPlugin.cs" />
@@ -279,6 +280,8 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <None Include="Resources\DeployAggDesigns.xslt" />
+    <None Include="Resources\DeployAggDesigns.ico" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <Content Include="SetupScript\ReleaseChecklist.txt" />

@@ -79,6 +79,33 @@ namespace BIDSHelper.Properties {
         /// <summary>
         ///   Looks up a localized string similar to &lt;xsl:stylesheet version=&quot;1.0&quot; 
         ///	xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+        ///	xmlns:as=&quot;http://schemas.microsoft.com/analysisservices/2003/engine&quot;
+        ///	xmlns:dwd=&quot;http://schemas.microsoft.com/DataWarehouse/Designer/1.0&quot;&gt;
+        ///	&lt;!--&lt;xsl:param name=&quot;TargetDatabase&quot;&gt;&lt;/xsl:param&gt;--&gt;
+        ///	&lt;!--&lt;xsl:param name=&quot;TargetCubeID&quot;&gt;&lt;/xsl:param&gt;--&gt;
+        ///
+        ///	&lt;xsl:output indent=&quot;yes&quot; omit-xml-declaration=&quot;yes&quot; /&gt;
+        ///
+        ///	&lt;xsl:template match=&quot;/&quot;&gt;
+        ///		&lt;Batch xmlns=&quot;http://schemas.microsoft.com/analysisservices/2003/engine&quot;&gt;
+        ///			&lt;xsl:apply- [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string DeployAggDesigns {
+            get {
+                return ResourceManager.GetString("DeployAggDesigns", resourceCulture);
+            }
+        }
+        
+        internal static System.Drawing.Icon DeployAggDesignsIcon {
+            get {
+                object obj = ResourceManager.GetObject("DeployAggDesignsIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;xsl:stylesheet version=&quot;1.0&quot; 
+        ///	xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
         ///	xmlns:as=&quot;http://schemas.microsoft.com/analysisservices/2003/engine&quot;&gt;
         ///	&lt;xsl:param name=&quot;TargetDatabase&quot;&gt;&lt;/xsl:param&gt;
         ///

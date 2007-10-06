@@ -22,9 +22,11 @@ namespace BIDSHelper
 
         private const string SET_ESTIMATED_COUNTS_ICON_KEY = "EstimatedCounts";
         private const string EDIT_AGGREGATIONS_ICON_KEY = "EditAggregations";
+        private const string DEPLOY_AGGREGATION_DESIGNS_ICON_KEY = "DeployAggDesigns";
         private const string STOP_ICON_KEY = "Stop";
         private const string EDIT_AGGREGATIONS_BUTTON_SUFFIX = "EditAggregationsButton";
         private const string SET_ESTIMATED_COUNTS_BUTTON = "SetEstimatedCountsButton";
+        private const string DEPLOY_AGGREGATION_DESIGNS_BUTTON = "DeployAggDesignsButton";
 
         private bool bCancelEstimatedCountsClicked = false;
 
@@ -90,6 +92,16 @@ namespace BIDSHelper
                         oEditAggregationsButton.Style = ToolBarButtonStyle.PushButton;
                         toolbar.Buttons.Add(oEditAggregationsButton);
 
+                        toolbar.ImageList.Images.Add(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY, Properties.Resources.DeployAggDesignsIcon);
+                        ToolBarButton oDeployAggDesignsButton = new ToolBarButton();
+                        oDeployAggDesignsButton.ToolTipText = "Deploy Aggregation Designs (BIDS Helper)";
+                        oDeployAggDesignsButton.Name = this.FullName + "." + DEPLOY_AGGREGATION_DESIGNS_BUTTON;
+                        oDeployAggDesignsButton.Tag = oDeployAggDesignsButton.Name;
+                        oDeployAggDesignsButton.ImageIndex = toolbar.ImageList.Images.IndexOfKey(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY);
+                        oDeployAggDesignsButton.Enabled = true;
+                        oDeployAggDesignsButton.Style = ToolBarButtonStyle.PushButton;
+                        toolbar.Buttons.Add(oDeployAggDesignsButton);
+
                         toolbar.ImageList.Images.Add(STOP_ICON_KEY, Properties.Resources.Stop);
 
                         //catch the button clicks of the new buttons we just added
@@ -127,6 +139,10 @@ namespace BIDSHelper
                     else if (sButtonTag == this.FullName + "." + EDIT_AGGREGATIONS_BUTTON_SUFFIX)
                     {
                         EditAggregations();
+                    }
+                    else if (sButtonTag == this.FullName + "." + DEPLOY_AGGREGATION_DESIGNS_BUTTON)
+                    {
+                        DeployAggDesigns();
                     }
                 }
             }
@@ -356,6 +372,12 @@ namespace BIDSHelper
 
             AggManager.MainForm frm = new AggManager.MainForm(cube, pi);
             frm.ShowDialog(); //show as a modal dialog so there's no way to continue editing the cube with the normal designer until you're done with the agg manager
+        }
+
+        private void DeployAggDesigns()
+        {
+            ProjectItem pi = ApplicationObject.ActiveWindow.ProjectItem;
+            DeployAggDesignsPlugin.DeployAggDesigns(pi, this.ApplicationObject);
         }
 
 
