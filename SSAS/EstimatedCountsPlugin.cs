@@ -92,15 +92,18 @@ namespace BIDSHelper
                         oEditAggregationsButton.Style = ToolBarButtonStyle.PushButton;
                         toolbar.Buttons.Add(oEditAggregationsButton);
 
-                        toolbar.ImageList.Images.Add(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY, Properties.Resources.DeployAggDesignsIcon);
-                        ToolBarButton oDeployAggDesignsButton = new ToolBarButton();
-                        oDeployAggDesignsButton.ToolTipText = "Deploy Aggregation Designs (BIDS Helper)";
-                        oDeployAggDesignsButton.Name = this.FullName + "." + DEPLOY_AGGREGATION_DESIGNS_BUTTON;
-                        oDeployAggDesignsButton.Tag = oDeployAggDesignsButton.Name;
-                        oDeployAggDesignsButton.ImageIndex = toolbar.ImageList.Images.IndexOfKey(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY);
-                        oDeployAggDesignsButton.Enabled = true;
-                        oDeployAggDesignsButton.Style = ToolBarButtonStyle.PushButton;
-                        toolbar.Buttons.Add(oDeployAggDesignsButton);
+                        if (pi.Name.ToLower().EndsWith(".cube")) //checking the file extension is adequate because this feature is not needed for in online mode (when live connected to the server)
+                        {
+                            toolbar.ImageList.Images.Add(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY, Properties.Resources.DeployAggDesignsIcon);
+                            ToolBarButton oDeployAggDesignsButton = new ToolBarButton();
+                            oDeployAggDesignsButton.ToolTipText = "Deploy Aggregation Designs (BIDS Helper)";
+                            oDeployAggDesignsButton.Name = this.FullName + "." + DEPLOY_AGGREGATION_DESIGNS_BUTTON;
+                            oDeployAggDesignsButton.Tag = oDeployAggDesignsButton.Name;
+                            oDeployAggDesignsButton.ImageIndex = toolbar.ImageList.Images.IndexOfKey(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY);
+                            oDeployAggDesignsButton.Enabled = true;
+                            oDeployAggDesignsButton.Style = ToolBarButtonStyle.PushButton;
+                            toolbar.Buttons.Add(oDeployAggDesignsButton);
+                        }
 
                         toolbar.ImageList.Images.Add(STOP_ICON_KEY, Properties.Resources.Stop);
 
