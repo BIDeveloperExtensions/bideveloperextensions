@@ -290,7 +290,11 @@ namespace BIDSHelper
                     int iVersionNumber = (int)version.GetType().InvokeMember("VersionNumber", getpropflags, null, version, null);
                     DateTime dtVersionDate = (DateTime)version.GetType().InvokeMember("Date", getpropflags, null, version, null);
                     string sVersionUsername = (string)version.GetType().InvokeMember("Username", getpropflags, null, version, null);
-                    list.Add(iVersionNumber + "  -  " + dtVersionDate.ToString() + "  -  " + sVersionUsername);
+                    string sAction = (string)version.GetType().InvokeMember("Action", getpropflags, null, version, null);
+                    if (!sAction.StartsWith("Labeled")) //ignore labels because it throws off the version numbering
+                    {
+                        list.Add(iVersionNumber + "  -  " + dtVersionDate.ToString() + "  -  " + sVersionUsername);
+                    }
                 }
 
                 return list.ToArray();

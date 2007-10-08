@@ -5,7 +5,7 @@
 	<xsl:template match="node()">
 		<xsl:copy>
 			<!-- leave default sort order -->
-			<xsl:apply-templates select="@*|node()[name()!='DTS:LogProvider' and name()!='DTS:Executable' and name()!='DTS:ConnectionManager' and name()!='component']"/>
+			<xsl:apply-templates select="@*|node()[name()!='DTS:LogProvider' and name()!='DTS:Executable' and name()!='DTS:ConnectionManager' and name()!='DTS:PrecedenceConstraint' and name()!='component' and name()!='ProjectItem']"/>
 
 			<!-- customize sort order -->
 			<xsl:apply-templates select="./DTS:LogProvider">
@@ -17,8 +17,14 @@
 			<xsl:apply-templates select="./DTS:ConnectionManager">
 				<xsl:sort order="ascending" select="./DTS:Property[@DTS:Name='DTSID']"/>
 			</xsl:apply-templates>
+			<xsl:apply-templates select="./DTS:PrecedenceConstraint">
+				<xsl:sort order="ascending" select="./DTS:Property[@DTS:Name='DTSID']"/>
+			</xsl:apply-templates>
 			<xsl:apply-templates select="./component">
 				<xsl:sort order="ascending" select="number(@id)"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="./ProjectItem">
+				<xsl:sort order="ascending" select="@Name"/>
 			</xsl:apply-templates>
 		</xsl:copy>
 	</xsl:template>
@@ -36,6 +42,9 @@
 
 	<!--remove the ThreadHint attribute-->
 	<xsl:template match="//DTS:Executable/@DTS:ThreadHint"/>
+
+	<!--remove the compiled binary of a script task-->
+	<xsl:template match="//DTS:ObjectData/ScriptProject/BinaryItem"/>
 
 </xsl:stylesheet>
 
