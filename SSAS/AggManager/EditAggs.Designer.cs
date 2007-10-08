@@ -123,6 +123,7 @@ namespace AggManager
             this.imageList1.Images.SetKeyName(0, "Unchecked.ico");
             this.imageList1.Images.SetKeyName(1, "Checked.ico");
             this.imageList1.Images.SetKeyName(2, "Dimension.ico");
+            this.imageList1.Images.SetKeyName(3, "m2mDimension.ico");
             // 
             // splitContainer1
             // 

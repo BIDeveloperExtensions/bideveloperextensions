@@ -294,6 +294,7 @@
     <Content Include="SSAS\AggManager\Graphics\Dimension.ico" />
     <Content Include="SSAS\AggManager\Graphics\Disconnected.ico" />
     <Content Include="SSAS\AggManager\Graphics\Folder.ico" />
+    <Content Include="SSAS\AggManager\Graphics\m2mDimension.ico" />
     <Content Include="SSAS\AggManager\Graphics\MeasureGroup.ico" />
     <Content Include="SSAS\AggManager\Graphics\Partition.ico" />
     <Content Include="SSAS\AggManager\Graphics\Unchecked.ico" />

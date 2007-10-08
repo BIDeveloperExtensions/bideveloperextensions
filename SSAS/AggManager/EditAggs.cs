@@ -290,51 +290,55 @@ namespace AggManager
             {
                 AggregationAttribute aggAttr;
                 AggregationDimension aggDim;
-                long iAggCardinality = 1;
+                double dblAggCardinality = 1;
                 long iNumSurrogateKeysInAgg = 0;
+                int iMeasureGroupDimensionsCount = 0;
 
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
                     long iDimGranularityCardinality = 0;
-                    long iDimAggCardinality = 1;
+                    double dblDimAggCardinality = 1;
                     bool bDimAggCardinalityFound = false;
 
-                    if (!(mgDim is RegularMeasureGroupDimension)) continue; //not sure how to handle m2m dimensions
+                    if (!(mgDim is RegularMeasureGroupDimension)) continue; //m2m dimensions apparently aren't stored in the agg since they're calculated at runtime
+
+                    iMeasureGroupDimensionsCount++; //don't count m2m dimensions
 
                     RegularMeasureGroupDimension regMgDim = (RegularMeasureGroupDimension)mgDim;
-                    aggDim = agg.Dimensions.Find(mgDim.CubeDimensionID);
                     foreach (MeasureGroupAttribute mgDimAttr in regMgDim.Attributes)
                     {
                         if (mgDimAttr.Type == MeasureGroupAttributeType.Granularity)
                         {
                             iDimGranularityCardinality = mgDimAttr.Attribute.EstimatedCount;
-                            iNumSurrogateKeysInAgg++;
                             break;
                         }
                     }
+
+                    aggDim = agg.Dimensions.Find(mgDim.CubeDimensionID);
                     if (aggDim != null)
                     {
                         foreach (CubeAttribute cubeAttr in mgDim.CubeDimension.Attributes)
                         {
                             aggAttr = aggDim.Attributes.Find(cubeAttr.AttributeID);
-                            if (aggAttr != null && !CanReachAttributeFromChildInAgg(aggAttr,mgDim.Dimension.KeyAttribute, false))
+                            if (aggAttr != null) //purposefully don't check && !CanReachAttributeFromChildInAgg(aggAttr,mgDim.Dimension.KeyAttribute, false) because apparently every key, even redundant keys, get stored in the agg
                             {
-                                iDimAggCardinality *= cubeAttr.Attribute.EstimatedCount;
+                                dblDimAggCardinality *= (cubeAttr.Attribute.EstimatedCount == 0 ? 1 : cubeAttr.Attribute.EstimatedCount);
                                 bDimAggCardinalityFound = true;
+                                iNumSurrogateKeysInAgg++;
                             }
                         }
                     }
-                    if (iDimAggCardinality > iDimGranularityCardinality)
+                    if (dblDimAggCardinality > iDimGranularityCardinality)
                     {
                         //shouldn't be more than granularity cardinality because auto-exists prevents that
-                        iDimAggCardinality = iDimGranularityCardinality;
+                        dblDimAggCardinality = (iDimGranularityCardinality == 0 ? 1 : iDimGranularityCardinality);
                     }
                     if (bDimAggCardinalityFound)
                     {
-                        iAggCardinality *= iDimAggCardinality;
+                        dblAggCardinality *= dblDimAggCardinality;
                     }
                 }
-                if (mg1.EstimatedRows != 0 || iAggCardinality != 0)
+                if (mg1.EstimatedRows != 0 && dblAggCardinality != 0)
                 {
                     long iMeasureBytes = 0;
                     foreach (Microsoft.AnalysisServices.Measure m in mg1.Measures)
@@ -366,12 +370,17 @@ namespace AggManager
                     }
 
                     //the size of each row is 4 bytes for each surrogate key plus the size of measures
-                    long lngFactTableRowSize = (mg1.Dimensions.Count * 4 + iMeasureBytes);
+                    long lngFactTableRowSize = (iMeasureGroupDimensionsCount * 4 + iMeasureBytes);
                     long lngAggRowSize = (iNumSurrogateKeysInAgg * 4 + iMeasureBytes);
 
+                    if (dblAggCardinality > mg1.EstimatedRows) //this is not possible in the data
+                    {
+                        dblAggCardinality = mg1.EstimatedRows;
+                    }
+
                     //multiply the estimated rows by the size of each row
-                    size = ((double)(iAggCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
-                    if (size > 1) size = 1;
+                    size = ((double)(dblAggCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
+                    //purposefully don't prevent size from being over 1 because an agg can be larger than the fact table if it has more dimension attribute keys than the fact table
                 }
             }
             catch { }
@@ -516,7 +525,11 @@ namespace AggManager
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
                     TreeNode parentNode = treeViewAggregation.Nodes.Add(mgDim.CubeDimensionID, mgDim.CubeDimension.Name);
-                    parentNode.StateImageIndex = 2;
+                    if (mgDim is ManyToManyMeasureGroupDimension)
+                        parentNode.StateImageIndex = 3;
+                    else
+                        parentNode.StateImageIndex = 2;
+
                     foreach (CubeAttribute cubeDimAttr in mgDim.CubeDimension.Attributes)
                     {
                         TreeNode childNode = parentNode.Nodes.Add(cubeDimAttr.AttributeID, cubeDimAttr.Attribute.Name);
@@ -534,7 +547,6 @@ namespace AggManager
                             }
                         }
                     }
-
                 }
             }
             else
@@ -542,7 +554,11 @@ namespace AggManager
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
                     TreeNode parentNode = treeViewAggregation.Nodes.Add(mgDim.CubeDimensionID, mgDim.CubeDimension.Name);
-                    parentNode.StateImageIndex = 2;
+                    if (mgDim is ManyToManyMeasureGroupDimension)
+                        parentNode.StateImageIndex = 3;
+                    else
+                        parentNode.StateImageIndex = 2;
+
                     foreach (CubeAttribute cubeDimAttr in mgDim.CubeDimension.Attributes)
                         if (cubeDimAttr.Attribute.Usage == AttributeUsage.Key)
                         {
@@ -913,6 +929,9 @@ namespace AggManager
             }
             boolHandleClick = false;
 
+            DataRow dr = GetCurrentDataGridRow();
+            SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
+
             this.Cursor = Cursors.Default;
         }
 
@@ -957,7 +976,7 @@ namespace AggManager
             {
                 MouseEventArgs me = (MouseEventArgs)e;
                 TreeNode node = treeViewAggregation.GetNodeAt(me.Location);
-                if (node.StateImageIndex == 2) //this node is a dimension, so ignore clicks
+                if (node.StateImageIndex >= 2) //this node is a dimension, so ignore clicks
                     return;
                 if (node.NodeFont != null && node.NodeFont.Italic && !node.Checked)
                 {
