@@ -211,6 +211,7 @@ namespace AggManager
 
                 this.Cursor = Cursors.Default;
                 //MessageBox.Show("Aggregation design: " + aggDes.Name + "  has been updated with " + i.ToString() + " aggregations");
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
@@ -320,11 +321,14 @@ namespace AggManager
                         foreach (CubeAttribute cubeAttr in mgDim.CubeDimension.Attributes)
                         {
                             aggAttr = aggDim.Attributes.Find(cubeAttr.AttributeID);
-                            if (aggAttr != null) //purposefully don't check && !CanReachAttributeFromChildInAgg(aggAttr,mgDim.Dimension.KeyAttribute, false) because apparently every key, even redundant keys, get stored in the agg
+                            if (aggAttr != null)
                             {
-                                dblDimAggCardinality *= (cubeAttr.Attribute.EstimatedCount == 0 ? 1 : cubeAttr.Attribute.EstimatedCount);
+                                if (!CanReachAttributeFromChildInAgg(aggAttr, mgDim.Dimension.KeyAttribute, false)) //redundant attributes don't increase the cardinality of the attribute
+                                {
+                                    dblDimAggCardinality *= (cubeAttr.Attribute.EstimatedCount == 0 ? 1 : cubeAttr.Attribute.EstimatedCount);
+                                }
                                 bDimAggCardinalityFound = true;
-                                iNumSurrogateKeysInAgg++;
+                                iNumSurrogateKeysInAgg++; //apparently every key, even redundant keys, get stored in the agg
                             }
                         }
                     }

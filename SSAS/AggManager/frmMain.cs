@@ -345,7 +345,7 @@ namespace AggManager
             FillCollections ((MeasureGroup) node.Parent.Parent.Tag);
 
             form1.Init(node.Name, (MeasureGroup) node.Parent.Parent.Tag , dimAttributes, dimNames, dimIDs);
-            form1.ShowDialog(this);
+            if (form1.ShowDialog(this) != DialogResult.OK) return;
 
             UpdateAggCountInListBox(treeView1.SelectedNode);
             if (!treeView1.SelectedNode.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
