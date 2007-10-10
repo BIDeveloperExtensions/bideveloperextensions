@@ -224,9 +224,13 @@ namespace BIDSHelper
             {
                 if (windowHandlesInProgressStatus.Contains(sHandle))
                 {
+                    try
+                    {
+                        AddWarningsToVSErrorList(GotFocus, warnings.ToArray());
+                    }
+                    catch { }
                     windowHandlesInProgressStatus.Remove(sHandle);
                 }
-                AddWarningsToVSErrorList(GotFocus, warnings.ToArray());
             }
         }
 
