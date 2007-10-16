@@ -35,6 +35,7 @@ namespace AggManager
             this.contextMenuStripMG = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.cmdAddAggregationDesign = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdAddFromQueryLog = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteUnusedAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripAggDes = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.cmdEditAggDes = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdDeleteAggDes = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,9 +50,9 @@ namespace AggManager
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.btnOk = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.deleteUnusedAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripCube = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.deleteUnusedAggregationsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.validateAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripMG.SuspendLayout();
             this.contextMenuStripAggDes.SuspendLayout();
             this.contextMenuStripSave.SuspendLayout();
@@ -112,6 +113,13 @@ namespace AggManager
             this.cmdAddFromQueryLog.Size = new System.Drawing.Size(234, 22);
             this.cmdAddFromQueryLog.Text = "Add from Query Log...";
             this.cmdAddFromQueryLog.Click += new System.EventHandler(this.cmdAddFromQueryLog_Click);
+            // 
+            // deleteUnusedAggregationsToolStripMenuItem
+            // 
+            this.deleteUnusedAggregationsToolStripMenuItem.Name = "deleteUnusedAggregationsToolStripMenuItem";
+            this.deleteUnusedAggregationsToolStripMenuItem.Size = new System.Drawing.Size(234, 22);
+            this.deleteUnusedAggregationsToolStripMenuItem.Text = "Delete Unused Aggregations...";
+            this.deleteUnusedAggregationsToolStripMenuItem.Click += new System.EventHandler(this.deleteUnusedAggregationsToolStripMenuItem_Click);
             // 
             // contextMenuStripAggDes
             // 
@@ -238,19 +246,13 @@ namespace AggManager
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // deleteUnusedAggregationsToolStripMenuItem
-            // 
-            this.deleteUnusedAggregationsToolStripMenuItem.Name = "deleteUnusedAggregationsToolStripMenuItem";
-            this.deleteUnusedAggregationsToolStripMenuItem.Size = new System.Drawing.Size(234, 22);
-            this.deleteUnusedAggregationsToolStripMenuItem.Text = "Delete Unused Aggregations...";
-            this.deleteUnusedAggregationsToolStripMenuItem.Click += new System.EventHandler(this.deleteUnusedAggregationsToolStripMenuItem_Click);
-            // 
             // contextMenuStripCube
             // 
             this.contextMenuStripCube.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.deleteUnusedAggregationsToolStripMenuItem1});
+            this.deleteUnusedAggregationsToolStripMenuItem1,
+            this.validateAggregationsToolStripMenuItem});
             this.contextMenuStripCube.Name = "contextMenuStripCube";
-            this.contextMenuStripCube.Size = new System.Drawing.Size(235, 48);
+            this.contextMenuStripCube.Size = new System.Drawing.Size(235, 70);
             // 
             // deleteUnusedAggregationsToolStripMenuItem1
             // 
@@ -258,6 +260,13 @@ namespace AggManager
             this.deleteUnusedAggregationsToolStripMenuItem1.Size = new System.Drawing.Size(234, 22);
             this.deleteUnusedAggregationsToolStripMenuItem1.Text = "Delete Unused Aggregations...";
             this.deleteUnusedAggregationsToolStripMenuItem1.Click += new System.EventHandler(this.deleteUnusedAggregationsToolStripMenuItem1_Click);
+            // 
+            // validateAggregationsToolStripMenuItem
+            // 
+            this.validateAggregationsToolStripMenuItem.Name = "validateAggregationsToolStripMenuItem";
+            this.validateAggregationsToolStripMenuItem.Size = new System.Drawing.Size(234, 22);
+            this.validateAggregationsToolStripMenuItem.Text = "Validate Aggregations...";
+            this.validateAggregationsToolStripMenuItem.Click += new System.EventHandler(this.validateAggregationsToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -309,5 +318,6 @@ namespace AggManager
         private System.Windows.Forms.ToolStripMenuItem deleteUnusedAggregationsToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripCube;
         private System.Windows.Forms.ToolStripMenuItem deleteUnusedAggregationsToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem validateAggregationsToolStripMenuItem;
     }
 }

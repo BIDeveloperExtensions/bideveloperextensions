@@ -191,6 +191,7 @@
     <Compile Include="SSAS\AggManager\Settings.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SSAS\AggManager\ValidateAggs.cs" />
     <Compile Include="SSAS\AggregationManagerPlugin.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -349,6 +350,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
+    <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
     <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />
     <EmbeddedResource Include="SSAS\UnusedColumns.rdlc" />
     <EmbeddedResource Include="SSAS\MeasureGroupHealthCheckForm.resx">
@@ -380,6 +382,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
     <None Include="Properties\DataSources\DimensionUsage.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />

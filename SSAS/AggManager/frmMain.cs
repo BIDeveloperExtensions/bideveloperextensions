@@ -688,5 +688,17 @@ namespace AggManager
             }
         }
 
+        private void validateAggregationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ValidateAggs.Validate(cloneDB.Cubes[realCube.ID]);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
     }
 }

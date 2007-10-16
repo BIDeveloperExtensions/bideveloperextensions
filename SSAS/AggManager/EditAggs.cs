@@ -1,5 +1,5 @@
 /*============================================================================
-  File:    EditAgggs.cs
+  File:    EditAggs.cs
 
   Summary: Contains the form to add, delete, and change aggregations
 
@@ -54,6 +54,8 @@ namespace AggManager
         bool boolIsRigid = false;
 
         private Color nonMaterializedColor = Color.SteelBlue;
+        private Color parentChildAttributeColor = Color.SlateGray;
+        private Color belowGranularityColor = Color.LightSlateGray;
 
         enum SynchControls 
         { 
@@ -542,13 +544,17 @@ namespace AggManager
                             childNode.NodeFont = new Font(treeViewAggregation.Font, FontStyle.Italic);
                             childNode.ForeColor = Color.Gray;
                         }
-                        if (mgDim is ReferenceMeasureGroupDimension)
+                        else if (mgDim is ReferenceMeasureGroupDimension)
                         {
                             ReferenceMeasureGroupDimension refDim = (ReferenceMeasureGroupDimension)mgDim;
                             if (refDim.Materialization == ReferenceDimensionMaterialization.Indirect)
                             {
                                 childNode.ForeColor = Color.Red;
                             }
+                        }
+                        else if (cubeDimAttr.Attribute.Usage == AttributeUsage.Parent)
+                        {
+                            childNode.ForeColor = Color.Red;
                         }
                     }
                 }
@@ -584,7 +590,12 @@ namespace AggManager
 
         private void AddTreeViewNodeChildren(TreeNode node, CubeAttribute cubeDimAttr , MeasureGroupDimension mgDim)
         {
-            if (mgDim is ReferenceMeasureGroupDimension)
+            bool bIsAtOrAboveGranularity = ValidateAggs.IsAtOrAboveGranularity(cubeDimAttr.Attribute, mgDim);
+            if (!bIsAtOrAboveGranularity)
+            {
+                node.ForeColor = belowGranularityColor;
+            }
+            else if (mgDim is ReferenceMeasureGroupDimension)
             {
                 ReferenceMeasureGroupDimension refDim = (ReferenceMeasureGroupDimension)mgDim;
                 if (refDim.Materialization == ReferenceDimensionMaterialization.Indirect)
@@ -592,6 +603,11 @@ namespace AggManager
                     node.ForeColor = nonMaterializedColor;
                 }
             }
+            else if (cubeDimAttr.Attribute.Usage == AttributeUsage.Parent)
+            {
+                node.ForeColor = parentChildAttributeColor;
+            }
+
             foreach (AttributeRelationship attRel in cubeDimAttr.Attribute.AttributeRelationships)
             {
                 CubeAttribute childAttr = cubeDimAttr.Parent.Attributes.Find(attRel.AttributeID);
@@ -986,9 +1002,17 @@ namespace AggManager
                 {
                     MessageBox.Show("The cube dimension attribute " + node.Text + " is marked AttributeHierarchyEnabled=false");
                 }
-                else if (node.ForeColor == nonMaterializedColor)
+                else if (node.ForeColor == nonMaterializedColor && !node.Checked) //show this warning unless they're unchecking it
                 {
                     MessageBox.Show("This dimension is related through a non-materialized reference relationship\n\nCreating aggregations on such a relationship is not valid is it can produce incorrect figures.");
+                }
+                else if (node.ForeColor == parentChildAttributeColor && !node.Checked) //show this warning unless they're unchecking it
+                {
+                    MessageBox.Show("This attribute is a parent-child attribute. Aggregations are not allowed on it.");
+                }
+                else if (node.ForeColor == belowGranularityColor && !node.Checked) //show this warning unless they're unchecking it
+                {
+                    MessageBox.Show("This attribute is below granularity. Aggregations are not allowed on it.");
                 }
                 else
                 {
@@ -998,6 +1022,33 @@ namespace AggManager
                     DataRow dr = GetCurrentDataGridRow();
                     SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
                 }
+            }
+        }
+
+        private void buttonValidate_Click(object sender, EventArgs e)
+        {
+            //the latest version of aggs is just stored in a grid, so throw this into a new temporary agg design
+            AggregationDesign tempAggDesign = mg1.AggregationDesigns.Add();
+            try
+            {
+                DataView myDataView = (DataView)dataGrid1.DataSource;
+                foreach (DataRow dr in myDataView.Table.Select(null, myDataView.Sort))
+                {
+                    String strAgg = dr[1].ToString();
+                    String strAggName = dr[0].ToString();
+                    Aggregation agg = GetAggregationFromString(strAggName, strAgg);
+                    tempAggDesign.Aggregations.Add(agg);
+                }
+
+                ValidateAggs.Validate(tempAggDesign, aggDes.Name);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                mg1.AggregationDesigns.Remove(tempAggDesign); //remove the temporary agg design
             }
         }
 
