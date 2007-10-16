@@ -123,10 +123,22 @@ namespace AggManager
             bool bAllMeasuresAreSemiAdditive = true;
             foreach (Measure m in aggDesign.Parent.Measures)
             {
-                if (m.AggregateFunction == AggregationFunction.Count || m.AggregateFunction == AggregationFunction.DistinctCount || m.AggregateFunction == AggregationFunction.Sum || m.AggregateFunction == AggregationFunction.Min || m.AggregateFunction == AggregationFunction.Max || m.AggregateFunction == AggregationFunction.None || m.AggregateFunction == AggregationFunction.ByAccount)
+                if (m.AggregateFunction == AggregationFunction.Count || m.AggregateFunction == AggregationFunction.DistinctCount || m.AggregateFunction == AggregationFunction.Sum || m.AggregateFunction == AggregationFunction.Min || m.AggregateFunction == AggregationFunction.Max || m.AggregateFunction == AggregationFunction.None)
                 {
                     bAllMeasuresAreSemiAdditive = false;
                     break;
+                }
+                else if (m.AggregateFunction == AggregationFunction.ByAccount)
+                {
+                    //if it's a ByAccount measure, we need to check the list of AggregationFunctions on each account
+                    foreach (Account acct in aggDesign.ParentDatabase.Accounts)
+                    {
+                        if (acct.AggregationFunction == AggregationFunction.Sum) //Sum is the only additive AggregationFunction allowed in account intelligence
+                        {
+                            bAllMeasuresAreSemiAdditive = false;
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -174,7 +186,7 @@ namespace AggManager
                     {
                         if (attr.Attribute.Usage == AttributeUsage.Parent)
                         {
-                            string sWarning = "This aggregation contains [" + aggDim.CubeDimension.Name + "].[" + attr.Attribute.Name + "] which is a parent-child attribute. This is not allowed.";
+                            string sWarning = "This aggregation contains [" + aggDim.CubeDimension.Name + "].[" + attr.Attribute.Name + "] which is a parent-child attribute. This is not allowed. The aggregation should include [" + aggDim.CubeDimension.Name + "].[" + aggDim.Dimension.KeyAttribute.Name + "] instead.";
                             masterWarnings.Add(new AggValidationWarning(agg, sCorrectAggregationDesignName, sWarning, sReportTitle));
                         }
                     }
@@ -228,13 +240,41 @@ namespace AggManager
                 CubeDimension cd = mgDim.CubeDimension;
                 foreach (CubeAttribute ca in cd.Attributes)
                 {
-                    if (ca.Attribute.Usage == AttributeUsage.Parent) continue; //don't suggest adding any parent-child attributes
                     if (!ca.AttributeHierarchyEnabled) continue;
+                    if (!IsAtOrAboveGranularity(ca.Attribute, mgDim)) continue;
 
                     foreach (Aggregation agg in aggDesign.Aggregations)
                     {
                         AggregationDimension aggDim = agg.Dimensions.Find(cd.ID);
-                        if (aggDim == null || aggDim.Attributes.Find(ca.Attribute.ID) == null)
+                        if (ca.Attribute.Usage == AttributeUsage.Parent)
+                        {
+                            if (!(mgDim is RegularMeasureGroupDimension)) continue;
+                            if (!IsAtOrAboveGranularity(cd.Dimension.KeyAttribute, mgDim)) continue;
+
+                            //if this is a parent-child attribute and the key isn't in the agg, then check whether the parent-child attribute has a DefaultMember or is aggregatable
+                            if (aggDim == null || aggDim.Attributes.Find(cd.Dimension.KeyAttribute.ID) == null)
+                            {
+                                string sWarning = "";
+                                if (!string.IsNullOrEmpty(ca.Attribute.DefaultMember) || attributesWithDefaultMemberAlteredInCalcScript.Contains(((string)("[" + cd.Name + "].[" + ca.Attribute.Name + "]")).ToLower()))
+                                {
+                                    sWarning += "has a DefaultMember";
+                                }
+
+                                if (!ca.Attribute.IsAggregatable)
+                                {
+                                    if (!string.IsNullOrEmpty(sWarning)) sWarning += " and ";
+                                    sWarning += "is not aggregatable";
+                                }
+
+                                if (!string.IsNullOrEmpty(sWarning))
+                                {
+                                    sWarning = "This aggregation should probably contain [" + cd.Name + "].[" + cd.Dimension.KeyAttribute.Name + "] because [" + cd.Name + "].[" + ca.Attribute.Name + "] is a parent-child attribute which " + sWarning + ".";
+                                    masterWarnings.Add(new AggValidationWarning(agg, sCorrectAggregationDesignName, sWarning, sReportTitle));
+                                }
+                            }
+                        }
+                        //for non-parent-child attributes...
+                        else if (aggDim == null || aggDim.Attributes.Find(ca.AttributeID) == null)
                         {
                             string sWarning = "";
                             if (!string.IsNullOrEmpty(ca.Attribute.DefaultMember) || attributesWithDefaultMemberAlteredInCalcScript.Contains(((string)("[" + cd.Name + "].[" + ca.Attribute.Name + "]")).ToLower()))
