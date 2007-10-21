@@ -84,7 +84,8 @@ namespace BIDSHelper
                         new EditExpressionSelectedEventArgs(dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectPath"].Index].Value.ToString(),
                             dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["Expression"].Index].Value.ToString(),
                             dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["Property"].Index].Value.ToString(), 
-                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectID"].Index].Value.ToString()));
+                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectID"].Index].Value.ToString(),
+                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectType"].Index].Value.ToString()));
                 }
             }
             catch (Exception ex)
@@ -114,17 +115,19 @@ namespace BIDSHelper
     
     public class EditExpressionSelectedEventArgs : EventArgs
     {
-        public EditExpressionSelectedEventArgs(string objectPath, string expression, string property, string objectID)
+        public EditExpressionSelectedEventArgs(string objectPath, string expression, string property, string objectID, string objectType)
         {
             this.path = objectPath;
             this.expression = expression;
             this.property = property;
             this.objectID = objectID;
+            this.objectType = objectType;
         }
         private string expression;
         private string property;
         private string path;
         private string objectID;
+        private string objectType;
 
         public string TaskPath
         {
@@ -141,6 +144,10 @@ namespace BIDSHelper
         public string ObjectID
         {
             get { return objectID; }
+        }
+        public string ObjectType
+        {
+            get { return objectType; }
         }
     }
 

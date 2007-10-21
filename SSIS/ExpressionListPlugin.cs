@@ -18,6 +18,13 @@ using System.ComponentModel;
 using Konesans.Dts.Design.Controls;
 using Konesans.Dts.Design.PropertyHelp;
 
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Reflection.Emit;
+ 
+
+
 namespace BIDSHelper
 {
     public class ExpressionListPlugin : BIDSHelperPluginBase
@@ -32,17 +39,18 @@ namespace BIDSHelper
         private ExpressionListControl expressionListWindow = null;
         private DTE2 appObject = null;
         Window toolWindow = null;
-
+        System.Reflection.Assembly konesansAssembly = null;
+        Type typePropertyVariables = null;
 
         EditorWindow win = null;
         IDesignerHost designer = null;
         System.ComponentModel.BackgroundWorker processPackage = null;
-        bool windowIsVisible = false;
 
         public ExpressionListPlugin(DTE2 appObject, AddIn addinInstance)
             : base(appObject, addinInstance)
         {
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
+            bool windowIsVisible = false;
             if (rk != null)
             {
                 windowIsVisible = (1 == (int)rk.GetValue(REGISTRY_SETTING_NAME, 0));
@@ -75,12 +83,11 @@ namespace BIDSHelper
             expressionListWindow = (ExpressionListControl)programmableObject;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);
-
+            
             //Set the picture displayed when the window is tab docked
             //expressionListWindow.SetTabPicture(BIDSHelper.Resources.Resource.ExpressionList.ToBitmap().GetHbitmap());
 
             //toolWindow.Visible = true;
-
         }
 
         void expressionListWindow_EditExpressionSelected(object sender, EditExpressionSelectedEventArgs e)
@@ -124,22 +131,103 @@ namespace BIDSHelper
                     return;
                 }
 
+                EnsurePropertyVariablesTypeLoaded();
+
+                Package package = (Package)container;
+                Variables variables = null;
+                VariableDispenser variableDispenser = null;
+                PropertyDescriptor property = null;
+                Type propertyType = null;
                 TaskHost taskHost = FindTaskHost(container, e.ObjectID);
-                if (taskHost == null) throw new Exception("Expression editing not supported on this object."); //will usually be when trying to edit an expression on the Package object itself; TODO: figure out a way to see if this is possible
+                DtsContainer foundContainer = FindContainer(container, e.ObjectID);
+                Variable variable = null;
+                if (e.ObjectType.StartsWith("Variable "))
+                {
+                    variable = FindVariable(package, taskHost, foundContainer, e.Property);
+                }
+                ConnectionManager connection = FindConnectionManager(package, e.ObjectID);
+                if (variable != null)
+                {
+                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(variable);
+                    property = properties.Find("Value", false);
+                    propertyType = System.Type.GetType("System." + variable.DataType.ToString());
+                    if (taskHost != null)
+                    {
+                        variables = taskHost.Variables;
+                        variableDispenser = taskHost.VariableDispenser;
+                    }
+                    else if (foundContainer != null)
+                    {
+                        variables = foundContainer.Variables;
+                        variableDispenser = foundContainer.VariableDispenser;
+                    }
+                    else
+                    {
+                        variables = package.Variables;
+                        variableDispenser = package.VariableDispenser;
+                    }
+                }
+                else if (taskHost != null)
+                {
+                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(taskHost);
+                    property = properties.Find(e.Property, false);
+                    propertyType = property.PropertyType;
+                    variables = taskHost.Variables;
+                    variableDispenser = taskHost.VariableDispenser;
+                }
+                else if (connection != null)
+                {
+                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(connection);
+                    property = properties.Find(e.Property, false);
+                    propertyType = property.PropertyType;
+                    variables = package.Variables;
+                    variableDispenser = package.VariableDispenser;
+                }
+                else if (e.ObjectID == ((Package)container).ID)
+                {
+                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(container);
+                    property = properties.Find(e.Property, false);
+                    propertyType = property.PropertyType;
+                    variables = package.Variables;
+                    variableDispenser = package.VariableDispenser;
+                }
+                else
+                {
+                    throw new Exception("Expression editing not supported on this object."); //will usually be when trying to edit an expression on the Package object itself; TODO: figure out a way to see if this is possible
+                }
 
-                PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(taskHost);
-                PropertyDescriptor property = properties.Find(e.Property, false);
 
-                System.Reflection.Assembly konesansAssembly = System.Reflection.Assembly.Load(BIDSHelper.Properties.Resources.Konesans_Dts_CommonLibrary);
+
+                System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
+                System.Reflection.BindingFlags setpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
+                object oPropertyVariables = typePropertyVariables.GetConstructors()[0].Invoke(new object[] { });
+                oPropertyVariables.GetType().InvokeMember("Variables", setpropflags, null, oPropertyVariables, new object[] { variables });
+                oPropertyVariables.GetType().InvokeMember("VariableDispenser", setpropflags, null, oPropertyVariables, new object[] { variableDispenser });
+                oPropertyVariables.GetType().InvokeMember("Type", setpropflags, null, oPropertyVariables, new object[] { propertyType });
+
                 Type typeExpressionEditorPublic = konesansAssembly.GetType("Konesans.Dts.Design.Controls.ExpressionEditorPublic");
-                Type typeExpressionsPropertyBag = konesansAssembly.GetType("Konesans.Dts.Design.PropertyHelp.ExpressionsPropertyBag");
-                object bag = typeExpressionsPropertyBag.GetConstructors()[0].Invoke(new object[] { taskHost });
-                Form editor = (Form)typeExpressionEditorPublic.GetConstructors()[0].Invoke(new object[] { e.Expression, bag, property });
+                Form editor = (Form)typeExpressionEditorPublic.GetConstructors()[0].Invoke(new object[] { e.Expression, oPropertyVariables, property });
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
-                    System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
                     string sExpression = (string)editor.GetType().InvokeMember("Expression", getpropflags, null, editor, null);
-                    taskHost.SetExpression(e.Property, sExpression);
+
+                    if (variable != null)
+                    {
+                        variable.Expression = sExpression;
+                    }
+                    else if (taskHost != null)
+                    {
+                        taskHost.SetExpression(e.Property, sExpression);
+                    }
+                    else if (connection != null)
+                    {
+                        connection.SetExpression(e.Property, sExpression);
+                    }
+                    else if (e.ObjectID == ((Package)container).ID)
+                    {
+                        package.SetExpression(e.Property, sExpression);
+                    }
+
                     expressionListWindow_RefreshExpressions(null, null);
 
                     //mark package object as dirty
@@ -155,10 +243,172 @@ namespace BIDSHelper
             }
         }
 
+
+        #region Late Binding to Konesans Assembly
+        private void EnsureKonesansAssemblyLoaded()
+        {
+            if (konesansAssembly == null)
+            {
+                konesansAssembly = System.Reflection.Assembly.Load(BIDSHelper.Properties.Resources.Konesans_Dts_CommonLibrary);
+            }
+        }
+
+        private void EnsurePropertyVariablesTypeLoaded()
+        {
+            EnsureKonesansAssemblyLoaded();
+            if (typePropertyVariables != null) return;
+
+            Type typeInterface = konesansAssembly.GetType("Konesans.Dts.Design.PropertyHelp.IPropertyRuntimeVariables");
+
+            AssemblyName assemblyName = new AssemblyName();
+            assemblyName.Name = "BIDSHelperKonesans";
+
+            AssemblyBuilder newAssembly = System.Threading.Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+            ModuleBuilder newModule = newAssembly.DefineDynamicModule("KonesansInterfaces");
+            TypeBuilder myTypeBuilder = newModule.DefineType("PropertyVariables", TypeAttributes.Public);
+            myTypeBuilder.AddInterfaceImplementation(typeInterface);
+
+            FieldBuilder fieldVariables = myTypeBuilder.DefineField("_variables", typeof(Variables), FieldAttributes.Private);
+            FieldBuilder fieldVariableDispenser = myTypeBuilder.DefineField("_variableDispenser", typeof(VariableDispenser), FieldAttributes.Private);
+            FieldBuilder fieldType = myTypeBuilder.DefineField("_type", typeof(Type), FieldAttributes.Private);
+
+
+
+            PropertyBuilder propertyBuilderVariables = myTypeBuilder.DefineProperty("Variables",
+                                     PropertyAttributes.HasDefault,
+                                     typeof(Variables),
+                                     new Type[] { typeof(Variables) });
+            
+            //define the behavior of the "get" property
+            MethodBuilder methodBuilderGetVariables = myTypeBuilder.DefineMethod("GetVariables",
+                                    MethodAttributes.Public | MethodAttributes.Virtual,
+                                    typeof(Variables),
+                                    new Type[] { });
+
+            ILGenerator ilGetVariables = methodBuilderGetVariables.GetILGenerator();
+            ilGetVariables.Emit(OpCodes.Ldarg_0);
+            ilGetVariables.Emit(OpCodes.Ldfld, fieldVariables);
+            ilGetVariables.Emit(OpCodes.Ret);
+
+            //define the behavior of the "set" property
+            MethodBuilder methodBuilderSetVariables = myTypeBuilder.DefineMethod("SetVariables",
+                                    MethodAttributes.Public,
+                                    null,
+                                    new Type[] { typeof(Variables) });
+
+            ILGenerator ilSetVariables = methodBuilderSetVariables.GetILGenerator();
+            ilSetVariables.Emit(OpCodes.Ldarg_0);
+            ilSetVariables.Emit(OpCodes.Ldarg_1);
+            ilSetVariables.Emit(OpCodes.Stfld, fieldVariables);
+            ilSetVariables.Emit(OpCodes.Ret);
+
+            //Map the two methods created above to our PropertyBuilder to 
+            //their corresponding behaviors, "get" and "set" respectively. 
+            propertyBuilderVariables.SetGetMethod(methodBuilderGetVariables);
+            propertyBuilderVariables.SetSetMethod(methodBuilderSetVariables);
+
+            MethodInfo methodInfoGetVariables = typeInterface.GetProperty("Variables").GetGetMethod();
+            myTypeBuilder.DefineMethodOverride(methodBuilderGetVariables, methodInfoGetVariables);
+
+
+
+            PropertyBuilder propertyBuilderVariableDispenser = myTypeBuilder.DefineProperty("VariableDispenser",
+                         PropertyAttributes.HasDefault,
+                         typeof(VariableDispenser),
+                         new Type[] { typeof(VariableDispenser) });
+
+            //define the behavior of the "get" property
+            MethodBuilder methodBuilderGetVariableDispenser = myTypeBuilder.DefineMethod("GetVariableDispenser",
+                                    MethodAttributes.Public | MethodAttributes.Virtual,
+                                    typeof(VariableDispenser),
+                                    new Type[] { });
+
+            ILGenerator ilGetVariableDispenser = methodBuilderGetVariableDispenser.GetILGenerator();
+            ilGetVariableDispenser.Emit(OpCodes.Ldarg_0);
+            ilGetVariableDispenser.Emit(OpCodes.Ldfld, fieldVariableDispenser);
+            ilGetVariableDispenser.Emit(OpCodes.Ret);
+
+            //define the behavior of the "set" property
+            MethodBuilder methodBuilderSetVariableDispenser = myTypeBuilder.DefineMethod("SetVariableDispenser",
+                                    MethodAttributes.Public,
+                                    null,
+                                    new Type[] { typeof(VariableDispenser) });
+
+            ILGenerator ilSetVariableDispenser = methodBuilderSetVariableDispenser.GetILGenerator();
+            ilSetVariableDispenser.Emit(OpCodes.Ldarg_0);
+            ilSetVariableDispenser.Emit(OpCodes.Ldarg_1);
+            ilSetVariableDispenser.Emit(OpCodes.Stfld, fieldVariableDispenser);
+            ilSetVariableDispenser.Emit(OpCodes.Ret);
+
+            //Map the two methods created above to our PropertyBuilder to 
+            //their corresponding behaviors, "get" and "set" respectively. 
+            propertyBuilderVariableDispenser.SetGetMethod(methodBuilderGetVariableDispenser);
+            propertyBuilderVariableDispenser.SetSetMethod(methodBuilderSetVariableDispenser);
+
+            MethodInfo methodInfoGetVariableDispenser = typeInterface.GetProperty("VariableDispenser").GetGetMethod();
+            myTypeBuilder.DefineMethodOverride(methodBuilderGetVariableDispenser, methodInfoGetVariableDispenser);
+
+
+
+            PropertyBuilder propertyBuilderType = myTypeBuilder.DefineProperty("Type",
+                                     PropertyAttributes.HasDefault,
+                                     typeof(Type),
+                                     new Type[] { typeof(Type) });
+
+            //define the behavior of the "get" property
+            MethodBuilder methodBuilderGetType = myTypeBuilder.DefineMethod("GetType",
+                                    MethodAttributes.Public,
+                                    typeof(Type),
+                                    new Type[] { });
+
+            ILGenerator ilGetType = methodBuilderGetType.GetILGenerator();
+            ilGetType.Emit(OpCodes.Ldarg_0);
+            ilGetType.Emit(OpCodes.Ldfld, fieldType);
+            ilGetType.Emit(OpCodes.Ret);
+
+            //define the behavior of the "set" property
+            MethodBuilder methodBuilderSetType = myTypeBuilder.DefineMethod("SetType",
+                                    MethodAttributes.Public,
+                                    null,
+                                    new Type[] { typeof(Type) });
+
+            ILGenerator ilSetType = methodBuilderSetType.GetILGenerator();
+            ilSetType.Emit(OpCodes.Ldarg_0);
+            ilSetType.Emit(OpCodes.Ldarg_1);
+            ilSetType.Emit(OpCodes.Stfld, fieldType);
+            ilSetType.Emit(OpCodes.Ret);
+
+            //Map the two methods created above to our PropertyBuilder to 
+            //their corresponding behaviors, "get" and "set" respectively. 
+            propertyBuilderType.SetGetMethod(methodBuilderGetType);
+            propertyBuilderType.SetSetMethod(methodBuilderSetType);
+
+
+
+            MethodBuilder methodBuilderGetPropertyType =
+               myTypeBuilder.DefineMethod(
+               "GetPropertyType",
+               MethodAttributes.Public | MethodAttributes.Virtual,
+               typeof(Type),
+               new Type[] { typeof(string) });
+
+            ILGenerator ilGetPropertyType = methodBuilderGetPropertyType.GetILGenerator();
+            ilGetPropertyType.Emit(OpCodes.Ldarg_0);
+            ilGetPropertyType.Emit(OpCodes.Ldfld, fieldType);
+            ilGetPropertyType.Emit(OpCodes.Ret);
+
+            MethodInfo methodInfoGetPropertyType = typeInterface.GetMethod(methodBuilderGetPropertyType.Name);
+            myTypeBuilder.DefineMethodOverride(methodBuilderGetPropertyType, methodInfoGetPropertyType);
+
+
+
+            typePropertyVariables = myTypeBuilder.CreateType();
+        }
+        #endregion
+
+
         void expressionListWindow_RefreshExpressions(object sender, EventArgs e)
         {
-            expressionListWindow.StartProgressBar();
-
             IDTSSequence container = null;
             TaskHost taskHost = null;
 
@@ -192,6 +442,7 @@ namespace BIDSHelper
                     return;
                 }
 
+                expressionListWindow.StartProgressBar();
                 processPackage.RunWorkerAsync(container);
             }
             catch (Exception ex)
@@ -233,11 +484,11 @@ namespace BIDSHelper
                 {
                     return;
                 }
-                designer = (IDesignerHost)GotFocus.Object;
-                if (designer == null)
+                if (GotFocus.Object == null)
                 {
                     return;
                 }
+                designer = (IDesignerHost)GotFocus.Object;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if (!(pi.Name.ToLower().EndsWith(".dtsx")))
                 {
@@ -306,13 +557,15 @@ namespace BIDSHelper
 
             foreach (Executable exec in sequence.Executables)
             {
+                string sNewPath = path;
+                if (!(container is Package)) sNewPath = path.Substring(0, path.Length - 1) + "\\" + container.Name + ".";
                 if (exec is IDTSSequence)
                 {
-                    IterateContainer((DtsContainer)exec, worker, path);
+                    IterateContainer((DtsContainer)exec, worker, sNewPath);
                 }
                 else if (exec is IDTSPropertiesProvider)
                 {
-                    CheckProperties((IDTSPropertiesProvider)exec, worker, path);
+                    CheckProperties((IDTSPropertiesProvider)exec, worker, sNewPath);
                 }
             }
         }
@@ -325,6 +578,7 @@ namespace BIDSHelper
             }
             return (Package)container;
         }
+
         private void CheckConnectionManagers(Package package, BackgroundWorker worker, string path)
         {
             if (worker.CancellationPending) return;
@@ -343,8 +597,10 @@ namespace BIDSHelper
             if (propProvider is DtsContainer)
             {
                 DtsContainer container = (DtsContainer)propProvider;
-                ScanProperties(worker, path, container.GetType().ToString(), container.ID, container.Name, propProvider);
-                ScanVariables(worker, path, container.GetType().ToString(), container.ID, container.Name, container.Variables);
+                string sNewPath = path;
+                if (!(container is Package)) sNewPath = path.Substring(0, path.Length - 1) + "\\" + container.Name + ".";
+                ScanProperties(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, propProvider);
+                ScanVariables(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, container.Variables);
             }
         }
 
@@ -357,6 +613,7 @@ namespace BIDSHelper
                 try
                 {
                     if (!v.EvaluateAsExpression) continue;
+                    if (!v.GetPackagePath().StartsWith("\\" + objectPath + "Variables[")) continue;
                     ExpressionInfo info = new ExpressionInfo();
                     info.ObjectID = objectID;
                     info.ObjectName = objectName;
@@ -405,7 +662,7 @@ namespace BIDSHelper
 
             if (parentExecutable.Executables.Contains(sObjectGuid))
             {
-                matchingExecutable = (TaskHost)parentExecutable.Executables[sObjectGuid];
+                matchingExecutable = parentExecutable.Executables[sObjectGuid] as TaskHost;
             }
             else
             {
@@ -418,6 +675,62 @@ namespace BIDSHelper
                 }
             }
             return matchingExecutable;
+        }
+
+        DtsContainer FindContainer(IDTSSequence parentExecutable, string sObjectGuid)
+        {
+            DtsContainer matchingExecutable = null;
+
+            if (parentExecutable.Executables.Contains(sObjectGuid))
+            {
+                matchingExecutable = parentExecutable.Executables[sObjectGuid] as DtsContainer;
+            }
+            else
+            {
+                foreach (Executable e in parentExecutable.Executables)
+                {
+                    if (e is IDTSSequence)
+                    {
+                        matchingExecutable = FindContainer((IDTSSequence)e, sObjectGuid);
+                    }
+                }
+            }
+            return matchingExecutable;
+        }
+
+        Variable FindVariable(Package package, TaskHost taskHost, DtsContainer container, string variableName)
+        {
+            if (taskHost == null && container == null)
+            {
+                if (package.Variables.Contains(variableName))
+                {
+                    return package.Variables[variableName];
+                }
+            }
+            else if (taskHost != null)
+            {
+                if (taskHost.Variables.Contains(variableName))
+                {
+                    return taskHost.Variables[variableName];
+                }
+            }
+            else if (container != null)
+            {
+                if (container.Variables.Contains(variableName))
+                {
+                    return container.Variables[variableName];
+                }
+            }
+            return null;
+        }
+
+        ConnectionManager FindConnectionManager(Package container, string sObjectGuid)
+        {
+            if (container.Connections.Contains(sObjectGuid))
+            {
+                return (ConnectionManager)container.Connections[sObjectGuid];
+            }
+            return null;
         }
 
         #endregion
@@ -454,7 +767,7 @@ namespace BIDSHelper
 
         public override bool Checked
         {
-            get { return windowIsVisible; }
+            get { return toolWindow.Visible; }
         }
 
         /// <summary>
@@ -471,14 +784,13 @@ namespace BIDSHelper
         {
             try
             {
-                windowIsVisible = !windowIsVisible;
-                toolWindow.Visible = windowIsVisible;
+                toolWindow.Visible = !toolWindow.Visible;
                 string path = Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
                 RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
                 if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-                settingKey.SetValue(REGISTRY_SETTING_NAME, windowIsVisible, RegistryValueKind.DWord);
+                settingKey.SetValue(REGISTRY_SETTING_NAME, toolWindow.Visible, RegistryValueKind.DWord);
                 settingKey.Close();
-
+                expressionListWindow.ClearResults();
             }
             catch (Exception e)
             {
@@ -495,7 +807,6 @@ namespace BIDSHelper
             public string PropertyName;
             public string Expression;
             public bool HasExpression;
-
         }
 
     }
