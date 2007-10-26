@@ -31,6 +31,7 @@ namespace BIDSHelper
     {
         private const string REGISTRY_EXTENDED_PATH = "ExpressionListPlugin";
         private const string REGISTRY_SETTING_NAME = "InEffect";
+        public static bool bShouldSkipExpressionHighlighting = false;
 
         private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -229,11 +230,22 @@ namespace BIDSHelper
                     }
 
                     expressionListWindow_RefreshExpressions(null, null);
+                    System.Windows.Forms.Application.DoEvents(); //finish displaying expressions list before you mark the package as dirty (which runs the expression highlighter)
 
-                    //mark package object as dirty
-                    IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
-                    changesvc.OnComponentChanging(container, null);
-                    changesvc.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(sExpression))
+                            bShouldSkipExpressionHighlighting = true; //this flag is used by the expression highlighter to skip re-highlighting if all that's changed is the string of an existing expression... if one has been removed, then re-highlight
+
+                        //mark package object as dirty
+                        IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
+                        changesvc.OnComponentChanging(container, null);
+                        changesvc.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
+                    }
+                    finally
+                    {
+                        bShouldSkipExpressionHighlighting = false;
+                    }
                 }
             }
             catch (Exception ex)

@@ -53,6 +53,8 @@ namespace BIDSHelper
             string sHandle = String.Empty;
             List<string> warnings = new List<string>();
 
+            if (ExpressionListPlugin.bShouldSkipExpressionHighlighting) return;
+
             try
             {
                 if (GotFocus == null) return;
@@ -192,6 +194,7 @@ namespace BIDSHelper
                                 System.Reflection.BindingFlags setflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
                                 managedshapebasetype.InvokeMember("Icon", setflags, null, managedShape, new object[] { icon.Tag });
                                 icon.Tag = null;
+                                diagram.Invalidate(true);
                             }
                             else if ((bHasExpression || bHasConfiguration))
                             {
@@ -205,6 +208,7 @@ namespace BIDSHelper
                                     ModifyIcon(icon, configurationColor);
                                 else
                                     ModifyIcon(icon, expressionColor, configurationColor);
+                                diagram.Invalidate(true);
                             }
                         }
                     }
@@ -269,6 +273,7 @@ namespace BIDSHelper
                 {
                     lviConn.ImageIndex = (int)icon.Tag;
                     icon.Tag = null;
+                    lvwConnMgrs.Invalidate(lviConn.Bounds, true);
                 }
                 else if ((bHasExpression || bHasConfiguration))
                 {
@@ -282,6 +287,7 @@ namespace BIDSHelper
                         ModifyIcon(newicon, expressionColor, configurationColor);
                     lviConn.ImageList.Images.Add(newicon);
                     lviConn.ImageIndex = lviConn.ImageList.Images.Count - 1;
+                    lvwConnMgrs.Invalidate(lviConn.Bounds, true);
                 }
             }
         }
