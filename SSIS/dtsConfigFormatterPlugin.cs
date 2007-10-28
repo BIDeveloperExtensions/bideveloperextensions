@@ -8,9 +8,9 @@ using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {
-    class dtsConfigFormatterPlugin:BIDSHelperPluginBase
+    class dtsConfigFormatterPlugin:BIDSHelperWindowActivatedPluginBase
     {
-        private WindowEvents windowEvents;
+        //private WindowEvents windowEvents;
         private DocumentEvents docEvents;
 
         private Timer t = new Timer();
@@ -22,20 +22,49 @@ namespace BIDSHelper.SSIS
         //TODO: may be needed if we decide to capture the ActiveViewChanged event... see TODO below on this topic
         //private System.Collections.Generic.List<string> windowHandlesFixedPartitionsView = new System.Collections.Generic.List<string>();
 
-        public dtsConfigFormatterPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public dtsConfigFormatterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
-            appObject.Events.SolutionItemsEvents.ItemAdded += new _dispProjectItemsEvents_ItemAddedEventHandler(SolutionItemsEvents_ItemAdded);
-            //appObject.Events.MiscFilesEvents.ItemAdded += null;
-            
+        
+        }
 
-            windowEvents = appObject.Events.get_WindowEvents(null);
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
-            docEvents = appObject.Events.get_DocumentEvents(null);
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            this.ApplicationObject.Events.SolutionItemsEvents.ItemAdded += new _dispProjectItemsEvents_ItemAddedEventHandler(SolutionItemsEvents_ItemAdded);
+            //appObject.Events.MiscFilesEvents.ItemAdded += null;
+
+            //windowEvents = appObject.Events.get_WindowEvents(null);
+            //windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
+            //windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+            docEvents = this.ApplicationObject.Events.get_DocumentEvents(null);
             docEvents.DocumentOpened += new _dispDocumentEvents_DocumentOpenedEventHandler(docEvents_DocumentOpened);
             t.Tick += new EventHandler(t_Tick);
             t.Interval = 500;
+        }
+
+        public override bool ShouldHookWindowCreated
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            // todo
+            this.ApplicationObject.Events.SolutionItemsEvents.ItemAdded -= SolutionItemsEvents_ItemAdded;
+            //appObject.Events.MiscFilesEvents.ItemAdded += null;
+
+            //windowEvents = appObject.Events.get_WindowEvents(null);
+            //windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
+            //windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+            //docEvents = appObject.Events.get_DocumentEvents(null);
+            if (docEvents != null)
+                { docEvents.DocumentOpened -= docEvents_DocumentOpened; }
+            t.Tick -= t_Tick;
         }
 
         void SolutionItemsEvents_ItemAdded(ProjectItem ProjectItem)

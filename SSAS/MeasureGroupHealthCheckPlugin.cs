@@ -19,8 +19,8 @@ namespace BIDSHelper
     {
         private const System.Reflection.BindingFlags getfieldflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
 
-        public MeasureGroupHealthCheckPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public MeasureGroupHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

@@ -14,8 +14,8 @@ namespace BIDSHelper
 {
     public class SmartDiffPlugin : BIDSHelperPluginBase
     {
-        public SmartDiffPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public SmartDiffPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

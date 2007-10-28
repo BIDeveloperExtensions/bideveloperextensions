@@ -12,8 +12,8 @@ namespace BIDSHelper
 {
     public class PrinterFriendlyDimensionUsagePlugin : BIDSHelperPluginBase
     {
-        public PrinterFriendlyDimensionUsagePlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public PrinterFriendlyDimensionUsagePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

@@ -27,12 +27,13 @@ namespace BIDSHelper
         private System.Collections.Generic.List<string> windowHandlesInProgressStatus = new System.Collections.Generic.List<string>();
         private static System.Drawing.Color expressionColor = System.Drawing.Color.Magenta;
         private static System.Drawing.Color configurationColor = System.Drawing.Color.FromArgb(17, 200, 255);
+        private IComponentChangeService configurationsChangeService;
 
         EditorWindow win = null;
         //System.ComponentModel.BackgroundWorker processPackage = null;
 
-        public ExpressionHighlighterPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public ExpressionHighlighterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 
@@ -41,6 +42,14 @@ namespace BIDSHelper
             get { return false; }
         }
 
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            if (win != null)
+                { win.ActiveViewChanged -= win_ActiveViewChanged; }
+            if (configurationsChangeService != null)
+                { configurationsChangeService.ComponentChanging -= configurationsChangeService_ComponentChanging; }
+        }
 
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
         //The DtsPackageView object seems to have the appropriate methods, but it's internal to the Microsoft.DataTransformationServices.Design assembly.
@@ -77,7 +86,7 @@ namespace BIDSHelper
                     windowHandlesFixedForExpressionHighlighter.Add(sHandle);
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
 
-                    IComponentChangeService configurationsChangeService = (IComponentChangeService)designer;
+                    configurationsChangeService = (IComponentChangeService)designer;
                     configurationsChangeService.ComponentChanging += new ComponentChangingEventHandler(configurationsChangeService_ComponentChanging);
                 }
 
@@ -115,9 +124,14 @@ namespace BIDSHelper
                 //processPackage.RunWorkerAsync(container);
 
 
-
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
-                bool bOfflineMode = (bool)settings.GetSetting("OfflineMode");
+                bool bOfflineMode = false;
+                try
+                {
+                    //TODO throwing an error??
+                    Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                    bOfflineMode = (bool)settings.GetSetting("OfflineMode");
+                }
+                catch { }
 
                 string sVisualStudioRelativePath = this.ApplicationObject.FullName.Substring(0, this.ApplicationObject.FullName.LastIndexOf('\\') + 1);
                 Package package = GetPackageFromContainer((DtsContainer)container);

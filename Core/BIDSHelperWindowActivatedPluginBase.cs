@@ -13,8 +13,8 @@ namespace BIDSHelper
         private WindowEvents windowEvents;
 
                 #region "Constructors"
-        public BIDSHelperWindowActivatedPluginBase(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public BIDSHelperWindowActivatedPluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
             //appObj = appObject;
             //addIn = addinInstance;
@@ -46,10 +46,13 @@ namespace BIDSHelper
 
         public void UnHookWindowActivation()
         {
-            if (ShouldHookWindowActivated)
-                windowEvents.WindowActivated -= windowEvents_WindowActivated;
-            if (ShouldHookWindowCreated)
-                windowEvents.WindowCreated -= windowEvents_WindowCreated;
+            if (windowEvents != null)
+            {
+                if (ShouldHookWindowActivated)
+                    windowEvents.WindowActivated -= windowEvents_WindowActivated;
+                if (ShouldHookWindowCreated)
+                    windowEvents.WindowCreated -= windowEvents_WindowCreated;
+            }
         }
         public virtual void OnWindowActivated(Window GotFocus, Window LostFocus)
         { }
@@ -72,5 +75,17 @@ namespace BIDSHelper
             OnWindowActivated(GotFocus, LostFocus);
         }
 
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            this.HookWindowActivation();
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            this.UnHookWindowActivation();
+
+        }
     }
 }

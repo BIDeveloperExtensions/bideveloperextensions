@@ -25,7 +25,7 @@ namespace BIDSHelper
         private DebuggerEvents _debuggerEvents;
         private enumIDEMode _ideMode = enumIDEMode.Design;
 
-        private System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> addins = new System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase>();
+        private static System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> addins = new System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase>();
 
 
         public const string REGISTRY_BASE_PATH = "SOFTWARE\\BIDS Helper";
@@ -65,40 +65,40 @@ namespace BIDSHelper
 
                 foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
                 {
-                    if (typeof(BIDSHelperPluginBase).IsAssignableFrom(t) 
+                    if (typeof(BIDSHelperPluginBase).IsAssignableFrom(t)
                         && (!object.ReferenceEquals(t, typeof(BIDSHelperPluginBase)))
                         && (!t.IsAbstract))
                     {
                         BIDSHelperPluginBase ext;
-                        System.Type[] @params = { typeof(DTE2), typeof(AddIn) };
+                        System.Type[] @params = {typeof(Connect), typeof(DTE2), typeof(AddIn) };
                         System.Reflection.ConstructorInfo con;
 
                         con = t.GetConstructor(@params);
-                        ext = (BIDSHelperPluginBase)con.Invoke(new object[] { _applicationObject, _addInInstance });
-                        ext.AddinCore = this;
+                        ext = (BIDSHelperPluginBase)con.Invoke(new object[] {this, _applicationObject, _addInInstance });
+                        //ext.AddinCore = this;
                         addins.Add(ext.FullName, ext);
 
-                        if (ext is IWindowActivatedPlugin)
-                        {
-                            ((IWindowActivatedPlugin)ext).HookWindowActivation();
-                        }
+                        //if (ext is IWindowActivatedPlugin)// && ext.Enabled )
+                        //{
+                        //    ((IWindowActivatedPlugin)ext).HookWindowActivation();
+                        //}
                     }
                 }
 
-                switch (connectMode)
-                {
-                    case ext_ConnectMode.ext_cm_Startup:
-                    case ext_ConnectMode.ext_cm_AfterStartup:
+                //switch (connectMode)
+                //{
+                //    case ext_ConnectMode.ext_cm_Startup:
+                //    case ext_ConnectMode.ext_cm_AfterStartup:
 
 
-                        foreach (BIDSHelperPluginBase iExt in addins.Values)
-                        {
-                            //Create a Command with name SolnExplContextMenuVB and then add it to the "Item" menubar for the SolutionExplorer
-                            iExt.AddCommand();
-                        }
+                //        foreach (BIDSHelperPluginBase iExt in addins.Values)
+                //        {
+                //            //Create a Command with name SolnExplContextMenuVB and then add it to the "Item" menubar for the SolutionExplorer
+                //            iExt.AddCommand();
+                //        }
 
-                        break;
-                }
+                //        break;
+                //}
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace BIDSHelper
                 foreach (BIDSHelperPluginBase iExt in addins.Values)
                 {
                     iExt.DeleteCommand();
-                    
+
                     if (iExt is IWindowActivatedPlugin)
                     {
                         ((IWindowActivatedPlugin)iExt).UnHookWindowActivation();
@@ -243,6 +243,11 @@ namespace BIDSHelper
         public enumIDEMode IdeMode
         {
             get { return _ideMode; }
+        }
+
+        public static System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> Plugins
+        {
+            get { return addins; }
         }
     }
 }

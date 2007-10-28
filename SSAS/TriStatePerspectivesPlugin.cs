@@ -23,8 +23,8 @@ namespace BIDSHelper
         private System.Collections.Generic.List<string> windowHandlesFixedForPerspectives = new System.Collections.Generic.List<string>();
         private System.Collections.Generic.List<string> windowHandlesFixedForGridEvents = new System.Collections.Generic.List<string>();
 
-        public TriStatePerspectivesPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public TriStatePerspectivesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);

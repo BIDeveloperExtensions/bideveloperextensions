@@ -30,8 +30,8 @@ namespace BIDSHelper
 
         private bool bCancelEstimatedCountsClicked = false;
 
-        public EstimatedCountsPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public EstimatedCountsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);

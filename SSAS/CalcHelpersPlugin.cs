@@ -24,8 +24,8 @@ namespace BIDSHelper
         private const string REGISTRY_EXTENDED_PATH = "CalcHelpersPlugin";
         private const string REGISTRY_SCRIPT_VIEW_SETTING_NAME = "CalcScriptDefaultView";
 
-        public CalcHelpersPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public CalcHelpersPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
             windowEvents = appObject.Events.get_WindowEvents(null);
             windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
@@ -35,6 +35,7 @@ namespace BIDSHelper
         void windowEvents_WindowCreated(Window Window)
         {
             windowEvents_WindowActivated(Window, null);
+            
         }
 
         void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
@@ -157,7 +158,7 @@ namespace BIDSHelper
             get
             {
                 bool bScriptViewDefault = false;
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(this.PluginRegistryPath);
                 if (rk != null)
                 {   
                     bScriptViewDefault = (1 == (int)rk.GetValue(REGISTRY_SCRIPT_VIEW_SETTING_NAME, 0));

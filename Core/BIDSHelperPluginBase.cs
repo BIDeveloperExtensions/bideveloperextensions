@@ -3,10 +3,11 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.CommandBars;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace BIDSHelper
 {
-    public abstract class BIDSHelperPluginBase
+    public abstract class BIDSHelperPluginBase: IDisposable
     {
 
 
@@ -18,12 +19,72 @@ namespace BIDSHelper
         private AddIn addIn;
         private const int UNKNOWN_CMD_ID = -1;
         private Connect addinCore;
+        private bool isEnabled;
+        private bool isEnabledCached = false;
 
         #region "Constructors"
-        public BIDSHelperPluginBase(DTE2 appObject, AddIn addinInstance)
+        public BIDSHelperPluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
         {
+            addinCore = con;
             appObj = appObject;
             addIn = addinInstance;
+            if (Enabled)
+            {
+                OnEnable();
+            }
+        }
+
+        public static  string BaseName
+        {
+            get   { return BASE_NAME; }
+        }
+
+        public virtual void OnEnable()
+        {
+            AddCommand();
+        }
+
+        public virtual void OnDisable()
+        {
+            DeleteCommand();
+        }
+
+        
+        public bool Enabled
+        {
+            get {
+                if (!isEnabledCached)
+                {
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(PluginRegistryPath);
+                    isEnabled = ((int)regKey.GetValue("Enabled", 1) == 1) ? true : false;
+                    isEnabledCached = true;
+                }
+                return isEnabled;
+            }
+
+            set {
+                // if the setting is being changed
+                if (value != Enabled)
+                {
+
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(PluginRegistryPath);
+                    isEnabled = value;
+
+                    if (isEnabled)
+                    {
+                        // the default state is enabled so we can remove the Enabled key
+                        regKey.DeleteValue("Enabled");
+                        OnEnable();
+                    }
+                    else
+                    {
+                        // set the enabled property to 0
+                        regKey.SetValue("Enabled", isEnabled, RegistryValueKind.DWord);
+                        OnDisable();
+                    }
+                    
+                }
+            }
         }
 
         public Connect AddinCore
@@ -34,7 +95,9 @@ namespace BIDSHelper
 
         public enumIDEMode IdeMode
         {
-            get { return addinCore.IdeMode; }
+            get { 
+                return addinCore.IdeMode; 
+            }
         }
 
         public BIDSHelperPluginBase()
@@ -44,6 +107,7 @@ namespace BIDSHelper
         #endregion
 
         #region "Helper Functions"
+
 
         public void AddCommand()
         {
@@ -57,7 +121,7 @@ namespace BIDSHelper
                 // Check any old versions of the command are not still hanging around
                 try
                 {
-                    cmdTmp = appObj.Commands.Item(this.FullName, UNKNOWN_CMD_ID);
+                    cmdTmp = appObj.Commands.Item(BaseName + this.GetType().Name, UNKNOWN_CMD_ID);
                     cmdTmp.Delete();
                 }
                 catch { }
@@ -67,7 +131,7 @@ namespace BIDSHelper
                 
                 cmdTmp = appObj.Commands.AddNamedCommand(
                             this.addIn,
-                            this.ShortName,
+                            this.GetType().Name,
                             this.ButtonText,
                             this.ToolTip,
                             true,
@@ -133,7 +197,10 @@ namespace BIDSHelper
                 }
                 if (toolsCommandBarPopup != null)
                 {
-                    toolsCommandBarPopup.Delete(true);
+                    if (toolsCommandBarPopup.Controls.Count == 0)
+                    {
+                        toolsCommandBarPopup.Delete(true);
+                    }
                 }
             }
             catch
@@ -161,7 +228,7 @@ namespace BIDSHelper
 
         public string PluginRegistryPath
         {
-            get { return this.AddinCore.PluginRegistryPath(this.GetType()); }
+            get { return addinCore.PluginRegistryPath(this.GetType()); }
         }
 
         #endregion
@@ -206,6 +273,11 @@ namespace BIDSHelper
             get;
         }
 
+        public virtual void Dispose()
+        {
+            this.DeleteCommand();
+        }
+
         /*public abstract bool ShouldPositionAtEnd
         {
             get;
@@ -228,6 +300,11 @@ namespace BIDSHelper
         #endregion
 
         #region "virtual methods/properties
+        public override string ToString()
+        {
+            return FriendlyName;
+        }
+
         public virtual bool ShouldPositionAtEnd
         {
             get { return false; }
@@ -242,6 +319,12 @@ namespace BIDSHelper
         {
             get { return false; }
         }
+
+        public virtual string FriendlyName
+        {
+            get { return this.ButtonText; }
+        }
+
         #endregion
     }
 }

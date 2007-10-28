@@ -14,8 +14,8 @@ namespace BIDSHelper
 {
     public class UnusedColumnsPlugin : BIDSHelperPluginBase
     {
-        public UnusedColumnsPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public UnusedColumnsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 
@@ -371,8 +371,8 @@ namespace BIDSHelper
 
     public class UsedColumnsPlugin : UnusedColumnsPlugin
     {
-        public UsedColumnsPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public UsedColumnsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

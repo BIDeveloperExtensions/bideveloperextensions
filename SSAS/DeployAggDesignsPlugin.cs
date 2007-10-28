@@ -18,8 +18,8 @@ namespace BIDSHelper
     public class DeployAggDesignsPlugin : BIDSHelperPluginBase
     {
 
-        public DeployAggDesignsPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public DeployAggDesignsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

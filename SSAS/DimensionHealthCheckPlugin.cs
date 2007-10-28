@@ -14,8 +14,8 @@ namespace BIDSHelper
     public class DimensionHealthCheckPlugin : BIDSHelperPluginBase
     {
 
-        public DimensionHealthCheckPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public DimensionHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

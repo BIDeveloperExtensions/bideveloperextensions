@@ -47,8 +47,8 @@ namespace BIDSHelper
         IDesignerHost designer = null;
         System.ComponentModel.BackgroundWorker processPackage = null;
 
-        public ExpressionListPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public ExpressionListPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
             bool windowIsVisible = false;

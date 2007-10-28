@@ -18,14 +18,22 @@ namespace BIDSHelper
     public class DeployMDXScriptPlugin : BIDSHelperPluginBase
     {
 
-        public DeployMDXScriptPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public DeployMDXScriptPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 
         public override string ShortName
         {
             get { return "DeployMdxScript"; }
+        }
+
+        public override string FriendlyName
+        {
+            get
+            {
+                return "SSAS: Command to Deploy just the MDX Script for a cube";
+            }
         }
 
         public override int Bitmap

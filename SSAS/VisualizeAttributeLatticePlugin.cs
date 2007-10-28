@@ -12,8 +12,8 @@ namespace BIDSHelper
 {
     public class VisualizeAttributeLatticePlugin : BIDSHelperPluginBase
     {
-        public VisualizeAttributeLatticePlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public VisualizeAttributeLatticePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

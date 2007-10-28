@@ -12,8 +12,8 @@ namespace BIDSHelper
 {
     public class AggregationManagerPlugin : BIDSHelperPluginBase
     {
-        public AggregationManagerPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public AggregationManagerPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
         }
 

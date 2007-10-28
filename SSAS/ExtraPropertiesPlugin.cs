@@ -22,8 +22,8 @@ namespace BIDSHelper
         private const string REGISTRY_EXTENDED_PATH = "ExtraPropertiesPlugin";
         private const string REGISTRY_SETTING_NAME = "InEffect";
 
-        public ExtraPropertiesPlugin(DTE2 appObject, AddIn addinInstance)
-            : base(appObject, addinInstance)
+        public ExtraPropertiesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
+            : base(con, appObject, addinInstance)
         {
             //read the registry to see if this feature should be in effect
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
