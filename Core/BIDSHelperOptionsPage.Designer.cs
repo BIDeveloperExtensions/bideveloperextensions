@@ -36,7 +36,7 @@ namespace BIDSHelper.Core
             // lblTitle
             // 
             this.lblTitle.AutoSize = true;
-            this.lblTitle.Location = new System.Drawing.Point(13, 10);
+            this.lblTitle.Location = new System.Drawing.Point(1, 3);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(90, 13);
             this.lblTitle.TabIndex = 1;
@@ -59,9 +59,9 @@ namespace BIDSHelper.Core
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.lstPlugins.FormattingEnabled = true;
-            this.lstPlugins.Location = new System.Drawing.Point(15, 27);
+            this.lstPlugins.Location = new System.Drawing.Point(3, 20);
             this.lstPlugins.Name = "lstPlugins";
-            this.lstPlugins.Size = new System.Drawing.Size(494, 364);
+            this.lstPlugins.Size = new System.Drawing.Size(394, 259);
             this.lstPlugins.Sorted = true;
             this.lstPlugins.TabIndex = 3;
             this.lstPlugins.Visible = false;
@@ -74,7 +74,7 @@ namespace BIDSHelper.Core
             this.Controls.Add(this.lblCurrentlyDisabled);
             this.Controls.Add(this.lblTitle);
             this.Name = "BIDSHelperOptionsPage";
-            this.Size = new System.Drawing.Size(525, 405);
+            this.Size = new System.Drawing.Size(422, 314);
             this.Load += new System.EventHandler(this.BIDSHelperOptionsPage_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

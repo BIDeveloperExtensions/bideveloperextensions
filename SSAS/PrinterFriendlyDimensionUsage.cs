@@ -90,30 +90,36 @@ namespace BIDSHelper
                         
                         foreach (DataItem di2 in mga.Attribute.KeyColumns)
                         {
-                            tableId = ((ColumnBinding)di2.Source).TableID;
-                            DataSourceView dsv = mga.Parent.Dimension.DataSourceView;
-                            DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
-                            if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                            if (di2.Source is ColumnBinding)
                             {
-                                usage.Column2Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                tableId = ((ColumnBinding)di2.Source).TableID;
+                                DataSourceView dsv = mga.Parent.Dimension.DataSourceView;
+                                DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
+                                if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                                {
+                                    usage.Column2Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                }
+                                //usage.Column2Value += ((ColumnBinding)di2.Source).TableID + ".";
+                                usage.Column2Value += ((ColumnBinding)di2.Source).ColumnID + "\n";
                             }
-                            //usage.Column2Value += ((ColumnBinding)di2.Source).TableID + ".";
-                            usage.Column2Value += ((ColumnBinding)di2.Source).ColumnID + "\n";
                         }
                 
                         foreach (DataItem di3 in mga.KeyColumns)
                         {
-                            tableId = ((ColumnBinding)di3.Source).TableID;
-                            DataSourceView dsv = mga.ParentCube.DataSourceView;
-                            DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
-                            if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                            if (di3.Source is ColumnBinding)
                             {
-                                usage.Column3Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                tableId = ((ColumnBinding)di3.Source).TableID;
+                                DataSourceView dsv = mga.ParentCube.DataSourceView;
+                                DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
+                                if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                                {
+                                    usage.Column3Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                }
+                                //usage.Column3Value += ((ColumnBinding)di3.Source).TableID + ".";
+                                usage.Column3Value += ((ColumnBinding)di3.Source).ColumnID;
+                                usage.Column3Value += "  (" + di3.NullProcessing.ToString().Substring(0, 1) + ")";
+                                usage.Column3Value += "\n";
                             }
-                            //usage.Column3Value += ((ColumnBinding)di3.Source).TableID + ".";
-                            usage.Column3Value += ((ColumnBinding)di3.Source).ColumnID;
-                            usage.Column3Value += "  (" + di3.NullProcessing.ToString().Substring(0, 1) + ")"; 
-                            usage.Column3Value += "\n";
                         }
 
                         
@@ -204,12 +210,15 @@ namespace BIDSHelper
                     usage.Column1Value = mga.Attribute.Name;
                     foreach (DataItem di in mga.KeyColumns)
                     {
-                        usage.Column2Value = ((ColumnBinding)di.Source).TableID;
-                        DataSourceView dsv = mga.ParentCube.DataSourceView;
-                        DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(usage.Column2Value)];
-                        if (oTable.ExtendedProperties.ContainsKey("FriendlyName")) 
+                        if (di.Source is ColumnBinding)
                         {
-                            usage.Column2Value = oTable.ExtendedProperties["FriendlyName"].ToString();
+                            usage.Column2Value = ((ColumnBinding)di.Source).TableID;
+                            DataSourceView dsv = mga.ParentCube.DataSourceView;
+                            DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(usage.Column2Value)];
+                            if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                            {
+                                usage.Column2Value = oTable.ExtendedProperties["FriendlyName"].ToString();
+                            }
                         }
                     }
                 }

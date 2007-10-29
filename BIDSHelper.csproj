@@ -215,6 +215,7 @@
     <Compile Include="SSAS\DeployMDXScriptPlugin.cs" />
     <Compile Include="SSAS\DeploymentSettings.cs" />
     <Compile Include="SSAS\DimensionHealthCheckPlugin.cs" />
+    <Compile Include="SSAS\DimensionOptimizationReportPlugin.cs" />
     <Compile Include="SSAS\EstimatedCountsPlugin.cs" />
     <Compile Include="SSAS\ExtraPropertiesPlugin.cs" />
     <Compile Include="SSAS\MeasureGroupHealthCheckForm.cs">
@@ -363,6 +364,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\DimensionOptimization.rdlc" />
     <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />
     <EmbeddedResource Include="SSAS\UnusedColumns.rdlc" />
     <EmbeddedResource Include="SSAS\MeasureGroupHealthCheckForm.resx">
@@ -395,6 +397,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
+    <None Include="Properties\DataSources\DimensionOptimizationReportPlugin.DimensionOptimizations.datasource" />
     <None Include="Properties\DataSources\DimensionUsage.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
