@@ -62,6 +62,7 @@ namespace BIDSHelper
                 {
                     RegistryKey regKey = Registry.CurrentUser.CreateSubKey(PluginRegistryPath);
                     isEnabled = ((int)regKey.GetValue("Enabled", 1) == 1) ? true : false;
+                    regKey.Close();
                     isEnabledCached = true;
                 }
                 return isEnabled;
@@ -79,12 +80,14 @@ namespace BIDSHelper
                     {
                         // the default state is enabled so we can remove the Enabled key
                         regKey.DeleteValue("Enabled");
+                        regKey.Close();
                         OnEnable();
                     }
                     else
                     {
                         // set the enabled property to 0
                         regKey.SetValue("Enabled", isEnabled, RegistryValueKind.DWord);
+                        regKey.Close();
                         OnDisable();
                     }
                     
