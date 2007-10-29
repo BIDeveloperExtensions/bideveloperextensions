@@ -67,7 +67,15 @@ namespace BIDSHelper.Core
             }
             //throw new Exception("The method or operation is not implemented.");
             if (lstPlugins.Items.Count > 0)
-            { lstPlugins.Visible = true; }
+            { 
+                lstPlugins.Visible = true;
+                lblCurrentlyDisabled.Visible = false;
+            }
+            else
+            { 
+                lblCurrentlyDisabled.Visible = true;
+                lstPlugins.Visible = false;
+            }
         }
 
         void IDTToolsOptionsPage.OnCancel()
