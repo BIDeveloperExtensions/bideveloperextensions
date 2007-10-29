@@ -34,7 +34,12 @@ namespace BIDSHelper
             }
         }
 
-        public static  string BaseName
+        public string CommandName
+        {
+            get { return BASE_NAME + this.GetType().Name; }
+        }
+
+        public static string BaseName
         {
             get   { return BASE_NAME; }
         }
@@ -121,7 +126,7 @@ namespace BIDSHelper
                 // Check any old versions of the command are not still hanging around
                 try
                 {
-                    cmdTmp = appObj.Commands.Item(BaseName + this.GetType().Name, UNKNOWN_CMD_ID);
+                    cmdTmp = appObj.Commands.Item(this.CommandName, UNKNOWN_CMD_ID);
                     cmdTmp.Delete();
                 }
                 catch { }
@@ -130,7 +135,7 @@ namespace BIDSHelper
                 object[] contextUIGUIDs = null;
                 
                 cmdTmp = appObj.Commands.AddNamedCommand(
-                            this.addIn,
+                            this.addIn, 
                             this.GetType().Name,
                             this.ButtonText,
                             this.ToolTip,

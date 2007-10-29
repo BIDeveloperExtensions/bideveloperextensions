@@ -76,7 +76,7 @@ namespace BIDSHelper
                         con = t.GetConstructor(@params);
                         ext = (BIDSHelperPluginBase)con.Invoke(new object[] {this, _applicationObject, _addInInstance });
                         //ext.AddinCore = this;
-                        addins.Add(ext.FullName, ext);
+                        addins.Add(ext.CommandName, ext);
 
                         //if (ext is IWindowActivatedPlugin)// && ext.Enabled )
                         //{

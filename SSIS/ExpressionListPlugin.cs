@@ -5,7 +5,7 @@ using System.Xml;
 using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.AnalysisServices;
+//using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;

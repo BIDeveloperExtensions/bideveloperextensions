@@ -90,7 +90,7 @@ namespace BIDSHelper.SSIS
         }
 
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
-        void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
             try
             {
@@ -168,7 +168,7 @@ namespace BIDSHelper.SSIS
        
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
-            windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+            OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
         }
 
         public override string ShortName

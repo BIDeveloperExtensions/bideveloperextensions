@@ -14,12 +14,13 @@ using Microsoft.Win32;
 
 namespace BIDSHelper
 {
-    public class CalcHelpersPlugin : BIDSHelperPluginBase
+    public class CalcHelpersPlugin : BIDSHelperWindowActivatedPluginBase
     {
-        private WindowEvents windowEvents;
+        //private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.List<string> windowHandlesFixedForCalcProperties = new System.Collections.Generic.List<string>();
         private System.Collections.Generic.List<string> windowHandlesFixedDefaultCalcScriptView = new System.Collections.Generic.List<string>();
+        private EditorWindow win;
 
         private const string REGISTRY_EXTENDED_PATH = "CalcHelpersPlugin";
         private const string REGISTRY_SCRIPT_VIEW_SETTING_NAME = "CalcScriptDefaultView";
@@ -27,18 +28,30 @@ namespace BIDSHelper
         public CalcHelpersPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
-            windowEvents = appObject.Events.get_WindowEvents(null);
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+            //windowEvents = appObject.Events.get_WindowEvents(null);
+            //windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
+            //windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            if (win != null)
+                { win.ActiveViewChanged -= win_ActiveViewChanged; }
+        }
+
+        public override bool ShouldHookWindowCreated
+        {
+            get
+            { return true; }
         }
 
         void windowEvents_WindowCreated(Window Window)
         {
-            windowEvents_WindowActivated(Window, null);
-            
+            OnWindowActivated(Window, null);
         }
 
-        void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
             try
             {
@@ -47,7 +60,7 @@ namespace BIDSHelper
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if ((pi==null) || (!(pi.Object is Cube))) return;
-                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
 
                 IntPtr ptr = win.Handle;
@@ -89,13 +102,16 @@ namespace BIDSHelper
 
                                     if (pi.Name.ToLower().EndsWith(".cube")) //only show feature if we're in offline mode
                                     {
-                                        newDeployMdxScriptButton = new ToolBarButton();
-                                        newDeployMdxScriptButton.ToolTipText = "Deploy MDX Script (BIDS Helper)";
-                                        newDeployMdxScriptButton.Name = this.FullName + ".DeployMdxScript";
-                                        newDeployMdxScriptButton.Tag = newDeployMdxScriptButton.Name;
-                                        newDeployMdxScriptButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
-                                        newDeployMdxScriptButton.Enabled = true;
-                                        newDeployMdxScriptButton.Style = ToolBarButtonStyle.PushButton;
+                                        //if (Connect.Plugins[""].Enabled)
+                                        //{
+                                            newDeployMdxScriptButton = new ToolBarButton();
+                                            newDeployMdxScriptButton.ToolTipText = "Deploy MDX Script (BIDS Helper)";
+                                            newDeployMdxScriptButton.Name = this.FullName + ".DeployMdxScript";
+                                            newDeployMdxScriptButton.Tag = newDeployMdxScriptButton.Name;
+                                            newDeployMdxScriptButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+                                            newDeployMdxScriptButton.Enabled = true;
+                                            newDeployMdxScriptButton.Style = ToolBarButtonStyle.PushButton;
+                                        //}
                                     }
 
                                     //catch the button clicks of the new buttons we just added
@@ -150,7 +166,7 @@ namespace BIDSHelper
 
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
-            windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+            OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
         }
 
         public bool ScriptViewDefault

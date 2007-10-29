@@ -32,7 +32,7 @@ namespace BIDSHelper
         {
             get
             {
-                return "SSAS: Command to Deploy just the MDX Script for a cube";
+                return "Deploy the MDX Script for a cube";
             }
         }
 
