@@ -289,6 +289,8 @@ namespace AggManager
         private void SetEstimatedSize(Aggregation agg)
         {
             double size = 0;
+            double minSize = 0;
+            bool bAggContainsAllGranularityAttributes = true;
             try
             {
                 AggregationAttribute aggAttr;
@@ -296,6 +298,7 @@ namespace AggManager
                 double dblAggCardinality = 1;
                 long iNumSurrogateKeysInAgg = 0;
                 int iMeasureGroupDimensionsCount = 0;
+                long lngMaxAggDimensionCardinality = 0;
 
                 foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
                 {
@@ -307,17 +310,23 @@ namespace AggManager
 
                     iMeasureGroupDimensionsCount++; //don't count m2m dimensions
 
+                    MeasureGroupAttribute granularity = null;
                     RegularMeasureGroupDimension regMgDim = (RegularMeasureGroupDimension)mgDim;
                     foreach (MeasureGroupAttribute mgDimAttr in regMgDim.Attributes)
                     {
                         if (mgDimAttr.Type == MeasureGroupAttributeType.Granularity)
                         {
                             iDimGranularityCardinality = mgDimAttr.Attribute.EstimatedCount;
+                            granularity = mgDimAttr;
                             break;
                         }
                     }
 
                     aggDim = agg.Dimensions.Find(mgDim.CubeDimensionID);
+
+                    if (aggDim == null || granularity == null || aggDim.Attributes.Find(granularity.AttributeID) == null)
+                        bAggContainsAllGranularityAttributes = false;
+
                     if (aggDim != null)
                     {
                         foreach (CubeAttribute cubeAttr in mgDim.CubeDimension.Attributes)
@@ -342,6 +351,7 @@ namespace AggManager
                     if (bDimAggCardinalityFound)
                     {
                         dblAggCardinality *= dblDimAggCardinality;
+                        if (lngMaxAggDimensionCardinality < dblAggCardinality) lngMaxAggDimensionCardinality = (long)dblDimAggCardinality;
                     }
                 }
                 if (mg1.EstimatedRows != 0 && dblAggCardinality != 0)
@@ -387,6 +397,14 @@ namespace AggManager
                     //multiply the estimated rows by the size of each row
                     size = ((double)(dblAggCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
                     //purposefully don't prevent size from being over 1 because an agg can be larger than the fact table if it has more dimension attribute keys than the fact table
+
+                    if (lngMaxAggDimensionCardinality > mg1.EstimatedRows) //this is not possible in the data
+                    {
+                        lngMaxAggDimensionCardinality = mg1.EstimatedRows;
+                    }
+
+                    //calculate the min size (best case scenario when there is lots of sparsity in fact table) so you can present a range to the user and give the user an idea of the uncertainty
+                    minSize = ((double)(lngMaxAggDimensionCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
                 }
             }
             catch { }
@@ -394,8 +412,16 @@ namespace AggManager
             {
                 if (size != 0)
                 {
-                    lblEstimatedSize.Text = agg.Name + " Estimated Size: " + (size*100).ToString("#0.00") + "% of fact data";
-                    lblEstimatedSize.ForeColor = (size > .3333 ? Color.Red : Color.Black);
+                    if (minSize != 0 && minSize < size && !bAggContainsAllGranularityAttributes)
+                    {
+                        lblEstimatedSize.Text = agg.Name + " Estimated Size: " + (minSize * 100).ToString("#0.00") + "% to " + (size * 100).ToString("#0.00") + "% of fact data";
+                        lblEstimatedSize.ForeColor = (size > .3333 ? Color.Red : Color.Black);
+                    }
+                    else
+                    {
+                        lblEstimatedSize.Text = agg.Name + " Estimated Size: " + (size * 100).ToString("#0.00") + "% of fact data";
+                        lblEstimatedSize.ForeColor = (size > .3333 ? Color.Red : Color.Black);
+                    }
                 }
                 else
                 {
