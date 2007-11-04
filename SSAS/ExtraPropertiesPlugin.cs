@@ -15,41 +15,29 @@ using System.ComponentModel.Design;
 
 namespace BIDSHelper
 {
-    public class ExtraPropertiesPlugin : BIDSHelperPluginBase
+    public class ExtraPropertiesPlugin : BIDSHelperWindowActivatedPluginBase
     {
-        private WindowEvents windowEvents;
-        private bool bInEffect = false;
-        private const string REGISTRY_EXTENDED_PATH = "ExtraPropertiesPlugin";
-        private const string REGISTRY_SETTING_NAME = "InEffect";
+        private bool bInEffect = true;
+//        private const string REGISTRY_EXTENDED_PATH = "ExtraPropertiesPlugin";
+        //private const string REGISTRY_SETTING_NAME = "InEffect";
 
         public ExtraPropertiesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
-            //read the registry to see if this feature should be in effect
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
-            if (rk != null)
-            {
-                bInEffect = (1 == (int)rk.GetValue(REGISTRY_SETTING_NAME, 0));
-                rk.Close();
-            }
 
-            //add an event handler to fire whenever a window opens... need this run the code that shows the extra properties and keep them visible
-            windowEvents = appObject.Events.get_WindowEvents(null);
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
         }
 
-        void windowEvents_WindowCreated(Window Window)
+        public override bool ShouldHookWindowCreated
         {
-            try
+            get
             {
-                ConfigureProjectItemExtraProperties(Window.ProjectItem);
+                return true;
             }
-            catch { }
         }
 
-        void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
+
             try
             {
                 ConfigureProjectItemExtraProperties(GotFocus.ProjectItem);
@@ -240,7 +228,7 @@ namespace BIDSHelper
 
         public override string MenuName
         {
-            get { return "Tools"; }
+            get { return ""; }
         }
 
         public override bool Checked
@@ -251,34 +239,52 @@ namespace BIDSHelper
         //Determines if the command should be displayed or not.
         public override bool DisplayCommand(UIHierarchyItem item)
         {
-            return true;
+            return false;
         }
 
+
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            foreach (Project p in this.ApplicationObject.Solution.Projects)
+            {
+                foreach (ProjectItem pi in p.ProjectItems)
+                {
+                    ConfigureProjectItemExtraProperties(pi);
+                }
+            }
+
+        }
 
         public override void Exec()
         {
-            try
-            {
-                bInEffect = !bInEffect;
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-                settingKey.SetValue(REGISTRY_SETTING_NAME, bInEffect, RegistryValueKind.DWord);
-                settingKey.Close();
-                foreach (Project p in this.ApplicationObject.Solution.Projects)
-                {
-                    foreach (ProjectItem pi in p.ProjectItems)
-                    {
-                        ConfigureProjectItemExtraProperties(pi);
-                    }
-                }
-            }
-            catch (System.Exception ex)
-            {
-                bInEffect = !bInEffect;
-                MessageBox.Show(ex.Message);
-            }
+            throw new Exception("The method or operation is not implemented.");
         }
+
+        //public override void Exec()
+        //{
+        //    try
+        //    {
+        //        bInEffect = !bInEffect;
+        //        string path = Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
+        //        RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
+        //        if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
+        //        settingKey.SetValue(REGISTRY_SETTING_NAME, bInEffect, RegistryValueKind.DWord);
+        //        settingKey.Close();
+        //        foreach (Project p in this.ApplicationObject.Solution.Projects)
+        //        {
+        //            foreach (ProjectItem pi in p.ProjectItems)
+        //            {
+        //                ConfigureProjectItemExtraProperties(pi);
+        //            }
+        //        }
+        //    }
+        //    catch (System.Exception ex)
+        //    {
+        //        bInEffect = !bInEffect;
+        //        MessageBox.Show(ex.Message);
+        //    }
+        //}
     }
 
     //there were a couple of problems with the default editor Visual Studio would have used to let you edit annotations

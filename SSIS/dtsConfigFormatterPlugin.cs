@@ -58,9 +58,7 @@ namespace BIDSHelper.SSIS
             this.ApplicationObject.Events.SolutionItemsEvents.ItemAdded -= SolutionItemsEvents_ItemAdded;
             //appObject.Events.MiscFilesEvents.ItemAdded += null;
 
-            //windowEvents = appObject.Events.get_WindowEvents(null);
-            //windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            //windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+            
             //docEvents = appObject.Events.get_DocumentEvents(null);
             if (docEvents != null)
                 { docEvents.DocumentOpened -= docEvents_DocumentOpened; }
@@ -75,8 +73,6 @@ namespace BIDSHelper.SSIS
         void docEvents_DocumentOpened(Document doc)
         {
             doc.Activate();
-            
-            //windowEvents_WindowActivated(doc.ActiveWindow, null);
         }
 
         void windowEvents_WindowCreated(Window activeWindow)
@@ -85,8 +81,6 @@ namespace BIDSHelper.SSIS
             {
                 activeWindow.Activate();
             }
-            
-            //windowEvents_WindowActivated(activeWindow, null);
         }
 
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
@@ -109,32 +103,11 @@ namespace BIDSHelper.SSIS
                 
                 if ((pi == null) || (!(pi.Name.ToLower().EndsWith(".dtsconfig")))) return;
 
-                //pi.DTE.ExecuteCommand("Edit.FormatDocument" ,"");
-
                 if ((t !=null) && (t.Enabled)) return;
 
                 t.Enabled = true;
                 t.Tag = pi;
 
-                //EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-
-                //Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-                //DdsDiagramHostControl diagram = null;
-                //if (win.SelectedIndex == 0)
-                //{
-                //    //control flow designer
-                //    diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                //}
-                //    //TODO: add in code to do this for the event handlers tab
-                //    //TODO: put indicator on the connection in the connection managers pane?
-                //else
-                //{
-                //    return;
-                //}
-
-                
-                //return;
-      
             }
             catch (Exception exception)
             {
@@ -203,7 +176,7 @@ namespace BIDSHelper.SSIS
         /// <returns></returns>
         public override bool DisplayCommand(UIHierarchyItem item)
         {
-            return false; //TODO: decide whether to have a menu option where you can turn on/off this feature like the ShowExtraProperties feature
+            return false;
         }
 
 

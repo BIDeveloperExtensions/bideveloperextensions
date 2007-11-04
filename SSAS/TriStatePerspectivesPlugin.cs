@@ -16,27 +16,49 @@ using System.Collections;
 
 namespace BIDSHelper
 {
-    public class TriStatePerspectivesPlugin : BIDSHelperPluginBase
+    public class TriStatePerspectivesPlugin : BIDSHelperWindowActivatedPluginBase
     {
-        private WindowEvents windowEvents;
+        
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        private System.Collections.Generic.List<string> windowHandlesFixedForPerspectives = new System.Collections.Generic.List<string>();
-        private System.Collections.Generic.List<string> windowHandlesFixedForGridEvents = new System.Collections.Generic.List<string>();
+        private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForPerspectives = new System.Collections.Generic.Dictionary<string,EditorWindow>();
+        private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForGridEvents = new System.Collections.Generic.Dictionary<string,EditorWindow>();
 
         public TriStatePerspectivesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
-            windowEvents = appObject.Events.get_WindowEvents(null);
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+
         }
 
-        void windowEvents_WindowCreated(Window Window)
+        public override bool ShouldHookWindowCreated
         {
-            windowEvents_WindowActivated(Window, null);
+            get
+            {
+                return true;
+            }
         }
 
-        void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            foreach (EditorWindow win in windowHandlesFixedForGridEvents.Values)
+            {
+                win.ActiveViewChanged -= win_ActiveViewChanged;            
+                // get toolbar and remove click handlers
+                Control perspectiveBuilder = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null); //Microsoft.AnalysisServices.Design.PerspectivesBuilder
+                Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
+                grid.MouseClick -= grid_MouseClick;
+                grid.KeyPress -= grid_KeyPress;
+
+            }
+
+            foreach (EditorWindow win in windowHandlesFixedForPerspectives.Values)
+            {
+                win.ActiveViewChanged -= win_ActiveViewChanged;
+            }
+        }
+
+
+        public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
             try
             {
@@ -52,9 +74,9 @@ namespace BIDSHelper
                 IntPtr ptr = win.Handle;
                 string sHandle = ptr.ToInt64().ToString();
 
-                if (!windowHandlesFixedForPerspectives.Contains(sHandle))
+                if (!windowHandlesFixedForPerspectives.ContainsKey(sHandle))
                 {
-                    windowHandlesFixedForPerspectives.Add(sHandle);
+                    windowHandlesFixedForPerspectives.Add(sHandle,win);
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                 }
 
@@ -63,11 +85,11 @@ namespace BIDSHelper
                     Control perspectiveBuilder = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null); //Microsoft.AnalysisServices.Design.PerspectivesBuilder
                     Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
 
-                    if (!windowHandlesFixedForGridEvents.Contains(sHandle))
+                    if (!windowHandlesFixedForGridEvents.ContainsKey(sHandle))
                     {
                         grid.MouseClick += new MouseEventHandler(grid_MouseClick);
                         grid.KeyPress += new KeyPressEventHandler(grid_KeyPress);
-                        windowHandlesFixedForGridEvents.Add(sHandle);
+                        windowHandlesFixedForGridEvents.Add(sHandle,win);
                     }
                     
                     System.Reflection.BindingFlags getpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -186,7 +208,7 @@ namespace BIDSHelper
         {
             try
             {
-                windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+                OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
             }
             catch { }
         }
@@ -195,7 +217,7 @@ namespace BIDSHelper
         {
             try
             {
-                windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+                OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
             }
             catch { }
         }
@@ -204,7 +226,7 @@ namespace BIDSHelper
         {
             try
             {
-                windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+                OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
             }
             catch { }
         }

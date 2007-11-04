@@ -2,10 +2,9 @@ using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
+//using Microsoft.VisualStudio.CommandBars;
+//using System.Text;
 using System.Windows.Forms;
-//using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
@@ -15,8 +14,8 @@ using MSDDS;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using System.ComponentModel;
-using Konesans.Dts.Design.Controls;
-using Konesans.Dts.Design.PropertyHelp;
+//using Konesans.Dts.Design.Controls;
+//using Konesans.Dts.Design.PropertyHelp;
 
 using System.Diagnostics;
 using System.IO;
@@ -27,18 +26,18 @@ using System.Reflection.Emit;
 
 namespace BIDSHelper
 {
-    public class ExpressionListPlugin : BIDSHelperPluginBase
+    public class ExpressionListPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private const string REGISTRY_EXTENDED_PATH = "ExpressionListPlugin";
         private const string REGISTRY_SETTING_NAME = "InEffect";
         public static bool bShouldSkipExpressionHighlighting = false;
 
-        private WindowEvents windowEvents;
+        //private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
-        private System.Collections.Generic.List<string> windowHandlesInProgressStatus = new System.Collections.Generic.List<string>();
+        //private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
+        //private System.Collections.Generic.List<string> windowHandlesInProgressStatus = new System.Collections.Generic.List<string>();
         private ExpressionListControl expressionListWindow = null;
-        private DTE2 appObject = null;
+        //private DTE2 appObject = null;
         Window toolWindow = null;
         System.Reflection.Assembly konesansAssembly = null;
         Type typePropertyVariables = null;
@@ -50,6 +49,35 @@ namespace BIDSHelper
         public ExpressionListPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
+        }
+
+
+
+        public override bool ShouldHookWindowCreated
+        {
+            get
+            {
+                return true;
+            }
+        }
+        public override bool ShouldHookWindowClosing
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            // TODO - unhook other event handlers
+        }
+
+        public override void OnEnable()
+        {
+            base.OnEnable();
+
             RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
             bool windowIsVisible = false;
             if (rk != null)
@@ -57,12 +85,6 @@ namespace BIDSHelper
                 windowIsVisible = (1 == (int)rk.GetValue(REGISTRY_SETTING_NAME, 0));
                 rk.Close();
             }
-
-            this.appObject = appObject;
-            windowEvents = appObject.Events.get_WindowEvents(null);
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
-            windowEvents.WindowClosing += new _dispWindowEvents_WindowClosingEventHandler(windowEvents_WindowClosing);
 
             processPackage = new System.ComponentModel.BackgroundWorker();
             processPackage.WorkerReportsProgress = true;
@@ -78,24 +100,24 @@ namespace BIDSHelper
             //This guid can be used for indexing the windows collection,
             // for example: applicationObject.Windows.Item(guidstr)
             String guidstr = "{6679390F-A712-40EA-8729-E2184A1436BF}";
-            EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)appObject.Windows;
+            EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)this.ApplicationObject.Windows;
             System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-            toolWindow = windows2.CreateToolWindow2(addinInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
+            toolWindow = windows2.CreateToolWindow2(this.AddInInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
             expressionListWindow = (ExpressionListControl)programmableObject;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);
-            
+
             //Set the picture displayed when the window is tab docked
             //expressionListWindow.SetTabPicture(BIDSHelper.Resources.Resource.ExpressionList.ToBitmap().GetHbitmap());
 
             //toolWindow.Visible = true;
+
         }
 
         void expressionListWindow_EditExpressionSelected(object sender, EditExpressionSelectedEventArgs e)
         {
             try
             {
-
 
                 IDTSSequence container = null;
                 if (win == null) return;
@@ -196,8 +218,6 @@ namespace BIDSHelper
                 {
                     throw new Exception("Expression editing not supported on this object."); //will usually be when trying to edit an expression on the Package object itself; TODO: figure out a way to see if this is possible
                 }
-
-
 
                 System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
                 System.Reflection.BindingFlags setpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
@@ -465,25 +485,21 @@ namespace BIDSHelper
 
         #region Window Events
 
-        void windowEvents_WindowClosing(Window Window)
+        public override void OnWindowClosing(Window Window)
         {
             processPackage.CancelAsync();
             win = null;
         }
 
-        void windowEvents_WindowCreated(Window Window)
-        {
-            windowEvents_WindowActivated(Window, null);
-        }
-
+        
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
-            windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+            OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
         }
 
         //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
         //The DtsPackageView object seems to have the appropriate methods, but it's internal to the Microsoft.DataTransformationServices.Design assembly.
-        void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
             try
             {

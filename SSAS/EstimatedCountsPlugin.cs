@@ -14,11 +14,11 @@ using Microsoft.Win32;
 
 namespace BIDSHelper
 {
-    public class EstimatedCountsPlugin : BIDSHelperPluginBase
+    public class EstimatedCountsPlugin : BIDSHelperWindowActivatedPluginBase
     {
-        private WindowEvents windowEvents;
+        //private WindowEvents windowEvents;
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        private System.Collections.Generic.List<string> windowHandlesFixedPartitionsView = new System.Collections.Generic.List<string>();
+        private System.Collections.Generic.Dictionary<string, EditorWindow> windowHandlesFixedPartitionsView = new System.Collections.Generic.Dictionary<string, EditorWindow>();
 
         private const string SET_ESTIMATED_COUNTS_ICON_KEY = "EstimatedCounts";
         private const string EDIT_AGGREGATIONS_ICON_KEY = "EditAggregations";
@@ -33,17 +33,17 @@ namespace BIDSHelper
         public EstimatedCountsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
-            windowEvents = appObject.Events.get_WindowEvents(null);
-            windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
         }
 
-        void windowEvents_WindowCreated(Window Window)
+        public override bool ShouldHookWindowCreated
         {
-            windowEvents_WindowActivated(Window, null);
+            get
+            {
+                return true;
+            }
         }
 
-        void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
+        public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
             try
             {
@@ -58,9 +58,9 @@ namespace BIDSHelper
                 IntPtr ptr = win.Handle;
                 string sHandle = ptr.ToInt64().ToString();
 
-                if (!windowHandlesFixedPartitionsView.Contains(sHandle))
+                if (!windowHandlesFixedPartitionsView.ContainsKey(sHandle))
                 {
-                    windowHandlesFixedPartitionsView.Add(sHandle);
+                    windowHandlesFixedPartitionsView.Add(sHandle,win);
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                 }
 
@@ -117,7 +117,8 @@ namespace BIDSHelper
 
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
-            windowEvents_WindowActivated(this.ApplicationObject.ActiveWindow, null);
+            OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
+            
         }
 
         void toolbar_ButtonClick(object sender, ToolBarButtonClickEventArgs e)

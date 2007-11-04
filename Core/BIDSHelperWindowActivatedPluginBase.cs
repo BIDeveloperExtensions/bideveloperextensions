@@ -16,8 +16,7 @@ namespace BIDSHelper
         public BIDSHelperWindowActivatedPluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
-            //appObj = appObject;
-            //addIn = addinInstance;
+            
         }
 
         public BIDSHelperWindowActivatedPluginBase()
@@ -34,6 +33,10 @@ namespace BIDSHelper
         {
             get { return true; }
         }
+        public virtual bool ShouldHookWindowClosing
+        {
+            get { return false; }
+        }
 
         public void HookWindowActivation()
         {
@@ -42,6 +45,8 @@ namespace BIDSHelper
                 windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
             if (ShouldHookWindowCreated)
                 windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+            if (ShouldHookWindowClosing)
+                windowEvents.WindowClosing += new _dispWindowEvents_WindowClosingEventHandler(windowEvents_WindowClosing);
         }
 
         public void UnHookWindowActivation()
@@ -52,10 +57,15 @@ namespace BIDSHelper
                     windowEvents.WindowActivated -= windowEvents_WindowActivated;
                 if (ShouldHookWindowCreated)
                     windowEvents.WindowCreated -= windowEvents_WindowCreated;
+                if (ShouldHookWindowClosing)
+                    windowEvents.WindowClosing -= windowEvents_WindowClosing;
             }
         }
         public virtual void OnWindowActivated(Window GotFocus, Window LostFocus)
         { }
+        public virtual void OnWindowClosing(Window ClosingWindow)
+        { }
+
 
         public void OnActiveViewChanged()
         {
@@ -75,6 +85,10 @@ namespace BIDSHelper
             OnWindowActivated(GotFocus, LostFocus);
         }
 
+        private void windowEvents_WindowClosing(Window windowClosing)
+        {
+            OnWindowClosing(windowClosing);
+        }
         public override void OnEnable()
         {
             base.OnEnable();
