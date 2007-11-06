@@ -124,14 +124,37 @@ namespace BIDSHelper
                             optimizations.Add(new DimensionOptimizations(db.Name, cd.Name, ca.Attribute.Name, " Dimension Properties ", "Ordered", ca.Attribute.AttributeHierarchyOrdered.ToString()));
                             optimizations.Add(new DimensionOptimizations(db.Name, cd.Name, ca.Attribute.Name, " Dimension Properties ", "Visible", ca.Attribute.AttributeHierarchyVisible.ToString()));
                         }
-                        
+
+                        //determine Aggregation Usage setting
                         optimizations.Add(new DimensionOptimizations(db.Name, cd.Name, ca.Attribute.Name, c.Name, "Aggregation Usage", ca.AggregationUsage.ToString()));
+
+                        //determine effective enabled setting
                         optimizations.Add(new DimensionOptimizations(db.Name, cd.Name, ca.Attribute.Name, c.Name, "(Effective) Enabled", (ca.AttributeHierarchyEnabled && ca.Attribute.AttributeHierarchyEnabled).ToString()));
                         
+                        //determine effective optimization setting
                         OptimizationType effectiveOptimization = ca.AttributeHierarchyOptimizedState;
                         if (ca.Attribute.AttributeHierarchyOptimizedState == OptimizationType.NotOptimized) effectiveOptimization = OptimizationType.NotOptimized; //the cube attribute setting can only override if the dimension attribute setting is FullyOptimized
+                        if (effectiveOptimization == OptimizationType.NotOptimized)
+                        {
+                            //regardless of the optimization setting on this attribute, if it's a part of an enabled and optimized user-defined hierarchy, then it will be indexed... so show this as effectively being optimized
+                            foreach (CubeHierarchy ch in ca.Parent.Hierarchies)
+                            {
+                                if (ch.Enabled && ch.OptimizedState == OptimizationType.FullyOptimized)
+                                {
+                                    foreach (Level l in ch.Hierarchy.Levels)
+                                    {
+                                        if (l.SourceAttributeID == ca.AttributeID)
+                                        {
+                                            effectiveOptimization = OptimizationType.FullyOptimized;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         optimizations.Add(new DimensionOptimizations(db.Name, cd.Name, ca.Attribute.Name, c.Name, "(Effective) Optimized State", effectiveOptimization.ToString()));
 
+                        //determine effective visible setting
                         optimizations.Add(new DimensionOptimizations(db.Name, cd.Name, ca.Attribute.Name, c.Name, "(Effective) Visible", (ca.AttributeHierarchyVisible && ca.Attribute.AttributeHierarchyVisible).ToString()));
                     }
                     foreach (CubeHierarchy ch in cd.Hierarchies)
