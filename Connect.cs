@@ -58,6 +58,8 @@ namespace BIDSHelper
                 _applicationObject = (DTE2)application;
                 _addInInstance = (AddIn)addInInst;
 
+                _applicationObject.StatusBar.Text = "Loading BIDSHelper (" + this.GetType().Assembly.GetName().Version.ToString() + ")...";
+
                 _debuggerEvents = _applicationObject.Events.DebuggerEvents;
                 _debuggerEvents.OnEnterBreakMode += new _dispDebuggerEvents_OnEnterBreakModeEventHandler(_debuggerEvents_OnEnterBreakMode);
                 _debuggerEvents.OnEnterDesignMode += new _dispDebuggerEvents_OnEnterDesignModeEventHandler(_debuggerEvents_OnEnterDesignMode);
@@ -70,11 +72,11 @@ namespace BIDSHelper
                         && (!t.IsAbstract))
                     {
                         BIDSHelperPluginBase ext;
-                        System.Type[] @params = {typeof(Connect), typeof(DTE2), typeof(AddIn) };
+                        System.Type[] @params = { typeof(Connect), typeof(DTE2), typeof(AddIn) };
                         System.Reflection.ConstructorInfo con;
 
                         con = t.GetConstructor(@params);
-                        ext = (BIDSHelperPluginBase)con.Invoke(new object[] {this, _applicationObject, _addInInstance });
+                        ext = (BIDSHelperPluginBase)con.Invoke(new object[] { this, _applicationObject, _addInInstance });
                         //ext.AddinCore = this;
                         addins.Add(ext.CommandName, ext);
 
@@ -103,6 +105,10 @@ namespace BIDSHelper
             catch (Exception ex)
             {
                 System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message);
+            }
+            finally
+            {
+                _applicationObject.StatusBar.Clear();
             }
         }
 
@@ -134,11 +140,13 @@ namespace BIDSHelper
             {
                 foreach (BIDSHelperPluginBase iExt in addins.Values)
                 {
-                    iExt.DeleteCommand();
-
-                    if (iExt is IWindowActivatedPlugin)
+                    try
                     {
-                        ((IWindowActivatedPlugin)iExt).UnHookWindowActivation();
+                        if (iExt.Enabled)
+                            { iExt.OnDisable(); }
+                    }
+                    catch 
+                    { //ignore any errors - we are pulling down the add-in anyway
                     }
                 }
             }

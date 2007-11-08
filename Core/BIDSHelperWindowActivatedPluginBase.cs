@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using EnvDTE;
 using EnvDTE80;
+using System.Runtime.InteropServices;
 
 namespace BIDSHelper
 {
@@ -10,6 +11,14 @@ namespace BIDSHelper
         : BIDSHelperPluginBase
         , IWindowActivatedPlugin
     {
+        [DllImport("user32.dll")]
+        static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate,
+                          IntPtr hrgnUpdate, uint flags);
+        const int RDW_INVALIDATE  = 0x0001;
+        const int RDW_ERASE       = 0x0004;
+        const int RDW_UPDATENOW   = 0x0100;
+        const int RDW_ALLCHILDREN = 0x0080;
+
         private WindowEvents windowEvents;
 
                 #region "Constructors"
@@ -93,13 +102,16 @@ namespace BIDSHelper
         {
             base.OnEnable();
             this.HookWindowActivation();
+            // force OnWindowActivate to fire
+            OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
         }
 
         public override void OnDisable()
         {
             base.OnDisable();
             this.UnHookWindowActivation();
-
+            // force the active window to repaint
+            RedrawWindow( new IntPtr(this.ApplicationObject.ActiveWindow.HWnd) , IntPtr.Zero, IntPtr.Zero, RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
         }
     }
 }

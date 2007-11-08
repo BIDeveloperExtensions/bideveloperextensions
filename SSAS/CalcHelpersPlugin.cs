@@ -54,6 +54,19 @@ namespace BIDSHelper
                     {
                         if (toolbar.Buttons.ContainsKey(newCalcPropButton.Name))
                             { toolbar.Buttons.RemoveByKey(newCalcPropButton.Name);}
+
+                        // make the standard properties button visible
+                        foreach (ToolBarButton b in toolbar.Buttons)
+                        {
+                            if (b.ToolTipText.StartsWith("Calculation Properties"))
+                            {
+                                if (b.Tag == null || b.Tag.ToString() != this.FullName + ".CommandProperties")
+                                {
+                                    b.Visible = true;
+                                }
+                            }
+                        }
+
                     }
 
                     if (newDeployMdxScriptButton != null)
@@ -62,7 +75,6 @@ namespace BIDSHelper
                             {toolbar.Buttons.RemoveByKey(newDeployMdxScriptButton.Name);}
                     }
                 }
-                //TODO - remove description button
 
             }
 
