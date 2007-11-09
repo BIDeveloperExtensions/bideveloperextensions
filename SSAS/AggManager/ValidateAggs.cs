@@ -93,11 +93,14 @@ namespace AggManager
                             if (i > 0) sWarning += " and ";
                             sWarning += "[" + mga.Parent.CubeDimension.Name + "].[" + mga.Attribute.Name + "]";
                         }
-                        sWarning += ".";
-                        if (missing.Count > 0)
-                        {
-                            masterWarnings.Add(new AggValidationWarning(agg, sCorrectAggregationDesignName, sWarning, sReportTitle));
-                        }
+
+                        if (missing.Count == 0)
+                            sWarning = "";
+                        else
+                            sWarning += ". ";
+                        sWarning += "The many-to-many dimension [" + m2mDim.CubeDimension.Name + "] itself should not be included in the aggregation to workaround a bug.";
+
+                        masterWarnings.Add(new AggValidationWarning(agg, sCorrectAggregationDesignName, sWarning, sReportTitle));
                     }
                 }
             }
@@ -360,7 +363,7 @@ namespace AggManager
             return false;
         }
 
-        private static MeasureGroupAttribute GetGranularityAttribute(RegularMeasureGroupDimension mgDim)
+        public static MeasureGroupAttribute GetGranularityAttribute(RegularMeasureGroupDimension mgDim)
         {
             foreach (MeasureGroupAttribute mga in mgDim.Attributes)
             {

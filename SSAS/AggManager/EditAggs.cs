@@ -1042,9 +1042,84 @@ namespace AggManager
                 }
                 else
                 {
-                    boolHandleClick = true;
-                    node.Checked = !node.Checked;
-                    boolHandleClick = false;
+                    bool bFlipCheck = true;
+
+                    TreeNode dimensionNode = node.Parent;
+                    while (dimensionNode.Parent != null)
+                        dimensionNode = dimensionNode.Parent;
+
+                    MeasureGroupDimension mgDim = mg1.Dimensions.Find(dimensionNode.Name);
+                    if (!node.Checked && mgDim is ManyToManyMeasureGroupDimension)
+                    {
+                        //check that all the joining dimensions are in the agg, if not, offer to do that
+                        //also suggest not including the m2m dimension in the agg
+                        DataRow currentDR = GetCurrentDataGridRow();
+
+                        String strAgg = currentDR[1].ToString();
+                        String strAggName = currentDR[0].ToString();
+                        Aggregation agg = GetAggregationFromString(strAggName, strAgg);
+
+                        ManyToManyMeasureGroupDimension m2mDim = (ManyToManyMeasureGroupDimension)mgDim;
+                        MeasureGroup intermediateMG = m2mDim.MeasureGroup;
+                        List<MeasureGroupAttribute> missing = new List<MeasureGroupAttribute>();
+                        foreach (MeasureGroupDimension commonDim in intermediateMG.Dimensions)
+                        {
+                            RegularMeasureGroupDimension regCommonDim = commonDim as RegularMeasureGroupDimension;
+                            if (commonDim.CubeDimensionID != m2mDim.CubeDimensionID || regCommonDim == null)
+                            {
+                                //this is a common dimension and the granularity attribute on the intermediate measure group needs to be in the agg
+                                bool bFoundGranularityAgg = false;
+                                MeasureGroupAttribute mga = ValidateAggs.GetGranularityAttribute(regCommonDim);
+                                AggregationDimension aggCommonDim = agg.Dimensions.Find(commonDim.CubeDimensionID);
+                                if (aggCommonDim != null)
+                                {
+                                    if (aggCommonDim.Attributes.Find(mga.AttributeID) != null)
+                                    {
+                                        bFoundGranularityAgg = true;
+                                    }
+                                }
+                                if (!bFoundGranularityAgg)
+                                {
+                                    missing.Add(mga);
+                                }
+                            }
+                        }
+                        string sWarning = "This aggregation will not be used when querying many-to-many dimension [" + m2mDim.CubeDimension.Name + "] unless it also contains ";
+                        for (int i = 0; i < missing.Count; i++)
+                        {
+                            MeasureGroupAttribute mga = missing[i];
+                            if (i > 0) sWarning += " and ";
+                            sWarning += "[" + mga.Parent.CubeDimension.Name + "].[" + mga.Attribute.Name + "]";
+                        }
+
+                        if (missing.Count == 0)
+                            sWarning = "";
+                        else
+                            sWarning += ". ";
+                        sWarning += "The many-to-many dimension [" + m2mDim.CubeDimension.Name + "] itself should not be included in the aggregation to workaround a bug.";
+                        sWarning += "\r\n\r\nWould you like BIDS Helper to fix this for you?";
+
+                        if (MessageBox.Show(sWarning, "BIDS Helper Agg Manager Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        {
+                            foreach (MeasureGroupAttribute mga in missing)
+                            {
+                                TreeNode missingMGAdimensionNode = treeViewAggregation.Nodes[mga.Parent.CubeDimensionID];
+                                TreeNode missingNode = FindChildNode(missingMGAdimensionNode, mga.AttributeID);
+                                boolHandleClick = true;
+                                missingNode.Checked = true;
+                                boolHandleClick = false;
+                            }
+                            bFlipCheck = false;
+                        }
+                    }
+
+                    if (bFlipCheck)
+                    {
+                        boolHandleClick = true;
+                        node.Checked = !node.Checked;
+                        boolHandleClick = false;
+                    }
+
                     DataRow dr = GetCurrentDataGridRow();
                     SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
                 }
