@@ -627,7 +627,14 @@ namespace BIDSHelper
                 DtsContainer container = (DtsContainer)propProvider;
                 string sNewPath = path;
                 if (!(container is Package)) sNewPath = path.Substring(0, path.Length - 1) + "\\" + container.Name + ".";
-                ScanProperties(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, propProvider);
+                if (container is TaskHost)
+                {
+                    ScanProperties(worker, sNewPath, ((TaskHost)container).InnerObject.GetType().ToString(), container.ID, container.Name, propProvider);
+                }
+                else
+                {
+                    ScanProperties(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, propProvider);
+                }
                 ScanVariables(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, container.Variables);
             }
         }
