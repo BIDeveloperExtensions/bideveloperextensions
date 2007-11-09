@@ -28,6 +28,7 @@ namespace BIDSHelper
 {
     public class ExpressionListPlugin : BIDSHelperWindowActivatedPluginBase
     {
+        private const string SSIS_PROJECT_KIND = "{d183a3d8-5fd8-494b-b014-37f57b35e655}";
         private const string REGISTRY_EXTENDED_PATH = "ExpressionListPlugin";
         private const string REGISTRY_SETTING_NAME = "InEffect";
         public static bool bShouldSkipExpressionHighlighting = false;
@@ -777,12 +778,12 @@ namespace BIDSHelper
 
         public override int Bitmap
         {
-            get { return 0; }
+            get { return 6; }
         }
 
         public override string ButtonText
         {
-            get { return "Expression List"; }
+            get { return "Expression List (BIDS Helper)"; }
         }
 
         public override string ToolTip
@@ -792,12 +793,17 @@ namespace BIDSHelper
 
         public override bool ShouldPositionAtEnd
         {
-            get { return false; }
+            get { return true; }
         }
 
         public override string MenuName
         {
-            get { return "Tools"; }
+            get { return "Other Windows"; }
+        }
+
+        public override string FriendlyName
+        {
+            get { return "Expression List"; }
         }
 
         public override bool Checked
@@ -812,7 +818,20 @@ namespace BIDSHelper
         /// <returns></returns>
         public override bool DisplayCommand(UIHierarchyItem item)
         {
-            return true;
+            try
+            {
+                if (toolWindow.Visible) return true;
+                if (this.ApplicationObject.Solution == null) return false;
+                foreach (Project p in this.ApplicationObject.Solution.Projects)
+                {
+                    if (p.Kind == SSIS_PROJECT_KIND) return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public override void Exec()
