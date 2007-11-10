@@ -96,6 +96,10 @@
     <Reference Include="Microsoft.SqlServer.DTSPipelineWrap, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.SQLServer.DTSRuntimeWrap, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.SQLServer.ManagedDTS, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -242,6 +246,13 @@
       <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\VisualizeAttributeLatticePlugin.cs" />
+    <Compile Include="SSIS\FixedWidthColumnsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FixedWidthColumnsForm.Designer.cs">
+      <DependentUpon>FixedWidthColumnsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FixedWidthColumnsPlugin.cs" />
     <Compile Include="SSIS\dtsConfigFormatterPlugin.cs" />
     <Compile Include="SSIS\ExpressionHighlighterPlugin.cs" />
     <Compile Include="SSIS\ExpressionListControl.cs">
@@ -389,6 +400,10 @@
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FixedWidthColumnsForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>FixedWidthColumnsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SmartDiff.resx">
       <SubType>Designer</SubType>

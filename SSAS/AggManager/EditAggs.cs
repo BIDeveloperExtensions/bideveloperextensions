@@ -425,7 +425,7 @@ namespace AggManager
                 }
                 else
                 {
-                    lblEstimatedSize.Text = agg.Name + " Estimated Size: Unknown";
+                    lblEstimatedSize.Text = agg.Name + " Estimated Size: Unknown (please update EstimatedRows on measure group)";
                     lblEstimatedSize.ForeColor = Color.Black;
                 }
             }
