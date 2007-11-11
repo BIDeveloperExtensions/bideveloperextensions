@@ -58,6 +58,10 @@ namespace BIDSHelper.SSIS
                         }
                     }
                 }
+                else
+                {
+                    MessageBox.Show("Please copy data from your clipboard from Excel 2003 or later.");
+                }
             }
             catch (Exception ex)
             {

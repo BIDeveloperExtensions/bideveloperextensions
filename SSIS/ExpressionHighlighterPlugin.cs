@@ -481,22 +481,33 @@ namespace BIDSHelper
         {
             ErrorList errorList = this.ApplicationObject.ToolWindows.ErrorList;
             Window2 errorWin2 = (Window2)(errorList.Parent);
-            if (!errorWin2.Visible)
+
+            if (warnings.Length > 0)
             {
-                this.ApplicationObject.ExecuteCommand("View.ErrorList", " ");
+                if (!errorWin2.Visible)
+                {
+                    this.ApplicationObject.ExecuteCommand("View.ErrorList", " ");
+                }
+                errorWin2.SetFocus();
             }
+
             IDesignerHost designer = (IDesignerHost)window.Object;
             win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
             ITaskListService service = designer.GetService(typeof(ITaskListService)) as ITaskListService;
 
             //remove old task items from this document and BIDS Helper class
+            System.Collections.Generic.List<ITaskItem> tasksToRemove = new System.Collections.Generic.List<ITaskItem>();
             foreach (ITaskItem ti in service.GetTaskItems())
             {
                 ICustomTaskItem task = ti as ICustomTaskItem;
                 if (task != null && task.CustomInfo == this && task.Document == window.ProjectItem.get_FileNames(0))
                 {
-                    service.Remove(ti);
+                    tasksToRemove.Add(ti);
                 }
+            }
+            foreach (ITaskItem ti in tasksToRemove)
+            {
+                service.Remove(ti);
             }
 
             foreach (string s in warnings)

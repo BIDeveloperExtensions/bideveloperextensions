@@ -132,6 +132,7 @@ namespace BIDSHelper
                     {
                         if (e.Button.ImageIndex == e.Button.Parent.ImageList.Images.IndexOfKey(SET_ESTIMATED_COUNTS_ICON_KEY))
                         {
+                            bMessageBoxShown = false;
                             bCancelEstimatedCountsClicked = false;
                             SetAllEstimatedCounts(e.Button);
                         }
@@ -161,10 +162,28 @@ namespace BIDSHelper
             SetEstimatedCountsOnPartitionThreadInfo info = (SetEstimatedCountsOnPartitionThreadInfo)threadInfo;
             try
             {
-                if (info.instance.CheckCancelled()) return;
-                Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInAttributes(info.aggDesign, info.measureGroupDimension, new Partition[] { info.partition }, null);
-                if (info.instance.CheckCancelled()) return;
-                Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInPartition(info.partition, null);
+                if (info.aggDesign != null && info.measureGroupDimension != null)
+                {
+                    if (info.instance.CheckCancelled()) return;
+                    try
+                    {
+                        Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInAttributes(info.aggDesign, info.measureGroupDimension, new Partition[] { info.partition }, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        info.errors.Add("BIDS Helper error setting estimated counts for dimension attributes of " + info.measureGroupDimension.CubeDimension.Name + " on partition " + info.partition.Name + " of measure group " + info.partition.Parent.Name + ": " + ex.Message);
+                    }
+                }
+
+                if (info.instance.CheckCancelled() || info.partition.EstimatedRows > 0) return;
+                try
+                {
+                    Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInPartition(info.partition, null);
+                }
+                catch (Exception ex)
+                {
+                    info.errors.Add("BIDS Helper error setting estimated counts for partition " + info.partition.Name + " of measure group " + info.partition.Parent.Name + ": " + ex.Message);
+                }
             }
             catch { } //silently catch errors... don't want to message box errors because there could be hundreds of them
             finally
@@ -184,7 +203,10 @@ namespace BIDSHelper
                 object cnt = typeof(Microsoft.AnalysisServices.Design.PartitionUtilities).InvokeMember("GetAttributeCountInDimension", getflags, null, null, new object[] { info.attribute, info.connection.Cartridge, info.connection });
                 info.attribute.EstimatedCount = Convert.ToInt64(cnt);
             }
-            catch { } //silently catch errors... don't want to message box errors because there could be hundreds of them
+            catch (Exception ex)
+            {
+                info.errors.Add("BIDS Helper error setting estimated counts for attribute " + info.attribute.Name + " in dimension " + info.attribute.Parent.Name + ": " + ex.Message);
+            }
             finally
             {
                 info.done = true;
@@ -196,6 +218,7 @@ namespace BIDSHelper
         {
             //grab the objects I need before the user has a chance to flip to another active window
             Project proj = ApplicationObject.ActiveWindow.Project;
+            Window window = ApplicationObject.ActiveWindow;
             Cube cube = (Cube)this.ApplicationObject.ActiveWindow.ProjectItem.Object;
             IDesignerHost designer = (IDesignerHost)ApplicationObject.ActiveWindow.Object;
 
@@ -215,12 +238,17 @@ namespace BIDSHelper
                     IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
                     changesvc.OnComponentChanging(cube, null);
 
+                    System.Collections.Generic.List<string> errors = new System.Collections.Generic.List<string>();
                     int iProgress = 0;
                     foreach (MeasureGroup mg in cube.MeasureGroups)
                     {
                         ApplicationObject.StatusBar.Progress(true, "Setting Estimated Counts on Measure Group: " + mg.Name, ++iProgress, cube.MeasureGroups.Count + cube.Parent.Dimensions.Count);
                         if (mg.Partitions.Count > 0)
                         {
+                            foreach (Partition p in mg.Partitions)
+                            {
+                                p.EstimatedRows = 0;
+                            }
                             foreach (AggregationDesign aggd in mg.AggregationDesigns)
                             {
                                 foreach (AggregationDesignDimension aggdim in aggd.Dimensions)
@@ -260,13 +288,52 @@ namespace BIDSHelper
                                                         Application.DoEvents(); //keeps main app responsive
                                                         if (CheckCancelled()) return;
                                                     }
+                                                    errors.AddRange(info.errors);
                                                 }
-                                                catch { }
+                                                catch (Exception ex)
+                                                {
+                                                    errors.Add("BIDS Helper error setting estimated counts on partition " + p.Name + " of measure group " + mg.Name + ": " + ex.Message);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
+
+                            //now fill in the count on partitions without agg designs
+                            foreach (Partition p in mg.Partitions)
+                            {
+                                if (p.AggregationDesign == null)
+                                {
+                                    try
+                                    {
+                                        SetEstimatedCountsOnPartitionThreadInfo info = new SetEstimatedCountsOnPartitionThreadInfo();
+                                        info.instance = this;
+                                        info.partition = p;
+
+                                        //run as a separate thread so that the main app stays responsive (so you can click the cancel button)
+                                        System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(StartSetEstimatedCountsOnPartition), info);
+                                        while (!info.done)
+                                        {
+                                            System.Threading.Thread.Sleep(100);
+                                            Application.DoEvents(); //keeps main app responsive
+                                            if (CheckCancelled()) return;
+                                        }
+                                        errors.AddRange(info.errors);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errors.Add("BIDS Helper error setting estimated counts on partition " + p.Name + " of measure group " + mg.Name + ": " + ex.Message);
+                                    }
+                                }
+                            }
+
+                            long iMeasureGroupRowsCount = 0;
+                            foreach (Partition p in mg.Partitions)
+                            {
+                                iMeasureGroupRowsCount += p.EstimatedRows;
+                            }
+                            mg.EstimatedRows = iMeasureGroupRowsCount;
                         }
                     }
                     changesvc.OnComponentChanged(cube, null, null, null); //marks the cube designer as dirty
@@ -328,12 +395,17 @@ namespace BIDSHelper
                                         Application.DoEvents(); //keeps main app responsive
                                         if (CheckCancelled()) return;
                                     }
+                                    errors.AddRange(info.errors);
                                 }
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                errors.Add("BIDS Helper error setting estimated counts on dimension " + dim.Name + ": " + ex.Message);
+                            }
                         }
                         changesvc.OnComponentChanged(dim, null, null, null);
                     }
+                    AddErrorsToVSErrorList(window, errors.ToArray());
                 }
             }
             finally
@@ -348,10 +420,12 @@ namespace BIDSHelper
             }
         }
 
+        private bool bMessageBoxShown = false;
         private bool CheckCancelled()
         {
-            if (bCancelEstimatedCountsClicked)
+            if (bCancelEstimatedCountsClicked && !bMessageBoxShown)
             {
+                bMessageBoxShown = true;
                 if (MessageBox.Show("Cancelling now could leave many counts set at zero. Are you sure you wish to cancel?", "BIDS Helper - Update All Estimated Counts", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
                     ApplicationObject.StatusBar.Text = "Cancelling...";
@@ -384,6 +458,49 @@ namespace BIDSHelper
             DeployAggDesignsPlugin.DeployAggDesigns(pi, this.ApplicationObject);
         }
 
+        private void AddErrorsToVSErrorList(Window window, string[] errors)
+        {
+            ErrorList errorList = this.ApplicationObject.ToolWindows.ErrorList;
+            Window2 errorWin2 = (Window2)(errorList.Parent);
+            if (errors.Length > 0)
+            {
+                if (!errorWin2.Visible)
+                {
+                    this.ApplicationObject.ExecuteCommand("View.ErrorList", " ");
+                }
+                errorWin2.SetFocus();
+            }
+
+            IDesignerHost designer = (IDesignerHost)window.Object;
+            ITaskListService service = designer.GetService(typeof(ITaskListService)) as ITaskListService;
+
+            //remove old task items from this document and BIDS Helper class
+            System.Collections.Generic.List<ITaskItem> tasksToRemove = new System.Collections.Generic.List<ITaskItem>();
+            foreach (ITaskItem ti in service.GetTaskItems())
+            {
+                ICustomTaskItem task = ti as ICustomTaskItem;
+                if (task != null && task.CustomInfo == this && task.Document == window.ProjectItem.get_FileNames(0))
+                {
+                    tasksToRemove.Add(ti);
+                }
+            }
+            foreach (ITaskItem ti in tasksToRemove)
+            {
+                service.Remove(ti);
+            }
+
+
+            foreach (string s in errors)
+            {
+                ICustomTaskItem item = (ICustomTaskItem)service.CreateTaskItem(TaskItemType.Custom, s);
+                item.Category = TaskItemCategory.Misc;
+                item.Appearance = TaskItemAppearance.Squiggle;
+                item.Priority = TaskItemPriority.High;
+                item.Document = window.ProjectItem.get_FileNames(0);
+                item.CustomInfo = this;
+                service.Add(item);
+            }
+        }
 
         public override string ShortName
         {
@@ -432,6 +549,7 @@ namespace BIDSHelper
             public RegularMeasureGroupDimension measureGroupDimension;
             public Partition partition;
             public bool done = false;
+            public System.Collections.Generic.List<string> errors = new System.Collections.Generic.List<string>();
         }
 
         public class SetEstimatedCountsOnDimensionThreadInfo
@@ -440,6 +558,7 @@ namespace BIDSHelper
             public DimensionAttribute attribute;
             public DataSourceConnection connection;
             public bool done = false;
+            public System.Collections.Generic.List<string> errors = new System.Collections.Generic.List<string>();
         }
         #endregion
     }
