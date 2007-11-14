@@ -4,7 +4,6 @@ using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Reflection;
-//using BIDSHelper
 
 namespace BIDSHelper
 {
@@ -80,27 +79,9 @@ namespace BIDSHelper
                         //ext.AddinCore = this;
                         addins.Add(ext.CommandName, ext);
 
-                        //if (ext is IWindowActivatedPlugin)// && ext.Enabled )
-                        //{
-                        //    ((IWindowActivatedPlugin)ext).HookWindowActivation();
-                        //}
                     }
                 }
 
-                //switch (connectMode)
-                //{
-                //    case ext_ConnectMode.ext_cm_Startup:
-                //    case ext_ConnectMode.ext_cm_AfterStartup:
-
-
-                //        foreach (BIDSHelperPluginBase iExt in addins.Values)
-                //        {
-                //            //Create a Command with name SolnExplContextMenuVB and then add it to the "Item" menubar for the SolutionExplorer
-                //            iExt.AddCommand();
-                //        }
-
-                //        break;
-                //}
             }
             catch (Exception ex)
             {
@@ -144,11 +125,13 @@ namespace BIDSHelper
                     {
                         if (iExt.Enabled)
                             { iExt.OnDisable(); }
+                        
                     }
                     catch 
                     { //ignore any errors - we are pulling down the add-in anyway
                     }
                 }
+                addins.Clear();
             }
 
             catch //(Exception ex) 

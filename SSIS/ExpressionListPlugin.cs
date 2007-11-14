@@ -2,8 +2,6 @@ using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
-//using Microsoft.VisualStudio.CommandBars;
-//using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
@@ -21,7 +19,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
- 
 
 
 namespace BIDSHelper
@@ -33,12 +30,9 @@ namespace BIDSHelper
         private const string REGISTRY_SETTING_NAME = "InEffect";
         public static bool bShouldSkipExpressionHighlighting = false;
 
-        //private WindowEvents windowEvents;
+        
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        //private System.Collections.Generic.List<string> windowHandlesFixedForExpressionHighlighter = new System.Collections.Generic.List<string>();
-        //private System.Collections.Generic.List<string> windowHandlesInProgressStatus = new System.Collections.Generic.List<string>();
         private ExpressionListControl expressionListWindow = null;
-        //private DTE2 appObject = null;
         Window toolWindow = null;
         System.Reflection.Assembly konesansAssembly = null;
         Type typePropertyVariables = null;
@@ -72,7 +66,8 @@ namespace BIDSHelper
         public override void OnDisable()
         {
             base.OnDisable();
-            // TODO - unhook other event handlers
+            // hide the tool window
+            toolWindow.Visible = false;    
         }
 
         public override void OnEnable()
@@ -103,7 +98,8 @@ namespace BIDSHelper
             String guidstr = "{6679390F-A712-40EA-8729-E2184A1436BF}";
             EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)this.ApplicationObject.Windows;
             System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-            toolWindow = windows2.CreateToolWindow2(this.AddInInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
+            toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
+            toolWindow.SetTabPicture(BIDSHelper.Properties.Resources.ExpressionListIcon.ToBitmap().GetHbitmap());
             expressionListWindow = (ExpressionListControl)programmableObject;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);

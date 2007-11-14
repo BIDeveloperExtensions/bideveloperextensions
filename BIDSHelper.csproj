@@ -303,6 +303,7 @@
     </COMReference>
     <None Include="Resources\DeployAggDesigns.xslt" />
     <None Include="Resources\DeployAggDesigns.ico" />
+    <None Include="Resources\ExpressionListIcon.ico" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <Content Include="SetupScript\ReleaseChecklist.txt" />
