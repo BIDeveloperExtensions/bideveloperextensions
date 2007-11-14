@@ -29,7 +29,6 @@ namespace BIDSHelper
         private IComponentChangeService configurationsChangeService;
 
         EditorWindow win = null;
-        //System.ComponentModel.BackgroundWorker processPackage = null;
 
         public ExpressionHighlighterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -50,7 +49,6 @@ namespace BIDSHelper
                 { configurationsChangeService.ComponentChanging -= configurationsChangeService_ComponentChanging; }
         }
 
-        //TODO: need to find a way to pick up changes to the package more quickly than just the WindowActivated event
         //The DtsPackageView object seems to have the appropriate methods, but it's internal to the Microsoft.DataTransformationServices.Design assembly.
         //void windowEvents_WindowActivated(Window GotFocus, Window LostFocus)
         public override void OnWindowActivated(Window GotFocus, Window lostFocus)
@@ -104,6 +102,7 @@ namespace BIDSHelper
                 else if (win.SelectedIndex == 1) //Data Flow
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
+                    if (diagram == null) return;
                     taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
                     pipe = (MainPipe)taskHost.InnerObject;
                     container = (IDTSSequence)taskHost.Parent;
@@ -112,6 +111,7 @@ namespace BIDSHelper
                 else if (win.SelectedIndex == 2) //Event Handlers
                 {
                     diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
+                    if (diagram == null) return;
                     lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                     container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
                 }
@@ -119,8 +119,6 @@ namespace BIDSHelper
                 {
                     return;
                 }
-
-                //processPackage.RunWorkerAsync(container);
 
 
                 bool bOfflineMode = false;
@@ -229,9 +227,6 @@ namespace BIDSHelper
                 HighlighConnectionManagers(package, lvwConnMgrs, listConfigPaths);
 
                 return;
-
-                //TODO: does the above code run too slow? should it be put in a BackgroundWorker thread? will that cause threads to step on each other?
-
             }
             catch (Exception ex)
             {
@@ -488,7 +483,7 @@ namespace BIDSHelper
                 {
                     this.ApplicationObject.ExecuteCommand("View.ErrorList", " ");
                 }
-                errorWin2.SetFocus();
+                //errorWin2.SetFocus(); //don't focus the error window because the Expression Highlighter pays attention to window focusing
             }
 
             IDesignerHost designer = (IDesignerHost)window.Object;
