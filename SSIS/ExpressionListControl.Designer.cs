@@ -29,6 +29,7 @@ namespace BIDSHelper
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExpressionListControl));
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnRefresh = new System.Windows.Forms.ToolStripButton();
@@ -80,11 +81,10 @@ namespace BIDSHelper
             // 
             // btnRefresh
             // 
-            this.btnRefresh.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.btnRefresh.Image = ((System.Drawing.Image)(resources.GetObject("btnRefresh.Image")));
             this.btnRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new System.Drawing.Size(23, 22);
+            this.btnRefresh.Size = new System.Drawing.Size(66, 22);
             this.btnRefresh.Text = "Refresh";
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
@@ -94,6 +94,7 @@ namespace BIDSHelper
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
             this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 22);
             this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.toolStripProgressBar1.Visible = false;
             // 
             // objectID
             // 
@@ -142,10 +143,16 @@ namespace BIDSHelper
             // 
             // EditorBtn
             // 
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.Format = "...";
+            dataGridViewCellStyle1.NullValue = "...";
+            this.EditorBtn.DefaultCellStyle = dataGridViewCellStyle1;
             this.EditorBtn.HeaderText = "";
             this.EditorBtn.Name = "EditorBtn";
             this.EditorBtn.ReadOnly = true;
             this.EditorBtn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.EditorBtn.Text = "...";
+            this.EditorBtn.ToolTipText = "Edit Expression";
             this.EditorBtn.Width = 20;
             // 
             // ExpressionListControl

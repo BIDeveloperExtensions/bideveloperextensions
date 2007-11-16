@@ -102,12 +102,14 @@ namespace BIDSHelper
         public void StartProgressBar()
         {
             toolStripProgressBar1.Enabled = true;
+            toolStripProgressBar1.Visible = true;
             toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
         }
 
         public void StopProgressBar()
         {
             toolStripProgressBar1.Enabled = false;
+            toolStripProgressBar1.Visible = false;
             toolStripProgressBar1.Style = ProgressBarStyle.Blocks;
         }
 
