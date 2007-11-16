@@ -241,7 +241,7 @@ namespace BIDSHelper
                             AdomdConnection cn = new AdomdConnection("Data Source=" + deploySet.TargetServer + ";Initial Catalog=" + deploySet.TargetDatabase);
                             cn.Open();
                             AdomdCommand cmd = cn.CreateCommand();
-                            string qry = "SELECT {measures.Members.Item(0)} ON 0 FROM [" + oCube.Name +"];";
+                            string qry = "SELECT {} ON 0 FROM [" + oCube.Name +"];";
                             cmd.CommandText = qry;
                             try
                             {
