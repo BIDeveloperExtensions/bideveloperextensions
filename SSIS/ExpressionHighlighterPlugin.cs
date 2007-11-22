@@ -191,7 +191,11 @@ namespace BIDSHelper
                         }
                         else
                         {
-                            IDTSComponentMetaData90 transform = pipe.ComponentMetaDataCollection.GetObjectByID(int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1)));
+                            #if KATMAI
+                                IDTSComponentMetaData100 transform = pipe.ComponentMetaDataCollection.GetObjectByID(int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1)));
+                            #else
+                                IDTSComponentMetaData90 transform = pipe.ComponentMetaDataCollection.GetObjectByID(int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1)));
+                            #endif
                             bHasExpression = HasExpression(taskHost, transform.Name, listConfigPaths, out bHasConfiguration);
                         }
 

@@ -93,7 +93,14 @@ namespace BIDSHelper
                     }
                     
                     System.Reflection.BindingFlags getpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                    object dlgStorage = grid.GetType().BaseType.InvokeMember("DlgStorage", getpropertyflags, null, grid, null); //Microsoft.SqlServer.Management.UI.Grid.IDlgStorage
+
+                    object dlgStorage = null;
+#if KATMAI
+                    dlgStorage = grid.GetType().BaseType.BaseType.InvokeMember("DlgStorage", getpropertyflags, null, grid, null);
+#else
+                    dlgStorage = grid.GetType().BaseType.InvokeMember("DlgStorage", getpropertyflags, null, grid, null); //Microsoft.SqlServer.Management.UI.Grid.IDlgStorage
+#endif
+
                     object storage = dlgStorage.GetType().InvokeMember("Storage", getpropertyflags, null, dlgStorage, null); //Microsoft.SqlServer.Management.UI.Grid.MemDataStorage
 
                     System.Reflection.BindingFlags getfieldflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
