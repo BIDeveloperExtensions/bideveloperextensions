@@ -182,11 +182,11 @@ namespace BIDSHelper
                             b.Pushed = true;
                         }
                     }
-                    if (newDeployMdxScriptButton != null)
+                    if (newDeployMdxScriptButton != null && !toolbar.Buttons.Contains(newDeployMdxScriptButton))
                     {
                         toolbar.Buttons.Insert(iMicrosoftCalcPropertiesIndex, newDeployMdxScriptButton);
                     }
-                    if (newCalcPropButton != null)
+                    if (newCalcPropButton != null && !toolbar.Buttons.Contains(newCalcPropButton))
                     {
                         toolbar.Buttons.Insert(iMicrosoftCalcPropertiesIndex, newCalcPropButton);
                     }
