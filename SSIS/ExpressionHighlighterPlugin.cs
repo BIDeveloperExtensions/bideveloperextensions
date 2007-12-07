@@ -458,6 +458,7 @@ namespace BIDSHelper
                     if (e is IDTSSequence)
                     {
                         matchingExecutable = FindExecutable((IDTSSequence)e, sObjectGuid);
+                        if (matchingExecutable != null) return matchingExecutable;
                     }
                 }
             }
