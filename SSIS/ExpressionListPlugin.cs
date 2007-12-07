@@ -703,6 +703,7 @@ namespace BIDSHelper
                     if (e is IDTSSequence)
                     {
                         matchingExecutable = FindTaskHost((IDTSSequence)e, sObjectGuid);
+                        if (matchingExecutable != null) return matchingExecutable;
                     }
                 }
             }
@@ -724,6 +725,7 @@ namespace BIDSHelper
                     if (e is IDTSSequence)
                     {
                         matchingExecutable = FindContainer((IDTSSequence)e, sObjectGuid);
+                        if (matchingExecutable != null) return matchingExecutable;
                     }
                 }
             }
