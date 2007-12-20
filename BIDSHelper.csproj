@@ -149,6 +149,7 @@
     <Compile Include="Core\BIDSHelperWindowActivatedPluginBase.cs" />
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\ReportViewerForm.Designer.cs" />
+    <Compile Include="SSIS\PackageConfigurationLoader.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -272,6 +273,7 @@
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\ExpressionListPlugin.cs" />
+    <Compile Include="SSIS\HighlightingToDo.cs" />
     <Compile Include="SSIS\SmartDiff.cs">
       <SubType>Form</SubType>
     </Compile>

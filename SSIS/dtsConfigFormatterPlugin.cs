@@ -67,12 +67,12 @@ namespace BIDSHelper.SSIS
 
         void SolutionItemsEvents_ItemAdded(ProjectItem ProjectItem)
         {
-            throw new Exception("The method or operation is not implemented.");
+            //throw new Exception("The method or operation is not implemented.");
         }
 
         void docEvents_DocumentOpened(Document doc)
         {
-            doc.Activate();
+            //doc.Activate();
         }
 
         void windowEvents_WindowCreated(Window activeWindow)

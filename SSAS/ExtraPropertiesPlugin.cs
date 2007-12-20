@@ -49,6 +49,7 @@ namespace BIDSHelper
         //the decisions about what extra properties are show are configured here
         void ConfigureProjectItemExtraProperties(ProjectItem pi)
         {
+            if (pi == null) return;
             if (pi.Object is Dimension)
             {
                 Microsoft.AnalysisServices.Dimension dim = (Microsoft.AnalysisServices.Dimension)pi.Object;

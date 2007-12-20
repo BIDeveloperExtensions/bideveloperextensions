@@ -228,22 +228,29 @@ namespace BIDSHelper
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
                     string sExpression = (string)editor.GetType().InvokeMember("Expression", getpropflags, null, editor, null);
+                    if (!string.IsNullOrEmpty(sExpression) && string.IsNullOrEmpty(sExpression.Trim()))
+                        sExpression = null;
 
+                    object oObjectChanged = null;
                     if (variable != null)
                     {
                         variable.Expression = sExpression;
+                        oObjectChanged = variable;
                     }
                     else if (taskHost != null)
                     {
                         taskHost.SetExpression(e.Property, sExpression);
+                        oObjectChanged = taskHost;
                     }
                     else if (connection != null)
                     {
                         connection.SetExpression(e.Property, sExpression);
+                        oObjectChanged = connection;
                     }
                     else if (e.ObjectID == ((Package)container).ID)
                     {
                         package.SetExpression(e.Property, sExpression);
+                        oObjectChanged = package;
                     }
 
                     expressionListWindow_RefreshExpressions(null, null);
@@ -254,10 +261,21 @@ namespace BIDSHelper
                         if (!string.IsNullOrEmpty(sExpression))
                             bShouldSkipExpressionHighlighting = true; //this flag is used by the expression highlighter to skip re-highlighting if all that's changed is the string of an existing expression... if one has been removed, then re-highlight
 
+                        PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(oObjectChanged);
+                        System.ComponentModel.PropertyDescriptor myProperty = properties.Find("Expressions", false);
+
                         //mark package object as dirty
                         IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
-                        changesvc.OnComponentChanging(container, null);
-                        changesvc.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
+                        if (oObjectChanged == null)
+                        {
+                            changesvc.OnComponentChanging(container, null);
+                            changesvc.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
+                        }
+                        else
+                        {
+                            changesvc.OnComponentChanging(oObjectChanged, myProperty);
+                            changesvc.OnComponentChanged(oObjectChanged, myProperty, null, null); //marks the package designer as dirty
+                        }
                     }
                     finally
                     {
@@ -267,7 +285,6 @@ namespace BIDSHelper
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
@@ -513,7 +530,8 @@ namespace BIDSHelper
                 {
                     return;
                 }
-                designer = (IDesignerHost)GotFocus.Object;
+                designer = GotFocus.Object as IDesignerHost;
+                if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if (!(pi.Name.ToLower().EndsWith(".dtsx")))
                 {

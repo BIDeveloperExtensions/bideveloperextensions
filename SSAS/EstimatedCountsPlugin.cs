@@ -48,7 +48,7 @@ namespace BIDSHelper
             try
             {
                 if (GotFocus == null) return;
-                IDesignerHost designer = (IDesignerHost)GotFocus.Object;
+                IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if (!(pi.Object is Cube)) return;
