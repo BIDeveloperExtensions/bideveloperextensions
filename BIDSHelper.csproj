@@ -165,6 +165,7 @@
     <Compile Include="Core\BIDSHelperWindowActivatedPluginBase.cs" />
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\ReportViewerForm.Designer.cs" />
+    <Compile Include="SSIS\SortProjectFilesPlugin.cs" />
     <Compile Include="SSIS\ExecutionTreesPlugin.cs" />
     <Compile Include="SSIS\PackageConfigurationLoader.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

@@ -167,6 +167,23 @@ namespace BIDSHelper
                         pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1);
                         toolsCommandBarPopup.Visible = true;
                     }
+                    else if (AddCommandToMultipleMenus)
+                    {
+                        foreach (CommandBar bar in (CommandBars)(appObj.CommandBars))
+                        {
+                            if (bar.Name == this.MenuName)
+                            {
+                                if (!ShouldPositionAtEnd)
+                                {
+                                    pluginCmd.AddControl(bar, 1);
+                                }
+                                else
+                                {
+                                    pluginCmd.AddControl(bar, bar.Controls.Count - 1);
+                                }
+                            }
+                        }
+                    }
                     else
                     {
                         if (!ShouldPositionAtEnd)
@@ -331,6 +348,14 @@ namespace BIDSHelper
         public virtual string FriendlyName
         {
             get { return this.ButtonText; }
+        }
+
+        /// <summary>
+        /// If there are multiple menus with the same MenuName, this setting controls whether this command is added to all of them or just the first
+        /// </summary>
+        public virtual bool AddCommandToMultipleMenus
+        {
+            get { return false; }
         }
 
         #endregion
