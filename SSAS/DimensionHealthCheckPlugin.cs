@@ -88,6 +88,11 @@ namespace BIDSHelper
                     }
                     return;
                 }
+                else if (d.Source is DimensionBinding)
+                {
+                    MessageBox.Show("Dimension Health Check is not supported on a linked dimension.");
+                    return;
+                }
 
                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(true, "Checking Dimension Health...", 0, d.Attributes.Count * 2);
