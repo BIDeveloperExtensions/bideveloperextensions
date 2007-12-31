@@ -76,6 +76,19 @@ namespace BIDSHelper
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
                 Dimension d = (Dimension)projItem.Object;
 
+                if (d.DataSource == null)
+                {
+                    if (d.Source is TimeBinding)
+                    {
+                        MessageBox.Show("Dimension Health Check is not supported on a Server Time dimension.");
+                    }
+                    else
+                    {
+                        MessageBox.Show("The data source for this dimension is not set. Dimension Health Check cannot be run.");
+                    }
+                    return;
+                }
+
                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(true, "Checking Dimension Health...", 0, d.Attributes.Count * 2);
 
