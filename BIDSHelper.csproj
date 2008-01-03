@@ -337,6 +337,7 @@
     <None Include="Resources\ExpressionListIcon.ico" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
+    <None Include="Resources\SmartDiffSSAS.xslt" />
     <Content Include="SetupScript\ReleaseChecklist.txt" />
     <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
     <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />

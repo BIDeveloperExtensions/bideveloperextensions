@@ -44,6 +44,9 @@ namespace BIDSHelper
             get { return true; }
         }
 
+        private string[] DTS_FILE_EXTENSIONS = { ".dtsx" };
+        private string[] SSAS_FILE_EXTENSIONS = { ".dim", ".cube", ".dmm", ".dsv" };
+
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
@@ -59,7 +62,17 @@ namespace BIDSHelper
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                return (sFileName.EndsWith(".dtsx"));
+                foreach (string extension in DTS_FILE_EXTENSIONS)
+                {
+                    if (sFileName.EndsWith(extension))
+                        return true;
+                }
+                foreach (string extension in SSAS_FILE_EXTENSIONS)
+                {
+                    if (sFileName.EndsWith(extension))
+                        return true;
+                }
+                return false;
             }
             catch
             {
@@ -135,6 +148,27 @@ namespace BIDSHelper
                 DialogResult res = form.ShowDialog();
                 if (res != DialogResult.OK) return;
 
+
+                //get the XSLT for this file extension
+                string sXslt = null;
+                string sProjectItemFileName = projItem.Name.ToLower();
+                foreach (string extension in DTS_FILE_EXTENSIONS)
+                {
+                    if (sProjectItemFileName.EndsWith(extension))
+                    {
+                        sXslt = BIDSHelper.Properties.Resources.SmartDiffDtsx;
+                        break;
+                    }
+                }
+                foreach (string extension in SSAS_FILE_EXTENSIONS)
+                {
+                    if (sProjectItemFileName.EndsWith(extension))
+                    {
+                        sXslt = BIDSHelper.Properties.Resources.SmartDiffSSAS;
+                        break;
+                    }
+                }
+
                 string sOldFile = System.IO.Path.GetTempFileName();
                 string sNewFile = System.IO.Path.GetTempFileName();
 
@@ -171,8 +205,8 @@ namespace BIDSHelper
                         sNewFileName += " (local)";
                     }
 
-                    PrepXmlForDiff(sOldFile, BIDSHelper.Properties.Resources.SmartDiffDtsx);
-                    PrepXmlForDiff(sNewFile, BIDSHelper.Properties.Resources.SmartDiffDtsx);
+                    PrepXmlForDiff(sOldFile, sXslt);
+                    PrepXmlForDiff(sNewFile, sXslt);
 
                     ShowDiff(sOldFile, sNewFile, form.checkIgnoreCase.Checked, form.checkIgnoreEOL.Checked, form.checkIgnoreWhiteSpace.Checked, sOldFileName, sNewFileName);
                 }
