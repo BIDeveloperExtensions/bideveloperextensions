@@ -53,8 +53,12 @@ namespace BIDSHelper
 
         public override void OnWindowActivated(Window GotFocus, Window lostFocus)
         {
-            System.Diagnostics.Debug.WriteLine("OnWindowActivated: GotFocus=" + (GotFocus == null ? "Null" : "NotNull") + "  LostFocus=" + (lostFocus == null ? "Null" : "NotNull"));
-            BuildToDos(GotFocus, null);
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("OnWindowActivated: GotFocus=" + (GotFocus == null ? "Null" : "NotNull") + "  LostFocus=" + (lostFocus == null ? "Null" : "NotNull"));
+                BuildToDos(GotFocus, null);
+            }
+            catch { }
         }
         public override void OnWindowClosing(Window ClosingWindow)
         {

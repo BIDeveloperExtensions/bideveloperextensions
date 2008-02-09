@@ -52,6 +52,7 @@ namespace BIDSHelper
         ///<remarks></remarks>
         void IDTExtensibility2.OnConnection(object application, ext_ConnectMode connectMode, object addInInst, ref Array custom)
         {
+            string sAddInTypeName = string.Empty;
             try
             {
                 _applicationObject = (DTE2)application;
@@ -70,13 +71,19 @@ namespace BIDSHelper
                         && (!object.ReferenceEquals(t, typeof(BIDSHelperPluginBase)))
                         && (!t.IsAbstract))
                     {
+                        sAddInTypeName = t.Name;
+
                         BIDSHelperPluginBase ext;
                         System.Type[] @params = { typeof(Connect), typeof(DTE2), typeof(AddIn) };
                         System.Reflection.ConstructorInfo con;
 
                         con = t.GetConstructor(@params);
+                        if (con == null)
+                        {
+                            System.Windows.Forms.MessageBox.Show("Problem loading type " + t.Name + ". No constructor found.");
+                            continue;
+                        }
                         ext = (BIDSHelperPluginBase)con.Invoke(new object[] { this, _applicationObject, _addInInstance });
-                        //ext.AddinCore = this;
                         addins.Add(ext.CommandName, ext);
 
                     }
@@ -85,7 +92,14 @@ namespace BIDSHelper
             }
             catch (Exception ex)
             {
-                System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message);
+                if (string.IsNullOrEmpty(sAddInTypeName))
+                {
+                    System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message + "\r\n" + ex.StackTrace);
+                }
+                else
+                {
+                    System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace);
+                }
             }
             finally
             {

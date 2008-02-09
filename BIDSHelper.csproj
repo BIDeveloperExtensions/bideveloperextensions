@@ -124,7 +124,7 @@
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="msddsp, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>c:\Program Files\Common Files\Microsoft Shared\MSDesigners8\msddsp.dll</HintPath>
+      <HintPath>DLLs\SQL2005\msddsp.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -342,6 +342,7 @@
     <None Include="Resources\DeployAggDesigns.xslt" />
     <None Include="Resources\DeployAggDesigns.ico" />
     <None Include="Resources\ExpressionListIcon.ico" />
+    <None Include="DLLs\SQL2005\msddsp.dll" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
