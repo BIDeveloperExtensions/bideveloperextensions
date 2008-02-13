@@ -69,6 +69,10 @@ namespace AggManager
                             RegularMeasureGroupDimension regCommonDim = commonDim as RegularMeasureGroupDimension;
                             if (commonDim.CubeDimensionID != aggDim.CubeDimensionID || regCommonDim == null)
                             {
+                                if (!aggDim.ParentMeasureGroup.Dimensions.Contains(commonDim.CubeDimensionID)) continue; //this isn't a shared dimension
+                                MeasureGroupDimension dataMeasureGroupDim = aggDim.ParentMeasureGroup.Dimensions[commonDim.CubeDimensionID];
+                                if (dataMeasureGroupDim is ManyToManyMeasureGroupDimension) continue; //this shared dimension is m2m on the data measure group so don't include it
+
                                 //this is a common dimension and the granularity attribute on the intermediate measure group needs to be in the agg
                                 bool bFoundGranularityAgg = false;
                                 MeasureGroupAttribute mga = GetGranularityAttribute(regCommonDim);
@@ -80,7 +84,7 @@ namespace AggManager
                                         bFoundGranularityAgg = true;
                                     }
                                 }
-                                if (!bFoundGranularityAgg)
+                                if (!bFoundGranularityAgg && mga != null)
                                 {
                                     missing.Add(mga);
                                 }
@@ -365,11 +369,14 @@ namespace AggManager
 
         public static MeasureGroupAttribute GetGranularityAttribute(RegularMeasureGroupDimension mgDim)
         {
-            foreach (MeasureGroupAttribute mga in mgDim.Attributes)
+            if (mgDim != null)
             {
-                if (mga.Type == MeasureGroupAttributeType.Granularity)
+                foreach (MeasureGroupAttribute mga in mgDim.Attributes)
                 {
-                    return mga;
+                    if (mga.Type == MeasureGroupAttributeType.Granularity)
+                    {
+                        return mga;
+                    }
                 }
             }
             return null;

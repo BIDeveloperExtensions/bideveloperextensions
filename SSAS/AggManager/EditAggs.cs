@@ -1064,6 +1064,10 @@ namespace AggManager
                         List<MeasureGroupAttribute> missing = new List<MeasureGroupAttribute>();
                         foreach (MeasureGroupDimension commonDim in intermediateMG.Dimensions)
                         {
+                            if (!mgDim.Parent.Dimensions.Contains(commonDim.CubeDimensionID)) continue; //this isn't a shared dimension
+                            MeasureGroupDimension dataMeasureGroupDim = mgDim.Parent.Dimensions[commonDim.CubeDimensionID];
+                            if (dataMeasureGroupDim is ManyToManyMeasureGroupDimension) continue; //this shared dimension is m2m on the data measure group so don't include it
+
                             RegularMeasureGroupDimension regCommonDim = commonDim as RegularMeasureGroupDimension;
                             if (commonDim.CubeDimensionID != m2mDim.CubeDimensionID || regCommonDim == null)
                             {
@@ -1078,7 +1082,7 @@ namespace AggManager
                                         bFoundGranularityAgg = true;
                                     }
                                 }
-                                if (!bFoundGranularityAgg)
+                                if (!bFoundGranularityAgg && mga != null)
                                 {
                                     missing.Add(mga);
                                 }
