@@ -20,6 +20,8 @@
     <OldToolsVersion>2.0</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>BIDSHelper.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -465,6 +467,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="BIDSHelper.snk" />
     <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
     <None Include="Properties\DataSources\DataTypeDiscrepancyCheckPlugin.DataTypeDiscrepancy.datasource" />
     <None Include="Properties\DataSources\DimensionOptimizationReportPlugin.DimensionOptimizations.datasource" />

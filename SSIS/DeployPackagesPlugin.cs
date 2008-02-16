@@ -24,6 +24,7 @@ namespace BIDSHelper
         public DeployPackagesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
+            RegisterClassesForCOM();
             CaptureClickEventForProjectPropertiesMenu();
         }
 
@@ -304,6 +305,26 @@ namespace BIDSHelper
         }
 
         #region Override Project Properties Dialog
+        /// <summary>
+        /// register DtsProjectExtendedDeployPropertyPage for COM. Must be registered every time Vis Studio starts up
+        /// </summary>
+        private void RegisterClassesForCOM()
+        {
+            try
+            {
+                RegistrationServices regSvc = new RegistrationServices();
+                object[] attributes = typeof(DtsProjectExtendedDeployPropertyPage).GetCustomAttributes(typeof(GuidAttribute), false);
+                if (attributes.Length == 0)
+                    throw new Exception("Couldn't finding GuidAttribute on DtsProjectExtendedDeployPropertyPage");
+                Guid guid = new Guid(((GuidAttribute)attributes[0]).Value);
+                regSvc.RegisterTypeForComClients(typeof(DtsProjectExtendedDeployPropertyPage), ref guid);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Problem registering DtsProjectExtendedDeployPropertyPage for COM", ex);
+            }
+        }
+
         private void CaptureClickEventForProjectPropertiesMenu()
         {
             CommandBars cmdBars = (CommandBars)this.ApplicationObject.CommandBars;
