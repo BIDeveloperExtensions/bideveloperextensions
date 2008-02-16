@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D0A64DAC-84C6-4F6A-A406-A08355738A45}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -127,6 +127,9 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="msddsp, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2005\msddsp.dll</HintPath>
@@ -177,6 +180,7 @@
       <DependentUpon>DataTypeDiscrepancyCheckForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\DataTypeDiscrepancyCheckPlugin.cs" />
+    <Compile Include="SSIS\DeployPackagesPlugin.cs" />
     <Compile Include="SSIS\ResetGuidsPlugin.cs" />
     <Compile Include="SSIS\SortProjectFilesPlugin.cs" />
     <Compile Include="SSIS\ExecutionTreesPlugin.cs" />

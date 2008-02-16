@@ -13,7 +13,6 @@ namespace BIDSHelper
 
         private const string BASE_NAME = "BIDSHelper.Connect.";
         private Command pluginCmd;
-        private CommandBar pluginCmdBar;
         static CommandBarPopup toolsCommandBarPopup;
         private DTE2 appObj;
         private AddIn addIn;
@@ -147,52 +146,55 @@ namespace BIDSHelper
                             ref contextUIGUIDs,
                             (int)vsCommandStatus.vsCommandStatusSupported + (int)vsCommandStatus.vsCommandStatusEnabled);
 
-                pluginCmdBar = cmdBars[this.MenuName];
-                if (pluginCmdBar == null)
+                foreach (string sMenuName in this.MenuName.Split(','))
                 {
-                    System.Windows.Forms.MessageBox.Show("Cannot get the " + this.MenuName + " menubar");
-                }
-                else
-                {
-                    pluginCmd = cmdTmp;
-
-                    if (this.MenuName == "Tools")
+                    CommandBar pluginCmdBar = cmdBars[sMenuName];
+                    if (pluginCmdBar == null)
                     {
-                        if (toolsCommandBarPopup == null)
-                        {
-                            toolsCommandBarPopup = (CommandBarPopup)pluginCmdBar.Controls.Add(MsoControlType.msoControlPopup, System.Type.Missing, System.Type.Missing, 1, true);
-                            toolsCommandBarPopup.CommandBar.Name = "BIDSHelperToolsCommandBarPopup";
-                            toolsCommandBarPopup.Caption = "BIDS Helper";
-                        }
-                        pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1);
-                        toolsCommandBarPopup.Visible = true;
-                    }
-                    else if (AddCommandToMultipleMenus)
-                    {
-                        foreach (CommandBar bar in (CommandBars)(appObj.CommandBars))
-                        {
-                            if (bar.Name == this.MenuName)
-                            {
-                                if (!ShouldPositionAtEnd)
-                                {
-                                    pluginCmd.AddControl(bar, 1);
-                                }
-                                else
-                                {
-                                    pluginCmd.AddControl(bar, bar.Controls.Count - 1);
-                                }
-                            }
-                        }
+                        System.Windows.Forms.MessageBox.Show("Cannot get the " + this.MenuName + " menubar");
                     }
                     else
                     {
-                        if (!ShouldPositionAtEnd)
+                        pluginCmd = cmdTmp;
+
+                        if (this.MenuName == "Tools")
                         {
-                            pluginCmd.AddControl(pluginCmdBar, 1);
+                            if (toolsCommandBarPopup == null)
+                            {
+                                toolsCommandBarPopup = (CommandBarPopup)pluginCmdBar.Controls.Add(MsoControlType.msoControlPopup, System.Type.Missing, System.Type.Missing, 1, true);
+                                toolsCommandBarPopup.CommandBar.Name = "BIDSHelperToolsCommandBarPopup";
+                                toolsCommandBarPopup.Caption = "BIDS Helper";
+                            }
+                            pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1);
+                            toolsCommandBarPopup.Visible = true;
+                        }
+                        else if (AddCommandToMultipleMenus)
+                        {
+                            foreach (CommandBar bar in (CommandBars)(appObj.CommandBars))
+                            {
+                                if (bar.Name == this.MenuName)
+                                {
+                                    if (!ShouldPositionAtEnd)
+                                    {
+                                        pluginCmd.AddControl(bar, 1);
+                                    }
+                                    else
+                                    {
+                                        pluginCmd.AddControl(bar, bar.Controls.Count - 1);
+                                    }
+                                }
+                            }
                         }
                         else
                         {
-                            pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1);
+                            if (!ShouldPositionAtEnd)
+                            {
+                                pluginCmd.AddControl(pluginCmdBar, 1);
+                            }
+                            else
+                            {
+                                pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1);
+                            }
                         }
                     }
                 }
