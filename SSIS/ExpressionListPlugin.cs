@@ -21,6 +21,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 
 
+
+
+
 namespace BIDSHelper
 {
     public class ExpressionListPlugin : BIDSHelperWindowActivatedPluginBase
@@ -41,12 +44,11 @@ namespace BIDSHelper
         IDesignerHost designer = null;
         System.ComponentModel.BackgroundWorker processPackage = null;
 
+
         public ExpressionListPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
         }
-
-
 
         public override bool ShouldHookWindowCreated
         {
@@ -99,7 +101,6 @@ namespace BIDSHelper
             EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)this.ApplicationObject.Windows;
             System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
             toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
-            toolWindow.SetTabPicture(BIDSHelper.Properties.Resources.ExpressionListIcon.ToBitmap().GetHbitmap());
             expressionListWindow = (ExpressionListControl)programmableObject;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);

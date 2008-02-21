@@ -157,7 +157,7 @@ namespace BIDSHelper
                     {
                         pluginCmd = cmdTmp;
 
-                        if (this.MenuName == "Tools")
+                        if (sMenuName == "Tools")
                         {
                             if (toolsCommandBarPopup == null)
                             {
@@ -172,7 +172,7 @@ namespace BIDSHelper
                         {
                             foreach (CommandBar bar in (CommandBars)(appObj.CommandBars))
                             {
-                                if (bar.Name == this.MenuName)
+                                if (bar.Name == sMenuName)
                                 {
                                     if (!ShouldPositionAtEnd)
                                     {

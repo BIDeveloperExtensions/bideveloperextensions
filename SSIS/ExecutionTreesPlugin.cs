@@ -13,6 +13,7 @@ using Microsoft.DataTransformationServices.Project.DebugEngine;
 
 namespace BIDSHelper
 {
+    /* //not ready for this release
     public class ExecutionTreesPlugin : BIDSHelperPluginBase
     {
         public ExecutionTreesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -180,4 +181,5 @@ namespace BIDSHelper
             }
         }
     }
+     */
 }
