@@ -22,6 +22,7 @@
     </UpgradeBackupLocation>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>BIDSHelper.snk</AssemblyOriginatorKeyFile>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,7 +33,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>1591</NoWarn>
-    <DefineConstants>DEBUG</DefineConstants>
+    <DefineConstants>DEBUG;KATMAI</DefineConstants>
     <DebugType>full</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -43,6 +44,7 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\</OutputPath>
     <DocumentationFile>BIDSHelper.xml</DocumentationFile>
+    <DefineConstants>KATMAI</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
@@ -140,6 +142,9 @@
       <Name>System</Name>
     </Reference>
     <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Data">
       <Name>System.Data</Name>
     </Reference>
