@@ -14,14 +14,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Katmai|Any CPU = Katmai|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D0A64DAC-84C6-4F6A-A406-A08355738A45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D0A64DAC-84C6-4F6A-A406-A08355738A45}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0A64DAC-84C6-4F6A-A406-A08355738A45}.Katmai|Any CPU.ActiveCfg = Katmai|Any CPU
-		{D0A64DAC-84C6-4F6A-A406-A08355738A45}.Katmai|Any CPU.Build.0 = Katmai|Any CPU
 		{D0A64DAC-84C6-4F6A-A406-A08355738A45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0A64DAC-84C6-4F6A-A406-A08355738A45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
