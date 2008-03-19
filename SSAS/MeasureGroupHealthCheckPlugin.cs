@@ -146,7 +146,17 @@ namespace BIDSHelper
             if (mg.Measures.Count == 0) throw new Exception(mg.Name + " has no measures.");
             if (mg.IsLinked) throw new Exception(mg.Name + " is a linked measure group. Run this Measure Group Health Check on the source measure group.");
 
-            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(mg.Parent.DataSource);
+            DataSource oDataSource = mg.Parent.DataSource;
+            DsvTableBinding oTblBinding = new DsvTableBinding(mg.Parent.DataSourceView.ID, GetTableIdForDataItem(mg.Measures[0].Source));
+            DataTable dtTable = mg.ParentDatabase.DataSourceViews[oTblBinding.DataSourceViewID].Schema.Tables[oTblBinding.TableID];
+            
+            //check whether this fact table uses an alternate datasource
+            if (dtTable.ExtendedProperties.ContainsKey("DataSourceID"))
+            {
+                oDataSource = mg.ParentDatabase.DataSources[dtTable.ExtendedProperties["DataSourceID"].ToString()];
+            }
+
+            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(oDataSource);
             sq = openedDataSourceConnection.Cartridge.IdentStartQuote;
             fq = openedDataSourceConnection.Cartridge.IdentEndQuote;
 
@@ -159,7 +169,7 @@ namespace BIDSHelper
                 sCountBig = "count";
             }
 
-            string sFactQuery = GetQueryDefinition(mg.ParentDatabase, mg, new DsvTableBinding(mg.Parent.DataSourceView.ID, GetTableIdForDataItem(mg.Measures[0].Source)), null);
+            string sFactQuery = GetQueryDefinition(mg.ParentDatabase, mg, oTblBinding, null);
 
             StringBuilder sOuterQuery = new StringBuilder();
             foreach (Measure m in mg.Measures)
