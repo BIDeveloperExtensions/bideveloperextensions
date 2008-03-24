@@ -46,6 +46,9 @@
 	<!--remove the compiled binary of a script task-->
 	<xsl:template match="//DTS:ObjectData/ScriptProject/BinaryItem"/>
 
+	<!--remove the compiled binary of a script component-->
+	<xsl:template match="//DTS:ObjectData/pipeline/components/component/properties/property[@name='BinaryCode']"/>
+
 </xsl:stylesheet>
 
 
