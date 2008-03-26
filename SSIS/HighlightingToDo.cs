@@ -455,6 +455,42 @@ namespace BIDSHelper
                     break;
                 }
             }
+
+            if (executable is ForEachLoop)
+            {
+                ForEachEnumeratorHost forEachEnumerator = ((ForEachLoop)executable).ForEachEnumerator;
+
+                if (!returnValue)
+                {
+                    foreach (DtsProperty p in forEachEnumerator.Properties)
+                    {
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(forEachEnumerator.GetExpression(p.Name)))
+                            {
+                                returnValue = true;
+                                break;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+
+                if (!HasConfiguration)
+                {
+                    //check for package configurations separately so you can break out of the expensive expressions search as soon as you find one
+                    foreach (DtsProperty p in forEachEnumerator.Properties)
+                    {
+                        string sPackagePath = p.GetPackagePath(forEachEnumerator);
+                        if (listConfigPaths.Contains(sPackagePath))
+                        {
+                            HasConfiguration = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
             return returnValue;
         }
     }

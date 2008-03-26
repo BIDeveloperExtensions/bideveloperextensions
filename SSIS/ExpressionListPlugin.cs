@@ -647,6 +647,11 @@ namespace BIDSHelper
                 {
                     ScanProperties(worker, sNewPath, ((TaskHost)container).InnerObject.GetType().ToString(), container.ID, container.Name, propProvider);
                 }
+                else if (container is ForEachLoop)
+                {
+                    ScanProperties(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, propProvider);
+                    ScanProperties(worker, sNewPath + ".ForEachEnumerator", container.GetType().ToString(), container.ID, container.Name, ((ForEachLoop)container).ForEachEnumerator);
+                }
                 else
                 {
                     ScanProperties(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, propProvider);
