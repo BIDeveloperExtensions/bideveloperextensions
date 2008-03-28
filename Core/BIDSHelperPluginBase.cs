@@ -157,6 +157,7 @@ namespace BIDSHelper
                     {
                         pluginCmd = cmdTmp;
 
+                        CommandBarButton btn;
                         if (sMenuName == "Tools")
                         {
                             if (toolsCommandBarPopup == null)
@@ -165,7 +166,8 @@ namespace BIDSHelper
                                 toolsCommandBarPopup.CommandBar.Name = "BIDSHelperToolsCommandBarPopup";
                                 toolsCommandBarPopup.Caption = "BIDS Helper";
                             }
-                            pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1);
+                            btn = pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1) as CommandBarButton;
+                            SetCustomIcon(btn);
                             toolsCommandBarPopup.Visible = true;
                         }
                         else if (AddCommandToMultipleMenus)
@@ -176,12 +178,13 @@ namespace BIDSHelper
                                 {
                                     if (!ShouldPositionAtEnd)
                                     {
-                                        pluginCmd.AddControl(bar, 1);
+                                        btn = pluginCmd.AddControl(bar, 1) as CommandBarButton;
                                     }
                                     else
                                     {
-                                        pluginCmd.AddControl(bar, bar.Controls.Count - 1);
+                                        btn = pluginCmd.AddControl(bar, bar.Controls.Count - 1) as CommandBarButton;
                                     }
+                                    SetCustomIcon(btn);
                                 }
                             }
                         }
@@ -189,12 +192,13 @@ namespace BIDSHelper
                         {
                             if (!ShouldPositionAtEnd)
                             {
-                                pluginCmd.AddControl(pluginCmdBar, 1);
+                                btn = pluginCmd.AddControl(pluginCmdBar, 1) as CommandBarButton;
                             }
                             else
                             {
-                                pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1);
+                                btn = pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1) as CommandBarButton;
                             }
+                            SetCustomIcon(btn);
                         }
                     }
                 }
@@ -204,6 +208,17 @@ namespace BIDSHelper
                 MessageBox.Show("Problem registering " + this.FullName + " command: " + e.Message);
             }
 
+        }
+
+        private void SetCustomIcon(CommandBarButton btn)
+        {
+            if (btn != null && this.CustomMenuIcon != null)
+            {
+                System.Drawing.Bitmap bmp = this.CustomMenuIcon.ToBitmap();
+                btn.Picture = (stdole.StdPicture)ImageToPictureDispConverter.GetIPictureDispFromImage(bmp);
+                btn.Mask = (stdole.StdPicture)ImageToPictureDispConverter.GetMaskIPictureDispFromBitmap(bmp);
+                bmp.Dispose();
+            }
         }
 
         public WindowEvents GetWindowEvents()
@@ -352,6 +367,11 @@ namespace BIDSHelper
             get { return this.ButtonText; }
         }
 
+        public virtual System.Drawing.Icon CustomMenuIcon
+        {
+            get { return null; }
+        }
+
         /// <summary>
         /// If there are multiple menus with the same MenuName, this setting controls whether this command is added to all of them or just the first
         /// </summary>
@@ -362,4 +382,5 @@ namespace BIDSHelper
 
         #endregion
     }
+
 }

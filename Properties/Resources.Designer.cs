@@ -60,6 +60,27 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap arrowDown {
+            get {
+                object obj = ResourceManager.GetObject("arrowDown", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap arrowFlat {
+            get {
+                object obj = ResourceManager.GetObject("arrowFlat", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap arrowUp {
+            get {
+                object obj = ResourceManager.GetObject("arrowUp", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon BIDSHelper {
             get {
                 object obj = ResourceManager.GetObject("BIDSHelper", resourceCulture);
@@ -73,6 +94,20 @@ namespace BIDSHelper.Properties {
         internal static string BIDSHelperDescription {
             get {
                 return ResourceManager.GetString("BIDSHelperDescription", resourceCulture);
+            }
+        }
+        
+        internal static System.Drawing.Icon Copy {
+            get {
+                object obj = ResourceManager.GetObject("Copy", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon DataFlow {
+            get {
+                object obj = ResourceManager.GetObject("DataFlow", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -138,6 +173,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon End {
+            get {
+                object obj = ResourceManager.GetObject("End", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon EstimatedCounts {
             get {
                 object obj = ResourceManager.GetObject("EstimatedCounts", resourceCulture);
@@ -159,9 +201,58 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon MinusSign {
+            get {
+                object obj = ResourceManager.GetObject("MinusSign", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon Package {
+            get {
+                object obj = ResourceManager.GetObject("Package", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon Path {
+            get {
+                object obj = ResourceManager.GetObject("Path", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon Performance {
+            get {
+                object obj = ResourceManager.GetObject("Performance", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon PlusSign {
+            get {
+                object obj = ResourceManager.GetObject("PlusSign", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon RefreshExpressions {
             get {
                 object obj = ResourceManager.GetObject("RefreshExpressions", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon Run {
+            get {
+                object obj = ResourceManager.GetObject("Run", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon SmallBlueDiamond {
+            get {
+                object obj = ResourceManager.GetObject("SmallBlueDiamond", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -203,6 +294,20 @@ namespace BIDSHelper.Properties {
         internal static System.Drawing.Icon Stop {
             get {
                 object obj = ResourceManager.GetObject("Stop", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon TaskSmall {
+            get {
+                object obj = ResourceManager.GetObject("TaskSmall", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon TreeViewTab {
+            get {
+                object obj = ResourceManager.GetObject("TreeViewTab", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
