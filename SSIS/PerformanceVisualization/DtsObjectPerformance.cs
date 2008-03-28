@@ -509,7 +509,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             {
                 double? dblInboundRowsSec = InboundRowsSec;
                 if (dblInboundRowsSec != null)
-                    return dblInboundRowsSec * BufferEstimatedBytesPerRow / 1000;
+                    return dblInboundRowsSec * BufferEstimatedBytesPerRow / 1024;
                 else
                     return null;
             }
@@ -521,7 +521,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             {
                 double? dblOutboundRowsSec = OutboundRowsSec;
                 if (dblOutboundRowsSec != null)
-                    return dblOutboundRowsSec * BufferEstimatedBytesPerRow / 1000;
+                    return dblOutboundRowsSec * BufferEstimatedBytesPerRow / 1024;
                 else
                     return null;
             }
