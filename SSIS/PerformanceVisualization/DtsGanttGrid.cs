@@ -12,6 +12,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
     public class DtsGanttGrid : DtsGrid
     {
         private const double PIXELS_PER_SECOND = 8;
+        private Font FONT_DIAMOND_SUPERSCRIPT = new Font("Arial", 6F);
         private DateTime _DataBindingDate;
 
         public DtsGanttGrid()
@@ -96,11 +97,16 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     int iRowHeight = Rows[RowIndex].Height;
                     int iBarHeight = iRowHeight - 6;
 
-                    Bitmap canvas = new Bitmap((int)clipRectangle.Width, (int)clipRectangle.Height);
+                    Bitmap canvas = new Bitmap((int)clipRectangle.Width, (int)clipRectangle.Height, e.Graphics);
                     Graphics gBitmap = Graphics.FromImage(canvas);
+                    gBitmap.SmoothingMode = SmoothingMode.AntiAlias;
+                    gBitmap.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
                     IDtsGridRowData data = (IDtsGridRowData)((BindingSource)DataSource)[RowIndex];
-                    foreach (DateRange range in data.DateRanges)
+                    DateRange rangePrev = null;
+                    int iOverlappingDiamonds = 1;
+                    for (int iRange = 0; iRange < data.DateRanges.Count; iRange++)
                     {
+                        DateRange range = data.DateRanges[iRange];
                         TimeSpan tsLeft = range.StartDate.Subtract(dataPackage.DateRanges[0].StartDate);
                         if (data.Type == typeof(PipelinePath))
                         {
@@ -110,7 +116,22 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                             else
                                 x -= 4;
 
-                            gBitmap.DrawIcon(Properties.Resources.SmallBlueDiamond, x, (int)3);
+                            if (rangePrev != null && rangePrev.StartDate == range.StartDate)
+                            {
+                                iOverlappingDiamonds++;
+                                PointF pointDot = new PointF(x, 0);
+                                if (iRange == data.DateRanges.Count - 1 || data.DateRanges[iRange + 1].StartDate != range.StartDate)
+                                {
+                                    string s = (iOverlappingDiamonds > 9 ? "+" : iOverlappingDiamonds.ToString());
+                                    gBitmap.DrawString(s, FONT_DIAMOND_SUPERSCRIPT, Brushes.DarkBlue, new PointF(x + 7F, -1F));
+                                    gBitmap.DrawIcon(Properties.Resources.SmallBlueDiamond, x, (int)3);
+                                }
+                            }
+                            else
+                            {
+                                iOverlappingDiamonds = 1;
+                                gBitmap.DrawIcon(Properties.Resources.SmallBlueDiamond, x, (int)3);
+                            }
                         }
                         else
                         {
@@ -134,13 +155,15 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                             gBitmap.FillPath(new LinearGradientBrush(new Point(0, 2), new Point(0, 2 + iBarHeight), Color.FromArgb(0x80, colorLight), Color.FromArgb(0xe0, colorDark)), path);
                             gBitmap.DrawPath(Pens.Black, path);
                         }
+                        rangePrev = range;
+                    }
 
-                        if (listRowBitmaps.Count > RowIndex)
-                        {
-                            listRowBitmaps[RowIndex] = canvas;
-                            clipRectangle = base.GetCellDisplayRectangle(1, RowIndex, false);
-                            graphics.DrawImage(listRowBitmaps[RowIndex], e.CellBounds.X, e.CellBounds.Y);
-                        }
+                    //cache the bitmap so the expense of recreating it won't have to happen on scroll of the grid
+                    if (listRowBitmaps.Count > RowIndex)
+                    {
+                        listRowBitmaps[RowIndex] = canvas;
+                        clipRectangle = base.GetCellDisplayRectangle(1, RowIndex, false);
+                        graphics.DrawImage(listRowBitmaps[RowIndex], e.CellBounds.X, e.CellBounds.Y);
                     }
                 }
             }
