@@ -40,6 +40,8 @@ namespace BIDSHelper.SSIS
             this.cancelButton = new System.Windows.Forms.Button();
             this.btnClipboard = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.cboRaggedRightDelimiter = new System.Windows.Forms.ComboBox();
+            this.lblRaggedRight = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -72,7 +74,7 @@ namespace BIDSHelper.SSIS
             dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
-            this.dataGridView1.Location = new System.Drawing.Point(12, 87);
+            this.dataGridView1.Location = new System.Drawing.Point(12, 134);
             this.dataGridView1.Name = "dataGridView1";
             dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
@@ -85,7 +87,7 @@ namespace BIDSHelper.SSIS
             this.dataGridView1.RowHeadersVisible = false;
             this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView1.ShowEditingIcon = false;
-            this.dataGridView1.Size = new System.Drawing.Size(329, 243);
+            this.dataGridView1.Size = new System.Drawing.Size(329, 214);
             this.dataGridView1.TabIndex = 1;
             // 
             // ColumnName
@@ -111,7 +113,7 @@ namespace BIDSHelper.SSIS
             this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.okButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.okButton.Location = new System.Drawing.Point(185, 342);
+            this.okButton.Location = new System.Drawing.Point(185, 381);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 4;
@@ -122,7 +124,7 @@ namespace BIDSHelper.SSIS
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(266, 342);
+            this.cancelButton.Location = new System.Drawing.Point(266, 381);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 3;
@@ -132,7 +134,7 @@ namespace BIDSHelper.SSIS
             // btnClipboard
             // 
             this.btnClipboard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnClipboard.Location = new System.Drawing.Point(12, 342);
+            this.btnClipboard.Location = new System.Drawing.Point(12, 381);
             this.btnClipboard.Name = "btnClipboard";
             this.btnClipboard.Size = new System.Drawing.Size(121, 23);
             this.btnClipboard.TabIndex = 5;
@@ -146,9 +148,37 @@ namespace BIDSHelper.SSIS
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.Location = new System.Drawing.Point(12, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(329, 75);
+            this.label1.Size = new System.Drawing.Size(329, 122);
             this.label1.TabIndex = 6;
             this.label1.Text = resources.GetString("label1.Text");
+            // 
+            // cboRaggedRightDelimiter
+            // 
+            this.cboRaggedRightDelimiter.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.cboRaggedRightDelimiter.FormattingEnabled = true;
+            this.cboRaggedRightDelimiter.Items.AddRange(new object[] {
+            "[None]",
+            "{CR}{LF}",
+            "{CR}",
+            "{LF}",
+            "Semicolon {;}",
+            "Comma {,}",
+            "Tab",
+            "Vertical Bar {|}"});
+            this.cboRaggedRightDelimiter.Location = new System.Drawing.Point(137, 354);
+            this.cboRaggedRightDelimiter.Name = "cboRaggedRightDelimiter";
+            this.cboRaggedRightDelimiter.Size = new System.Drawing.Size(204, 21);
+            this.cboRaggedRightDelimiter.TabIndex = 8;
+            // 
+            // lblRaggedRight
+            // 
+            this.lblRaggedRight.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.lblRaggedRight.AutoSize = true;
+            this.lblRaggedRight.Location = new System.Drawing.Point(12, 357);
+            this.lblRaggedRight.Name = "lblRaggedRight";
+            this.lblRaggedRight.Size = new System.Drawing.Size(116, 13);
+            this.lblRaggedRight.TabIndex = 9;
+            this.lblRaggedRight.Text = "Ragged Right Delimiter";
             // 
             // FixedWidthColumnsForm
             // 
@@ -156,7 +186,9 @@ namespace BIDSHelper.SSIS
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(353, 377);
+            this.ClientSize = new System.Drawing.Size(353, 416);
+            this.Controls.Add(this.lblRaggedRight);
+            this.Controls.Add(this.cboRaggedRightDelimiter);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnClipboard);
             this.Controls.Add(this.okButton);
@@ -171,6 +203,7 @@ namespace BIDSHelper.SSIS
             this.Text = "BIDS Helper: Create Fixed Width Columns";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -183,5 +216,7 @@ namespace BIDSHelper.SSIS
         private System.Windows.Forms.DataGridViewTextBoxColumn Total;
         public System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblRaggedRight;
+        internal System.Windows.Forms.ComboBox cboRaggedRightDelimiter;
     }
 }

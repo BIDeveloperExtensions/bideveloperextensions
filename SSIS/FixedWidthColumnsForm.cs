@@ -16,6 +16,7 @@ namespace BIDSHelper.SSIS
         {
             InitializeComponent();
             this.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+            this.cboRaggedRightDelimiter.SelectedItem = "[None]";
         }
 
         private const string ClipboardFormat = "XML Spreadsheet";

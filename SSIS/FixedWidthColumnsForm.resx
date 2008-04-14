@@ -126,6 +126,8 @@
   <data name="label1.Text" xml:space="preserve">
     <value>Copy a range of cells from Excel which has two columns: Column Name and Width. Then click the Paste From Clipboard button.
 
-These columns will override the current columns in the selected connection manager.</value>
+These columns will override the current columns in the selected connection manager.
+
+If the file is Ragged Right, select the row delimiter from the selection box at the bottom. If it is not ragged right, leave the selection as None.</value>
   </data>
 </root>

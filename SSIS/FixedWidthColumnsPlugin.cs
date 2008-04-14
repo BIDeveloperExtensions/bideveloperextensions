@@ -88,7 +88,9 @@ namespace BIDSHelper
                     IDesignerHost designer = (IDesignerHost)pi.Document.ActiveWindow.Object;
                     Package package = null;
                     ConnectionManager conn = GetSelectedConnectionManager(designer, out package);
-                    if (conn == null || conn.CreationName != "FLATFILE" || conn.Properties["Format"].GetValue(conn).ToString() != "FixedWidth") return false;
+                    if (conn == null || conn.CreationName != "FLATFILE" ||
+                        (conn.Properties["Format"].GetValue(conn).ToString() != "FixedWidth" &&
+                            conn.Properties["Format"].GetValue(conn).ToString() != "RaggedRight")) return false;
                     return true;
                 }
                 return false;
@@ -151,7 +153,7 @@ namespace BIDSHelper
             }
             return (Package)container;
         }
-        
+
         private ConnectionManager FindConnectionManager(Package package, string connectionManagerName)
         {
             ConnectionManager matchingConnectionManager = null;
@@ -163,7 +165,7 @@ namespace BIDSHelper
 
             return matchingConnectionManager;
         }
-        
+
         public override void Exec()
         {
             try
@@ -175,7 +177,7 @@ namespace BIDSHelper
                 IDesignerHost designer = (IDesignerHost)pi.Document.ActiveWindow.Object;
                 Package package = null;
                 ConnectionManager conn = GetSelectedConnectionManager(designer, out package);
-                
+
                 BIDSHelper.SSIS.FixedWidthColumnsForm form = new BIDSHelper.SSIS.FixedWidthColumnsForm();
                 DialogResult dialogResult = form.ShowDialog();
 
@@ -193,6 +195,10 @@ namespace BIDSHelper
                         ff.Columns.Remove(0);
 
                     List<string> listUsedNames = new List<string>();
+
+                    //JCW - Added counter to identify the last column
+                    int columnCount = 1;
+
                     foreach (DataGridViewRow row in form.dataGridView1.Rows)
                     {
                         string sName = row.Cells[0].Value.ToString();
@@ -213,10 +219,23 @@ namespace BIDSHelper
 #endif
 
                         name.Name = sName;
-                        col.ColumnWidth = int.Parse(row.Cells[1].Value.ToString());
-                        col.MaximumWidth = col.ColumnWidth;
+                        col.MaximumWidth = int.Parse(row.Cells[1].Value.ToString());
                         col.DataType = Microsoft.SqlServer.Dts.Runtime.Wrapper.DataType.DT_STR;
-                        col.ColumnType = "FixedWidth";
+
+                        if (columnCount == form.dataGridView1.Rows.Count && form.cboRaggedRightDelimiter.Text != "[None]")
+                        {
+                            col.ColumnWidth = 0;
+                            col.ColumnType = "Delimited";
+                            col.ColumnDelimiter = DecodeDelimiter(form.cboRaggedRightDelimiter.Text);
+                        }
+                        else
+                        {
+                            col.ColumnWidth = int.Parse(row.Cells[1].Value.ToString());
+                            col.ColumnType = "FixedWidth";
+                        }
+
+
+                        columnCount++;
                     }
 
                     //mark package object as dirty
@@ -229,6 +248,20 @@ namespace BIDSHelper
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private string DecodeDelimiter(string delimiterLabel)
+        {
+            if (delimiterLabel == "[None]") return string.Empty;
+            if (delimiterLabel == "{CR}{LF}") return "\r\n";
+            if (delimiterLabel == "{CR}") return "\r";
+            if (delimiterLabel == "{LF}") return "\n";
+            if (delimiterLabel == "Semicolon {;}") return ";";
+            if (delimiterLabel == "Comma {,}") return ",";
+            if (delimiterLabel == "Tab") return "\t";
+            if (delimiterLabel == "Vertical Bar {|}") return "|";
+
+            return delimiterLabel;
         }
 
     }
