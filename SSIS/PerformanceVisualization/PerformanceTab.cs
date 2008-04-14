@@ -328,6 +328,12 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             while (pkg.LogProviders.Count > 0)
                 pkg.LogProviders.Remove(0);
 
+            //remove existing selected log providers
+            while (pkg.LoggingOptions.SelectedLogProviders != null && pkg.LoggingOptions.SelectedLogProviders.Count > 0)
+                pkg.LoggingOptions.SelectedLogProviders.Remove(0);
+
+            RecurseTasksAndSetupLogging(pkg);
+
             //add BIDS Helper custom logging settings
             LogProvider log = pkg.LogProviders.Add("DTS.LogProviderTextFile.1");
             log.ConfigString = cm.Name;
@@ -335,7 +341,6 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             log.Description = log.Name;
             pkg.LoggingOptions.SelectedLogProviders.Add(log);
             pkg.LoggingMode = DTSLoggingMode.Enabled;
-            RecurseTasksAndSetupLogging(pkg);
 
             //specify events to log
             LoggingOptions LoggingOptions = pkg.LoggingOptions;
@@ -361,6 +366,10 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 {
                     DtsContainer child = (DtsContainer)exe;
                     child.LoggingMode = DTSLoggingMode.UseParentSetting;
+
+                    //remove existing selected log providers
+                    while (child.LoggingOptions.SelectedLogProviders != null && child.LoggingOptions.SelectedLogProviders.Count > 0)
+                        child.LoggingOptions.SelectedLogProviders.Remove(0);
                 }
                 if (exe is IDTSSequence)
                 {
