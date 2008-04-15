@@ -179,6 +179,16 @@ namespace BIDSHelper
                 ConnectionManager conn = GetSelectedConnectionManager(designer, out package);
 
                 BIDSHelper.SSIS.FixedWidthColumnsForm form = new BIDSHelper.SSIS.FixedWidthColumnsForm();
+                if (conn != null && conn.Properties["Format"].GetValue(conn).ToString() == "FixedWidth")
+                {
+                    //hiding properties for ragged right
+                    form.dataGridView1.Height = form.dataGridView1.Height + 50 + 26;
+                    form.dataGridView1.Top -= 50;
+                    form.label1.Height -= 50;
+                    form.cboRaggedRightDelimiter.Visible = false;
+                    form.lblRaggedRight.Visible = false;
+                }
+
                 DialogResult dialogResult = form.ShowDialog();
 
                 if (dialogResult == DialogResult.OK)
