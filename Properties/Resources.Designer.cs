@@ -166,6 +166,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon DestComponent {
+            get {
+                object obj = ResourceManager.GetObject("DestComponent", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon EditAggregations {
             get {
                 object obj = ResourceManager.GetObject("EditAggregations", resourceCulture);
@@ -288,6 +295,13 @@ namespace BIDSHelper.Properties {
         internal static string SmartDiffSSAS {
             get {
                 return ResourceManager.GetString("SmartDiffSSAS", resourceCulture);
+            }
+        }
+        
+        internal static System.Drawing.Icon SourceComponent {
+            get {
+                object obj = ResourceManager.GetObject("SourceComponent", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         

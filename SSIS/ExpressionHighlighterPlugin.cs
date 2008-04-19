@@ -735,7 +735,7 @@ namespace BIDSHelper
 
 
         //recursively looks in executables to find executable with the specified GUID
-        Executable FindExecutable(IDTSSequence parentExecutable, string sObjectGuid)
+        public static Executable FindExecutable(IDTSSequence parentExecutable, string sObjectGuid)
         {
             Executable matchingExecutable = null;
 

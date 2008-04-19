@@ -53,43 +53,6 @@ namespace BIDSHelper
             }
         }
 
-        /*void DebuggerEvents_OnEnterRunMode(dbgEventReason Reason)
-        {
-            try
-            {
-                StringBuilder sb = new StringBuilder();
-                foreach (PerformanceTab tab in PerformanceEditorViews.Values)
-                {
-                    if (tab.IsExecuting)
-                        sb.AppendLine(tab.PackageName);
-                }
-                if (sb.Length > 0)
-                {
-                    DialogResult result = MessageBox.Show("BIDS Helper is currently executing the following packages to capture performance statistics:\r\n\r\n" + sb.ToString() + "\r\nAre you sure you want to run something else?\r\n\r\nClick OK to continue debugging. BIDS Helper will continue executing these packages.\r\nClick Cancel to cancel debugging. BIDS Helper will continue executing these packages.", "BIDS Helper SSIS Performance Visualization In Progress", MessageBoxButtons.OKCancel);
-                    if (result == DialogResult.Cancel)
-                    {
-                        this.ApplicationObject.Debugger.Stop(false);
-                        if (this.ApplicationObject.Debugger.CurrentMode != dbgDebugMode.dbgDesignMode || this.ApplicationObject.Mode != vsIDEMode.vsIDEModeDesign)
-                        {
-                            MessageBox.Show("Still stopping");
-                        }
-                        else
-                        {
-                            MessageBox.Show("already stopped");
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("clicked ok");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
-        }*/
-
         public override string ShortName
         {
             get { return "SSISPerformanceVisualizationPlugin"; }
@@ -148,7 +111,7 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 ProjectItem pi = (ProjectItem)hierItem.Object;
 
-                ExecutePackage(pi);
+                ExecutePackage(pi, null);
             }
             catch (Exception ex)
             {
@@ -156,13 +119,13 @@ namespace BIDSHelper
             }
         }
 
-        private static Dictionary<EditorWindow, PerformanceTab> PerformanceEditorViews = new Dictionary<EditorWindow, PerformanceTab>();
+        internal static Dictionary<EditorWindow, PerformanceTab> PerformanceEditorViews = new Dictionary<EditorWindow, PerformanceTab>();
 
-        private void ExecutePackage(ProjectItem pi)
+        internal static void ExecutePackage(ProjectItem pi, string DataFlowGUID)
         {
             try
             {
-                if (this.ApplicationObject.Mode == vsIDEMode.vsIDEModeDebug)
+                if (pi.DTE.Mode == vsIDEMode.vsIDEModeDebug)
                 {
                     MessageBox.Show("Please stop the debugger first.");
                     return;
@@ -174,8 +137,12 @@ namespace BIDSHelper
                 IDesignerHost designer = w.Object as IDesignerHost;
                 if (designer == null) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-                Package package = win.PropertiesLinkComponent as Package;
-                if (package == null) return;
+                if (win == null || (win.PropertiesLinkComponent as Package) == null)
+                {
+                    MessageBox.Show("Package designer is not open yet. Try again in a moment.");
+                    return;
+                }
+                Package package = (Package)win.PropertiesLinkComponent;
 
                 EditorWindow.EditorView view = null;
                 if (PerformanceEditorViews.ContainsKey(win))
@@ -188,7 +155,10 @@ namespace BIDSHelper
                     }
                     else
                     {
-                        tab.ExecutePackage();
+                        if (DataFlowGUID == null)
+                            tab.ExecutePackage();
+                        else
+                            tab.BreakdownPipelinePerformance(DataFlowGUID);
                     }
                 }
                 else
@@ -200,6 +170,7 @@ namespace BIDSHelper
                     delegateContainer.win = win;
                     delegateContainer.view = view;
                     delegateContainer.projectItem = pi;
+                    delegateContainer.DataFlowGUID = DataFlowGUID;
                     win.Views.Add(view);
                     win.EnsureViewIsLoaded(view); //delegate will be called here
                 }
@@ -211,7 +182,7 @@ namespace BIDSHelper
             }
         }
 
-        void win_ActiveViewChanged(object sender, EventArgs e)
+        private static void win_ActiveViewChanged(object sender, EventArgs e)
         {
             try
             {
@@ -240,12 +211,13 @@ namespace BIDSHelper
             public EditorWindow win;
             public ProjectItem projectItem;
             public EditorWindow.EditorView view;
+            public string DataFlowGUID;
 
             public Control CreatePerformanceTabControl(VsStyleToolBar pageViewToolBar)
             {
                 SSIS.PerformanceVisualization.PerformanceTab tab = new SSIS.PerformanceVisualization.PerformanceTab();
                 tab.LayoutToolBar(pageViewToolBar);
-                tab.Init(win, view, projectItem);
+                tab.Init(win, view, projectItem, DataFlowGUID);
                 PerformanceVisualizationPlugin.PerformanceEditorViews.Add(win, tab);
                 return tab;
             }

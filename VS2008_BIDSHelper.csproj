@@ -185,6 +185,7 @@
       <DependentUpon>DataTypeDiscrepancyCheckForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\DataTypeDiscrepancyCheckPlugin.cs" />
+    <Compile Include="SSIS\PipelineComponentPerformanceBreakdownPlugin.cs" />
     <Compile Include="SSIS\DeployPackagesPlugin.cs" />
     <Compile Include="SSIS\PerformanceVisualization\DtsGanttGrid.cs">
       <SubType>Component</SubType>
@@ -194,6 +195,7 @@
     </Compile>
     <Compile Include="SSIS\PerformanceVisualization\DtsObjectPerformance.cs" />
     <Compile Include="SSIS\PerformanceVisualization\DtsPerformanceLogEventParser.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsPipelineTestDirector.cs" />
     <Compile Include="SSIS\PerformanceVisualization\DtsStatisticsGrid.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -201,6 +203,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="SSIS\PerformanceVisualization\DtsTextLogFileLoader.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\LineageIdReplacer.cs" />
     <Compile Include="SSIS\PerformanceVisualization\PerformanceTab.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -387,6 +390,7 @@
     <None Include="Resources\PlusSign.ico" />
     <None Include="Resources\End.ico" />
     <None Include="Resources\Copy.ico" />
+    <None Include="Resources\DestComponent.ico" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
@@ -394,6 +398,7 @@
     <None Include="Resources\TaskSmall.ico" />
     <None Include="Resources\TreeViewTab.ico" />
     <None Include="Resources\Run.ico" />
+    <None Include="Resources\SourceComponent.ico" />
     <Content Include="SetupScript\ReleaseChecklist.txt" />
     <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
     <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />

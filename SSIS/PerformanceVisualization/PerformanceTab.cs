@@ -34,12 +34,15 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private DtsStatisticsTrendGrid dtsStatisticsTrendGrid1;
         private DtsGanttGrid ganttGrid;
         private DtsStatisticsGrid dtsStatisticsGrid1;
+        private DtsStatisticsTrendGrid dtsPipelineBreakdownGrid;
         private BindingSource iDtsGanttGridRowDataBindingSource;
         private bool ExecutionCancelled = false;
         private object syncRoot = new object();
         private TableLayoutPanel tableLayoutPanel1;
         private Label lblStatus;
         private long lTickerCounter;
+        private BackgroundWorker backgroundWorkerPipelineBreakdown;
+        private string lastDataFlowTaskID;
 
         public ToolBarButton StartButton;
         public ToolBarButton StopButton;
@@ -48,6 +51,10 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private MenuItem menuGantt;
         private MenuItem menuTrend;
         private MenuItem menuGrid;
+        private MenuItem menuPipelineBreakdown;
+
+        //pipeline component performance breakdown
+        private DtsPipelineTestDirector pipelineBreakdownTestDirector = null;
 
         #region Layout
         public PerformanceTab()
@@ -65,15 +72,20 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.dtsStatisticsTrendGrid1 = new DtsStatisticsTrendGrid(this.components);
             this.ganttGrid = new DtsGanttGrid(this.components);
             this.iDtsGanttGridRowDataBindingSource = new BindingSource(this.components);
+            this.dtsPipelineBreakdownGrid = new DtsStatisticsTrendGrid(this.components);
+
+            this.dtsStatisticsGrid1.ParentPerformanceTab = this;
+            this.dtsStatisticsTrendGrid1.ParentPerformanceTab = this;
+            this.ganttGrid.ParentPerformanceTab = this;
+            this.dtsPipelineBreakdownGrid.ParentPerformanceTab = this;
 
             ((System.ComponentModel.ISupportInitialize)(this.dtsStatisticsTrendGrid1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ganttGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iDtsGanttGridRowDataBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtsStatisticsGrid1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dtsPipelineBreakdownGrid)).BeginInit();
             this.tableLayoutPanel1 = new TableLayoutPanel();
             this.lblStatus = new Label();
-
-
 
 
             this.SuspendLayout();
@@ -95,6 +107,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.tableLayoutPanel1.Controls.Add(this.ganttGrid, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.dtsStatisticsGrid1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.dtsStatisticsTrendGrid1, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.dtsPipelineBreakdownGrid, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblStatus, 0, 1);
             this.tableLayoutPanel1.ResumeLayout(false);
 
@@ -102,6 +115,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             // lblStatus
             // 
             this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new Size(400, 14);
             this.lblStatus.Dock = DockStyle.Fill;
 
             // 
@@ -112,7 +126,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             //this.ganttGrid.Location = new System.Drawing.Point(13, 49);
             this.ganttGrid.Dock = DockStyle.Fill;
             this.ganttGrid.Name = "ganttGrid";
-            //this.ganttGrid.Size = new System.Drawing.Size(1216, 400);
+            this.ganttGrid.Size = new System.Drawing.Size(1216, 800);
 
             // 
             // dtsStatisticsGrid1
@@ -130,6 +144,15 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.dtsStatisticsTrendGrid1.Dock = DockStyle.Fill;
             this.dtsStatisticsTrendGrid1.Visible = false;
             this.dtsStatisticsTrendGrid1.Name = "dtsStatisticsGrid1";
+            this.dtsStatisticsTrendGrid1.DataSource = this.iDtsGanttGridRowDataBindingSource;
+
+            // 
+            // dtsBreakdownGrid
+            // 
+            this.dtsPipelineBreakdownGrid.BackgroundColor = System.Drawing.Color.White;
+            this.dtsPipelineBreakdownGrid.Dock = DockStyle.Fill;
+            this.dtsPipelineBreakdownGrid.Visible = false;
+            this.dtsPipelineBreakdownGrid.Name = "dtsBreakdownGrid";
 
             // 
             // iDtsGanttGridRowDataBindingSource
@@ -151,6 +174,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             ((System.ComponentModel.ISupportInitialize)(this.ganttGrid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.iDtsGanttGridRowDataBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtsStatisticsGrid1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dtsPipelineBreakdownGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
         }
@@ -198,16 +222,22 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         {
             this.menuGantt = new MenuItem("Gantt Chart");
             this.menuGantt.Checked = true;
+            this.menuGantt.Visible = false;
             this.menuGantt.Click += new EventHandler(this.SwitchToGanttGridMenuClicked);
             this.menuGrid = new MenuItem("Statistics Grid");
+            this.menuGrid.Visible = false;
             this.menuGrid.Click += new EventHandler(this.SwitchToStatisticsGridMenuClicked);
             this.menuTrend = new MenuItem("Statistics Trend");
+            this.menuTrend.Visible = false;
             this.menuTrend.Click += new EventHandler(this.SwitchToStatisticsTrendGridMenuClicked);
-            return new ContextMenu(new MenuItem[] { this.menuGantt, this.menuGrid, this.menuTrend });
+            this.menuPipelineBreakdown = new MenuItem("Pipeline Component Performance Breakdown");
+            this.menuPipelineBreakdown.Visible = false;
+            this.menuPipelineBreakdown.Click += new EventHandler(this.SwitchToPipelineBreakdownGridMenuClicked);
+            return new ContextMenu(new MenuItem[] { this.menuGantt, this.menuGrid, this.menuTrend, this.menuPipelineBreakdown });
         }
         #endregion
 
-        public void Init(EditorWindow parentWin, EditorWindow.EditorView view, ProjectItem pi)
+        public void Init(EditorWindow parentWin, EditorWindow.EditorView view, ProjectItem pi, string DataFlowGUID)
         {
             this.parentWin = parentWin;
             this.parentView = view;
@@ -222,7 +252,10 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.standardOutputWindow = service.GetStandardOutputWindow(StandardOutputWindow.Debug);
 
             //run the package immediately
-            ExecutePackage();
+            if (DataFlowGUID == null)
+                ExecutePackage();
+            else
+                BreakdownPipelinePerformance(DataFlowGUID);
         }
 
         public EditorWindow.EditorView ParentEditorView
@@ -232,7 +265,16 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
         public bool IsExecuting
         {
-            get { return (process != null); }
+            get { return (process != null || pipelineBreakdownTestDirector != null); }
+        }
+
+        /// <summary>
+        /// Returns true if the currently running package is for package performance visualization
+        /// Returns false if the currently running package is for pipeline component performance breakdown
+        /// </summary>
+        public bool IsPackagePerformanceVisualization
+        {
+            get { return (this.pipelineBreakdownTestDirector == null); }
         }
 
         public void ExecutePackage()
@@ -271,7 +313,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 process.StartInfo.Arguments = "/Rep N /F \"" + this.modifiedPackagePath + "\"";
                 if (!string.IsNullOrEmpty(this.packagePassword))
                 {
-                    process.StartInfo.Arguments += " /Decrypt \"" + this.packagePassword + "\""; //TODO: test
+                    process.StartInfo.Arguments += " /Decrypt \"" + this.packagePassword + "\"";
                 }
                 process.Start();
                 timer1.Enabled = true;
@@ -281,12 +323,99 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
                 //TODO: capture perfmon: SQL Server:SSISPipeline:Buffers Spooled
 
+                this.dtsStatisticsTrendGrid1.AddNewColumnOnNextDataBinding = true;
+
                 this.iDtsGanttGridRowDataBindingSource.DataSource = eventParser.GetAllDtsGanttGridRowDatas();
                 this.ganttGrid.Refresh();
 
                 this.StopButton.Enabled = true;
                 this.StartButton.Enabled = false;
                 this.lblStatus.Text = "Status: Executing";
+
+                this.menuGantt.Visible = true;
+                this.menuGrid.Visible = true;
+                this.menuTrend.Visible = true;
+
+                if (this.dtsPipelineBreakdownGrid.Visible)
+                    SwitchToGanttGridMenuClicked(null, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
+
+        public void BreakdownPipelinePerformance(string DataFlowTaskID)
+        {
+            try
+            {
+                if (this.projectItem.DTE.Mode == vsIDEMode.vsIDEModeDebug)
+                {
+                    MessageBox.Show("Please stop the debugger first.");
+                    return;
+                }
+
+                if (this.IsExecuting)
+                {
+                    MessageBox.Show("You may not execute the package until the previous execution of the package completes.");
+                    return;
+                }
+
+                lTickerCounter = 0;
+                ExecutionCancelled = false;
+
+                if (this.lastDataFlowTaskID != DataFlowTaskID)
+                {
+                    this.dtsPipelineBreakdownGrid.ClearHistory(); //TODO: create multiple instances of the breakdown grid, one for each data flow?
+                }
+
+                this.lastDataFlowTaskID = DataFlowTaskID; //TODO: add dropdown
+                this.lblStatus.Text = "Status: Preparing Testing Iterations";
+
+                RefreshProjectAndPackageProperties();
+
+                pipelineBreakdownTestDirector = new DtsPipelineTestDirector(projectItem.get_FileNames(0), DataFlowTaskID);
+                pipelineBreakdownTestDirector.DtexecPath = this.dtexecPath;
+                pipelineBreakdownTestDirector.PackagePassword = this.packagePassword;
+                pipelineBreakdownTestDirector.PerformanceTab = this;
+
+                backgroundWorkerPipelineBreakdown = new BackgroundWorker();
+                backgroundWorkerPipelineBreakdown.DoWork += new DoWorkEventHandler(backgroundWorkerPipelineBreakdown_DoWork);
+                backgroundWorkerPipelineBreakdown.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorkerPipelineBreakdown_RunWorkerCompleted);
+                backgroundWorkerPipelineBreakdown.RunWorkerAsync();
+
+                this.dtsPipelineBreakdownGrid.AddNewColumnOnNextDataBinding = true;
+
+                timer1.Enabled = true;
+                timer1.Start();
+
+                this.StopButton.Enabled = true;
+                this.StartButton.Enabled = false;
+                this.lblStatus.Text = "Status: Executing Testing Iterations";
+
+                SwitchToPipelineBreakdownGridMenuClicked(null, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
+
+        void backgroundWorkerPipelineBreakdown_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            try
+            {
+                UpdatePipelineBreakdownVisualization();
+                pipelineBreakdownTestDirector = null;
+            }
+            catch { }
+        }
+
+        void backgroundWorkerPipelineBreakdown_DoWork(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                pipelineBreakdownTestDirector.ExecuteTests();
             }
             catch (Exception ex)
             {
@@ -304,6 +433,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             Microsoft.DataTransformationServices.Design.DtsBasePackageDesigner rootDesigner = typeof(EditorWindow).InvokeMember("designer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.GetField, null, parentWin, null) as Microsoft.DataTransformationServices.Design.DtsBasePackageDesigner;
             if (rootDesigner == null) throw new Exception("Can't find SSIS Package designer control.");
             this.packagePassword = rootDesigner.GetPackagePassword();
+            ssisApp.PackagePassword = this.packagePassword;
 
             //get setting that says whether to use 64-bit dtexec
             Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
@@ -317,7 +447,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 throw new Exception("Can't find path to dtexec in registry!");
         }
 
-        private void SetupCustomLogging(Package pkg, string sLogFilePath)
+        internal static void SetupCustomLogging(Package pkg, string sLogFilePath)
         {
             //add connection manager for BIDS Helper custom logging
             ConnectionManager cm = pkg.Connections.Add("FILE");
@@ -358,7 +488,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             }
         }
 
-        private void RecurseTasksAndSetupLogging(IDTSSequence container)
+        private static void RecurseTasksAndSetupLogging(IDTSSequence container)
         {
             foreach (Executable exe in container.Executables)
             {
@@ -380,100 +510,155 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-                try
+            try
+            {
+                if (IsPackagePerformanceVisualization)
+                    UpdatePackagePerformanceVisualization();
+                else
+                    UpdatePipelineBreakdownVisualization();
+            }
+            catch { }
+        }
+
+        private void UpdatePackagePerformanceVisualization()
+        {
+            try
+            {
+                lock (syncRoot)
                 {
-                    lock (syncRoot)
+                    if (process == null) return;
+
+                    lTickerCounter++;
+
+                    if (process.HasExited)
                     {
-                        if (process == null) return;
+                        string sStatus = "Finished";
+                        if (this.ExecutionCancelled)
+                            sStatus = "Cancelled";
 
-                        lTickerCounter++;
+                        TimeSpan ts = new TimeSpan();
+                        ts = ts.Add(DateTime.Now.Subtract(process.StartTime));
+                        this.lblStatus.Text = "Status: " + sStatus + "            Time: " + ts.ToString().Substring(0, 8);
+                    }
+                    else
+                    {
+                        TimeSpan ts = new TimeSpan();
+                        ts = ts.Add(DateTime.Now.Subtract(process.StartTime));
+                        this.lblStatus.Text = "Status: Executing            Time: " + ts.ToString().Substring(0, 8);
 
-                        if (process.HasExited)
+                        //if the package is still running, then only update the grid every other call to this function
+                        if (lTickerCounter % 2 == 1) return;
+                    }
+
+                    if (process.HasExited)
+                    {
+                        timer1.Enabled = false;
+                        timer1.Stop();
+                        StopButton.Enabled = false;
+                        System.Threading.Thread.Sleep(1000); //pause just in case we need another second for the log events to quit flowing
+                    }
+
+                    DtsLogEvent[] events = logFileLoader.GetEvents(process.HasExited);
+                    foreach (DtsLogEvent ee in events)
+                    {
+                        eventParser.LoadEvent(ee);
+                        if (ee.Event == BidsHelperCapturedDtsLogEvent.OnError)
                         {
-                            string sStatus = "Finished";
-                            if (this.ExecutionCancelled)
-                                sStatus = "Cancelled";
-
-                            TimeSpan ts = new TimeSpan();
-                            ts = ts.Add(DateTime.Now.Subtract(process.StartTime));
-                            this.lblStatus.Text = "Status: " + sStatus + "            Time: " + ts.ToString().Substring(0, 8);
-                        }
-                        else
-                        {
-                            TimeSpan ts = new TimeSpan();
-                            ts = ts.Add(DateTime.Now.Subtract(process.StartTime));
-                            this.lblStatus.Text = "Status: Executing            Time: " + ts.ToString().Substring(0, 8);
-
-                            //if the package is still running, then only update the grid every other call to this function
-                            if (lTickerCounter % 2 == 1) return;
-                        }
-                        
-                        if (process.HasExited)
-                        {
-                            timer1.Enabled = false;
-                            timer1.Stop();
-                            StopButton.Enabled = false;
-                            System.Threading.Thread.Sleep(1000); //pause just in case we need another second for the log events to quit flowing
-                        }
-
-                        DtsLogEvent[] events = logFileLoader.GetEvents(process.HasExited);
-                        foreach (DtsLogEvent ee in events)
-                        {
-                            eventParser.LoadEvent(ee);
-                            if (ee.Event == BidsHelperCapturedDtsLogEvent.OnError)
-                            {
-                                standardOutputWindow.ReportCustomError(OutputWindowErrorSeverity.Error, ee.Message, null, null, this.projectItem.Name);
-                            }
-                        }
-
-                        //TODO: future: only refresh when the Performance tab is visible? only if there are performance problems
-                        this.ganttGrid.SuspendLayout();
-                        this.iDtsGanttGridRowDataBindingSource.DataSource = eventParser.GetAllDtsGanttGridRowDatas();
-                        this.ganttGrid.Refresh();
-                        this.ganttGrid.ResumeLayout();
-
-                        if (process.HasExited)
-                        {
-                            System.IO.File.Delete(this.modifiedPackagePath);
-
-                            for (int i = 0; i < 20; i++)
-                            {
-                                try
-                                {
-                                    System.IO.File.Delete(this.logFilePath);
-                                    break;
-                                }
-                                catch
-                                {
-                                    //problem deleting... wait half a second then try again
-                                    System.Threading.Thread.Sleep(500);
-                                }
-                            }
-                            if (System.IO.File.Exists(this.logFilePath))
-                            {
-                                MessageBox.Show("Unable to delete log file because another process was using it:\r\n" + this.logFilePath);
-                            }
-
-                            if (ExecutionCancelled == false)
-                            {
-                                //only refresh trending grid if a complete execution has just occurred
-                                BindingSource bs = new BindingSource(this.components);
-                                bs.DataSource = eventParser.GetAllDtsGanttGridRowDatas();
-                                this.dtsStatisticsTrendGrid1.DataSource = bs;
-                            }
-
-                            timer1.Enabled = false;
-                            timer1.Stop();
-
-                            process = null;
-                            this.StartButton.Enabled = true;
+                            standardOutputWindow.ReportCustomError(OutputWindowErrorSeverity.Error, ee.Message, null, null, this.projectItem.Name);
                         }
                     }
+
+                    //TODO: future: only refresh when the Performance tab is visible? only if there are performance problems
+                    this.ganttGrid.SuspendLayout();
+                    this.iDtsGanttGridRowDataBindingSource.DataSource = eventParser.GetAllDtsGanttGridRowDatas();
+                    this.ganttGrid.Refresh();
+                    this.ganttGrid.ResumeLayout();
+
+                    if (process.HasExited)
+                    {
+                        System.IO.File.Delete(this.modifiedPackagePath);
+
+                        for (int i = 0; i < 20; i++)
+                        {
+                            try
+                            {
+                                System.IO.File.Delete(this.logFilePath);
+                                break;
+                            }
+                            catch
+                            {
+                                //problem deleting... wait half a second then try again
+                                System.Threading.Thread.Sleep(500);
+                            }
+                        }
+                        if (System.IO.File.Exists(this.logFilePath))
+                        {
+                            MessageBox.Show("Unable to delete log file because another process was using it:\r\n" + this.logFilePath);
+                        }
+
+                        timer1.Enabled = false;
+                        timer1.Stop();
+
+                        process = null;
+                        this.StartButton.Enabled = true;
+                        this.StopButton.Enabled = false;
+                    }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                timer1.Stop();
+            }
+        }
+
+        private void UpdatePipelineBreakdownVisualization()
+        {
+            try
+            {
+                lock (syncRoot)
                 {
-                    MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    if (pipelineBreakdownTestDirector == null) return;
+                    bool bFailed = pipelineBreakdownTestDirector.Failed;
+
+                    lTickerCounter++;
+
+                    TimeSpan ts = new TimeSpan();
+                    ts = ts.Add(DateTime.Now.Subtract(pipelineBreakdownTestDirector.StartTime));
+                    this.lblStatus.Text = "Status: " + pipelineBreakdownTestDirector.Status + "            Time: " + ts.ToString().Substring(0, 8);
+
+                    //if the package is still running, then only update the grid every other call to this function
+                    if (lTickerCounter % 2 == 1 && backgroundWorkerPipelineBreakdown.IsBusy) return;
+
+                    if (!backgroundWorkerPipelineBreakdown.IsBusy || bFailed)
+                    {
+                        timer1.Enabled = false;
+                        timer1.Stop();
+                        StopButton.Enabled = false;
+                        System.Threading.Thread.Sleep(1000); //pause just in case we need another second for the log events to quit flowing
+                    }
+
+                    //TODO: future: only refresh when the Performance tab is visible? only if there are performance problems
+                    BindingSource binding = new BindingSource(this.components);
+                    binding.DataSource = pipelineBreakdownTestDirector.GetTestsToDisplay();
+                    this.dtsPipelineBreakdownGrid.DataSource = binding;
+
+                    if (!backgroundWorkerPipelineBreakdown.IsBusy || bFailed)
+                    {
+                        timer1.Enabled = false;
+                        timer1.Stop();
+
+                        this.pipelineBreakdownTestDirector = null;
+                        this.StartButton.Enabled = true;
+                        this.StopButton.Enabled = false;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                timer1.Stop();
+            }
         }
 
         public void ToolbarButtonClicked(object sender, ToolBarButtonClickEventArgs e)
@@ -488,12 +673,17 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     this.SwitchToStatisticsGridMenuClicked(null, null);
                 else if (this.dtsStatisticsGrid1.Visible)
                     this.SwitchToStatisticsTrendGridMenuClicked(null, null);
-                else
+                else if (this.menuPipelineBreakdown.Visible && !this.dtsPipelineBreakdownGrid.Visible)
+                    this.SwitchToPipelineBreakdownGridMenuClicked(null, null);
+                else if (this.menuGantt.Visible)
                     this.SwitchToGanttGridMenuClicked(null, null);
             }
             else if (e.Button == this.StartButton)
             {
-                this.ExecutePackage();
+                if (this.dtsPipelineBreakdownGrid.Visible)
+                    this.BreakdownPipelinePerformance(lastDataFlowTaskID);
+                else
+                    this.ExecutePackage();
             }
             else if (e.Button == this.CopyButton)
             {
@@ -507,6 +697,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     this.dtsStatisticsTrendGrid1.SelectAll();
                     Clipboard.SetDataObject(this.dtsStatisticsTrendGrid1.GetClipboardContent());
                 }
+                else if (this.dtsPipelineBreakdownGrid.Visible)
+                {
+                    this.dtsPipelineBreakdownGrid.SelectAll();
+                    Clipboard.SetDataObject(this.dtsPipelineBreakdownGrid.GetClipboardContent());
+                }
             }
         }
 
@@ -515,9 +710,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.ganttGrid.Visible = true;
             this.dtsStatisticsTrendGrid1.Visible = false;
             this.dtsStatisticsGrid1.Visible = false;
+            this.dtsPipelineBreakdownGrid.Visible = false;
             this.menuGantt.Checked = true;
             this.menuTrend.Checked = false;
             this.menuGrid.Checked = false;
+            this.menuPipelineBreakdown.Checked = false;
             this.CopyButton.Enabled = false;
         }
 
@@ -526,9 +723,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.ganttGrid.Visible = false;
             this.dtsStatisticsTrendGrid1.Visible = false;
             this.dtsStatisticsGrid1.Visible = true;
+            this.dtsPipelineBreakdownGrid.Visible = false;
             this.menuGantt.Checked = false;
             this.menuTrend.Checked = false;
             this.menuGrid.Checked = true;
+            this.menuPipelineBreakdown.Checked = false;
             this.CopyButton.Enabled = true;
         }
 
@@ -537,31 +736,51 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.ganttGrid.Visible = false;
             this.dtsStatisticsTrendGrid1.Visible = true;
             this.dtsStatisticsGrid1.Visible = false;
+            this.dtsPipelineBreakdownGrid.Visible = false;
             this.menuGantt.Checked = false;
             this.menuTrend.Checked = true;
             this.menuGrid.Checked = false;
-            if (dtsStatisticsTrendGrid1.DataSource == null)
-            {
-                MessageBox.Show("Note: No data will show until the package execution completes.");
-            }
+            this.menuPipelineBreakdown.Checked = false;
+            this.CopyButton.Enabled = true;
+        }
+
+        public void SwitchToPipelineBreakdownGridMenuClicked(object sender, EventArgs e)
+        {
+            this.ganttGrid.Visible = false;
+            this.dtsStatisticsTrendGrid1.Visible = false;
+            this.dtsStatisticsGrid1.Visible = false;
+            this.dtsPipelineBreakdownGrid.Visible = true;
+            this.menuGantt.Checked = false;
+            this.menuTrend.Checked = false;
+            this.menuGrid.Checked = false;
+            this.menuPipelineBreakdown.Visible = true;
+            this.menuPipelineBreakdown.Checked = true;
             this.CopyButton.Enabled = true;
         }
 
         public void CancelExecution()
         {
-            if (process != null)
+            try
             {
-                try
+                ExecutionCancelled = true;
+                if (this.IsPackagePerformanceVisualization)
                 {
-                    ExecutionCancelled = true;
-                    process.Kill();
-                    process.WaitForExit();
-                    timer1_Tick(null, null);
+                    if (process != null && !process.HasExited)
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show("Problem stopping execution of package:\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                    if (pipelineBreakdownTestDirector != null)
+                        pipelineBreakdownTestDirector.CancelExecution();
                 }
+                timer1_Tick(null, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Problem stopping execution of package:\r\n" + ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -618,11 +837,6 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 {
                     this.components.Dispose();
                 }
-                /*if (this.componentTreeView != null)
-                {
-                    this.componentTreeView.PopupContextMenu -= new PopupContextMenuEventHandler(this.OnPopupTreeViewContextMenu);
-                    this.componentTreeView = null;
-                }*/
             }
             base.Dispose(disposing);
         }

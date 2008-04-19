@@ -11,6 +11,12 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 {
     public class DtsStatisticsTrendGrid : DtsGrid
     {
+        private bool _AddNewColumnOnNextDataBinding = false;
+        public bool AddNewColumnOnNextDataBinding
+        {
+            set { _AddNewColumnOnNextDataBinding = value; }
+        }
+
         public DtsStatisticsTrendGrid()
         {
             InitializeComponent();
@@ -56,10 +62,31 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
         private List<List<IDtsGridRowData>> _History = new List<List<IDtsGridRowData>>();
 
+        /// <summary>
+        /// Clears the trending columns to start over
+        /// </summary>
+        public void ClearHistory()
+        {
+            _History = new List<List<IDtsGridRowData>>();
+        }
+
+        //TODO: allow you to trend any of the other available stats, not just duration... add a dropdown button listing these stats in the button bar
+
         protected override void OnDataBindingComplete(DataGridViewBindingCompleteEventArgs e)
         {
-            if (((BindingSource)this.DataSource).DataSource is List<IDtsGridRowData> && !_History.Contains((List<IDtsGridRowData>)((BindingSource)this.DataSource).DataSource))
-                _History.Add((List<IDtsGridRowData>)((BindingSource)this.DataSource).DataSource);
+            List<IDtsGridRowData> list = ((BindingSource)this.DataSource).DataSource as List<IDtsGridRowData>;
+            if (list != null)
+            {
+                if (_AddNewColumnOnNextDataBinding)
+                {
+                    _History.Add(list);
+                    _AddNewColumnOnNextDataBinding = false;
+                }
+                else
+                {
+                    _History[_History.Count - 1] = list;
+                }
+            }
             base.OnDataBindingComplete(e);
             SetupComponent();
         }
@@ -67,6 +94,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
         protected override void OnRowPostPaint(DataGridViewRowPostPaintEventArgs e)
         {
+            if (_History.Count == 0 || _History[_History.Count - 1].Count <= e.RowIndex) return;
             IDtsGridRowData ganttRowData = _History[_History.Count - 1][e.RowIndex] as IDtsGridRowData;
             if (ganttRowData == null) return;
 

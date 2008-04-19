@@ -14,6 +14,9 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         protected const int INDENTATION_WIDTH = 16;
         private bool?[] _Expanded;
         private string _LastPackageId;
+        private ContextMenu contextMenuBreakdown;
+        private string _ContextMenuDataFlowTaskID;
+        public PerformanceTab ParentPerformanceTab;
 
         public DtsGrid()
         {
@@ -63,6 +66,38 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
             this.DoubleBuffered = true;
             this.ScrollBars = ScrollBars.Both;
+
+            MenuItem menuBreakdown = new MenuItem("Component Performance Breakdown");
+            menuBreakdown.Click += new EventHandler(menuBreakdown_Click);
+            this.contextMenuBreakdown = new ContextMenu(new MenuItem[] { menuBreakdown });
+
+            if (this.DataSource != null && this.DataSource is BindingSource)
+            {
+                List<IDtsGridRowData> list = ((BindingSource)this.DataSource).DataSource as List<IDtsGridRowData>;
+                if (list != null)
+                {
+                    if (list.Count > 0)
+                    {
+                        if (list[0] is DtsPipelineTestDirector.DtsPipelineComponentTest)
+                        {
+                            nameDataGridViewTextBoxColumn.HeaderText = "Pipeline Component";
+                        }
+                    }
+                }
+            }
+        }
+
+        void menuBreakdown_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this.ParentPerformanceTab.SwitchToPipelineBreakdownGridMenuClicked(null, null);
+                this.ParentPerformanceTab.BreakdownPipelinePerformance(this._ContextMenuDataFlowTaskID);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         protected override void OnDataBindingComplete(DataGridViewBindingCompleteEventArgs e)
@@ -74,7 +109,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             if (this.Rows.Count > 0)
             {
                 IDtsGridRowData dataPackage = ((BindingSource)this.DataSource)[0] as IDtsGridRowData;
-                if (dataPackage != null)
+                if (dataPackage != null && dataPackage is DtsObjectPerformance)
                 {
                     if (_LastPackageId == dataPackage.UniqueId && _Expanded.Length == this.Rows.Count)
                     {
@@ -145,6 +180,16 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 {
                     icon = Properties.Resources.Path;
                 }
+                else if (ganttRowData.Type == typeof(DtsPipelineTestDirector.DtsPipelineComponentTest))
+                {
+                    DtsPipelineTestDirector.DtsPipelineComponentTest test = (DtsPipelineTestDirector.DtsPipelineComponentTest)ganttRowData;
+                    if (test.TestType == DtsPipelineTestDirector.DtsPipelineComponentTestType.SourceOnly)
+                        icon = Properties.Resources.SourceComponent;
+                    else if (test.TestType == DtsPipelineTestDirector.DtsPipelineComponentTestType.DestinationOnly)
+                        icon = Properties.Resources.DestComponent;
+                    else
+                        icon = Properties.Resources.TaskSmall;
+                }
                 else
                 {
                     icon = Properties.Resources.TaskSmall;
@@ -181,6 +226,16 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                             //this.InvokePaint(this, new PaintEventArgs(this.CreateGraphics(), this.GetColumnDisplayRectangle(1, false))); //don't think this is necessary
                         }
                     }
+                }
+            }
+            else if (e.Button == MouseButtons.Right && e.ColumnIndex == 0 && e.RowIndex >= 0)
+            {
+                IDtsGridRowData rowData = ((BindingSource)this.DataSource)[e.RowIndex] as IDtsGridRowData;
+                if (rowData is DtsPipelinePerformance && this.ParentPerformanceTab != null)
+                {
+                    Rectangle rect = this.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+                    this._ContextMenuDataFlowTaskID = (rowData as DtsPipelinePerformance).ID;
+                    this.contextMenuBreakdown.Show(this, new Point(e.X, rect.Y + e.Y));
                 }
             }
             base.OnCellMouseUp(e);

@@ -168,6 +168,7 @@ namespace BIDSHelper
                             }
                             btn = pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1) as CommandBarButton;
                             SetCustomIcon(btn);
+                            btn.BeginGroup = BeginMenuGroup;
                             toolsCommandBarPopup.Visible = true;
                         }
                         else if (AddCommandToMultipleMenus)
@@ -185,6 +186,7 @@ namespace BIDSHelper
                                         btn = pluginCmd.AddControl(bar, bar.Controls.Count - 1) as CommandBarButton;
                                     }
                                     SetCustomIcon(btn);
+                                    btn.BeginGroup = BeginMenuGroup;
                                 }
                             }
                         }
@@ -199,6 +201,7 @@ namespace BIDSHelper
                                 btn = pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1) as CommandBarButton;
                             }
                             SetCustomIcon(btn);
+                            btn.BeginGroup = BeginMenuGroup;
                         }
                     }
                 }
@@ -348,6 +351,14 @@ namespace BIDSHelper
         }
 
         public virtual bool ShouldPositionAtEnd
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Controls whether to insert a separator before this menu item
+        /// </summary>
+        public virtual bool BeginMenuGroup
         {
             get { return false; }
         }
