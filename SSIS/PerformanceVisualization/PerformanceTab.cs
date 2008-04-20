@@ -56,6 +56,15 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         //pipeline component performance breakdown
         private DtsPipelineTestDirector pipelineBreakdownTestDirector = null;
 
+#if KATMAI
+        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\100\SSIS\Setup\DTSPath";
+        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.2";
+#else
+        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\MSDTS\Setup\DtsPath";
+        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.1";
+#endif
+
+
         #region Layout
         public PerformanceTab()
         {
@@ -465,7 +474,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             RecurseTasksAndSetupLogging(pkg);
 
             //add BIDS Helper custom logging settings
-            LogProvider log = pkg.LogProviders.Add("DTS.LogProviderTextFile.1");
+            LogProvider log = pkg.LogProviders.Add(TEXT_LOG_PROVIDER_IDENTIFIER);
             log.ConfigString = cm.Name;
             log.Name = "BidsHelperPerformanceLogging";
             log.Description = log.Name;
@@ -852,7 +861,8 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             string str = null;
             IntPtr zero = IntPtr.Zero;
             IntPtr HKEY_LOCAL_MACHINE = (IntPtr)(-2147483646);
-            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, @"SOFTWARE\Microsoft\MSDTS\Setup\DtsPath", 0, sam, out zero) == 0) //TODO: conditional compile?
+
+            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, DTSPATH_REGISTRY_PATH, 0, sam, out zero) == 0)
             {
                 StringBuilder lpValue = new StringBuilder(260);
                 int lpcbValue = lpValue.Capacity * Marshal.SizeOf(typeof(char));

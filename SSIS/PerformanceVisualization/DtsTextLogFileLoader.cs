@@ -118,6 +118,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         {
             //Columns: event,computer,operator,source,sourceid,executionid,starttime,endtime,datacode,databytes,message
             string[] sColumns = sFullEventRow.Split(new char[] { ',' }, 11);
+            if (sColumns[0].StartsWith("User:")) sColumns[0] = sColumns[0].Substring("User:".Length); //trim "User:" off the beginning of the event
             if (sColumns.Length != 11 || !_ListMonitoredEventNames.Contains(sColumns[0]))
                 return null;
 

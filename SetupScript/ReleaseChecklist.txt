@@ -4,7 +4,8 @@ Doing a release of BIDSHelper
 1. Update Version number in:
    a. AssemblyInfo.cs           (Assembly and File versions)
    b. BIDSHelper.Addin          (AboutBox details)
-   c. Setup\BIDSHelperSetup.nsi ($PRODUCT_VERSION variable)
+   c. BIDSHelper2008.Addin      (AboutBox details)
+   d. Setup\BIDSHelperSetup.nsi ($PRODUCT_VERSION variable)
 
 2. Exclude any files still being worked on from the solution
 
