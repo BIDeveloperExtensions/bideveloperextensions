@@ -53,6 +53,7 @@ namespace AggManager
             this.contextMenuStripCube = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.deleteUnusedAggregationsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.validateAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.printerFriendlyAggregationsReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripMG.SuspendLayout();
             this.contextMenuStripAggDes.SuspendLayout();
             this.contextMenuStripSave.SuspendLayout();
@@ -250,23 +251,31 @@ namespace AggManager
             // 
             this.contextMenuStripCube.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.deleteUnusedAggregationsToolStripMenuItem1,
-            this.validateAggregationsToolStripMenuItem});
+            this.validateAggregationsToolStripMenuItem,
+            this.printerFriendlyAggregationsReportToolStripMenuItem});
             this.contextMenuStripCube.Name = "contextMenuStripCube";
-            this.contextMenuStripCube.Size = new System.Drawing.Size(235, 70);
+            this.contextMenuStripCube.Size = new System.Drawing.Size(275, 92);
             // 
             // deleteUnusedAggregationsToolStripMenuItem1
             // 
             this.deleteUnusedAggregationsToolStripMenuItem1.Name = "deleteUnusedAggregationsToolStripMenuItem1";
-            this.deleteUnusedAggregationsToolStripMenuItem1.Size = new System.Drawing.Size(234, 22);
+            this.deleteUnusedAggregationsToolStripMenuItem1.Size = new System.Drawing.Size(274, 22);
             this.deleteUnusedAggregationsToolStripMenuItem1.Text = "Delete Unused Aggregations...";
             this.deleteUnusedAggregationsToolStripMenuItem1.Click += new System.EventHandler(this.deleteUnusedAggregationsToolStripMenuItem1_Click);
             // 
             // validateAggregationsToolStripMenuItem
             // 
             this.validateAggregationsToolStripMenuItem.Name = "validateAggregationsToolStripMenuItem";
-            this.validateAggregationsToolStripMenuItem.Size = new System.Drawing.Size(234, 22);
+            this.validateAggregationsToolStripMenuItem.Size = new System.Drawing.Size(274, 22);
             this.validateAggregationsToolStripMenuItem.Text = "Validate Aggregations...";
             this.validateAggregationsToolStripMenuItem.Click += new System.EventHandler(this.validateAggregationsToolStripMenuItem_Click);
+            // 
+            // printerFriendlyAggregationsReportToolStripMenuItem
+            // 
+            this.printerFriendlyAggregationsReportToolStripMenuItem.Name = "printerFriendlyAggregationsReportToolStripMenuItem";
+            this.printerFriendlyAggregationsReportToolStripMenuItem.Size = new System.Drawing.Size(274, 22);
+            this.printerFriendlyAggregationsReportToolStripMenuItem.Text = "Printer-Friendly Aggregations Report...";
+            this.printerFriendlyAggregationsReportToolStripMenuItem.Click += new System.EventHandler(this.printerFriendlyAggregationsReportToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -280,8 +289,8 @@ namespace AggManager
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
             this.Text = "Aggregation Manager";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.frmMain_Load);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.contextMenuStripMG.ResumeLayout(false);
             this.contextMenuStripAggDes.ResumeLayout(false);
             this.contextMenuStripSave.ResumeLayout(false);
@@ -319,5 +328,6 @@ namespace AggManager
         private System.Windows.Forms.ContextMenuStrip contextMenuStripCube;
         private System.Windows.Forms.ToolStripMenuItem deleteUnusedAggregationsToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem validateAggregationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem printerFriendlyAggregationsReportToolStripMenuItem;
     }
 }

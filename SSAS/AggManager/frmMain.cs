@@ -700,5 +700,17 @@ namespace AggManager
             }
         }
 
+        private void printerFriendlyAggregationsReportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                PrinterFriendlyAggs.ShowAggsReport(cloneDB.Cubes[realCube.ID]);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
     }
 }

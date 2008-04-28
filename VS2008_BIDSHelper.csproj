@@ -178,6 +178,7 @@
     </Compile>
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\ReportViewerForm.Designer.cs" />
+    <Compile Include="SSAS\AggManager\PrinterFriendlyAggs.cs" />
     <Compile Include="SSAS\DataTypeDiscrepancyCheckForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -428,6 +429,7 @@
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
+    <EmbeddedResource Include="SSAS\AggManager\PrinterFriendlyAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\frmTraceTable.resx">
       <DependentUpon>frmTraceTable.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -510,6 +512,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
+    <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />
     <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
     <None Include="Properties\DataSources\DataTypeDiscrepancyCheckPlugin.DataTypeDiscrepancy.datasource" />
     <None Include="Properties\DataSources\DimensionOptimizationReportPlugin.DimensionOptimizations.datasource" />
