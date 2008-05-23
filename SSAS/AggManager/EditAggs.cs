@@ -52,7 +52,7 @@ namespace AggManager
         string[] dimIDs;
         bool boolHandleClick = false;
         bool boolIsRigid = false;
-
+        bool boolInExpandOrCollapse = false;
         private Color nonMaterializedColor = Color.SteelBlue;
         private Color parentChildAttributeColor = Color.SlateGray;
         private Color belowGranularityColor = Color.LightSlateGray;
@@ -659,6 +659,11 @@ namespace AggManager
 
             dataGrid1_Click(sender, e);
 
+            //Add Expand/Collapse Events after everything else is loaded 
+            //this.treeViewAggregation.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterExpandOrCollapse);
+            this.treeViewAggregation.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeViewAggregation_ExpandOrCollapse);
+            this.treeViewAggregation.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeViewAggregation_ExpandOrCollapse);
+            //this.treeViewAggregation.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterExpandOrCollapse);
         }
 
         void AddAggregationHandler(object sender, EventArgs e)
@@ -1016,118 +1021,129 @@ namespace AggManager
             }
         }
 
+        
+
         private void treeViewAggregation_Click(object sender, EventArgs e)
         {
             if (e is MouseEventArgs)
             {
-                MouseEventArgs me = (MouseEventArgs)e;
-                TreeNode node = treeViewAggregation.GetNodeAt(me.Location);
-                if (node.StateImageIndex >= 2) //this node is a dimension, so ignore clicks
-                    return;
-                if (node.NodeFont != null && node.NodeFont.Italic && !node.Checked)
+                if (!boolInExpandOrCollapse)
                 {
-                    MessageBox.Show("The cube dimension attribute " + node.Text + " is marked AttributeHierarchyEnabled=false");
-                }
-                else if (node.ForeColor == nonMaterializedColor && !node.Checked) //show this warning unless they're unchecking it
-                {
-                    MessageBox.Show("This dimension is related through a non-materialized reference relationship\n\nCreating aggregations on such a relationship is not valid is it can produce incorrect figures.");
-                }
-                else if (node.ForeColor == parentChildAttributeColor && !node.Checked) //show this warning unless they're unchecking it
-                {
-                    MessageBox.Show("This attribute is a parent-child attribute. Aggregations are not allowed on it.");
-                }
-                else if (node.ForeColor == belowGranularityColor && !node.Checked) //show this warning unless they're unchecking it
-                {
-                    MessageBox.Show("This attribute is below granularity. Aggregations are not allowed on it.");
-                }
-                else
-                {
-                    bool bFlipCheck = true;
-
-                    TreeNode dimensionNode = node.Parent;
-                    while (dimensionNode.Parent != null)
-                        dimensionNode = dimensionNode.Parent;
-
-                    MeasureGroupDimension mgDim = mg1.Dimensions.Find(dimensionNode.Name);
-                    if (!node.Checked && mgDim is ManyToManyMeasureGroupDimension)
+                    MouseEventArgs me = (MouseEventArgs)e;
+                    TreeNode node = treeViewAggregation.GetNodeAt(me.Location);
+                    if (node.StateImageIndex >= 2) //this node is a dimension, so ignore clicks
+                        return;
+                    if (node.NodeFont != null && node.NodeFont.Italic && !node.Checked)
                     {
-                        //check that all the joining dimensions are in the agg, if not, offer to do that
-                        //also suggest not including the m2m dimension in the agg
-                        DataRow currentDR = GetCurrentDataGridRow();
+                        MessageBox.Show("The cube dimension attribute " + node.Text + " is marked AttributeHierarchyEnabled=false");
+                    }
+                    else if (node.ForeColor == nonMaterializedColor && !node.Checked) //show this warning unless they're unchecking it
+                    {
+                        MessageBox.Show("This dimension is related through a non-materialized reference relationship\n\nCreating aggregations on such a relationship is not valid is it can produce incorrect figures.");
+                    }
+                    else if (node.ForeColor == parentChildAttributeColor && !node.Checked) //show this warning unless they're unchecking it
+                    {
+                        MessageBox.Show("This attribute is a parent-child attribute. Aggregations are not allowed on it.");
+                    }
+                    else if (node.ForeColor == belowGranularityColor && !node.Checked) //show this warning unless they're unchecking it
+                    {
+                        MessageBox.Show("This attribute is below granularity. Aggregations are not allowed on it.");
+                    }
+                    else
+                    {
+                        bool bFlipCheck = true;
 
-                        String strAgg = currentDR[1].ToString();
-                        String strAggName = currentDR[0].ToString();
-                        Aggregation agg = GetAggregationFromString(strAggName, strAgg);
+                        TreeNode dimensionNode = node.Parent;
+                        while (dimensionNode.Parent != null)
+                            dimensionNode = dimensionNode.Parent;
 
-                        ManyToManyMeasureGroupDimension m2mDim = (ManyToManyMeasureGroupDimension)mgDim;
-                        MeasureGroup intermediateMG = m2mDim.MeasureGroup;
-                        List<MeasureGroupAttribute> missing = new List<MeasureGroupAttribute>();
-                        foreach (MeasureGroupDimension commonDim in intermediateMG.Dimensions)
+                        MeasureGroupDimension mgDim = mg1.Dimensions.Find(dimensionNode.Name);
+                        if (!node.Checked && mgDim is ManyToManyMeasureGroupDimension)
                         {
-                            if (!mgDim.Parent.Dimensions.Contains(commonDim.CubeDimensionID)) continue; //this isn't a shared dimension
-                            MeasureGroupDimension dataMeasureGroupDim = mgDim.Parent.Dimensions[commonDim.CubeDimensionID];
-                            if (dataMeasureGroupDim is ManyToManyMeasureGroupDimension) continue; //this shared dimension is m2m on the data measure group so don't include it
+                            //check that all the joining dimensions are in the agg, if not, offer to do that
+                            //also suggest not including the m2m dimension in the agg
+                            DataRow currentDR = GetCurrentDataGridRow();
 
-                            RegularMeasureGroupDimension regCommonDim = commonDim as RegularMeasureGroupDimension;
-                            if (commonDim.CubeDimensionID != m2mDim.CubeDimensionID || regCommonDim == null)
+                            String strAgg = currentDR[1].ToString();
+                            String strAggName = currentDR[0].ToString();
+                            Aggregation agg = GetAggregationFromString(strAggName, strAgg);
+
+                            ManyToManyMeasureGroupDimension m2mDim = (ManyToManyMeasureGroupDimension)mgDim;
+                            MeasureGroup intermediateMG = m2mDim.MeasureGroup;
+                            List<MeasureGroupAttribute> missing = new List<MeasureGroupAttribute>();
+                            foreach (MeasureGroupDimension commonDim in intermediateMG.Dimensions)
                             {
-                                //this is a common dimension and the granularity attribute on the intermediate measure group needs to be in the agg
-                                bool bFoundGranularityAgg = false;
-                                MeasureGroupAttribute mga = ValidateAggs.GetGranularityAttribute(regCommonDim);
-                                AggregationDimension aggCommonDim = agg.Dimensions.Find(commonDim.CubeDimensionID);
-                                if (aggCommonDim != null)
+                                if (!mgDim.Parent.Dimensions.Contains(commonDim.CubeDimensionID)) continue; //this isn't a shared dimension
+                                MeasureGroupDimension dataMeasureGroupDim = mgDim.Parent.Dimensions[commonDim.CubeDimensionID];
+                                if (dataMeasureGroupDim is ManyToManyMeasureGroupDimension) continue; //this shared dimension is m2m on the data measure group so don't include it
+
+                                RegularMeasureGroupDimension regCommonDim = commonDim as RegularMeasureGroupDimension;
+                                if (commonDim.CubeDimensionID != m2mDim.CubeDimensionID || regCommonDim == null)
                                 {
-                                    if (aggCommonDim.Attributes.Find(mga.AttributeID) != null)
+                                    //this is a common dimension and the granularity attribute on the intermediate measure group needs to be in the agg
+                                    bool bFoundGranularityAgg = false;
+                                    MeasureGroupAttribute mga = ValidateAggs.GetGranularityAttribute(regCommonDim);
+                                    AggregationDimension aggCommonDim = agg.Dimensions.Find(commonDim.CubeDimensionID);
+                                    if (aggCommonDim != null)
                                     {
-                                        bFoundGranularityAgg = true;
+                                        if (aggCommonDim.Attributes.Find(mga.AttributeID) != null)
+                                        {
+                                            bFoundGranularityAgg = true;
+                                        }
+                                    }
+                                    if (!bFoundGranularityAgg && mga != null)
+                                    {
+                                        missing.Add(mga);
                                     }
                                 }
-                                if (!bFoundGranularityAgg && mga != null)
-                                {
-                                    missing.Add(mga);
-                                }
                             }
-                        }
-                        string sWarning = "This aggregation will not be used when querying many-to-many dimension [" + m2mDim.CubeDimension.Name + "] unless it also contains ";
-                        for (int i = 0; i < missing.Count; i++)
-                        {
-                            MeasureGroupAttribute mga = missing[i];
-                            if (i > 0) sWarning += " and ";
-                            sWarning += "[" + mga.Parent.CubeDimension.Name + "].[" + mga.Attribute.Name + "]";
-                        }
-
-                        if (missing.Count == 0)
-                            sWarning = "";
-                        else
-                            sWarning += ". ";
-                        sWarning += "The many-to-many dimension [" + m2mDim.CubeDimension.Name + "] itself should not be included in the aggregation to workaround a bug.";
-                        sWarning += "\r\n\r\nWould you like BIDS Helper to fix this for you?";
-
-                        if (MessageBox.Show(sWarning, "BIDS Helper Agg Manager Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                        {
-                            foreach (MeasureGroupAttribute mga in missing)
+                            string sWarning = "This aggregation will not be used when querying many-to-many dimension [" + m2mDim.CubeDimension.Name + "] unless it also contains ";
+                            for (int i = 0; i < missing.Count; i++)
                             {
-                                TreeNode missingMGAdimensionNode = treeViewAggregation.Nodes[mga.Parent.CubeDimensionID];
-                                TreeNode missingNode = FindChildNode(missingMGAdimensionNode, mga.AttributeID);
-                                boolHandleClick = true;
-                                missingNode.Checked = true;
-                                boolHandleClick = false;
+                                MeasureGroupAttribute mga = missing[i];
+                                if (i > 0) sWarning += " and ";
+                                sWarning += "[" + mga.Parent.CubeDimension.Name + "].[" + mga.Attribute.Name + "]";
                             }
-                            bFlipCheck = false;
+
+                            if (missing.Count == 0)
+                                sWarning = "";
+                            else
+                                sWarning += ". ";
+                            sWarning += "The many-to-many dimension [" + m2mDim.CubeDimension.Name + "] itself should not be included in the aggregation to workaround a bug.";
+                            sWarning += "\r\n\r\nWould you like BIDS Helper to fix this for you?";
+
+                            if (MessageBox.Show(sWarning, "BIDS Helper Agg Manager Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                            {
+                                foreach (MeasureGroupAttribute mga in missing)
+                                {
+                                    TreeNode missingMGAdimensionNode = treeViewAggregation.Nodes[mga.Parent.CubeDimensionID];
+                                    TreeNode missingNode = FindChildNode(missingMGAdimensionNode, mga.AttributeID);
+                                    boolHandleClick = true;
+                                    missingNode.Checked = true;
+                                    boolHandleClick = false;
+                                }
+                                bFlipCheck = false;
+                            }
                         }
-                    }
 
-                    if (bFlipCheck)
-                    {
-                        boolHandleClick = true;
-                        node.Checked = !node.Checked;
-                        boolHandleClick = false;
-                    }
+                        if (bFlipCheck)
+                        {
+                            boolHandleClick = true;
+                            node.Checked = !node.Checked;
+                            boolHandleClick = false;
+                        }
 
-                    DataRow dr = GetCurrentDataGridRow();
-                    SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
+                        DataRow dr = GetCurrentDataGridRow();
+                        SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
+                        boolInExpandOrCollapse = false;
+                    }
                 }
             }
+            //HACK: Due to the way the custom checked treeview is implemented we have to unset the following 
+            //      flag to indicate that we are finished with Expanding/Collapsing and not actually clicking on
+            //      the node.
+            //      This is to address the following bug http://www.codeplex.com/bidshelper/WorkItem/View.aspx?WorkItemId=15858
+            boolInExpandOrCollapse = false;
         }
 
         private void buttonValidate_Click(object sender, EventArgs e)
@@ -1155,6 +1171,16 @@ namespace AggManager
             {
                 mg1.AggregationDesigns.Remove(tempAggDesign); //remove the temporary agg design
             }
+        }
+
+
+        //HACK: Due to the way the custom checked treeview is implemented we have to set the following 
+        //      flag to indicate that we are only Expanding/Collapsing and not actually clicking on
+        //      the node.
+        //      This is to address the following bug http://www.codeplex.com/bidshelper/WorkItem/View.aspx?WorkItemId=15858
+        private void treeViewAggregation_ExpandOrCollapse(object sender, TreeViewCancelEventArgs e)
+        {
+            boolInExpandOrCollapse = true;
         }
 
     }

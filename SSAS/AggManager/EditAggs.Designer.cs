@@ -115,6 +115,7 @@ namespace AggManager
             this.treeViewAggregation.StateImageList = this.imageList1;
             this.treeViewAggregation.TabIndex = 5;
             this.treeViewAggregation.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterCheck);
+            this.treeViewAggregation.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeViewAggregation_MouseUp);
             this.treeViewAggregation.Click += new System.EventHandler(this.treeViewAggregation_Click);
             // 
             // imageList1
