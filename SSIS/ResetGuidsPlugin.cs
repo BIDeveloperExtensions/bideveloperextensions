@@ -141,7 +141,8 @@ namespace BIDSHelper
         {
             foreach (Variable v in ((DtsContainer)parentExecutable).Variables)
             {
-                if (v.Namespace == "User")
+                //if (v.Namespace == "User")
+                if (! v.SystemVariable)
                 {
                     AddGuid(v.ID);
                 }
