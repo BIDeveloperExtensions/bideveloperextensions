@@ -440,6 +440,13 @@ namespace BIDSHelper
             XmlWriter wr = XmlWriter.Create(sFilename, settings);
             doc.Save(wr);
             wr.Close();
+
+            //finally, replace the &#xA; inside attributes with actual line breaks to make the SQL statements on Execute SQL tasks more readable
+            StringBuilder sbReplacer = new StringBuilder(System.IO.File.ReadAllText(sFilename));
+            sbReplacer.Replace("&#xD;&#xA;", "\r\n");
+            sbReplacer.Replace("&#xD;", "\r\n");
+            sbReplacer.Replace("&#xA;", "\r\n");
+            System.IO.File.WriteAllText(sFilename, sbReplacer.ToString());
         }
 
         public static void TransformXmlFile(string xmlPath, string sXSL)
