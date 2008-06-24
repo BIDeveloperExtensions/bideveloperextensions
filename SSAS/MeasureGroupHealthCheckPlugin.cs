@@ -63,15 +63,12 @@ namespace BIDSHelper
         {
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                if (this.ApplicationObject.ActiveWindow == null || this.ApplicationObject.ActiveWindow.ProjectItem == null)
                     return false;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (((ProjectItem)hierItem.Object).Object is Cube)
+                ProjectItem pi = this.ApplicationObject.ActiveWindow.ProjectItem;
+                if (pi.Object is Cube)
                 {
-                    ProjectItem pi = (ProjectItem)hierItem.Object;
-                    if (pi == null) return false;
                     IDesignerHost designer = (IDesignerHost)pi.Document.ActiveWindow.Object;
                     MeasureGroup mg = GetCurrentlySelectedMeasureGroup(designer);
                     if (mg != null) return true;
@@ -88,7 +85,10 @@ namespace BIDSHelper
         {
             if (designer == null) return null;
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-            if (win.SelectedView.Caption != "Cube Structure") return null;
+
+            if (win.SelectedView.MenuItemCommandID.Guid != new Guid("fa554dc1-6dd4-11d1-af71-006097df568c") || win.SelectedView.MenuItemCommandID.ID != 12897) return null;
+            //if (win.SelectedView.Caption != "Cube Structure") return null; //english only way of saying the above
+
             object cubeBuilderView = win.SelectedView.GetType().InvokeMember("viewControl", getfieldflags, null, win.SelectedView, null);
             object measuresView = cubeBuilderView.GetType().InvokeMember("measuresView", getfieldflags, null, cubeBuilderView, null);
             MultipleStateTreeView measuresTreeview = (MultipleStateTreeView)measuresView.GetType().InvokeMember("measuresTreeview", getfieldflags, null, measuresView, null);
@@ -122,19 +122,21 @@ namespace BIDSHelper
             }
         }
 
+        //TODO: add properties that hold the number of decimals and digits... not recommending single is adequate for now
+
         public static MeasureDataTypeOption[] dataTypeOptions = new MeasureDataTypeOption[] {
-            new MeasureDataTypeOption(MeasureDataType.BigInt, typeof(Int64), Int64.MinValue, Int64.MaxValue, false),
-            new MeasureDataTypeOption(MeasureDataType.Boolean, typeof(bool), -1, 0, false),
-            new MeasureDataTypeOption(MeasureDataType.Currency, typeof(decimal), (double)decimal.MinValue, (double)decimal.MaxValue, true),
-            new MeasureDataTypeOption(MeasureDataType.Double, typeof(double), double.MinValue, double.MaxValue, true),
-            new MeasureDataTypeOption(MeasureDataType.Integer, typeof(int), int.MinValue, int.MaxValue, false),
-            new MeasureDataTypeOption(MeasureDataType.Single, typeof(Single), Single.MinValue, Single.MaxValue, true),
-            new MeasureDataTypeOption(MeasureDataType.SmallInt, typeof(Int16), Int16.MinValue, Int16.MaxValue, false),
-            new MeasureDataTypeOption(MeasureDataType.TinyInt, typeof(SByte), SByte.MinValue, SByte.MaxValue, false),
-            new MeasureDataTypeOption(MeasureDataType.UnsignedBigInt, typeof(UInt64), UInt64.MinValue, UInt64.MaxValue, false),
-            new MeasureDataTypeOption(MeasureDataType.UnsignedInt, typeof(UInt32), UInt32.MinValue, UInt32.MaxValue, false),
-            new MeasureDataTypeOption(MeasureDataType.UnsignedSmallInt, typeof(UInt16), UInt16.MinValue, UInt16.MaxValue, false),
-            new MeasureDataTypeOption(MeasureDataType.UnsignedTinyInt, typeof(Byte), Byte.MinValue, Byte.MaxValue, false)
+            new MeasureDataTypeOption(MeasureDataType.BigInt, typeof(Int64), (double)Int64.MinValue, (double)Int64.MaxValue, false, false),
+            new MeasureDataTypeOption(MeasureDataType.Boolean, typeof(bool), (double)-1, (double)0, false, false),
+            new MeasureDataTypeOption(MeasureDataType.Currency, typeof(decimal), -922337203685477.5808m, 922337203685477.5807m, true, false, "up to 4 decimals"),
+            new MeasureDataTypeOption(MeasureDataType.Double, typeof(double), double.MinValue, double.MaxValue, true, true, "up to 15 digits"),
+            new MeasureDataTypeOption(MeasureDataType.Integer, typeof(int), (double)int.MinValue, (double)int.MaxValue, false, false),
+            new MeasureDataTypeOption(MeasureDataType.Single, typeof(Single), Single.MinValue, Single.MaxValue, true, true, "up to 7 digits"),
+            new MeasureDataTypeOption(MeasureDataType.SmallInt, typeof(Int16), (double)Int16.MinValue, (double)Int16.MaxValue, false, false),
+            new MeasureDataTypeOption(MeasureDataType.TinyInt, typeof(SByte), (double)SByte.MinValue, (double)SByte.MaxValue, false, false),
+            new MeasureDataTypeOption(MeasureDataType.UnsignedBigInt, typeof(UInt64), (double)UInt64.MinValue, (double)UInt64.MaxValue, false, false),
+            new MeasureDataTypeOption(MeasureDataType.UnsignedInt, typeof(UInt32), (double)UInt32.MinValue, (double)UInt32.MaxValue, false, false),
+            new MeasureDataTypeOption(MeasureDataType.UnsignedSmallInt, typeof(UInt16), (double)UInt16.MinValue, (double)UInt16.MaxValue, false, false),
+            new MeasureDataTypeOption(MeasureDataType.UnsignedTinyInt, typeof(Byte), (double)Byte.MinValue, (double)Byte.MaxValue, false, false)
         };
 
         //making these static allows me not to have to change all the function signatures below... and it is fine as static because multiple dimension health checks can't be run in parallel
@@ -210,6 +212,7 @@ namespace BIDSHelper
                     sOuterQuery.Append(",min(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
                     sOuterQuery.Append(",max(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
                     sOuterQuery.Append(",cast(max(case when floor(").Append(sq).Append(cb.ColumnID).Append(fq).Append(") <> ").Append(sq).Append(cb.ColumnID).Append(fq).Append(" then 1 else 0 end) as ").Append(sBitSqlDatatype).Append(")").AppendLine();
+                    sOuterQuery.Append(",cast(max(case when floor(").Append(sq).Append(cb.ColumnID).Append(fq).Append("*10000.0) <> ").Append(sq).Append(cb.ColumnID).Append(fq).Append("*10000.0 then 1 else 0 end) as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                 }
                 else if (m.AggregateFunction == AggregationFunction.Count
                 || m.AggregateFunction == AggregationFunction.DistinctCount
@@ -228,6 +231,7 @@ namespace BIDSHelper
                         sOuterQuery.Append(",0").AppendLine();
                         sOuterQuery.Append(",1").AppendLine();
                         sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
+                        sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                     }
                     else
                     {
@@ -241,6 +245,7 @@ namespace BIDSHelper
                             sOuterQuery.Append(sCountBig).Append("(").Append(sq).Append(cb.ColumnID).Append(fq).Append(")").AppendLine();
                         sOuterQuery.Append(",0").AppendLine();
                         sOuterQuery.Append(",1").AppendLine();
+                        sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                         sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                     }
                 }
@@ -295,10 +300,11 @@ namespace BIDSHelper
                         }
                     }
 
-                    double? total = (!Convert.IsDBNull(row[i * 4]) ? Convert.ToDouble(row[i * 4]) : (double?)null);
-                    double? min = (!Convert.IsDBNull(row[i * 4 + 1]) ? Convert.ToDouble(row[i * 4 + 1]) : (double?)null);
-                    double? max = (!Convert.IsDBNull(row[i * 4 + 2]) ? Convert.ToDouble(row[i * 4 + 2]) : (double?)null);
-                    bool hasDecimals = (!Convert.IsDBNull(row[i * 4 + 3]) ? Convert.ToBoolean(row[i * 4 + 3]) : false);
+                    double? total = (!Convert.IsDBNull(row[i * 5]) ? Convert.ToDouble(row[i * 5]) : (double?)null);
+                    double? min = (!Convert.IsDBNull(row[i * 5 + 1]) ? Convert.ToDouble(row[i * 5 + 1]) : (double?)null);
+                    double? max = (!Convert.IsDBNull(row[i * 5 + 2]) ? Convert.ToDouble(row[i * 5 + 2]) : (double?)null);
+                    bool hasDecimals = (!Convert.IsDBNull(row[i * 5 + 3]) ? Convert.ToBoolean(row[i * 5 + 3]) : false);
+                    bool hasMoreThan4Decimals = (!Convert.IsDBNull(row[i * 5 + 4]) ? Convert.ToBoolean(row[i * 5 + 4]) : false);
 
                     MeasureDataTypeOption oldDataTypeOption = GetMeasureDataTypeOptionForMeasure(m);
                     double recommendedMaxValue = double.MaxValue;
@@ -311,6 +317,7 @@ namespace BIDSHelper
                          && (max == null || option.max >= max)
                          && (min == null || option.min <= min)
                          && (!hasDecimals || option.allowsDecimals)
+                         && (!hasMoreThan4Decimals || option.allowsMoreThan4Decimals)
                         )
                         {
                             possible.Add(option);
@@ -318,7 +325,8 @@ namespace BIDSHelper
                              (total == null || (total * 20 < option.max && total * 20 > option.min))
                              && option.max < recommendedMaxValue
                              && option.max >= dsvColMaxValue
-                             && (!dsvColAllowsDecimals || option.allowsDecimals)
+                             && (dsvColAllowsDecimals == option.allowsDecimals)
+                             && (option.oleDbType != OleDbType.Single) //never recommend Single
                             )
                             {
                                 recommendedMaxValue = option.max;
@@ -339,7 +347,7 @@ namespace BIDSHelper
                                 dsvDataType = col.DataType;
                             }
 
-                            MeasureHealthCheckResult result = new MeasureHealthCheckResult(m, FormatDouble(total), FormatDouble(min), FormatDouble(max), hasDecimals, possible.ToArray(), option, oldDataTypeOption, dsvDataType);
+                            MeasureHealthCheckResult result = new MeasureHealthCheckResult(m, FormatDouble(total), FormatDouble(min), FormatDouble(max), hasDecimals, hasMoreThan4Decimals, possible.ToArray(), option, oldDataTypeOption, dsvDataType);
                             measureResults.Add(result);
 
                             break;
@@ -581,8 +589,34 @@ namespace BIDSHelper
             public OleDbType oleDbType;
             public double min;
             public double max;
+            public string displayMin;
+            public string displayMax;
             public bool allowsDecimals;
-            public MeasureDataTypeOption(MeasureDataType dataType, Type type, double min, double max, bool allowsDecimals)
+            public bool allowsMoreThan4Decimals;
+            public string limitations;
+            public MeasureDataTypeOption(MeasureDataType dataType, Type type, double min, double max, bool allowsDecimals, bool allowsMoreThan4Decimals)
+            {
+                SetProperties(dataType, type, min, max, allowsDecimals, allowsMoreThan4Decimals);
+            }
+            public MeasureDataTypeOption(MeasureDataType dataType, Type type, double min, double max, bool allowsDecimals, bool allowsMoreThan4Decimals, string limitations)
+            {
+                SetProperties(dataType, type, min, max, allowsDecimals, allowsMoreThan4Decimals);
+                this.limitations = limitations;
+            }
+            public MeasureDataTypeOption(MeasureDataType dataType, Type type, decimal min, decimal max, bool allowsDecimals, bool allowsMoreThan4Decimals)
+            {
+                SetProperties(dataType, type, (double)min, (double)max, allowsDecimals, allowsMoreThan4Decimals);
+                this.displayMin = min.ToString("n4");
+                this.displayMax = max.ToString("n4");
+            }
+            public MeasureDataTypeOption(MeasureDataType dataType, Type type, decimal min, decimal max, bool allowsDecimals, bool allowsMoreThan4Decimals, string limitations)
+            {
+                SetProperties(dataType, type, (double)min, (double)max, allowsDecimals, allowsMoreThan4Decimals);
+                this.displayMin = min.ToString("n4");
+                this.displayMax = max.ToString("n4");
+                this.limitations = limitations;
+            }
+            private void SetProperties(MeasureDataType dataType, Type type, double min, double max, bool allowsDecimals, bool allowsMoreThan4Decimals)
             {
                 this.dataType = dataType;
                 this.type = type;
@@ -594,7 +628,10 @@ namespace BIDSHelper
 
                 this.min = min;
                 this.max = max;
+                this.displayMin = FormatDouble(min);
+                this.displayMax = FormatDouble(max);
                 this.allowsDecimals = allowsDecimals;
+                this.allowsMoreThan4Decimals = allowsMoreThan4Decimals;
             }
             public string DataTypeName
             {
@@ -612,13 +649,14 @@ namespace BIDSHelper
 
         public class MeasureHealthCheckResult
         {
-            public MeasureHealthCheckResult(Measure Measure, string Total, string Min, string Max, bool HasDecimals, MeasureDataTypeOption[] PossibleDataTypes, MeasureDataTypeOption RecommendedDataType, MeasureDataTypeOption CurrentDataType, Type dsvDataType)
+            public MeasureHealthCheckResult(Measure Measure, string Total, string Min, string Max, bool HasDecimals, bool HasMoreThan4Decimals, MeasureDataTypeOption[] PossibleDataTypes, MeasureDataTypeOption RecommendedDataType, MeasureDataTypeOption CurrentDataType, Type dsvDataType)
             {
                 this.Measure = Measure;
                 this.mTotal = Total;
                 this.mMin = Min;
                 this.mMax = Max;
                 this.mHasDecimals = HasDecimals;
+                this.mHasMoreThan4Decimals = HasMoreThan4Decimals;
                 this.PossibleDataTypes = PossibleDataTypes;
                 this.RecommendedDataType = RecommendedDataType;
                 this.mDataType = RecommendedDataType;
@@ -644,10 +682,17 @@ namespace BIDSHelper
                 get { return mMax; }
             }
 
+            private bool mHasMoreThan4Decimals;
             private bool mHasDecimals;
-            public bool HasDecimals
+            public string HasDecimals
             {
-                get { return mHasDecimals; }
+                get
+                {
+                    if (mHasMoreThan4Decimals)
+                        return "4+";
+                    else
+                        return mHasDecimals.ToString();
+                }
             }
 
             private MeasureDataTypeOption mCurrentDataType;

@@ -73,7 +73,7 @@ namespace BIDSHelper.SSAS
 
             TextBox text = new TextBox();
             text.Location = new System.Drawing.Point(2, 2);
-            text.Size = new System.Drawing.Size(380, 380);
+            text.Size = new System.Drawing.Size(500, 380);
             text.Multiline = true;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Columns:");
@@ -82,7 +82,7 @@ namespace BIDSHelper.SSAS
             sb.AppendLine("Total - The aggregated value across all rows");
             sb.AppendLine("Min - The minimum value from a single row");
             sb.AppendLine("Max - The maximum value from a single row");
-            sb.AppendLine("Decimals? - Are there any values that have decimals?");
+            sb.AppendLine("Decimals? - Are there any values that have decimals? More than 4 decimals?");
             sb.AppendLine("DSV - The datatype for the column in the data source view");
             sb.AppendLine("Current - The current measure datatype");
             sb.AppendLine("New - The recommended new measure datatype");
@@ -91,7 +91,7 @@ namespace BIDSHelper.SSAS
             foreach (MeasureGroupHealthCheckPlugin.MeasureDataTypeOption dataType in MeasureGroupHealthCheckPlugin.dataTypeOptions)
             {
                 sb.Append(dataType.dataType.ToString()).Append("/").Append(dataType.type.Name);
-                sb.Append(" (").Append(MeasureGroupHealthCheckPlugin.FormatDouble(dataType.min)).Append(" to ").Append(MeasureGroupHealthCheckPlugin.FormatDouble(dataType.max)).AppendLine(")");
+                sb.Append(" (").Append(dataType.displayMin).Append(" to ").Append(dataType.displayMax).Append(") ").AppendLine(dataType.limitations);
             }
             text.Text = sb.ToString();
             text.ReadOnly = true;
