@@ -27,10 +27,12 @@ namespace BIDSHelper
         private static string STATUS_BAR_PROGRESS_CAPTION = "BIDS Helper: Highlighting Expressions and Configurations";
         private static Type TYPE_DTS_SERIALIZATION = GetPrivateType(typeof(Microsoft.DataTransformationServices.Design.ColumnInfo), "Microsoft.DataTransformationServices.Design.Serialization.DtsSerialization");
         private static int MAX_SYNCHRONOUS_HIGHLIGHTING_TIME_SECONDS = 0; //TODO
+        private static int MAX_SECONDS_BUILDING_TO_DOS_BEFORE_OFFER_DISABLE = 10;
         private System.ComponentModel.BackgroundWorker workerToDos = new System.ComponentModel.BackgroundWorker();
         private AutoResetEvent workerThreadEvent = new AutoResetEvent(false);
         private bool bWorkerThreadDoneWithWork = false;
         private Dictionary<object, HighlightingToDo> highlightingToDos = new Dictionary<object, HighlightingToDo>();
+        private Dictionary<EditorWindow, bool> disableHighlighting = new Dictionary<EditorWindow, bool>();
 
         public ExpressionHighlighterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -119,6 +121,7 @@ namespace BIDSHelper
         {
             try
             {
+                DateTime dtToDoBuildingStartTime = DateTime.Now;
                 DateTime dtSynchronousHighlightingCutoff = DateTime.Now.AddSeconds(MAX_SYNCHRONOUS_HIGHLIGHTING_TIME_SECONDS);
                 if (!this.Enabled) return;
                 if (ExpressionListPlugin.bShouldSkipExpressionHighlighting) return;
@@ -141,6 +144,9 @@ namespace BIDSHelper
                 if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 Package package = (Package)win.PropertiesLinkComponent;
+
+                //check whether we should abort because highlighting has been disabled for this window
+                if (disableHighlighting.ContainsKey(win) && disableHighlighting[win]) return;
 
                 //refresh DDS objects as all their properties aren't updated until you save the DTSX file
                 //this code is to workaround a problem such that a newly copied/pasted TaskHost isn't linked in via the DDS objects correctly until this refresh
@@ -352,6 +358,14 @@ namespace BIDSHelper
                             }
                         }
                     }
+                }
+
+                if (dtToDoBuildingStartTime.AddSeconds(MAX_SECONDS_BUILDING_TO_DOS_BEFORE_OFFER_DISABLE) < DateTime.Now && !disableHighlighting.ContainsKey(win))
+                {
+                    //it took more than 10 seconds to build the to do's list... offer that we disable highlighting for this package
+                    DialogResult result = MessageBox.Show("BIDS Helper Expression and Configuration Highlighting is taking a very long time to complete.\r\nThis can occur sometimes with complex packages.\r\n\r\nWould you like to disable highlighting on this package until you reopen it?\r\n\r\n(You may also completely disable the feature on all packages via Tools... Options... BIDS Helper.)", "BIDS Helper Expression and Configuration Highlighter Performance", MessageBoxButtons.YesNo);
+                    disableHighlighting.Add(win, (result == DialogResult.Yes));
+                    if (result == DialogResult.Yes) return;
                 }
 
                 if (!bIncremental && bRescan)
