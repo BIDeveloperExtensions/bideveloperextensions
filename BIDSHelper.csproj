@@ -168,6 +168,7 @@
       <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\BIDSHelperWindowActivatedPluginBase.cs" />
+    <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\ImageToPictureDispConverter.cs">
       <SubType>Component</SubType>
     </Compile>
