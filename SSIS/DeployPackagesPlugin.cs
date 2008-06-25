@@ -51,7 +51,7 @@ namespace BIDSHelper
 
         public override string MenuName
         {
-            get { return "Item,Project"; }
+            get { return "Item,Project,Solution"; }
         }
 
         public override string FriendlyName
@@ -68,9 +68,18 @@ namespace BIDSHelper
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 Project proj = hierItem.Object as Project;
+                SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
                     return (proj.Kind == SSIS_PROJECT_KIND);
+                }
+                else if (solution != null)
+                {
+                    foreach (Project p in solution.Projects)
+                    {
+                        if (p.Kind != SSIS_PROJECT_KIND) return false;
+                    }
+                    return (solution.Projects.Count > 0);
                 }
                 else
                 {
@@ -80,14 +89,13 @@ namespace BIDSHelper
             }
             else
             {
-                bool bAllDtsx = true;
                 foreach (object selected in ((System.Array)solExplorer.SelectedItems))
                 {
                     UIHierarchyItem hierItem = (UIHierarchyItem)selected;
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                    bAllDtsx = bAllDtsx && sFileName.EndsWith(".dtsx");
+                    if (!sFileName.EndsWith(".dtsx")) return false;
                 }
-                return bAllDtsx;
+                return (((System.Array)solExplorer.SelectedItems).Length > 0);
             }
         }
 
@@ -97,21 +105,32 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project proj;
+
+                bool bJustDeploySelectedPackages = false;
+                System.Collections.Generic.List<Project> projects = new System.Collections.Generic.List<Project>();
                 if (hierItem.Object is Project)
                 {
-                    proj = (Project)hierItem.Object;
+                    projects.Add((Project)hierItem.Object);
+                }
+                else if (hierItem.Object is SolutionClass)
+                {
+                    foreach (Project p in ((SolutionClass)hierItem.Object).Projects)
+                    {
+                        projects.Add(p);
+                    }
                 }
                 else
                 {
                     ProjectItem pi = (ProjectItem)hierItem.Object;
-                    proj = pi.ContainingProject;
+                    projects.Add(pi.ContainingProject);
+                    bJustDeploySelectedPackages = true;
                 }
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+
+                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)projects[0]).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                 DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                 this.ApplicationObject.ToolWindows.OutputWindow.Parent.SetFocus();
-                IOutputWindowFactory service = ((System.IServiceProvider)proj).GetService(typeof(IOutputWindowFactory)) as IOutputWindowFactory;
+                IOutputWindowFactory service = ((System.IServiceProvider)projects[0]).GetService(typeof(IOutputWindowFactory)) as IOutputWindowFactory;
                 IOutputWindow outputWindow = service.GetStandardOutputWindow(StandardOutputWindow.Deploy);
                 outputWindow.Activate();
                 outputWindow.Clear();
@@ -119,54 +138,15 @@ namespace BIDSHelper
                 this.ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
                 this.ApplicationObject.StatusBar.Text = "Deploying package(s)...";
 
-                try
+                foreach (Project proj in projects)
                 {
-                    string sConfigFileName = ((Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj).FullName + ".bidsHelper.user";
-                    System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
-                    if (System.IO.File.Exists(sConfigFileName))
-                    {
-                        doc.Load(sConfigFileName);
-                    }
+                    System.Array selectedItems; //holds packages to deploy
 
-                    IProjectConfiguration config = projectManager.ConfigurationManager.CurrentConfiguration;
-                    DtsProjectExtendedConfigurationOptions newOptions = new DtsProjectExtendedConfigurationOptions();
-                    LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
-
-                    //print out header in output window
-                    if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
+                    if (bJustDeploySelectedPackages)
                     {
-                        if (string.IsNullOrEmpty(newOptions.FilePath))
-                        {
-                            outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "Deployment FilePath is not set. Right click on the project node and set the FilePath property.");
-                            return;
-                        }
-                        outputWindow.ReportStatusMessage("Deploying to file path " + newOptions.FilePath + "\r\n");
+                        selectedItems = ((System.Array)solExplorer.SelectedItems);
                     }
                     else
-                    {
-                        if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreMsdbDestination)
-                        {
-                            outputWindow.ReportStatusMessage("Deploying to SSIS Package Store MSDB on server " + newOptions.DestinationServer);
-                        }
-                        else if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreFileSystemDestination)
-                        {
-                            outputWindow.ReportStatusMessage("Deploying to SSIS Package Store File System on server " + newOptions.DestinationServer);
-                        }
-                        else if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SqlServerDestination)
-                        {
-                            outputWindow.ReportStatusMessage("Deploying to SQL Server MSDB on server: " + newOptions.DestinationServer);
-                        }
-                        if (!string.IsNullOrEmpty(newOptions.DestinationFolder))
-                            outputWindow.ReportStatusMessage("Deploying to folder: " + newOptions.DestinationFolder);
-                        outputWindow.ReportStatusMessage(string.Empty);
-                    }
-                    System.Windows.Forms.Application.DoEvents();
-
-                    //load project items to loop through
-                    System.Array selectedItems = ((System.Array)solExplorer.SelectedItems);
-                    hierItem = ((UIHierarchyItem)((System.Array)selectedItems).GetValue(0));
-                    proj = hierItem.Object as Project;
-                    if (proj != null)
                     {
                         System.Collections.Generic.List<ProjectItem> list = new System.Collections.Generic.List<ProjectItem>(proj.ProjectItems.Count);
                         foreach (ProjectItem item in proj.ProjectItems)
@@ -176,120 +156,7 @@ namespace BIDSHelper
                         selectedItems = list.ToArray();
                     }
 
-                    //determine destination types and folders
-                    string sDestFolder = newOptions.DestinationFolder;
-                    sDestFolder = sDestFolder.Replace("/", "\\");
-                    if (!string.IsNullOrEmpty(sDestFolder) && !sDestFolder.EndsWith("\\")) sDestFolder += "\\";
-                    while (sDestFolder.StartsWith("\\"))
-                        sDestFolder = sDestFolder.Substring(1);
-
-                    string sDestType = "SQL";
-                    if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreFileSystemDestination)
-                    {
-                        sDestFolder = "File System\\" + sDestFolder;
-                        sDestType = "DTS";
-                    }
-                    else if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreMsdbDestination)
-                    {
-                        sDestFolder = "MSDB\\" + sDestFolder;
-                        sDestType = "DTS";
-                    }
-
-                    //setup Process object to call the dtutil EXE
-                    System.Diagnostics.Process process = new System.Diagnostics.Process();
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
-                    process.StartInfo.CreateNoWindow = true;
-                    process.StartInfo.FileName = "dtutil";
-
-                    if (newOptions.DeploymentType != DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
-                    {
-                        //create the directories
-                        string sAccumulatingDir = "";
-                        try
-                        {
-                            foreach (string dir in sDestFolder.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries))
-                            {
-                                if (!(string.IsNullOrEmpty(sAccumulatingDir) && sDestType == "DTS"))
-                                {
-                                    process.StartInfo.Arguments = string.Format("/FCreate {0};{1};\"{2}\" /SourceServer {3} ", sDestType, (sAccumulatingDir == "" ? "\\" : "\"" + sAccumulatingDir + "\""), dir, newOptions.DestinationServer);
-                                    process.Start();
-                                    process.WaitForExit();
-                                }
-                                if (!string.IsNullOrEmpty(sAccumulatingDir))
-                                    sAccumulatingDir += "\\";
-                                sAccumulatingDir += dir;
-                            }
-                        }
-                        catch { }
-                    }
-
-                    //loop through each package to deploy
-                    foreach (object selected in selectedItems)
-                    {
-                        ProjectItem pi;
-                        string sFileName;
-                        string sFilePath;
-                        if (selected is ProjectItem)
-                        {
-                            pi = (ProjectItem)selected;
-                        }
-                        else if (selected is UIHierarchyItem && ((UIHierarchyItem)selected).Object is ProjectItem)
-                        {
-                            pi = ((ProjectItem)((UIHierarchyItem)selected).Object);
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                        sFileName = pi.Name;
-                        sFilePath = pi.get_FileNames(0);
-                        if (!sFileName.ToLower().EndsWith(".dtsx")) continue;
-
-                        if (pi.Document != null && !pi.Document.Saved)
-                        {
-                            pi.Save("");
-                        }
-
-                        if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
-                        {
-                            string sDestinationPath = newOptions.FilePath;
-                            if (!sDestinationPath.EndsWith("\\")) sDestinationPath += "\\";
-                            if (!System.IO.Directory.Exists(sDestinationPath))
-                                System.IO.Directory.CreateDirectory(sDestinationPath);
-                            sDestinationPath += sFileName;
-                            if (System.IO.File.Exists(sDestinationPath))
-                            {
-                                System.IO.File.SetAttributes(sDestinationPath, System.IO.FileAttributes.Normal);
-                            }
-                            System.IO.File.Copy(sFilePath, sDestinationPath, true);
-                            outputWindow.ReportStatusMessage("Deployed " + sFileName);
-                        }
-                        else
-                        {
-                            process.Refresh();
-                            process.StartInfo.Arguments = string.Format("/FILE \"{0}\" /DestServer {1} /COPY {2};\"{3}\" /Q", sFilePath, newOptions.DestinationServer, sDestType, sDestFolder + sFileName.Substring(0, sFileName.Length - ".dtsx".Length));
-                            process.Start();
-                            string sError = process.StandardError.ReadToEnd();
-                            string sStandardOutput = process.StandardOutput.ReadToEnd();
-                            process.WaitForExit();
-                            if (process.ExitCode > 0)
-                            {
-                                outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "BIDS Helper encountered an error when deploying package " + sFileName + "!\r\ndtutil " + process.StartInfo.Arguments + "\r\nexit code = " + process.ExitCode + "\r\n" + sStandardOutput);
-                                this.ApplicationObject.ToolWindows.OutputWindow.Parent.AutoHides = false; //pin the window open so you can see the problem
-                                return;
-                            }
-                            outputWindow.ReportStatusMessage("Deployed " + sFileName);
-                            System.Windows.Forms.Application.DoEvents();
-                        }
-                    }
-                    outputWindow.ReportStatusMessage("BIDS Helper completed deploying packages successfully.");
-                }
-                catch (Exception ex)
-                {
-                    outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "BIDS Helper encountered an error when deploying packages:\r\n" + ex.Message + "\r\n" + ex.StackTrace);
-                    this.ApplicationObject.ToolWindows.OutputWindow.Parent.AutoHides = false; //pin the window open so you can see the problem
+                    DeployProject(proj, outputWindow, selectedItems, !bJustDeploySelectedPackages);
                 }
             }
             catch (Exception ex)
@@ -301,7 +168,196 @@ namespace BIDSHelper
                 this.ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                 this.ApplicationObject.StatusBar.Text = string.Empty;
             }
+        }
 
+        private void DeployProject(Project proj, IOutputWindow outputWindow, System.Array selectedItems, bool bCreateBat)
+        {
+            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
+
+            StringBuilder sBatFileContents = new StringBuilder();
+            try
+            {
+                string sConfigFileName = ((Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj).FullName + ".bidsHelper.user";
+                System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+                if (System.IO.File.Exists(sConfigFileName))
+                {
+                    doc.Load(sConfigFileName);
+                }
+
+                IProjectConfiguration config = projectManager.ConfigurationManager.CurrentConfiguration;
+                DtsProjectExtendedConfigurationOptions newOptions = new DtsProjectExtendedConfigurationOptions();
+                LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
+
+                //print out header in output window
+                if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
+                {
+                    if (string.IsNullOrEmpty(newOptions.FilePath))
+                    {
+                        outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "Deployment FilePath is not set. Right click on the project node and set the FilePath property.");
+                        return;
+                    }
+                    outputWindow.ReportStatusMessage("Deploying to file path " + newOptions.FilePath + "\r\n");
+                }
+                else
+                {
+                    if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreMsdbDestination)
+                    {
+                        outputWindow.ReportStatusMessage("Deploying to SSIS Package Store MSDB on server " + newOptions.DestinationServer);
+                    }
+                    else if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreFileSystemDestination)
+                    {
+                        outputWindow.ReportStatusMessage("Deploying to SSIS Package Store File System on server " + newOptions.DestinationServer);
+                    }
+                    else if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SqlServerDestination)
+                    {
+                        outputWindow.ReportStatusMessage("Deploying to SQL Server MSDB on server: " + newOptions.DestinationServer);
+                    }
+                    if (!string.IsNullOrEmpty(newOptions.DestinationFolder))
+                        outputWindow.ReportStatusMessage("Deploying to folder: " + newOptions.DestinationFolder);
+                    outputWindow.ReportStatusMessage(string.Empty);
+                }
+                System.Windows.Forms.Application.DoEvents();
+
+                //determine destination types and folders
+                string sDestFolder = newOptions.DestinationFolder;
+                sDestFolder = sDestFolder.Replace("/", "\\");
+                if (!string.IsNullOrEmpty(sDestFolder) && !sDestFolder.EndsWith("\\")) sDestFolder += "\\";
+                while (sDestFolder.StartsWith("\\"))
+                    sDestFolder = sDestFolder.Substring(1);
+
+                string sDestType = "SQL";
+                if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreFileSystemDestination)
+                {
+                    sDestFolder = "File System\\" + sDestFolder;
+                    sDestType = "DTS";
+                }
+                else if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.SsisPackageStoreMsdbDestination)
+                {
+                    sDestFolder = "MSDB\\" + sDestFolder;
+                    sDestType = "DTS";
+                }
+                else if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
+                {
+                    string sDestinationPath = newOptions.FilePath;
+                    if (!sDestinationPath.EndsWith("\\")) sDestinationPath += "\\";
+                    if (!System.IO.Directory.Exists(sDestinationPath))
+                        System.IO.Directory.CreateDirectory(sDestinationPath);
+                    sDestFolder = sDestinationPath;
+                    sBatFileContents.Append("mkdir \"").Append(sDestFolder).AppendLine("\"");
+                }
+
+                //could find full path to dtutil this way:
+                //SSIS.PerformanceVisualization.PerformanceTab.GetPathToDtsExecutable("dtutil.exe", false);
+                //but that may make the bat file less portable... so we'll just leave it not specifying the full path to dtutil
+
+                //setup Process object to call the dtutil EXE
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.FileName = "dtutil";
+
+                if (newOptions.DeploymentType != DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
+                {
+                    //create the directories
+                    string sAccumulatingDir = "";
+                    try
+                    {
+                        foreach (string dir in sDestFolder.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (!(string.IsNullOrEmpty(sAccumulatingDir) && sDestType == "DTS"))
+                            {
+                                process.StartInfo.Arguments = string.Format("/FCreate {0};{1};\"{2}\" /SourceServer {3} ", sDestType, (sAccumulatingDir == "" ? "\\" : "\"" + sAccumulatingDir + "\""), dir, newOptions.DestinationServer);
+                                sBatFileContents.Append(process.StartInfo.FileName).Append(" ").AppendLine(process.StartInfo.Arguments);
+                                process.Start();
+                                process.WaitForExit();
+                            }
+                            if (!string.IsNullOrEmpty(sAccumulatingDir))
+                                sAccumulatingDir += "\\";
+                            sAccumulatingDir += dir;
+                        }
+                    }
+                    catch { }
+                }
+
+                //loop through each package to deploy
+                foreach (object selected in selectedItems)
+                {
+                    ProjectItem pi;
+                    string sFileName;
+                    string sFilePath;
+                    if (selected is ProjectItem)
+                    {
+                        pi = (ProjectItem)selected;
+                    }
+                    else if (selected is UIHierarchyItem && ((UIHierarchyItem)selected).Object is ProjectItem)
+                    {
+                        pi = ((ProjectItem)((UIHierarchyItem)selected).Object);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                    sFileName = pi.Name;
+                    sFilePath = pi.get_FileNames(0);
+                    if (!sFileName.ToLower().EndsWith(".dtsx")) continue;
+
+                    if (pi.Document != null && !pi.Document.Saved)
+                    {
+                        pi.Save("");
+                    }
+
+                    if (newOptions.DeploymentType == DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
+                    {
+                        string sDestinationPath = sDestFolder + sFileName;
+                        if (System.IO.File.Exists(sDestinationPath))
+                        {
+                            System.IO.File.SetAttributes(sDestinationPath, System.IO.FileAttributes.Normal);
+                        }
+                        sBatFileContents.Append("xcopy \"").Append(sFilePath).Append("\" \"").Append(sDestFolder).AppendLine("\" /Y /R");
+                        System.IO.File.Copy(sFilePath, sDestinationPath, true);
+                        outputWindow.ReportStatusMessage("Deployed " + sFileName);
+                    }
+                    else
+                    {
+                        process.Refresh();
+                        process.StartInfo.Arguments = string.Format("/FILE \"{0}\" /DestServer {1} /COPY {2};\"{3}\" /Q", sFilePath, newOptions.DestinationServer, sDestType, sDestFolder + sFileName.Substring(0, sFileName.Length - ".dtsx".Length));
+                        sBatFileContents.Append(process.StartInfo.FileName).Append(" ").AppendLine(process.StartInfo.Arguments);
+                        process.Start();
+                        string sError = process.StandardError.ReadToEnd();
+                        string sStandardOutput = process.StandardOutput.ReadToEnd();
+                        process.WaitForExit();
+                        if (process.ExitCode > 0)
+                        {
+                            outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "BIDS Helper encountered an error when deploying package " + sFileName + "!\r\ndtutil " + process.StartInfo.Arguments + "\r\nexit code = " + process.ExitCode + "\r\n" + sStandardOutput);
+                            this.ApplicationObject.ToolWindows.OutputWindow.Parent.AutoHides = false; //pin the window open so you can see the problem
+                            return;
+                        }
+                        outputWindow.ReportStatusMessage("Deployed " + sFileName);
+                        System.Windows.Forms.Application.DoEvents();
+                    }
+                }
+                outputWindow.ReportStatusMessage("BIDS Helper completed deploying packages successfully.");
+
+                if (bCreateBat)
+                {
+                    string sBatFilename = System.IO.Path.GetDirectoryName(((Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj).FullName);
+                    sBatFilename += "\\" + newOptions.OutputPath + "\\bidsHelperDeployPackages.bat";
+                    if (System.IO.File.Exists(sBatFilename))
+                    {
+                        System.IO.File.SetAttributes(sBatFilename, System.IO.FileAttributes.Normal);
+                    }
+                    System.IO.File.WriteAllText(sBatFilename, sBatFileContents.ToString());
+                    outputWindow.ReportStatusMessage("Deployment commands saved to: " + sBatFilename + "\r\n\r\n");
+                }
+            }
+            catch (Exception ex)
+            {
+                outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "BIDS Helper encountered an error when deploying packages:\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                this.ApplicationObject.ToolWindows.OutputWindow.Parent.AutoHides = false; //pin the window open so you can see the problem
+            }
         }
 
         #region Override Project Properties Dialog
