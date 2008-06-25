@@ -675,7 +675,7 @@ namespace BIDSHelper
                     info.ObjectName = objectName;
                     info.ObjectPath = objectPath;
                     info.ObjectType = v.GetType().ToString();
-                    info.PropertyName = v.Name;
+                    info.PropertyName = v.QualifiedName;
                     info.Expression = v.Expression;
                     info.HasExpression = v.EvaluateAsExpression;
                     worker.ReportProgress(0, info);

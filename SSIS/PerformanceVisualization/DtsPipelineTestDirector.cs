@@ -620,7 +620,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
                 foreach (Variable v in parentDtsContainer.Variables)
                 {
-                    if (v.Namespace == "User")
+                    if (!v.SystemVariable)
                     {
                         if (v.GetPackagePath().StartsWith(((IDTSPackagePath)parentDtsContainer).GetPackagePath() + ".Variables["))
                         {
