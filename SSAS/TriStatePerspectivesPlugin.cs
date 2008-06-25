@@ -80,7 +80,8 @@ namespace BIDSHelper
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                 }
 
-                if (win.SelectedView.Caption == "Perspectives")
+                //if (win.SelectedView.Caption == "Perspectives")
+                if (win.SelectedView.MenuItemCommandID.ID == (int) BIDSViewMenuItemCommandID.Perspectives)
                 {
                     Control perspectiveBuilder = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null); //Microsoft.AnalysisServices.Design.PerspectivesBuilder
                     Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl

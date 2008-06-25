@@ -85,10 +85,8 @@ namespace BIDSHelper
         {
             if (designer == null) return null;
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-
-            if (win.SelectedView.MenuItemCommandID.Guid != new Guid("fa554dc1-6dd4-11d1-af71-006097df568c") || win.SelectedView.MenuItemCommandID.ID != 12897) return null;
-            //if (win.SelectedView.Caption != "Cube Structure") return null; //english only way of saying the above
-
+            //if (win.SelectedView.Caption != "Cube Structure") return null;
+            if (win.SelectedView.MenuItemCommandID.ID != (int)BIDSViewMenuItemCommandID.CubeStructure) return null;
             object cubeBuilderView = win.SelectedView.GetType().InvokeMember("viewControl", getfieldflags, null, win.SelectedView, null);
             object measuresView = cubeBuilderView.GetType().InvokeMember("measuresView", getfieldflags, null, cubeBuilderView, null);
             MultipleStateTreeView measuresTreeview = (MultipleStateTreeView)measuresView.GetType().InvokeMember("measuresTreeview", getfieldflags, null, measuresView, null);

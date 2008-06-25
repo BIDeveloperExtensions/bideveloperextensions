@@ -64,7 +64,8 @@ namespace BIDSHelper
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                 }
 
-                if (win.SelectedView.Caption == "Partitions")
+                //if (win.SelectedView.Caption == "Partitions")
+                if (win.SelectedView.MenuItemCommandID.ID == (int)BIDSViewMenuItemCommandID.Partitions)
                 {
                     if (!toolbar.Buttons.ContainsKey(this.FullName + "." + SET_ESTIMATED_COUNTS_BUTTON))
                     {

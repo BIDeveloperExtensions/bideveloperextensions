@@ -112,14 +112,17 @@ namespace BIDSHelper
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                 }
 
-                if (win.SelectedView.Caption == "Calculations")
+                if (win.SelectedView.MenuItemCommandID.ID == 12899)
+                //if (win.SelectedView.Caption == "Calculations")
                 {
 
                     int iMicrosoftCalcPropertiesIndex = 0;
                     bool bFlipScriptViewButton = false;
                     foreach (ToolBarButton b in toolbar.Buttons)
                     {
-                        if (b.ToolTipText.StartsWith("Calculation Properties"))
+                        Microsoft.DataWarehouse.Controls.MenuCommandToolBarButton tbb = b as Microsoft.DataWarehouse.Controls.MenuCommandToolBarButton;
+                        if (tbb != null && tbb.AssociatedCommandID.ID == (int)BIDSToolbarButtonID.CalculationProperties)
+                        //if (b.ToolTipText.StartsWith("Calculation Properties"))
                         {
                             if (b.Tag == null || b.Tag.ToString() != this.FullName + ".CommandProperties")
                             {
@@ -166,7 +169,8 @@ namespace BIDSHelper
                                 }
                             }
                         }
-                        else if (b.ToolTipText == "Form View" && ScriptViewDefault && !windowHandlesFixedDefaultCalcScriptView.ContainsKey(sHandle))
+                        else if (tbb != null && tbb.AssociatedCommandID.ID == 12854 && ScriptViewDefault && !windowHandlesFixedDefaultCalcScriptView.ContainsKey(sHandle)) 
+                        //else if (b.ToolTipText == "Form View" && ScriptViewDefault && !windowHandlesFixedDefaultCalcScriptView.ContainsKey(sHandle)) //12854
                         {
                             Control control = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
                             System.Reflection.BindingFlags getfieldflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -177,7 +181,8 @@ namespace BIDSHelper
                             b.Pushed = false;
                             windowHandlesFixedDefaultCalcScriptView.Add(sHandle,win);
                         }
-                        else if (b.ToolTipText == "Script View" && bFlipScriptViewButton)
+                        else if (tbb != null && tbb.AssociatedCommandID.ID == (int)BIDSHelper.BIDSToolbarButtonID.ScriptView  && bFlipScriptViewButton) //12853
+                        //else if (b.ToolTipText == "Script View" && bFlipScriptViewButton) //12853
                         {
                             b.Pushed = true;
                         }
@@ -201,8 +206,9 @@ namespace BIDSHelper
             if (designer == null) return;
             ProjectItem pi = ApplicationObject.ActiveWindow.ProjectItem;
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-
-            if (win.SelectedView.Caption == "Calculations")
+            
+            if (win.SelectedView.MenuItemCommandID.ID == 12899)
+            //if (win.SelectedView.Caption == "Calculations")
             {
                 DeployMDXScriptPlugin.DeployScript(pi, this.ApplicationObject);
             }
@@ -267,11 +273,12 @@ namespace BIDSHelper
                 System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
                 int hotItem = (int)typeof(ToolBar).InvokeMember("hotItem", getflags, null, toolbar, null);
                 ToolBarButton button = toolbar.Buttons[hotItem];
-                if (button.ToolTipText == "Script View")
+                //if (button.ToolTipText == "Script View")
+                if(((Microsoft.DataWarehouse.Controls.MenuCommandToolBarButton)button).AssociatedCommandID.ID == (int)BIDSToolbarButtonID.ScriptView)
                 {
                     ScriptViewDefault = true;
                 }
-                else if (button.ToolTipText == "Form View")
+                else if (((Microsoft.DataWarehouse.Controls.MenuCommandToolBarButton)button).AssociatedCommandID.ID == (int)BIDSToolbarButtonID.FormView)//if (button.ToolTipText == "Form View")
                 {
                     ScriptViewDefault = false;
                 }
