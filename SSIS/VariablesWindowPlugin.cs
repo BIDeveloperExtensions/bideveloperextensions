@@ -49,8 +49,15 @@ namespace BIDSHelper
         {
             try
             {
-                if (GotFocus == null) return;
-                if (GotFocus.ObjectKind != SSIS_VARIABLES_TOOL_WINDOW_KIND) return; //if not the variables window
+                try
+                {
+                    if (GotFocus == null) return;
+                    if (GotFocus.ObjectKind != SSIS_VARIABLES_TOOL_WINDOW_KIND) return; //if not the variables window
+                }
+                catch //ObjectKind property blows up on some windows
+                {
+                    return;
+                }
 
                 //they've highlighted the Variables window, so add the extra toolbar buttons
                 //find a package designer window
