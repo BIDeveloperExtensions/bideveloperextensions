@@ -293,119 +293,10 @@ namespace AggManager
             bool bAggContainsAllGranularityAttributes = true;
             try
             {
-                AggregationAttribute aggAttr;
-                AggregationDimension aggDim;
-                double dblAggCardinality = 1;
-                long iNumSurrogateKeysInAgg = 0;
-                int iMeasureGroupDimensionsCount = 0;
-                long lngMaxAggDimensionCardinality = 0;
-
-                foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
-                {
-                    long iDimGranularityCardinality = 0;
-                    double dblDimAggCardinality = 1;
-                    bool bDimAggCardinalityFound = false;
-
-                    if (!(mgDim is RegularMeasureGroupDimension)) continue; //m2m dimensions apparently aren't stored in the agg since they're calculated at runtime
-
-                    iMeasureGroupDimensionsCount++; //don't count m2m dimensions
-
-                    MeasureGroupAttribute granularity = null;
-                    RegularMeasureGroupDimension regMgDim = (RegularMeasureGroupDimension)mgDim;
-                    foreach (MeasureGroupAttribute mgDimAttr in regMgDim.Attributes)
-                    {
-                        if (mgDimAttr.Type == MeasureGroupAttributeType.Granularity)
-                        {
-                            iDimGranularityCardinality = mgDimAttr.Attribute.EstimatedCount;
-                            granularity = mgDimAttr;
-                            break;
-                        }
-                    }
-
-                    aggDim = agg.Dimensions.Find(mgDim.CubeDimensionID);
-
-                    if (aggDim == null || granularity == null || aggDim.Attributes.Find(granularity.AttributeID) == null)
-                        bAggContainsAllGranularityAttributes = false;
-
-                    if (aggDim != null)
-                    {
-                        foreach (CubeAttribute cubeAttr in mgDim.CubeDimension.Attributes)
-                        {
-                            aggAttr = aggDim.Attributes.Find(cubeAttr.AttributeID);
-                            if (aggAttr != null)
-                            {
-                                if (!CanReachAttributeFromChildInAgg(aggAttr, mgDim.Dimension.KeyAttribute, false)) //redundant attributes don't increase the cardinality of the attribute
-                                {
-                                    dblDimAggCardinality *= (cubeAttr.Attribute.EstimatedCount == 0 ? 1 : cubeAttr.Attribute.EstimatedCount);
-                                }
-                                bDimAggCardinalityFound = true;
-                                iNumSurrogateKeysInAgg++; //apparently every key, even redundant keys, get stored in the agg
-                            }
-                        }
-                    }
-                    if (dblDimAggCardinality > iDimGranularityCardinality)
-                    {
-                        //shouldn't be more than granularity cardinality because auto-exists prevents that
-                        dblDimAggCardinality = (iDimGranularityCardinality == 0 ? 1 : iDimGranularityCardinality);
-                    }
-                    if (bDimAggCardinalityFound)
-                    {
-                        dblAggCardinality *= dblDimAggCardinality;
-                        if (lngMaxAggDimensionCardinality < dblAggCardinality) lngMaxAggDimensionCardinality = (long)dblDimAggCardinality;
-                    }
-                }
-                if (mg1.EstimatedRows != 0 && dblAggCardinality != 0)
-                {
-                    long iMeasureBytes = 0;
-                    foreach (Microsoft.AnalysisServices.Measure m in mg1.Measures)
-                    {
-                        if (m.DataType == MeasureDataType.Inherited)
-                        {
-                            if (m.Source.DataSize > 0)
-                                iMeasureBytes += m.Source.DataSize;
-                            else if (m.Source.DataType == System.Data.OleDb.OleDbType.Integer)
-                                iMeasureBytes += 4;
-                            else if (m.Source.DataType == System.Data.OleDb.OleDbType.SmallInt)
-                                iMeasureBytes += 2;
-                            else if (m.Source.DataType == System.Data.OleDb.OleDbType.TinyInt)
-                                iMeasureBytes += 1;
-                            else
-                                iMeasureBytes += 8;
-                        }
-                        else
-                        {
-                            if (m.DataType == MeasureDataType.Integer)
-                                iMeasureBytes += 4;
-                            else if (m.DataType == MeasureDataType.SmallInt)
-                                iMeasureBytes += 2;
-                            else if (m.DataType == MeasureDataType.TinyInt)
-                                iMeasureBytes += 1;
-                            else
-                                iMeasureBytes += 8;
-                        }
-                    }
-
-                    //the size of each row is 4 bytes for each surrogate key plus the size of measures
-                    long lngFactTableRowSize = (iMeasureGroupDimensionsCount * 4 + iMeasureBytes);
-                    long lngAggRowSize = (iNumSurrogateKeysInAgg * 4 + iMeasureBytes);
-
-                    if (dblAggCardinality > mg1.EstimatedRows) //this is not possible in the data
-                    {
-                        dblAggCardinality = mg1.EstimatedRows;
-                    }
-
-                    //multiply the estimated rows by the size of each row
-                    size = ((double)(dblAggCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
-                    //purposefully don't prevent size from being over 1 because an agg can be larger than the fact table if it has more dimension attribute keys than the fact table
-
-                    if (lngMaxAggDimensionCardinality > mg1.EstimatedRows) //this is not possible in the data
-                    {
-                        lngMaxAggDimensionCardinality = mg1.EstimatedRows;
-                    }
-
-                    //calculate the min size (best case scenario when there is lots of sparsity in fact table) so you can present a range to the user and give the user an idea of the uncertainty
-                    minSize = ((double)(lngMaxAggDimensionCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
-                }
+                EstimatedAggSize oEstSize = GetEstimatedSize(agg, mg1);
+                size = oEstSize.size;
+                minSize = oEstSize.minSize;
+                bAggContainsAllGranularityAttributes = oEstSize.bAggContainsAllGranularityAttributes;
             }
             catch { }
             finally
@@ -431,7 +322,177 @@ namespace AggManager
             }
         }
 
-        private bool CanReachAttributeFromChildInAgg(AggregationAttribute attr, DimensionAttribute current, bool bChildIsInAgg)
+
+
+        public class EstimatedAggSize
+        {
+            public double size = 0;
+            public double minSize = 0;
+            public bool bAggContainsAllGranularityAttributes = true;
+            public Aggregation agg;
+        }
+
+        /// <summary>
+        /// Returns the estimated size of this aggregation.
+        /// </summary>
+        /// <param name="agg"></param>
+        /// <returns></returns>
+        public static EstimatedAggSize GetEstimatedSize(Aggregation agg)
+        {
+            return GetEstimatedSize(agg, agg.ParentMeasureGroup);
+        }
+
+        /// <summary>
+        /// Returns the estimated size of this aggregation. Use this signature which takes in the MeasureGroup when the agg is not attached to a ParentMeasureGroup.
+        /// </summary>
+        /// <param name="agg"></param>
+        /// <param name="mg1"></param>
+        /// <returns></returns>
+        public static EstimatedAggSize GetEstimatedSize(Aggregation agg, MeasureGroup mg1)
+        {
+            double size = 0;
+            double minSize = 0;
+            bool bAggContainsAllGranularityAttributes = true;
+
+            AggregationAttribute aggAttr;
+            AggregationDimension aggDim;
+            double dblAggCardinality = 1;
+            long iNumSurrogateKeysInAgg = 0;
+            int iMeasureGroupDimensionsCount = 0;
+            long lngMaxAggDimensionCardinality = 0;
+
+            foreach (MeasureGroupDimension mgDim in mg1.Dimensions)
+            {
+                long iDimGranularityCardinality = 0;
+                double dblDimAggCardinality = 1;
+                bool bDimAggCardinalityFound = false;
+
+                if (!(mgDim is RegularMeasureGroupDimension)) continue; //m2m dimensions apparently aren't stored in the agg since they're calculated at runtime
+
+                iMeasureGroupDimensionsCount++; //don't count m2m dimensions
+
+                MeasureGroupAttribute granularity = null;
+                RegularMeasureGroupDimension regMgDim = (RegularMeasureGroupDimension)mgDim;
+                foreach (MeasureGroupAttribute mgDimAttr in regMgDim.Attributes)
+                {
+                    if (mgDimAttr.Type == MeasureGroupAttributeType.Granularity)
+                    {
+                        iDimGranularityCardinality = mgDimAttr.Attribute.EstimatedCount;
+                        granularity = mgDimAttr;
+                        break;
+                    }
+                }
+
+                aggDim = agg.Dimensions.Find(mgDim.CubeDimensionID);
+
+                if (aggDim == null || granularity == null || aggDim.Attributes.Find(granularity.AttributeID) == null)
+                    bAggContainsAllGranularityAttributes = false;
+
+                if (aggDim != null)
+                {
+                    foreach (CubeAttribute cubeAttr in mgDim.CubeDimension.Attributes)
+                    {
+                        aggAttr = aggDim.Attributes.Find(cubeAttr.AttributeID);
+                        if (aggAttr != null)
+                        {
+                            if (!CanReachAttributeFromChildInAgg(aggAttr, mgDim.Dimension.KeyAttribute, false)) //redundant attributes don't increase the cardinality of the attribute
+                            {
+                                dblDimAggCardinality *= (cubeAttr.Attribute.EstimatedCount == 0 ? 1 : cubeAttr.Attribute.EstimatedCount);
+                            }
+                            bDimAggCardinalityFound = true;
+                            iNumSurrogateKeysInAgg++; //apparently every key, even redundant keys, get stored in the agg
+                        }
+                    }
+                }
+                if (dblDimAggCardinality > iDimGranularityCardinality)
+                {
+                    //shouldn't be more than granularity cardinality because auto-exists prevents that
+                    dblDimAggCardinality = (iDimGranularityCardinality == 0 ? 1 : iDimGranularityCardinality);
+                }
+                if (bDimAggCardinalityFound)
+                {
+                    dblAggCardinality *= dblDimAggCardinality;
+                    if (lngMaxAggDimensionCardinality < dblAggCardinality) lngMaxAggDimensionCardinality = (long)dblDimAggCardinality;
+                }
+            }
+            if (mg1.EstimatedRows != 0 && dblAggCardinality != 0)
+            {
+                long iMeasureBytes = 0;
+                foreach (Microsoft.AnalysisServices.Measure m in mg1.Measures)
+                {
+                    if (m.DataType == MeasureDataType.Inherited)
+                    {
+                        if (m.Source.DataSize > 0)
+                            iMeasureBytes += m.Source.DataSize;
+                        else if (m.Source.DataType == System.Data.OleDb.OleDbType.Integer)
+                            iMeasureBytes += 4;
+                        else if (m.Source.DataType == System.Data.OleDb.OleDbType.SmallInt)
+                            iMeasureBytes += 2;
+                        else if (m.Source.DataType == System.Data.OleDb.OleDbType.TinyInt)
+                            iMeasureBytes += 1;
+                        else
+                            iMeasureBytes += 8;
+                    }
+                    else
+                    {
+                        if (m.DataType == MeasureDataType.Integer)
+                            iMeasureBytes += 4;
+                        else if (m.DataType == MeasureDataType.SmallInt)
+                            iMeasureBytes += 2;
+                        else if (m.DataType == MeasureDataType.TinyInt)
+                            iMeasureBytes += 1;
+                        else
+                            iMeasureBytes += 8;
+                    }
+                }
+
+                //the size of each row is 4 bytes for each surrogate key plus the size of measures
+                long lngFactTableRowSize = (iMeasureGroupDimensionsCount * 4 + iMeasureBytes);
+                long lngAggRowSize = (iNumSurrogateKeysInAgg * 4 + iMeasureBytes);
+
+                if (dblAggCardinality > mg1.EstimatedRows) //this is not possible in the data
+                {
+                    dblAggCardinality = mg1.EstimatedRows;
+                }
+
+                //multiply the estimated rows by the size of each row
+                size = ((double)(dblAggCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
+                //purposefully don't prevent size from being over 1 because an agg can be larger than the fact table if it has more dimension attribute keys than the fact table
+
+                if (lngMaxAggDimensionCardinality > mg1.EstimatedRows) //this is not possible in the data
+                {
+                    lngMaxAggDimensionCardinality = mg1.EstimatedRows;
+                }
+
+                //calculate the min size (best case scenario when there is lots of sparsity in fact table) so you can present a range to the user and give the user an idea of the uncertainty
+                minSize = ((double)(lngMaxAggDimensionCardinality * lngAggRowSize)) / ((double)(mg1.EstimatedRows * lngFactTableRowSize));
+            }
+
+            EstimatedAggSize ret = new EstimatedAggSize();
+            ret.minSize = minSize;
+            ret.size = size;
+            ret.bAggContainsAllGranularityAttributes = bAggContainsAllGranularityAttributes;
+            ret.agg = agg;
+            return ret;
+        }
+
+        public static string GetEstimatedAggSizeRange(EstimatedAggSize estimate)
+        {
+            if (estimate.size == 0)
+            {
+                return null;
+            }
+            else if (estimate.minSize != 0 && estimate.minSize < estimate.size && !estimate.bAggContainsAllGranularityAttributes)
+            {
+                return (estimate.minSize * 100).ToString("#0.00") + "% to " + (estimate.size * 100).ToString("#0.00") + "%";
+            }
+            else
+            {
+                return (estimate.size * 100).ToString("#0.00") + "%";
+            }
+        }
+
+        private static bool CanReachAttributeFromChildInAgg(AggregationAttribute attr, DimensionAttribute current, bool bChildIsInAgg)
         {
             bChildIsInAgg = bChildIsInAgg || attr.Parent.Attributes.Contains(current.ID);
             foreach (AttributeRelationship r in current.AttributeRelationships)
@@ -1165,7 +1226,7 @@ namespace AggManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
             finally
             {
@@ -1182,6 +1243,47 @@ namespace AggManager
         {
             boolInExpandOrCollapse = true;
         }
+
+
+
+
+        private void buttonFindSimilar_Click(object sender, EventArgs e)
+        {
+
+            //the latest version of aggs is just stored in a grid, so throw this into a new temporary agg design
+            AggregationDesign tempAggDesign = mg1.AggregationDesigns.Add();
+            try
+            {
+                DataView myDataView = (DataView)dataGrid1.DataSource;
+                foreach (DataRow dr in myDataView.Table.Select(null, myDataView.Sort))
+                {
+                    String strAgg = dr[1].ToString();
+                    String strAggName = dr[0].ToString();
+                    Aggregation agg = GetAggregationFromString(strAggName, strAgg);
+                    tempAggDesign.Aggregations.Add(agg);
+                }
+
+                bool bUseCounts = false;
+                if (MessageBox.Show("Do you want to consider estimated member counts?\r\n\r\nClicking Yes will exclude similar aggregations with vastly different cardinalities.", "Search Similar Aggregations - Consider Estimated Member Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    bUseCounts = true;
+                }
+
+                SearchSimilarAggs.ShowAggsSimilaritiesReport(mg1, aggDes.Name, bUseCounts);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+            finally
+            {
+                mg1.AggregationDesigns.Remove(tempAggDesign); //remove the temporary agg design
+            }
+
+
+        }
+
+
 
     }
 

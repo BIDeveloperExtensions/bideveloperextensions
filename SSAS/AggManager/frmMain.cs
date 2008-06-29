@@ -628,7 +628,7 @@ namespace AggManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -641,7 +641,7 @@ namespace AggManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -696,7 +696,7 @@ namespace AggManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -708,9 +708,68 @@ namespace AggManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
+        
+        private void searchSimilarAggregationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (MessageBox.Show("Do you want to consider estimated member counts?\r\n\r\nClicking Yes will exclude similar aggregations with vastly different cardinalities.", "Search Similar Aggregations - Consider Estimated Member Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                { SearchSimilarAggs.ShowAggsSimilaritiesReport((cloneDB.Cubes[realCube.ID]), true); }
+                else
+                { SearchSimilarAggs.ShowAggsSimilaritiesReport((cloneDB.Cubes[realCube.ID]), false); }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
+
+        private void searchSimilarAggregationsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (MessageBox.Show("Do you want to consider estimated member counts?\r\n\r\nClicking Yes will exclude similar aggregations with vastly different cardinalities.", "Search Similar Aggregations - Consider Estimated Member Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                { SearchSimilarAggs.ShowAggsSimilaritiesReport(((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag), treeView1.SelectedNode.Tag.ToString(), true); }
+                else
+                { SearchSimilarAggs.ShowAggsSimilaritiesReport(((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag), treeView1.SelectedNode.Tag.ToString(), false); }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
+
+        //clicked on this menu option from the Aggregation Designs node under a measure group
+        private void exportToASQLTableToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                AggregationDesign aggr = ((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag).AggregationDesigns[treeView1.SelectedNode.Tag.ToString()];
+                PopupExportTableForm(aggr);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
+
+
+        private void PopupExportTableForm(AggregationDesign aggrD)
+        {
+            //MeasureGroup cloneMG = null;
+            //if (mg != null)
+            //    cloneMG = this.cloneDB.Cubes[mg.Parent.ID].MeasureGroups[mg.ID];
+            AggManager.ExportTable form1 = new AggManager.ExportTable();
+            form1.Init(aggrD);
+
+            DialogResult res = form1.ShowDialog(this);
+            if (res != DialogResult.OK) return;
+
+        }
+
 
     }
 }

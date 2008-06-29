@@ -180,7 +180,14 @@
     </Compile>
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\ReportViewerForm.Designer.cs" />
+    <Compile Include="SSAS\AggManager\frmExportTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmExportTable.Designer.cs">
+      <DependentUpon>frmExportTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSAS\AggManager\PrinterFriendlyAggs.cs" />
+    <Compile Include="SSAS\AggManager\SearchSimilarAggs.cs" />
     <Compile Include="SSAS\DataTypeDiscrepancyCheckForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -438,6 +445,9 @@
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
+    <EmbeddedResource Include="SSAS\AggManager\frmExportTable.resx">
+      <DependentUpon>frmExportTable.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\AggManager\PrinterFriendlyAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\frmTraceTable.resx">
       <DependentUpon>frmTraceTable.cs</DependentUpon>
@@ -479,6 +489,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
+    <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
     <EmbeddedResource Include="SSAS\DataTypeDiscrepancyCheckForm.resx">
       <DependentUpon>DataTypeDiscrepancyCheckForm.cs</DependentUpon>
@@ -526,6 +537,7 @@
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />
+    <None Include="Properties\DataSources\AggManager.SearchSimilarAggs+SimilarAgg.datasource" />
     <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
     <None Include="Properties\DataSources\DataTypeDiscrepancyCheckPlugin.DataTypeDiscrepancy.datasource" />
     <None Include="Properties\DataSources\DimensionOptimizationReportPlugin.DimensionOptimizations.datasource" />

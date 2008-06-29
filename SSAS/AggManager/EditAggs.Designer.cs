@@ -41,6 +41,7 @@ namespace AggManager
             this.buttonEliminateDupe = new System.Windows.Forms.Button();
             this.lblEstimatedSize = new System.Windows.Forms.Label();
             this.buttonValidate = new System.Windows.Forms.Button();
+            this.buttonFindSimilar = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -74,7 +75,7 @@ namespace AggManager
             this.dataGrid1.PreferredColumnWidth = 400;
             this.dataGrid1.SelectionBackColor = System.Drawing.Color.Navy;
             this.dataGrid1.SelectionForeColor = System.Drawing.Color.White;
-            this.dataGrid1.Size = new System.Drawing.Size(456, 404);
+            this.dataGrid1.Size = new System.Drawing.Size(696, 414);
             this.dataGrid1.TabIndex = 2;
             this.dataGrid1.CurrentCellChanged += new System.EventHandler(this.dataGrid1_CurrentCellChanged);
             this.dataGrid1.Click += new System.EventHandler(this.dataGrid1_Click);
@@ -82,10 +83,10 @@ namespace AggManager
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonCancel.Location = new System.Drawing.Point(550, 451);
+            this.buttonCancel.Location = new System.Drawing.Point(924, 455);
             this.buttonCancel.Margin = new System.Windows.Forms.Padding(2);
             this.buttonCancel.Name = "buttonCancel";
-            this.buttonCancel.Size = new System.Drawing.Size(108, 31);
+            this.buttonCancel.Size = new System.Drawing.Size(87, 37);
             this.buttonCancel.TabIndex = 3;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
@@ -94,10 +95,10 @@ namespace AggManager
             // buttonOK
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOK.Location = new System.Drawing.Point(438, 451);
+            this.buttonOK.Location = new System.Drawing.Point(812, 455);
             this.buttonOK.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOK.Name = "buttonOK";
-            this.buttonOK.Size = new System.Drawing.Size(108, 31);
+            this.buttonOK.Size = new System.Drawing.Size(87, 37);
             this.buttonOK.TabIndex = 4;
             this.buttonOK.Text = "OK";
             this.buttonOK.UseVisualStyleBackColor = true;
@@ -111,7 +112,7 @@ namespace AggManager
             this.treeViewAggregation.Location = new System.Drawing.Point(-2, 0);
             this.treeViewAggregation.Margin = new System.Windows.Forms.Padding(2);
             this.treeViewAggregation.Name = "treeViewAggregation";
-            this.treeViewAggregation.Size = new System.Drawing.Size(203, 407);
+            this.treeViewAggregation.Size = new System.Drawing.Size(310, 417);
             this.treeViewAggregation.StateImageList = this.imageList1;
             this.treeViewAggregation.TabIndex = 5;
             this.treeViewAggregation.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterCheck);
@@ -142,8 +143,8 @@ namespace AggManager
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.treeViewAggregation);
-            this.splitContainer1.Size = new System.Drawing.Size(664, 406);
-            this.splitContainer1.SplitterDistance = 461;
+            this.splitContainer1.Size = new System.Drawing.Size(1011, 416);
+            this.splitContainer1.SplitterDistance = 701;
             this.splitContainer1.SplitterWidth = 3;
             this.splitContainer1.TabIndex = 6;
             // 
@@ -151,7 +152,7 @@ namespace AggManager
             // 
             this.checkBoxRelationships.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxRelationships.AutoSize = true;
-            this.checkBoxRelationships.Location = new System.Drawing.Point(497, 11);
+            this.checkBoxRelationships.Location = new System.Drawing.Point(844, 11);
             this.checkBoxRelationships.Margin = new System.Windows.Forms.Padding(2);
             this.checkBoxRelationships.Name = "checkBoxRelationships";
             this.checkBoxRelationships.Size = new System.Drawing.Size(161, 17);
@@ -163,7 +164,7 @@ namespace AggManager
             // buttonOptimizeAgg
             // 
             this.buttonOptimizeAgg.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonOptimizeAgg.Location = new System.Drawing.Point(11, 442);
+            this.buttonOptimizeAgg.Location = new System.Drawing.Point(5, 455);
             this.buttonOptimizeAgg.Margin = new System.Windows.Forms.Padding(2);
             this.buttonOptimizeAgg.Name = "buttonOptimizeAgg";
             this.buttonOptimizeAgg.Size = new System.Drawing.Size(108, 37);
@@ -175,7 +176,7 @@ namespace AggManager
             // buttonEliminateDupe
             // 
             this.buttonEliminateDupe.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonEliminateDupe.Location = new System.Drawing.Point(123, 442);
+            this.buttonEliminateDupe.Location = new System.Drawing.Point(117, 455);
             this.buttonEliminateDupe.Margin = new System.Windows.Forms.Padding(2);
             this.buttonEliminateDupe.Name = "buttonEliminateDupe";
             this.buttonEliminateDupe.Size = new System.Drawing.Size(108, 37);
@@ -196,7 +197,7 @@ namespace AggManager
             // buttonValidate
             // 
             this.buttonValidate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonValidate.Location = new System.Drawing.Point(235, 442);
+            this.buttonValidate.Location = new System.Drawing.Point(229, 455);
             this.buttonValidate.Margin = new System.Windows.Forms.Padding(2);
             this.buttonValidate.Name = "buttonValidate";
             this.buttonValidate.Size = new System.Drawing.Size(108, 37);
@@ -205,11 +206,23 @@ namespace AggManager
             this.buttonValidate.UseVisualStyleBackColor = true;
             this.buttonValidate.Click += new System.EventHandler(this.buttonValidate_Click);
             // 
+            // buttonFindSimilar
+            // 
+            this.buttonFindSimilar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonFindSimilar.Location = new System.Drawing.Point(341, 455);
+            this.buttonFindSimilar.Name = "buttonFindSimilar";
+            this.buttonFindSimilar.Size = new System.Drawing.Size(108, 37);
+            this.buttonFindSimilar.TabIndex = 12;
+            this.buttonFindSimilar.Text = "Search Similar Aggregations";
+            this.buttonFindSimilar.UseVisualStyleBackColor = true;
+            this.buttonFindSimilar.Click += new System.EventHandler(this.buttonFindSimilar_Click);
+            // 
             // EditAggs
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(669, 493);
+            this.ClientSize = new System.Drawing.Size(1016, 503);
+            this.Controls.Add(this.buttonFindSimilar);
             this.Controls.Add(this.buttonValidate);
             this.Controls.Add(this.lblEstimatedSize);
             this.Controls.Add(this.buttonEliminateDupe);
@@ -246,6 +259,7 @@ namespace AggManager
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.Label lblEstimatedSize;
         private System.Windows.Forms.Button buttonValidate;
+        private System.Windows.Forms.Button buttonFindSimilar;
 
     }
 }

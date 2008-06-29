@@ -41,6 +41,8 @@ namespace AggManager
             this.cmdDeleteAggDes = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdAddAggregationsFromQueryLogToExisting = new System.Windows.Forms.ToolStripMenuItem();
             this.addPartitionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.searchSimilarAggregationsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportToASQLTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxReport = new System.Windows.Forms.ListBox();
             this.contextMenuStripSave = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemSave = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,6 +56,7 @@ namespace AggManager
             this.deleteUnusedAggregationsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.validateAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.printerFriendlyAggregationsReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.searchSimilarAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripMG.SuspendLayout();
             this.contextMenuStripAggDes.SuspendLayout();
             this.contextMenuStripSave.SuspendLayout();
@@ -128,37 +131,53 @@ namespace AggManager
             this.cmdEditAggDes,
             this.cmdDeleteAggDes,
             this.cmdAddAggregationsFromQueryLogToExisting,
-            this.addPartitionsToolStripMenuItem});
+            this.addPartitionsToolStripMenuItem,
+            this.searchSimilarAggregationsToolStripMenuItem1,
+            this.exportToASQLTableToolStripMenuItem});
             this.contextMenuStripAggDes.Name = "contextMenuStripAggDes";
-            this.contextMenuStripAggDes.Size = new System.Drawing.Size(247, 92);
+            this.contextMenuStripAggDes.Size = new System.Drawing.Size(262, 136);
             // 
             // cmdEditAggDes
             // 
             this.cmdEditAggDes.Name = "cmdEditAggDes";
-            this.cmdEditAggDes.Size = new System.Drawing.Size(246, 22);
-            this.cmdEditAggDes.Text = "Edit";
+            this.cmdEditAggDes.Size = new System.Drawing.Size(261, 22);
+            this.cmdEditAggDes.Text = "Edit...";
             this.cmdEditAggDes.Click += new System.EventHandler(this.cmdEditAggDes_Click);
             // 
             // cmdDeleteAggDes
             // 
             this.cmdDeleteAggDes.Name = "cmdDeleteAggDes";
-            this.cmdDeleteAggDes.Size = new System.Drawing.Size(246, 22);
-            this.cmdDeleteAggDes.Text = "Delete";
+            this.cmdDeleteAggDes.Size = new System.Drawing.Size(261, 22);
+            this.cmdDeleteAggDes.Text = "Delete...";
             this.cmdDeleteAggDes.Click += new System.EventHandler(this.cmdDeleteAggDes_Click);
             // 
             // cmdAddAggregationsFromQueryLogToExisting
             // 
             this.cmdAddAggregationsFromQueryLogToExisting.Name = "cmdAddAggregationsFromQueryLogToExisting";
-            this.cmdAddAggregationsFromQueryLogToExisting.Size = new System.Drawing.Size(246, 22);
-            this.cmdAddAggregationsFromQueryLogToExisting.Text = "Add Aggregations from QueryLog";
+            this.cmdAddAggregationsFromQueryLogToExisting.Size = new System.Drawing.Size(261, 22);
+            this.cmdAddAggregationsFromQueryLogToExisting.Text = "Add Aggregations from Query Log...";
             this.cmdAddAggregationsFromQueryLogToExisting.Click += new System.EventHandler(this.cmdAddAggregationsFromQueryLogToExisting_Click);
             // 
             // addPartitionsToolStripMenuItem
             // 
             this.addPartitionsToolStripMenuItem.Name = "addPartitionsToolStripMenuItem";
-            this.addPartitionsToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this.addPartitionsToolStripMenuItem.Text = "Change Partitions";
+            this.addPartitionsToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.addPartitionsToolStripMenuItem.Text = "Change Partitions...";
             this.addPartitionsToolStripMenuItem.Click += new System.EventHandler(this.addPartitionsToolStripMenuItem_Click);
+            // 
+            // searchSimilarAggregationsToolStripMenuItem1
+            // 
+            this.searchSimilarAggregationsToolStripMenuItem1.Name = "searchSimilarAggregationsToolStripMenuItem1";
+            this.searchSimilarAggregationsToolStripMenuItem1.Size = new System.Drawing.Size(261, 22);
+            this.searchSimilarAggregationsToolStripMenuItem1.Text = "Search Similar Aggregations...";
+            this.searchSimilarAggregationsToolStripMenuItem1.Click += new System.EventHandler(this.searchSimilarAggregationsToolStripMenuItem1_Click);
+            // 
+            // exportToASQLTableToolStripMenuItem
+            // 
+            this.exportToASQLTableToolStripMenuItem.Name = "exportToASQLTableToolStripMenuItem";
+            this.exportToASQLTableToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.exportToASQLTableToolStripMenuItem.Text = "Export to a SQL Table...";
+            this.exportToASQLTableToolStripMenuItem.Click += new System.EventHandler(this.exportToASQLTableToolStripMenuItem_Click);
             // 
             // listBoxReport
             // 
@@ -252,9 +271,10 @@ namespace AggManager
             this.contextMenuStripCube.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.deleteUnusedAggregationsToolStripMenuItem1,
             this.validateAggregationsToolStripMenuItem,
-            this.printerFriendlyAggregationsReportToolStripMenuItem});
+            this.printerFriendlyAggregationsReportToolStripMenuItem,
+            this.searchSimilarAggregationsToolStripMenuItem});
             this.contextMenuStripCube.Name = "contextMenuStripCube";
-            this.contextMenuStripCube.Size = new System.Drawing.Size(275, 92);
+            this.contextMenuStripCube.Size = new System.Drawing.Size(275, 114);
             // 
             // deleteUnusedAggregationsToolStripMenuItem1
             // 
@@ -276,6 +296,13 @@ namespace AggManager
             this.printerFriendlyAggregationsReportToolStripMenuItem.Size = new System.Drawing.Size(274, 22);
             this.printerFriendlyAggregationsReportToolStripMenuItem.Text = "Printer-Friendly Aggregations Report...";
             this.printerFriendlyAggregationsReportToolStripMenuItem.Click += new System.EventHandler(this.printerFriendlyAggregationsReportToolStripMenuItem_Click);
+            // 
+            // searchSimilarAggregationsToolStripMenuItem
+            // 
+            this.searchSimilarAggregationsToolStripMenuItem.Name = "searchSimilarAggregationsToolStripMenuItem";
+            this.searchSimilarAggregationsToolStripMenuItem.Size = new System.Drawing.Size(274, 22);
+            this.searchSimilarAggregationsToolStripMenuItem.Text = "Search Similar Aggregations...";
+            this.searchSimilarAggregationsToolStripMenuItem.Click += new System.EventHandler(this.searchSimilarAggregationsToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -329,5 +356,8 @@ namespace AggManager
         private System.Windows.Forms.ToolStripMenuItem deleteUnusedAggregationsToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem validateAggregationsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem printerFriendlyAggregationsReportToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem searchSimilarAggregationsToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem exportToASQLTableToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem searchSimilarAggregationsToolStripMenuItem;
     }
 }
