@@ -75,7 +75,8 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 //HACK: this figures out if this is the dimensions node without using the name
                 //      by checking the type of the first child item. 
-                return (hierItem.UIHierarchyItems.Count >= 1 && (hierItem.UIHierarchyItems.Item(1).Object is Dimension));
+                return (hierItem.UIHierarchyItems.Count >= 1 
+                    && ((ProjectItem)hierItem.UIHierarchyItems.Item(1).Object).Object is Dimension);
                 //return (hierItem.Name == "Dimensions" && ((ProjectItem)hierItem.Object).Object == null);
             }
             catch
