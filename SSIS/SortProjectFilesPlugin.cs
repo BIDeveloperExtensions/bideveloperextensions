@@ -31,7 +31,7 @@ namespace BIDSHelper
 
         public override int Bitmap
         {
-            get { return 0; } //TODO
+            get { return 0; } //TODO add sort items icon
         }
 
         public override string ButtonText
@@ -73,7 +73,10 @@ namespace BIDSHelper
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                return (hierItem.Name == "SSIS Packages" && ((ProjectItem)hierItem.Object).Object == null);
+                // Check that we are looking at the "SSIS Packages" node by checking that there is 
+                // more than one child item and that the first item (in the 1 based collection)
+                // ends with ".dtsx"
+                return (hierItem.Collection.Count > 0 && hierItem.UIHierarchyItems.Item(1).Name.EndsWith(".dtsx"));
             }
             catch
             {
