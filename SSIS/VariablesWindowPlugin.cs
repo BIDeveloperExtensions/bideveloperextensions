@@ -187,7 +187,11 @@ namespace BIDSHelper
                     object cell = grid.GetType().InvokeMember("GetCellInfo", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, grid, new object[] { iRow, 1 }); //actually a VariableDesigner
                     DtsBaseDesigner varDesigner = (DtsBaseDesigner)cell.GetType().InvokeMember("Tag", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, cell, null);
                     Variable variable = (Variable)varDesigner.GetType().InvokeMember("Variable", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, varDesigner, null);
-                    variables.Add(variable);
+                    //JCW - Added to prevent button from being enabled if only System variables are selected
+                    if (!variable.SystemVariable)
+                    {
+                        variables.Add(variable);
+                    }
                 }
             }
 
@@ -287,7 +291,7 @@ namespace BIDSHelper
                 {
                     Type t = FindBaseType(containerDesigner.GetType(), "DtsContainerDesigner");
                     if (t == null) continue;
-                    
+
                     //doesn't work... not sure why... so the following is the equivalent of this one line:
                     //t.InvokeMember("OnContainerValidated", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, containerDesigner, new object[] { result, issues });
 
@@ -356,7 +360,8 @@ namespace BIDSHelper
         {
         }
 
-        private class VariableCopyException : Exception {
+        private class VariableCopyException : Exception
+        {
             public VariableCopyException(string message, Exception innerException)
                 : base(message, innerException) { }
         }
