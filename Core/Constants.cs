@@ -20,4 +20,10 @@ namespace BIDSHelper
         Partitions = 12902,
         Perspectives = 12904
     }
+
+    public static class BIDSProjectKinds
+    {
+        public static string SSAS = "{d2abab84-bf74-430a-b69e-9dc6d40dda17}";
+        public static string SSIS = "{d183a3d8-5fd8-494b-b014-37f57b35e655}";
+    }
 }

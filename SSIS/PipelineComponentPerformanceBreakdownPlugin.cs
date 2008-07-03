@@ -21,7 +21,6 @@ namespace BIDSHelper
 {
     public class PipelineComponentPerformanceBreakdownPlugin : BIDSHelperPluginBase
     {
-        private const string SSIS_PROJECT_KIND = "{d183a3d8-5fd8-494b-b014-37f57b35e655}";
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
 
         public PipelineComponentPerformanceBreakdownPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -92,7 +91,7 @@ namespace BIDSHelper
                 ProjectItem pi = this.ApplicationObject.ActiveWindow.ProjectItem;
                 if (!pi.Name.ToLower().EndsWith(".dtsx")) return false;
 
-                if (pi.ContainingProject == null || pi.ContainingProject.Kind != SSIS_PROJECT_KIND) return false; //if the dtsx isn't in an SSIS project, or if you're editing the package standalone (not as a part of a project)
+                if (pi.ContainingProject == null || pi.ContainingProject.Kind != BIDSProjectKinds.SSIS) return false; //if the dtsx isn't in an SSIS project, or if you're editing the package standalone (not as a part of a project)
 
                 IDesignerHost designer = this.ApplicationObject.ActiveWindow.Object as IDesignerHost;
                 if (designer == null) return false;

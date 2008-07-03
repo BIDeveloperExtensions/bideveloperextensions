@@ -28,7 +28,6 @@ namespace BIDSHelper
 {
     public class ExpressionListPlugin : BIDSHelperWindowActivatedPluginBase
     {
-        private const string SSIS_PROJECT_KIND = "{d183a3d8-5fd8-494b-b014-37f57b35e655}";
         private const string REGISTRY_EXTENDED_PATH = "ExpressionListPlugin";
         private const string REGISTRY_SETTING_NAME = "InEffect";
         public static bool bShouldSkipExpressionHighlighting = false;
@@ -846,7 +845,7 @@ namespace BIDSHelper
                 if (this.ApplicationObject.Solution == null) return false;
                 foreach (Project p in this.ApplicationObject.Solution.Projects)
                 {
-                    if (p.Kind == SSIS_PROJECT_KIND) return true;
+                    if (p.Kind == BIDSProjectKinds.SSIS) return true;
                 }
                 return false;
             }

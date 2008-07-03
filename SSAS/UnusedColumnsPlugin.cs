@@ -44,8 +44,6 @@ namespace BIDSHelper
             get { return true; }
         }
 
-        private const string SSAS_PROJECT_GUID = "{d2abab84-bf74-430a-b69e-9dc6d40dda17}";
-
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
@@ -63,7 +61,7 @@ namespace BIDSHelper
                 ProjectItem pi = (ProjectItem)hierItem.Object;
                 if (!(pi.Object is DataSourceView)) return false;
                 Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.ContainingProject;
-                return (projExt.Kind == SSAS_PROJECT_GUID); //only show in an SSAS project, not in a report model or SSIS project (which also can have a DSV)
+                return (projExt.Kind == BIDSProjectKinds.SSAS); //only show in an SSAS project, not in a report model or SSIS project (which also can have a DSV)
             }
             catch
             {

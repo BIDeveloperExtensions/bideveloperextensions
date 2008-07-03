@@ -18,7 +18,6 @@ namespace BIDSHelper
 {
     public class DeployPackagesPlugin : BIDSHelperPluginBase
     {
-        private const string SSIS_PROJECT_KIND = "{d183a3d8-5fd8-494b-b014-37f57b35e655}";
         private CommandBarButton cmdButtonProperties = null;
 
         public DeployPackagesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -71,13 +70,13 @@ namespace BIDSHelper
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
-                    return (proj.Kind == SSIS_PROJECT_KIND);
+                    return (proj.Kind == BIDSProjectKinds.SSIS);
                 }
                 else if (solution != null)
                 {
                     foreach (Project p in solution.Projects)
                     {
-                        if (p.Kind != SSIS_PROJECT_KIND) return false;
+                        if (p.Kind != BIDSProjectKinds.SSIS) return false;
                     }
                     return (solution.Projects.Count > 0);
                 }
@@ -407,7 +406,7 @@ namespace BIDSHelper
 
                     UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = hierItem.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
-                    if (proj == null || proj.Kind != SSIS_PROJECT_KIND) return;
+                    if (proj == null || proj.Kind != BIDSProjectKinds.SSIS) return;
 
                     CancelDefault = true; //don't let the Microsoft code fire as I'm going to pop up the dialog myself
 

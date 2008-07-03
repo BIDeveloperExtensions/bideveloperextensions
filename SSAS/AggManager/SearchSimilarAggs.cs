@@ -114,14 +114,14 @@ namespace AggManager
                     {
 
                         Boolean bExistsAttributeNotInSameTree = false;
-                        Boolean bExistsAttributeInSameTree = false;
+                        //Boolean bExistsAttributeInSameTree = false;
                         foreach (AggregationAttribute att2 in dim2Purged.Attributes)
                         {
 
                             if (att2.AttributeID == att1.AttributeID)
                             // By pass when both att1 and att2 are standed on same attribute
                             {
-                                bExistsAttributeInSameTree = true;
+                                //bExistsAttributeInSameTree = true;
                                 continue;
                             }
 
@@ -148,7 +148,7 @@ namespace AggManager
                                 }
                                 else
                                 {
-                                    bExistsAttributeInSameTree = true;
+                                    //bExistsAttributeInSameTree = true;
                                     break;
                                 }
                             }
