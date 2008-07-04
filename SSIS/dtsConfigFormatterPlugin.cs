@@ -30,17 +30,24 @@ namespace BIDSHelper.SSIS
 
         public override void OnEnable()
         {
-            base.OnEnable();
-            this.ApplicationObject.Events.SolutionItemsEvents.ItemAdded += new _dispProjectItemsEvents_ItemAddedEventHandler(SolutionItemsEvents_ItemAdded);
-            //appObject.Events.MiscFilesEvents.ItemAdded += null;
+            try
+            {
+                base.OnEnable();
+                this.ApplicationObject.Events.SolutionItemsEvents.ItemAdded += new _dispProjectItemsEvents_ItemAddedEventHandler(SolutionItemsEvents_ItemAdded);
+                //appObject.Events.MiscFilesEvents.ItemAdded += null;
 
-            //windowEvents = appObject.Events.get_WindowEvents(null);
-            //windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
-            //windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
-            docEvents = this.ApplicationObject.Events.get_DocumentEvents(null);
-            docEvents.DocumentOpened += new _dispDocumentEvents_DocumentOpenedEventHandler(docEvents_DocumentOpened);
-            t.Tick += new EventHandler(t_Tick);
-            t.Interval = 500;
+                //windowEvents = appObject.Events.get_WindowEvents(null);
+                //windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
+                //windowEvents.WindowCreated += new _dispWindowEvents_WindowCreatedEventHandler(windowEvents_WindowCreated);
+                docEvents = this.ApplicationObject.Events.get_DocumentEvents(null);
+                docEvents.DocumentOpened += new _dispDocumentEvents_DocumentOpenedEventHandler(docEvents_DocumentOpened);
+                t.Tick += new EventHandler(t_Tick);
+                t.Interval = 500;
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message + "\r\n" + exception.StackTrace);
+            }
         }
 
         public override bool ShouldHookWindowCreated
@@ -53,16 +60,23 @@ namespace BIDSHelper.SSIS
 
         public override void OnDisable()
         {
-            base.OnDisable();
-            // todo
-            this.ApplicationObject.Events.SolutionItemsEvents.ItemAdded -= SolutionItemsEvents_ItemAdded;
-            //appObject.Events.MiscFilesEvents.ItemAdded += null;
+            try
+            {
+                base.OnDisable();
+                // todo
+                this.ApplicationObject.Events.SolutionItemsEvents.ItemAdded -= SolutionItemsEvents_ItemAdded;
+                //appObject.Events.MiscFilesEvents.ItemAdded += null;
 
-            
-            //docEvents = appObject.Events.get_DocumentEvents(null);
-            if (docEvents != null)
+
+                //docEvents = appObject.Events.get_DocumentEvents(null);
+                if (docEvents != null)
                 { docEvents.DocumentOpened -= docEvents_DocumentOpened; }
-            t.Tick -= t_Tick;
+                t.Tick -= t_Tick;
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message + "\r\n" + exception.StackTrace);
+            }
         }
 
         void SolutionItemsEvents_ItemAdded(ProjectItem ProjectItem)
@@ -77,9 +91,16 @@ namespace BIDSHelper.SSIS
 
         void windowEvents_WindowCreated(Window activeWindow)
         {
-            if (activeWindow.ProjectItem.Document.Path.ToLower().EndsWith(".dtsconfig"))
+            try
             {
-                activeWindow.Activate();
+                if (activeWindow.ProjectItem.Document.Path.ToLower().EndsWith(".dtsconfig"))
+                {
+                    activeWindow.Activate();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -111,37 +132,51 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message);
+                MessageBox.Show(exception.Message + "\r\n" + exception.StackTrace);
             }
         }
 
         void t_Tick(object sender, EventArgs e)
         {
-            t.Enabled = false;
             try
             {
-                FormatActiveDocument((ProjectItem)t.Tag);
-                mRetryCnt = 0;
+                t.Enabled = false;
+                try
+                {
+                    FormatActiveDocument((ProjectItem)t.Tag);
+                    mRetryCnt = 0;
+                }
+                catch
+                {
+                    mRetryCnt++;
+                    if (mRetryCnt <= MAX_RETRY)
+                    {
+                        System.Media.SystemSounds.Beep.Play();
+                        t.Enabled = true;
+                    }
+                    else
+                    {
+                        mRetryCnt = 0; // reset the retry count                
+                    }
+                }
             }
-            catch
+            catch (Exception exception)
             {
-                mRetryCnt++;
-                if (mRetryCnt <= MAX_RETRY)
-                {
-                    System.Media.SystemSounds.Beep.Play();
-                    t.Enabled = true;
-                }
-                else 
-                {
-                    mRetryCnt = 0; // reset the retry count                
-                }
+                MessageBox.Show(exception.Message + "\r\n" + exception.StackTrace);
             }
         }
 
-       
+
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
-            OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
+            try
+            {
+                OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message + "\r\n" + exception.StackTrace);
+            }
         }
 
         public override string ShortName
