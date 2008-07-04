@@ -417,7 +417,7 @@ namespace BIDSHelper
                 item.Category = TaskItemCategory.Misc;
                 item.Appearance = TaskItemAppearance.Squiggle;
                 item.Priority = TaskItemPriority.High;
-                item.Document = window.ProjectItem.get_FileNames(0);
+                item.Document = window.ProjectItem.Name;
                 item.CustomInfo = this;
                 service.Add(item);
             }
