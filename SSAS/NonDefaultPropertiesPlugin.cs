@@ -41,6 +41,7 @@ namespace BIDSHelper
         private List<NonDefaultProperty> listNonDefaultProperties;
         private string DatabaseName;
         private bool SSASProject = true;
+        private string PackagePathPrefix;
         private Package packageDefault;
         private Dictionary<string, DtsObject> dictCachedDtsObjects = new Dictionary<string, DtsObject>();
 
@@ -72,7 +73,7 @@ namespace BIDSHelper
 
         public override string MenuName
         {
-            get { return "Project,Item"; }
+            get { return "Project,Item,Solution"; }
         }
 
         public override string ToolTip
@@ -99,12 +100,21 @@ namespace BIDSHelper
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                SolutionClass solution = hierItem.Object as SolutionClass;
                 if (hierItem.Object is Project)
                 {
                     Project p = (Project)hierItem.Object;
                     if (!(p.Object is Database)) return false;
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
                     return (projExt.Kind == BIDSProjectKinds.SSAS || projExt.Kind == BIDSProjectKinds.SSIS);
+                }
+                else if (solution != null)
+                {
+                    foreach (Project p in solution.Projects)
+                    {
+                        if (p.Kind != BIDSProjectKinds.SSIS) return false;
+                    }
+                    return (solution.Projects.Count > 0);
                 }
                 else
                 {
@@ -119,12 +129,14 @@ namespace BIDSHelper
 
         public override void Exec()
         {
+            ProjectItem piCurrent = null;
             try
             {
                 listNonDefaultProperties = new List<NonDefaultProperty>();
 
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                SolutionClass solution = hierItem.Object as SolutionClass;
 
                 if (hierItem.Object is Project)
                 {
@@ -152,6 +164,8 @@ namespace BIDSHelper
                                     ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, p.ProjectItems.Count);
                                     string sFileName = pi.Name.ToLower();
                                     if (!sFileName.EndsWith(".dtsx")) continue;
+                                    piCurrent = pi;
+                                    this.PackagePathPrefix = pi.Name;
                                     Package package = GetPackageFromIntegrationServicesProjectItem(pi);
                                     ScanIntegrationServicesProperties(package);
                                 }
@@ -169,13 +183,62 @@ namespace BIDSHelper
                         }
                     }
                 }
+                else if (solution != null)
+                {
+                    this.DatabaseName = "Solution: " + System.IO.Path.GetFileNameWithoutExtension(solution.FullName);
+                    try
+                    {
+                        this.DatabaseName = "Solution: " + solution.Properties.Item("Name").Value;
+                    }
+                    catch { }
+
+                    this.SSASProject = false;
+
+                    try
+                    {
+                        using (WaitCursor cursor1 = new WaitCursor())
+                        {
+                            ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
+                            foreach (Project p in solution.Projects)
+                            {
+                                Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
+                                if (projExt.Kind == BIDSProjectKinds.SSIS)
+                                {
+                                    int iProgress = 0;
+                                    Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                                    foreach (ProjectItem pi in p.ProjectItems)
+                                    {
+                                        ApplicationObject.StatusBar.Progress(true, "Scanning project " + p.Name + " package " + pi.Name, iProgress++, p.ProjectItems.Count);
+                                        string sFileName = pi.Name.ToLower();
+                                        if (!sFileName.EndsWith(".dtsx")) continue;
+                                        piCurrent = pi;
+                                        this.PackagePathPrefix = p.Name + "\\" + pi.Name;
+                                        Package package = GetPackageFromIntegrationServicesProjectItem(pi);
+                                        ScanIntegrationServicesProperties(package);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationGeneral);
+                            ApplicationObject.StatusBar.Progress(false, "", 1, 1);
+                        }
+                        catch { }
+                    }
+                }
                 else
                 {
                     ProjectItem pi = (ProjectItem)hierItem.Object;
+                    piCurrent = pi;
                     Package package = GetPackageFromIntegrationServicesProjectItem(pi);
 
                     this.DatabaseName = "Package: " + package.Name;
                     this.SSASProject = false;
+                    this.PackagePathPrefix = string.Empty;
 
                     ScanIntegrationServicesProperties(package);
                 }
@@ -244,9 +307,20 @@ namespace BIDSHelper
                     frm.Show();
                 }
             }
+            catch (DtsRuntimeException ex)
+            {
+                if (ex.ErrorCode == -1073659849L)
+                {
+                    MessageBox.Show((piCurrent == null ? "This package" : piCurrent.Name) + " has a package password. Please open the package designer, specify the password when the dialog prompts you, then rerun the Non-Default Properties report.\r\n\r\nDetailed error was:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Password Not Specified");
+                }
+                else
+                {
+                    MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error" + (piCurrent == null ? string.Empty : " scanning " + piCurrent.Name));
+                }
+            }
             catch (System.Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error" + (piCurrent == null ? string.Empty : " scanning " + piCurrent.Name));
             }
         }
 
@@ -258,11 +332,11 @@ namespace BIDSHelper
         /// <returns></returns>
         private Package GetPackageFromIntegrationServicesProjectItem(ProjectItem pi)
         {
-            bool bIsOpen = pi.get_IsOpen("{7651A702-06E5-11D1-8EBD-00A0C90F26EA}");
+            bool bIsOpen = pi.get_IsOpen(BIDSViewKinds.SsisDesigner);
 
             if (bIsOpen)
             {
-                Window w = pi.Open("{7651A702-06E5-11D1-8EBD-00A0C90F26EA}"); //opens the designer
+                Window w = pi.Open(BIDSViewKinds.SsisDesigner); //opens the designer
                 w.Activate();
 
                 IDesignerHost designer = w.Object as IDesignerHost;
@@ -284,14 +358,14 @@ namespace BIDSHelper
 
             foreach (ConnectionManager conn in package.Connections)
             {
-                ScanIntegrationServicesExecutableForPropertiesWithNonDefaultValue(conn, package.Name + ((IDTSPackagePath)conn).GetPackagePath());
+                ScanIntegrationServicesExecutableForPropertiesWithNonDefaultValue(conn, this.PackagePathPrefix + ((IDTSPackagePath)conn).GetPackagePath());
             }
         }
 
         private void RecurseExecutables(IDTSSequence parentExecutable)
         {
             Package package = GetPackageFromContainer((DtsContainer)parentExecutable);
-            ScanIntegrationServicesExecutableForPropertiesWithNonDefaultValue((Executable)parentExecutable, package.Name + ((IDTSPackagePath)parentExecutable).GetPackagePath());
+            ScanIntegrationServicesExecutableForPropertiesWithNonDefaultValue((Executable)parentExecutable, this.PackagePathPrefix + ((IDTSPackagePath)parentExecutable).GetPackagePath());
             if (parentExecutable is EventsProvider)
             {
                 foreach (DtsEventHandler eh in (parentExecutable as EventsProvider).EventHandlers)
@@ -307,7 +381,7 @@ namespace BIDSHelper
                 }
                 else
                 {
-                    ScanIntegrationServicesExecutableForPropertiesWithNonDefaultValue(e, package.Name + ((IDTSPackagePath)e).GetPackagePath());
+                    ScanIntegrationServicesExecutableForPropertiesWithNonDefaultValue(e, this.PackagePathPrefix + ((IDTSPackagePath)e).GetPackagePath());
 
                     if (e is EventsProvider)
                     {
@@ -390,6 +464,7 @@ namespace BIDSHelper
                 if (prop.PropertyType == typeof(string)) continue;
                 if (prop.Name == "VersionBuild") continue;
                 if (prop.Name == "VersionMajor") continue;
+                if (prop.Name == "VersionMinor") continue;
                 if (prop.Name == "PackageType") continue;
 
                 object value = prop.GetValue(o, null);
@@ -428,6 +503,7 @@ namespace BIDSHelper
                     if (prop.PropertyType == typeof(string)) continue;
                     if (prop.Name == "VersionBuild") continue;
                     if (prop.Name == "VersionMajor") continue;
+                    if (prop.Name == "VersionMinor") continue;
                     if (prop.Name == "PackageType") continue;
                     if (prop.Name.StartsWith("IDTS")) continue;
 
@@ -747,6 +823,12 @@ namespace BIDSHelper
                 mPropertyName = PropertyName;
                 mDefaultValue = DefaultValue;
                 mValue = Value;
+            }
+
+            private Guid mGuid = Guid.NewGuid();
+            public string GUID
+            {
+                get { return mGuid.ToString(); }
             }
 
             private string mDatabaseName;

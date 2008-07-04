@@ -131,7 +131,7 @@ namespace BIDSHelper
                     return;
                 }
 
-                Window w = pi.Open("{7651A702-06E5-11D1-8EBD-00A0C90F26EA}"); //opens the designer
+                Window w = pi.Open(BIDSViewKinds.SsisDesigner); //opens the designer
                 w.Activate();
 
                 IDesignerHost designer = w.Object as IDesignerHost;

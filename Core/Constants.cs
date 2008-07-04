@@ -27,4 +27,9 @@ namespace BIDSHelper
         public static string SSAS = "{d2abab84-bf74-430a-b69e-9dc6d40dda17}";
         public static string SSIS = "{d183a3d8-5fd8-494b-b014-37f57b35e655}";
     }
+
+    public static class BIDSViewKinds
+    {
+        public static string SsisDesigner = "{7651A702-06E5-11D1-8EBD-00A0C90F26EA}";
+    }
 }
