@@ -276,10 +276,84 @@ namespace BIDSHelper
             ValidatePackage(package);
         }
 
+        private string[] RecurseContainersAndGetVariableValidationErrors(IDTSSequence parentExecutable)
+        {
+            List<string> listOtherErrors = new List<string>();
+            listOtherErrors.AddRange(ScanDtsObjectVariablesForErrors((DtsContainer)parentExecutable));
+            if (parentExecutable is EventsProvider)
+            {
+                foreach (DtsEventHandler eh in (parentExecutable as EventsProvider).EventHandlers)
+                {
+                    listOtherErrors.AddRange(RecurseContainersAndGetVariableValidationErrors(eh));
+                }
+            }
+            foreach (Executable e in parentExecutable.Executables)
+            {
+                if (e is IDTSSequence)
+                {
+                    listOtherErrors.AddRange(RecurseContainersAndGetVariableValidationErrors((IDTSSequence)e));
+                }
+                else
+                {
+                    if (e is DtsContainer)
+                    {
+                        listOtherErrors.AddRange(ScanDtsObjectVariablesForErrors((DtsContainer)e));
+                    }
+                    if (e is EventsProvider)
+                    {
+                        foreach (DtsEventHandler eh in (e as EventsProvider).EventHandlers)
+                        {
+                            listOtherErrors.AddRange(RecurseContainersAndGetVariableValidationErrors(eh));
+                        }
+                    }
+                }
+            }
+            return listOtherErrors.ToArray();
+        }
+
+        private string[] ScanDtsObjectVariablesForErrors(DtsContainer o)
+        {
+            List<string> listOtherErrors = new List<string>();
+            foreach (Variable v in o.Variables)
+            {
+                if (v.GetPackagePath().StartsWith(((IDTSPackagePath)o).GetPackagePath() + ".Variables[")) //only variables in this scope
+                {
+                    try
+                    {
+                        object val = v.Value; //look at each value to see if each variable expression works
+                    }
+                    catch (Exception ex)
+                    {
+                        listOtherErrors.Add(ex.Message);
+                    }
+                }
+            }
+            return listOtherErrors.ToArray();
+        }
+
         private void ValidatePackage(Package package)
         {
             Microsoft.DataTransformationServices.Design.ComponentModel.EventHandlerErrorCollector events = new Microsoft.DataTransformationServices.Design.ComponentModel.EventHandlerErrorCollector();
             DTSExecResult result = package.Validate(package.Connections, package.Variables, events, null);
+
+            List<string> listOtherErrors = new List<string>();
+            listOtherErrors.AddRange(RecurseContainersAndGetVariableValidationErrors(package));
+
+            if (listOtherErrors.Count > 0)
+            {
+                foreach (Window w in this.ApplicationObject.Windows)
+                {
+                    IDesignerHost designer = w.Object as IDesignerHost;
+                    if (designer == null) continue;
+                    EditorWindow win = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator)) as EditorWindow;
+                    if (win == null) continue;
+                    if ((win.PropertiesLinkComponent as Package) == package)
+                    {
+                        AddErrorsToVSErrorList(w, listOtherErrors.ToArray());
+                        break;
+                    }
+                }
+            }
 
             foreach (KeyValuePair<IComponent, ICollection<IComponentErrorInfo>> pair in events.ComponentIssuesMap)
             {
@@ -305,6 +379,50 @@ namespace BIDSHelper
                     object componentValidationService = t.InvokeMember("componentValidationService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance, null, containerDesigner, null);
                     componentValidationService.GetType().InvokeMember("OnValidated", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, componentValidationService, new object[] { e });
                 }
+            }
+        }
+
+        private void AddErrorsToVSErrorList(Window window, string[] errors)
+        {
+            ErrorList errorList = this.ApplicationObject.ToolWindows.ErrorList;
+            Window2 errorWin2 = (Window2)(errorList.Parent);
+            if (errors.Length > 0)
+            {
+                if (!errorWin2.Visible)
+                {
+                    this.ApplicationObject.ExecuteCommand("View.ErrorList", " ");
+                }
+                errorWin2.SetFocus();
+            }
+
+            IDesignerHost designer = (IDesignerHost)window.Object;
+            ITaskListService service = designer.GetService(typeof(ITaskListService)) as ITaskListService;
+
+            //remove old task items from this document and BIDS Helper class
+            System.Collections.Generic.List<ITaskItem> tasksToRemove = new System.Collections.Generic.List<ITaskItem>();
+            foreach (ITaskItem ti in service.GetTaskItems())
+            {
+                ICustomTaskItem task = ti as ICustomTaskItem;
+                if (task != null && task.CustomInfo == this && task.Document == window.ProjectItem.get_FileNames(0))
+                {
+                    tasksToRemove.Add(ti);
+                }
+            }
+            foreach (ITaskItem ti in tasksToRemove)
+            {
+                service.Remove(ti);
+            }
+
+
+            foreach (string s in errors)
+            {
+                ICustomTaskItem item = (ICustomTaskItem)service.CreateTaskItem(TaskItemType.Custom, s);
+                item.Category = TaskItemCategory.Misc;
+                item.Appearance = TaskItemAppearance.Squiggle;
+                item.Priority = TaskItemPriority.High;
+                item.Document = window.ProjectItem.get_FileNames(0);
+                item.CustomInfo = this;
+                service.Add(item);
             }
         }
 
