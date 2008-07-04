@@ -339,19 +339,16 @@ namespace BIDSHelper
             List<string> listOtherErrors = new List<string>();
             listOtherErrors.AddRange(RecurseContainersAndGetVariableValidationErrors(package));
 
-            if (listOtherErrors.Count > 0)
+            foreach (Window w in this.ApplicationObject.Windows)
             {
-                foreach (Window w in this.ApplicationObject.Windows)
+                IDesignerHost designer = w.Object as IDesignerHost;
+                if (designer == null) continue;
+                EditorWindow win = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator)) as EditorWindow;
+                if (win == null) continue;
+                if ((win.PropertiesLinkComponent as Package) == package)
                 {
-                    IDesignerHost designer = w.Object as IDesignerHost;
-                    if (designer == null) continue;
-                    EditorWindow win = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator)) as EditorWindow;
-                    if (win == null) continue;
-                    if ((win.PropertiesLinkComponent as Package) == package)
-                    {
-                        AddErrorsToVSErrorList(w, listOtherErrors.ToArray());
-                        break;
-                    }
+                    AddErrorsToVSErrorList(w, listOtherErrors.ToArray());
+                    break;
                 }
             }
 
