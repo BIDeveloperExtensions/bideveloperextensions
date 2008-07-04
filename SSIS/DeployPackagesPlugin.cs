@@ -386,7 +386,7 @@ namespace BIDSHelper
             CommandBar pluginCmdBar = cmdBars["Project"];
             foreach (CommandBarControl cmd in pluginCmdBar.Controls)
             {
-                if (cmd.Caption.Replace("&", string.Empty) == "Properties")
+                if (cmd.Id == 131102) //cmd.Caption.Replace("&", string.Empty) == "Properties"
                 {
                     cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
                     cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
