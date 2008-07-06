@@ -64,14 +64,22 @@ namespace BIDSHelper
                 IDesignerHost designer = null;
                 foreach (Window w in this.ApplicationObject.Windows)
                 {
-                    designer = w.Object as IDesignerHost;
-                    if (designer == null) continue;
-                    ProjectItem pi = w.ProjectItem;
-                    if (pi != null && !(pi.Name.ToLower().EndsWith(".dtsx")))
+                    try
                     {
-                        designer = null;
+                        designer = w.Object as IDesignerHost;
+                        if (designer == null) continue;
+                        ProjectItem pi = w.ProjectItem;
+                        if (pi != null && !(pi.Name.ToLower().EndsWith(".dtsx")))
+                        {
+                            designer = null;
+                            continue;
+                        }
+                    }
+                    catch
+                    {
                         continue;
                     }
+
                     IDesignerToolWindowService service = (IDesignerToolWindowService)designer.GetService(typeof(IDesignerToolWindowService));
                     if (service == null) continue;
                     IDesignerToolWindow toolWindow = service.GetToolWindow(new Guid(SSIS_VARIABLES_TOOL_WINDOW_KIND), 0);

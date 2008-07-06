@@ -710,7 +710,7 @@ namespace BIDSHelper
             }
         }
 
-                private void ScanAnalysisServicesObjectForPropertiesWithNonDefaultValue(object o)
+        private void ScanAnalysisServicesObjectForPropertiesWithNonDefaultValue(object o)
         {
             ScanAnalysisServicesObjectForPropertiesWithNonDefaultValue(o, ((IModelComponent)o).FriendlyPath);
         }
