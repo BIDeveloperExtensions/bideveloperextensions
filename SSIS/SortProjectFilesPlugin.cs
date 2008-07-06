@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using System.Data;
 
+#if KATMAI
+//Katmai implemented this feature
+#else
 namespace BIDSHelper
 {
     public class SortProjectFilesPlugin : BIDSHelperPluginBase
@@ -113,3 +116,4 @@ namespace BIDSHelper
 
     }
 }
+#endif

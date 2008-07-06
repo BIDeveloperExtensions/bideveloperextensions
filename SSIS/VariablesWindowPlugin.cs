@@ -19,6 +19,12 @@ using System.Collections.Generic;
 using Microsoft.SqlServer.Management.UI.Grid;
 using System.ComponentModel;
 
+#if KATMAI
+using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
+#else
+using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
+#endif
+
 namespace BIDSHelper
 {
     public class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
@@ -324,15 +330,40 @@ namespace BIDSHelper
             List<string> listOtherErrors = new List<string>();
             foreach (Variable v in o.Variables)
             {
-                if (v.GetPackagePath().StartsWith(((IDTSPackagePath)o).GetPackagePath() + ".Variables[")) //only variables in this scope
+                if (!v.SystemVariable && v.GetPackagePath().StartsWith(((IDTSPackagePath)o).GetPackagePath() + ".Variables[")) //only variables in this scope
                 {
+                    object val;
                     try
                     {
-                        object val = v.Value; //look at each value to see if each variable expression works
+                        val = v.Value; //look at each value to see if each variable expression works
                     }
                     catch (Exception ex)
                     {
                         listOtherErrors.Add(ex.Message);
+                        continue;
+                    }
+
+                    //if we haven't already gotten an error, try to validate the expression
+                    IDTSInfoEventsWrapper events = new IDTSInfoEventsWrapper();
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(v.Expression))
+                        {
+                            Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass eval = new Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass();
+                            eval.Expression = v.Expression;
+                            eval.Events = events;
+#if KATMAI
+                            eval.Evaluate(DtsConvert.GetExtendedInterface(o.VariableDispenser), out val, false);
+#else
+                            eval.Evaluate(DtsConvert.ToVariableDispenser90(o.VariableDispenser), out val, false);
+#endif
+                        }
+                    }
+                    catch
+                    {
+                        if (events.Errors.Length > 0)
+                            listOtherErrors.Add("Error in expression for variable " + v.QualifiedName + ": " + events.Errors[0]);
+                        continue;
                     }
                 }
             }
@@ -408,7 +439,7 @@ namespace BIDSHelper
             foreach (ITaskItem ti in service.GetTaskItems())
             {
                 ICustomTaskItem task = ti as ICustomTaskItem;
-                if (task != null && task.CustomInfo == this && task.Document == window.ProjectItem.get_FileNames(0))
+                if (task != null && task.CustomInfo == this && task.Document == window.ProjectItem.Name)
                 {
                     tasksToRemove.Add(ti);
                 }
@@ -488,6 +519,32 @@ namespace BIDSHelper
             public VariableCopyException(string message, Exception innerException)
                 : base(message, innerException) { }
         }
+
+        private class IDTSInfoEventsWrapper : IDTSInfoEventsXX
+        {
+            private List<string> m_errors = new List<string>();
+            public string[] Errors
+            {
+                get { return m_errors.ToArray(); }
+            }
+
+            public void FireError(int errorCode, string subComponent, string description, string helpFile, int helpContext, out bool cancel)
+            {
+                cancel = false;
+                m_errors.Add(description);
+            }
+
+            public void FireInformation(int informationCode, string subComponent, string description, string helpFile, int helpContext, ref bool fireAgain)
+            {
+            }
+
+            public void FireWarning(int warningCode, string subComponent, string description, string helpFile, int helpContext)
+            {
+            }
+        }
+
+ 
+
 
     }
 }
