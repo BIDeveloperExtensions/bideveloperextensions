@@ -216,7 +216,7 @@ namespace AggManager
 
                 }
                 else
-                    aggDes = mg1.AggregationDesigns[aggDesName];
+                    aggDes = mg1.AggregationDesigns.GetByName(aggDesName);
 
                 int i = 0;
                 foreach (DataRow dRow in myDataView.Table.Rows)

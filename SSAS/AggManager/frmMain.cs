@@ -747,7 +747,7 @@ namespace AggManager
         {
             try
             {
-                AggregationDesign aggr = ((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag).AggregationDesigns[treeView1.SelectedNode.Tag.ToString()];
+                AggregationDesign aggr = ((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag).AggregationDesigns.GetByName(treeView1.SelectedNode.Tag.ToString());
                 PopupExportTableForm(aggr);
             }
             catch (Exception ex)

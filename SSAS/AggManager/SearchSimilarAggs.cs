@@ -12,7 +12,7 @@ namespace AggManager
 
         public static void ShowAggsSimilaritiesReport(MeasureGroup mg, string sCorrectAggregationDesignName, Boolean bCountMembers)
         {
-            AggregationDesign aggDesign = mg.AggregationDesigns[sCorrectAggregationDesignName]; 
+            AggregationDesign aggDesign = mg.AggregationDesigns.GetByName(sCorrectAggregationDesignName); 
             List<SimilarAgg> aggs = ListSimilarAggs(aggDesign, sCorrectAggregationDesignName, aggDesign.ParentCube.Name + " - " + aggDesign.Parent.Name + " measure group", bCountMembers);
             ShowReport(aggs);
         }
