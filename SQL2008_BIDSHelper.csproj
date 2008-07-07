@@ -455,7 +455,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
-    <Content Include="SetupScript\BIDSHelper.bmp" />
+    <Content Include="SetupScript\BIDSHelper2008.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
     <Content Include="SSIS\ExpressionEditor.xml" />
     <Content Include="SSIS\Konesans.Dts.CommonLibrary.dll" />
@@ -570,7 +570,7 @@
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UsedColumn.datasource" />
     <None Include="Properties\DataSources\VisualizeAttributeLatticeImageForReport.datasource" />
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
-    <None Include="SetupScript\BIDSHelperSetup.nsi" />
+    <None Include="SetupScript\BIDSHelperSetup2008.nsi" />
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
 </Project>
