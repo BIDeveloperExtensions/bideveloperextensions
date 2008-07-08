@@ -17,8 +17,16 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private Dictionary<string, DtsObjectPerformance> listComponentsPerformanceLookup = new Dictionary<string, DtsObjectPerformance>(StringComparer.CurrentCultureIgnoreCase);
 
         private Regex regexBufferSizeTuning = new Regex(@"buffer type (\d+) .+ (\d+) rows in buffers of this type", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private Regex regexExecutionTreeOutput = new Regex(@"output \"".+\"" \((\d+)\)");
+        private Regex regexExecutionTreeOutput = new Regex(@"output \"".+?\"" \((\d+)\)");
         private Regex regexCreateBuffer = new Regex(@"CreatePrimeBuffer of type (\d+) for output ID (\d+)");
+
+#if KATMAI
+        private const string EXECUTION_TREE_START_PHRASE = "Begin Path ";
+        private const string EXECUTION_TREE_END_PHRASE = "End Path ";
+#else
+        private const string EXECUTION_TREE_START_PHRASE = "begin execution tree ";
+        private const string EXECUTION_TREE_END_PHRASE = "end execution tree ";
+#endif
 
         public DtsPerformanceLogEventParser(Package package)
         {
@@ -149,9 +157,9 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 ExecutionTree tree = null;
                 foreach (string line in e.Message.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (line.StartsWith("begin execution tree "))
+                    if (line.StartsWith(EXECUTION_TREE_START_PHRASE))
                     {
-                        int iTreeID = int.Parse(line.Substring("begin execution tree ".Length));
+                        int iTreeID = int.Parse(line.Substring(EXECUTION_TREE_START_PHRASE.Length));
                         tree = new ExecutionTree();
                         tree.ID = iTreeID;
                         tree.UniqueId = pipePerf.ID + "ExecutionTree" + iTreeID;
@@ -169,7 +177,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                         if (!bFoundTree)
                             pipePerf.ExecutionTrees.Add(tree);
                     }
-                    else if (line.StartsWith("end execution tree "))
+                    else if (line.StartsWith(EXECUTION_TREE_END_PHRASE))
                     {
                         //skip line
                     }

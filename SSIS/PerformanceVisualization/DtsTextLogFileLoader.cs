@@ -82,7 +82,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     bool bIsNewEvent = false;
                     foreach (string sEvent in System.Enum.GetNames(typeof(BidsHelperCapturedDtsLogEvent)))
                     {
-                        if (sLine.StartsWith(sEvent + ","))
+                        if (sLine.StartsWith(sEvent + ",") || sLine.StartsWith("User:" + sEvent + ","))
                         {
                             bIsNewEvent = true;
                             break;
