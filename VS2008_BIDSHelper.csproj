@@ -67,7 +67,7 @@
     </Reference>
     <Reference Include="Konesans.Dts.CommonLibrary, Version=2.9.0.11, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>SSIS\Konesans.Dts.CommonLibrary.dll</HintPath>
+      <HintPath>DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -452,13 +452,14 @@
     <Content Include="Resources\DeployMdxScript.ico" />
     <Content Include="SetupScript\BIDSHelper.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
-    <Content Include="SSIS\ExpressionEditor.xml" />
-    <Content Include="SSIS\Konesans.Dts.CommonLibrary.dll" />
+    <Content Include="DLLs\SQL2005\ExpressionEditor.xml" />
+    <Content Include="DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll" />
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
     <EmbeddedResource Include="SSAS\AggManager\frmExportTable.resx">
       <DependentUpon>frmExportTable.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\AggManager\PrinterFriendlyAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\frmTraceTable.resx">
@@ -511,6 +512,7 @@
     <EmbeddedResource Include="SSAS\NonDefaultProperties.rdlc" />
     <EmbeddedResource Include="SSAS\NonDefaultPropertiesSelectionForm.resx">
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />
     <EmbeddedResource Include="SSAS\UnusedColumns.rdlc" />
@@ -568,4 +570,7 @@
     <None Include="SetupScript\BIDSHelperSetup.nsi" />
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS\Konesans.Dts.CommonLibrary.dll"</PreBuildEvent>
+  </PropertyGroup>
 </Project>
