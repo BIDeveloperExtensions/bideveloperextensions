@@ -644,7 +644,10 @@ namespace BIDSHelper
                 if (!(container is Package)) sNewPath = path.Substring(0, path.Length - 1) + "\\" + container.Name + ".";
                 if (container is TaskHost)
                 {
-                    ScanProperties(worker, sNewPath, ((TaskHost)container).InnerObject.GetType().ToString(), container.ID, container.Name, propProvider);
+                    string sType = ((TaskHost)container).InnerObject.GetType().ToString();
+                    if (((TaskHost)container).InnerObject is MainPipe)
+                        sType = typeof(MainPipe).ToString(); //prevents it from saying COM Object
+                    ScanProperties(worker, sNewPath, sType, container.ID, container.Name, propProvider);
                 }
                 else if (container is ForEachLoop)
                 {

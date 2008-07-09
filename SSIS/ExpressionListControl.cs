@@ -12,7 +12,6 @@ namespace BIDSHelper
     public partial class ExpressionListControl : UserControl
     {
         //TODO: Add "Live Update" - automatically filter diplay based on currently selected object.
-        //TODO: Reformat type column to put the object first, then the namespace
         //TODO: Expose methods on ExpressionList Control for adding and removing rows, rather than direct access to the grid.
         public ExpressionListControl()
         {
