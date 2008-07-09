@@ -69,7 +69,7 @@
     </Reference>
     <Reference Include="Konesans.Dts.CommonLibrary, Version=2.9.0.11, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>SSIS\Konesans.Dts.CommonLibrary.dll</HintPath>
+      <HintPath>DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -425,6 +425,8 @@
     <None Include="Resources\End.ico" />
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
+    <Content Include="DLLs\SQL2008\ExpressionEditor.xml" />
+    <Content Include="DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
@@ -457,8 +459,6 @@
     <Content Include="Resources\DeployMdxScript.ico" />
     <Content Include="SetupScript\BIDSHelper2008.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
-    <Content Include="SSIS\ExpressionEditor.xml" />
-    <Content Include="SSIS\Konesans.Dts.CommonLibrary.dll" />
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
@@ -573,4 +573,7 @@
     <None Include="SetupScript\BIDSHelperSetup2008.nsi" />
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS\Konesans.Dts.CommonLibrary.dll"</PreBuildEvent>
+  </PropertyGroup>
 </Project>
