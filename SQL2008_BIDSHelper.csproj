@@ -170,6 +170,9 @@
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.DataTransformationServices.Controls, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -212,6 +215,7 @@
     <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.Designer.cs">
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSIS\RelativePathsPlugin.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>
     </Compile>
