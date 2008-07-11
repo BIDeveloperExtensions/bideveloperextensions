@@ -126,8 +126,18 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             e.Event = (BidsHelperCapturedDtsLogEvent)System.Enum.Parse(typeof(BidsHelperCapturedDtsLogEvent), sColumns[0]);
             e.SourceName = sColumns[3];
             e.SourceId = sColumns[4];
-            e.StartTime = DateTime.Parse(sColumns[6]);
-            e.EndTime = DateTime.Parse(sColumns[7]);
+
+            if (!DateTime.TryParse(sColumns[6], out e.StartTime))
+            {
+                System.Diagnostics.Debug.WriteLine("could not parse start time");
+                return null;
+            }
+            if (!DateTime.TryParse(sColumns[7], out e.EndTime))
+            {
+                System.Diagnostics.Debug.WriteLine("could not parse end time");
+                return null;
+            }
+
             e.Message = sColumns[10];
             return e;
         }
