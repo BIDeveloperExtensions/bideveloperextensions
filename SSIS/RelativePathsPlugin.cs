@@ -17,7 +17,7 @@ namespace BIDSHelper
 {
     public class RelativePathsPlugin : BIDSHelperPluginBase
     {
-        private CommandBarButton cmdButtonProperties = null;
+        private EnvDTE.CommandEvents cmdPackageConfigurations;
         private Package packageForFixButton = null;
         private string pathForPackageForFixButton;
 
@@ -30,33 +30,20 @@ namespace BIDSHelper
         #region Running from the Package Configurations dialog
         private void CaptureClickEventForSSISMenu()
         {
-            CommandBars cmdBars = (CommandBars)this.ApplicationObject.CommandBars;
-            CommandBar pluginCmdBar = cmdBars["&SSIS"];
-            foreach (CommandBarControl cmd in pluginCmdBar.Controls)
+            foreach (Command cmd in this.ApplicationObject.Commands)
             {
-                if (cmd.Caption.Replace("&", string.Empty).StartsWith("Package Configurations"))
+                if (cmd.Name == "SSIS.PackageConfigurations")
                 {
-                    cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
-                    cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
+                    this.cmdPackageConfigurations = this.ApplicationObject.Events.get_CommandEvents(cmd.Guid, cmd.ID);
+                    this.cmdPackageConfigurations.BeforeExecute += new _dispCommandEvents_BeforeExecuteEventHandler(cmdEvent_BeforeExecute);
                     return;
                 }
-                //if (cmd.Id == (int)BIDSToolbarButtonID.PackageConfigurations) //cmd.Caption.Replace("&", string.Empty) == "Package Configurations"
-                //{
-                //    cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
-                //    cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
-                //    return;
-                //}
             }
-
-            if (Enabled) //could get annoying if you disable this and it kept showing up
-                MessageBox.Show("BIDS Helper SSIS Relative Paths plugin could not find Package Configurations button.");
         }
 
         //they asked to pop up the Package Configurations dialog, so replace the Microsoft functionality so we can control the popup form
-        void cmdButtonProperties_Click(CommandBarButton Ctrl, ref bool CancelDefault)
+        void cmdEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
-            if (cmdButtonProperties.Caption != Ctrl.Caption) return; //for some reason this fires on other commands like Add Annotation
-
             if (Enabled)
             {
                 try
