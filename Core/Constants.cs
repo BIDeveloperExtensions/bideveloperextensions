@@ -11,8 +11,7 @@ namespace BIDSHelper
         FormView = 12854,
         ScriptView = 12853,
         CalculationProperties = 12875,
-        ProjectProperties = 131102,
-        PackageConfigurations = 746
+        ProjectProperties = 131102
     }
 
     public enum BIDSViewMenuItemCommandID

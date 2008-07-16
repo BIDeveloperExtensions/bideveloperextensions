@@ -575,6 +575,6 @@
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS\Konesans.Dts.CommonLibrary.dll"</PreBuildEvent>
+    <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS"</PreBuildEvent>
   </PropertyGroup>
 </Project>

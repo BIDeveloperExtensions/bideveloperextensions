@@ -148,12 +148,21 @@ namespace BIDSHelper
                 //check whether we should abort because highlighting has been disabled for this window
                 if (disableHighlighting.ContainsKey(win) && disableHighlighting[win]) return;
 
-                //refresh DDS objects as all their properties aren't updated until you save the DTSX file
-                //this code is to workaround a problem such that a newly copied/pasted TaskHost isn't linked in via the DDS objects correctly until this refresh
-                System.Collections.Hashtable designTimeProperties = new System.Collections.Hashtable();
-                System.Reflection.BindingFlags publicstaticflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
-                TYPE_DTS_SERIALIZATION.InvokeMember("CollectDesignTimeProperties", publicstaticflags, null, null, new object[] { package, designTimeProperties });
-                TYPE_DTS_SERIALIZATION.InvokeMember("SaveDesignTimePropertiesToPackage", publicstaticflags, null, null, new object[] { package, designTimeProperties });
+                try
+                {
+                    ExpressionListPlugin.bShouldSkipExpressionHighlighting = true; //don't come into this design time properties code until the prior one finished
+                    
+                    //refresh DDS objects as all their properties aren't updated until you save the DTSX file
+                    //this code is to workaround a problem such that a newly copied/pasted TaskHost isn't linked in via the DDS objects correctly until this refresh
+                    System.Collections.Hashtable designTimeProperties = new System.Collections.Hashtable();
+                    System.Reflection.BindingFlags publicstaticflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
+                    TYPE_DTS_SERIALIZATION.InvokeMember("CollectDesignTimeProperties", publicstaticflags, null, null, new object[] { package, designTimeProperties });
+                    TYPE_DTS_SERIALIZATION.InvokeMember("SaveDesignTimePropertiesToPackage", publicstaticflags, null, null, new object[] { package, designTimeProperties });
+                }
+                finally
+                {
+                    ExpressionListPlugin.bShouldSkipExpressionHighlighting = false;
+                }
 
                 if (win.Tag == null)
                 {
@@ -635,13 +644,13 @@ namespace BIDSHelper
             //you can make changes while in Debug mode, so do not quit if in debug mode
             //in debug mode, this function clears the cache immediately, but no rescanning is done because BuildToDos quits in debug mode
 
-            System.Diagnostics.Debug.WriteLine("enter " + e.Component.GetType().FullName + " ComponentChanged");
-            if (e.Member != null)
-                System.Diagnostics.Debug.WriteLine("member descriptor type: " + e.Member.GetType().FullName);
-            
             bool bHighlightCalled = false;
             try
             {
+                System.Diagnostics.Debug.WriteLine("enter " + e.Component.GetType().FullName + " ComponentChanged");
+                if (e.Member != null)
+                    System.Diagnostics.Debug.WriteLine("member descriptor type: " + e.Member.GetType().FullName);
+
                 if (e.Component is Package)
                 {
                     if (e.Member == null) //capture when the package configuration editor window is closed
@@ -719,13 +728,17 @@ namespace BIDSHelper
             }
             finally
             {
-                if (e.Component != null)
+                try
                 {
-                    if (e.Member != null)
-                        System.Diagnostics.Debug.WriteLine(e.Component.GetType().FullName + " property updated: " + e.Member.Name + (bHighlightCalled ? " HIGHLIGHTED" : ""));
-                    else
-                        System.Diagnostics.Debug.WriteLine(e.Component.GetType().FullName + " updated" + (bHighlightCalled ? " HIGHLIGHTED" : ""));
+                    if (e.Component != null)
+                    {
+                        if (e.Member != null)
+                            System.Diagnostics.Debug.WriteLine(e.Component.GetType().FullName + " property updated: " + e.Member.Name + (bHighlightCalled ? " HIGHLIGHTED" : ""));
+                        else
+                            System.Diagnostics.Debug.WriteLine(e.Component.GetType().FullName + " updated" + (bHighlightCalled ? " HIGHLIGHTED" : ""));
+                    }
                 }
+                catch { }
             }
         }
 
