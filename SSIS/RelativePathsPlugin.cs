@@ -52,14 +52,12 @@ namespace BIDSHelper
                     ProjectItem pi = this.ApplicationObject.ActiveWindow.ProjectItem;
                     if (!pi.Name.ToLower().EndsWith(".dtsx")) return;
 
-                    if (pi.ContainingProject == null || pi.ContainingProject.Kind != BIDSProjectKinds.SSIS) return; //if the dtsx isn't in an SSIS project, or if you're editing the package standalone (not as a part of a project)
-
                     IDesignerHost designer = this.ApplicationObject.ActiveWindow.Object as IDesignerHost;
                     if (designer == null) return;
                     EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                     Package package = (Package)win.PropertiesLinkComponent;
                     this.packageForFixButton = package;
-                    this.pathForPackageForFixButton = pi.get_FileNames(0);
+                    this.pathForPackageForFixButton = pi.get_FileNames(1);
 
                     DtsConfigurationsForm form = new DtsConfigurationsForm(package);
                     if (win.SelectedIndex == 0)
