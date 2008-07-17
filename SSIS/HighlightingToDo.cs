@@ -45,7 +45,7 @@ namespace BIDSHelper
         protected static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         protected static Dictionary<ConnectionManager, CachedHighlightStatus> cacheConnectionManagers = new Dictionary<ConnectionManager, CachedHighlightStatus>();
         protected static Dictionary<Executable, CachedHighlightStatus> cacheTasks = new Dictionary<Executable, CachedHighlightStatus>();
-        protected static Dictionary<Package, List<string>> cacheConfigPaths = new Dictionary<Package, List<string>>();
+        public static Dictionary<Package, List<string>> cacheConfigPaths = new Dictionary<Package, List<string>>();
         protected static Dictionary<string, CachedHighlightStatus> cacheTransforms = new Dictionary<string, CachedHighlightStatus>();
         public static Dictionary<Package, List<string>> cacheConfigurationWarnings = new Dictionary<Package, List<string>>();
 
@@ -268,10 +268,10 @@ namespace BIDSHelper
         public abstract void Highlight();
 
 
-        protected static System.Drawing.Color expressionColor = System.Drawing.Color.Magenta;
-        protected static System.Drawing.Color configurationColor = System.Drawing.Color.FromArgb(17, 200, 255);
+        public static System.Drawing.Color expressionColor = System.Drawing.Color.Magenta;
+        public static System.Drawing.Color configurationColor = System.Drawing.Color.FromArgb(17, 200, 255);
         
-        protected static void ModifyIcon(System.Drawing.Bitmap icon, System.Drawing.Color color)
+        public static void ModifyIcon(System.Drawing.Bitmap icon, System.Drawing.Color color)
         {
             for (int i = 0; i < 9; i++)
             {
@@ -282,7 +282,7 @@ namespace BIDSHelper
             }
         }
 
-        protected static void ModifyIcon(System.Drawing.Bitmap icon, System.Drawing.Color color1, System.Drawing.Color color2)
+        public static void ModifyIcon(System.Drawing.Bitmap icon, System.Drawing.Color color1, System.Drawing.Color color2)
         {
             for (int i = 0; i < 9; i++)
             {

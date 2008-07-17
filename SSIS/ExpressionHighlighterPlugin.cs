@@ -521,6 +521,7 @@ namespace BIDSHelper
                         }
                     }
                 }
+                VariablesWindowPlugin.RefreshHighlights();
                 bWorkerThreadDoneWithWork = true;
                 if (highlightingToDos.Count > 0 && workerToDos.CancellationPending)
                     System.Diagnostics.Debug.WriteLine("cancelled background worker successfully!!!!");

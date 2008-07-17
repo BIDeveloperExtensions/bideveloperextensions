@@ -157,6 +157,9 @@
     <Reference Include="Microsoft.SqlServer.GridControl, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.SqlServer.DlgGrid, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>False</SpecificVersion>
     </Reference>

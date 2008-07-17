@@ -32,11 +32,12 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private static string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
         private ToolBarButton button;
-        private GridControl grid;
-        private UserControl variablesToolWindowControl;
-        private IComponentChangeService changesvc;
-        private IDesignerHost serviceProvider;
-        private ComponentDesigner packageDesigner;
+        private static DlgGridControl grid;
+        private static UserControl variablesToolWindowControl;
+        private static IComponentChangeService changesvc;
+        private static IDesignerHost serviceProvider;
+        private static ComponentDesigner packageDesigner;
+        private static bool bSkipHighlighting = false;
 
         public VariablesWindowPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -52,6 +53,21 @@ namespace BIDSHelper
         }
 
         public override void OnWindowActivated(Window GotFocus, Window LostFocus)
+        {
+            try
+            {
+                if (grid != null) return; //short circuit if we've already hooked up the variables window
+
+                //scan all windows so you don't have to focus the variables window before it starts highlighting
+                foreach (Window win in this.ApplicationObject.Windows)
+                {
+                    HookupVariablesWindow(win);
+                }
+            }
+            catch { }
+        }
+
+        private void HookupVariablesWindow(Window GotFocus)
         {
             try
             {
@@ -95,11 +111,12 @@ namespace BIDSHelper
                     serviceProvider = designer;
                     changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
 
-                    grid = (GridControl)variablesToolWindowControl.Controls["dlgGridControl1"];
+                    grid = (DlgGridControl)variablesToolWindowControl.Controls["dlgGridControl1"];
                     ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls["toolBar1"];
                     if (this.button != null && toolbar.Buttons.Contains(this.button)) return;
 
                     grid.SelectionChanged += new SelectionChangedEventHandler(grid_SelectionChanged);
+                    grid.Invalidated += new InvalidateEventHandler(grid_Invalidated);
 
                     ToolBarButton separator = new ToolBarButton();
                     separator.Style = ToolBarButtonStyle.Separator;
@@ -116,12 +133,115 @@ namespace BIDSHelper
                     toolbar.Wrappable = false;
 
                     SetButtonEnabled();
+                    RefreshHighlights();
                     return;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
+            }
+        }
+
+        //only way I could find to monitor when row data in the grid changes
+        void grid_Invalidated(object sender, InvalidateEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("variables grid invalidated");
+            RefreshHighlights();
+        }
+
+        public static void RefreshHighlights()
+        {
+            try
+            {
+                if (bSkipHighlighting) return;
+                if (variablesToolWindowControl == null) return;
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+                if (packageDesigner == null) return;
+                Package package = packageDesigner.Component as Package;
+                if (package == null) return;
+
+                List<string> listConfigPaths;
+                lock (HighlightingToDo.cacheConfigPaths)
+                {
+                    if (HighlightingToDo.cacheConfigPaths.ContainsKey(package))
+                        listConfigPaths = HighlightingToDo.cacheConfigPaths[package];
+                    else
+                        listConfigPaths = new List<string>();
+                }
+
+                for (int iRow = 0; iRow < grid.RowsNumber; iRow++)
+                {
+                    GridCell cell = grid.GetCellInfo(iRow, 0);
+                    if (cell.CellData != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine(cell.CellData.GetType().FullName);
+                        Variable variable = GetVariableForRow(iRow);
+                        bool bHasExpression = variable.EvaluateAsExpression && !string.IsNullOrEmpty(variable.Expression);
+                        bool bHasConfiguration = false;
+                        string sVariablePath = variable.GetPackagePath();
+                        foreach (string configPath in listConfigPaths)
+                        {
+                            if (configPath.StartsWith(sVariablePath))
+                            {
+                                bHasConfiguration = true;
+                                break;
+                            }
+                        }
+
+                        System.Drawing.Bitmap icon = (System.Drawing.Bitmap)cell.CellData;
+                        if (!bHasExpression && !bHasConfiguration && icon.Tag != null)
+                        {
+                            //reset the icon because this one doesn't have an expression anymore
+                            cell.CellData = icon.Tag;
+                            icon.Tag = null;
+
+                            try
+                            {
+                                bSkipHighlighting = true;
+                                grid.Invalidate(true);
+                            }
+                            finally
+                            {
+                                bSkipHighlighting = false;
+                            }
+
+                            System.Diagnostics.Debug.WriteLine("un-highlighted variable");
+                        }
+                        else if ((bHasExpression || bHasConfiguration))
+                        {
+                            //save what the icon looked like originally so we can go back if they remove the expression
+                            if (icon.Tag == null)
+                                icon.Tag = icon.Clone();
+
+                            //now update the icon to note this one has an expression
+                            if (bHasExpression && !bHasConfiguration)
+                                HighlightingToDo.ModifyIcon(icon, HighlightingToDo.expressionColor);
+                            else if (bHasConfiguration && !bHasExpression)
+                                HighlightingToDo.ModifyIcon(icon, HighlightingToDo.configurationColor);
+                            else
+                                HighlightingToDo.ModifyIcon(icon, HighlightingToDo.expressionColor, HighlightingToDo.configurationColor);
+                            cell.CellData = icon;
+
+                            try
+                            {
+                                bSkipHighlighting = true;
+                                grid.Invalidate(true);
+                            }
+                            finally
+                            {
+                                bSkipHighlighting = false;
+                            }
+                            
+                            System.Diagnostics.Debug.WriteLine("highlighted variable");
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\r\n\r\n" + ex.StackTrace);
             }
         }
 
@@ -171,6 +291,7 @@ namespace BIDSHelper
                             //refresh the grid after the changes we've made
                             variablesToolWindowControl.GetType().InvokeMember("FillGrid", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { });
                             SetButtonEnabled();
+                            RefreshHighlights();
                         }
                     }
                 }
@@ -198,10 +319,7 @@ namespace BIDSHelper
             {
                 foreach (int iRow in selectedRows)
                 {
-                    object cell = grid.GetType().InvokeMember("GetCellInfo", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, grid, new object[] { iRow, 1 }); //actually a VariableDesigner
-                    DtsBaseDesigner varDesigner = (DtsBaseDesigner)cell.GetType().InvokeMember("Tag", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, cell, null);
-                    Variable variable = (Variable)varDesigner.GetType().InvokeMember("Variable", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, varDesigner, null);
-                    //JCW - Added to prevent button from being enabled if only System variables are selected
+                    Variable variable = GetVariableForRow(iRow);
                     if (!variable.SystemVariable)
                     {
                         variables.Add(variable);
@@ -210,6 +328,14 @@ namespace BIDSHelper
             }
 
             return variables;
+        }
+
+        private static Variable GetVariableForRow(int iRow)
+        {
+            GridCell cell = grid.GetCellInfo(iRow, 1);
+            DtsBaseDesigner varDesigner = (DtsBaseDesigner)cell.Tag;
+            Variable variable = (Variable)varDesigner.GetType().InvokeMember("Variable", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, varDesigner, null);
+            return variable;
         }
 
         private DtsContainer FindObjectForVariablePackagePath(DtsContainer parent, string PackagePath)
@@ -395,7 +521,7 @@ namespace BIDSHelper
             {
                 IComponent key = pair.Key;
                 System.Collections.ICollection issues = (System.Collections.ICollection)pair.Value;
-                IDesignerHost host = (IDesignerHost)this.packageDesigner.GetType().InvokeMember("DesignerHost", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, packageDesigner, null);
+                IDesignerHost host = (IDesignerHost)packageDesigner.GetType().InvokeMember("DesignerHost", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, packageDesigner, null);
                 IDesigner containerDesigner = host.GetDesigner(key);
                 if (containerDesigner != null)
                 {
