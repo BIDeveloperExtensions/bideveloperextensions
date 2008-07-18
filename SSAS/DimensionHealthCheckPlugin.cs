@@ -417,6 +417,7 @@ namespace BIDSHelper
             StringBuilder select = new StringBuilder();
             StringBuilder outerSelect = new StringBuilder();
             StringBuilder groupBy = new StringBuilder();
+            StringBuilder orderBy = new StringBuilder();
             StringBuilder join = new StringBuilder();
             StringBuilder topLevelColumns = new StringBuilder();
             Dictionary<DataTable, JoinedTable> tables = new Dictionary<DataTable, JoinedTable>();
@@ -479,6 +480,8 @@ namespace BIDSHelper
                     outerSelect.Append(sq).Append(colAlias).AppendLine(fq);
                     if (topLevelColumns.Length > 0) topLevelColumns.Append(",");
                     topLevelColumns.Append("y.").Append(sq).Append(colAlias).Append(fq).Append(" as ").Append(sq).Append(dc.ColumnName).AppendLine(fq);
+                    orderBy.Append((orderBy.Length == 0 ? "order by " : ","));
+                    orderBy.Append("y.").Append(sq).Append(colAlias).AppendLine(fq);
                     if (!dc.ExtendedProperties.ContainsKey("ComputedColumnExpression"))
                     {
                         select.Append(sq).Append(dsv.Schema.Tables[col.TableID].ExtendedProperties["FriendlyName"].ToString()).Append(fq).Append(".").Append(sq).Append((dc.ExtendedProperties["DbColumnName"] ?? dc.ColumnName).ToString()).Append(fq).Append(" as ").Append(sq).Append(colAlias).AppendLine(fq);
@@ -517,6 +520,8 @@ namespace BIDSHelper
                     }
                     if (topLevelColumns.Length > 0) topLevelColumns.Append(",");
                     topLevelColumns.Append("y.").Append(sq).Append(colAlias).Append(fq).Append(" as ").Append(sq).Append(dc.ColumnName).AppendLine(fq);
+                    orderBy.Append((orderBy.Length == 0 ? "order by " : ","));
+                    orderBy.Append("y.").Append(sq).Append(colAlias).AppendLine(fq);
 
                     if (!tables.ContainsKey(dsv.Schema.Tables[col.TableID]))
                     {
@@ -570,7 +575,7 @@ namespace BIDSHelper
             string invalidValuesInner = outerSelect.ToString();
             outerSelect = new StringBuilder();
             outerSelect.Append("select ").AppendLine(topLevelColumns.ToString()).AppendLine(" from (").Append(select).AppendLine(") y");
-            outerSelect.AppendLine("join (").AppendLine(invalidValuesInner).AppendLine(") z").AppendLine(join.ToString());
+            outerSelect.AppendLine("join (").AppendLine(invalidValuesInner).AppendLine(") z").AppendLine(join.ToString()).AppendLine(orderBy.ToString());
             return outerSelect.ToString();
         }
 
