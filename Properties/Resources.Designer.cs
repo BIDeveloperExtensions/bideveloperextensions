@@ -187,6 +187,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon EditVariable {
+            get {
+                object obj = ResourceManager.GetObject("EditVariable", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon End {
             get {
                 object obj = ResourceManager.GetObject("End", resourceCulture);
