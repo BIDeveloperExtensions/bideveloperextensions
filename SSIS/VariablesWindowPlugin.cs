@@ -31,13 +31,18 @@ namespace BIDSHelper
     {
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private static string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
-        private ToolBarButton button;
+        private ToolBarButton moveCopyButton;
+        //TODO: Enable when expression editor is worked out.
+        //private ToolBarButton editExpessionButton;
         private static DlgGridControl grid;
         private static UserControl variablesToolWindowControl;
         private static IComponentChangeService changesvc;
         private static IDesignerHost serviceProvider;
         private static ComponentDesigner packageDesigner;
         private static bool bSkipHighlighting = false;
+
+        //System.Reflection.Assembly konesansAssembly = null;
+        //Type typePropertyVariables = null;
 
         public VariablesWindowPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -113,7 +118,7 @@ namespace BIDSHelper
 
                     grid = (DlgGridControl)variablesToolWindowControl.Controls["dlgGridControl1"];
                     ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls["toolBar1"];
-                    if (this.button != null && toolbar.Buttons.Contains(this.button)) return;
+                    if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
 
                     grid.SelectionChanged += new SelectionChangedEventHandler(grid_SelectionChanged);
                     grid.Invalidated += new InvalidateEventHandler(grid_Invalidated);
@@ -122,13 +127,24 @@ namespace BIDSHelper
                     separator.Style = ToolBarButtonStyle.Separator;
                     toolbar.Buttons.Add(separator);
 
-                    this.button = new ToolBarButton();
-                    this.button.Style = ToolBarButtonStyle.PushButton;
-                    this.button.ToolTipText = "Move/Copy Variables to New Scope (BIDS Helper)";
-                    toolbar.Buttons.Add(this.button);
+                    //Move/Copy button
+                    this.moveCopyButton = new ToolBarButton();
+                    this.moveCopyButton.Style = ToolBarButtonStyle.PushButton;
+                    this.moveCopyButton.ToolTipText = "Move/Copy Variables to New Scope (BIDS Helper)";
+                    toolbar.Buttons.Add(this.moveCopyButton);
                     toolbar.ImageList.Images.Add(Properties.Resources.Copy);
-                    this.button.ImageIndex = toolbar.ImageList.Images.Count - 1;
+                    this.moveCopyButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
+
+                    //TODO: Commented out till expression editor is worked out.
+                    ////Edit Variable Expression button
+                    //this.editExpessionButton = new ToolBarButton();
+                    //this.editExpessionButton.Style = ToolBarButtonStyle.PushButton;
+                    //this.editExpessionButton.ToolTipText = "Edit Variable Expression (BIDS Helper)";
+                    //toolbar.Buttons.Add(this.editExpessionButton);
+                    //toolbar.ImageList.Images.Add(Properties.Resources.EditVariable);
+                    //this.editExpessionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+                    ////toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
 
                     toolbar.Wrappable = false;
 
@@ -232,7 +248,7 @@ namespace BIDSHelper
                             {
                                 bSkipHighlighting = false;
                             }
-                            
+
                             System.Diagnostics.Debug.WriteLine("highlighted variable");
                         }
 
@@ -260,14 +276,28 @@ namespace BIDSHelper
         private void SetButtonEnabled()
         {
             List<Variable> variables = GetSelectedVariables();
-            this.button.Enabled = (variables.Count > 0);
+            this.moveCopyButton.Enabled = (variables.Count > 0);
+
+            //TODO: Uncomment to enable button.
+            //this.editExpessionButton.Enabled = CheckCurrentRowForExpression();
+        }
+
+        private bool CheckCurrentRowForExpression()
+        {
+            int selectedRow;
+            int selectedCol;
+            grid.GetSelectedCell(out selectedRow, out selectedCol);
+
+            if (selectedRow < 0) return false;
+
+            return GetVariableForRow(selectedRow).EvaluateAsExpression;
         }
 
         void toolbar_ButtonClick(object sender, ToolBarButtonClickEventArgs e)
         {
             try
             {
-                if (e.Button != this.button) return;
+                if (e.Button != this.moveCopyButton) return;
 
                 List<Variable> variables = GetSelectedVariables();
                 if (variables.Count > 0)
@@ -308,6 +338,11 @@ namespace BIDSHelper
             {
                 MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
             }
+        }
+
+        private void OpenExpressionEditor()
+        {
+            //TODO: Rework code from Expression List plugin (maybe move to a common location)
         }
 
         private List<Variable> GetSelectedVariables()
@@ -669,7 +704,7 @@ namespace BIDSHelper
             }
         }
 
- 
+
 
 
     }
