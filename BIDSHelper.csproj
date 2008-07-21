@@ -422,6 +422,8 @@
     <None Include="Resources\End.ico" />
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
+    <Content Include="Resources\Edit.ico" />
+    <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
