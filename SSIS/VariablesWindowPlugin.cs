@@ -32,8 +32,7 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private static string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
         private ToolBarButton moveCopyButton;
-        //TODO: Enable when expression editor is worked out.
-        //private ToolBarButton editExpessionButton;
+        private ToolBarButton editExpessionButton;
         private static DlgGridControl grid;
         private static UserControl variablesToolWindowControl;
         private static IComponentChangeService changesvc;
@@ -41,8 +40,6 @@ namespace BIDSHelper
         private static ComponentDesigner packageDesigner;
         private static bool bSkipHighlighting = false;
 
-        //System.Reflection.Assembly konesansAssembly = null;
-        //Type typePropertyVariables = null;
 
         public VariablesWindowPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -134,18 +131,16 @@ namespace BIDSHelper
                     toolbar.Buttons.Add(this.moveCopyButton);
                     toolbar.ImageList.Images.Add(Properties.Resources.Copy);
                     this.moveCopyButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+
+                    //Edit Variable Expression button
+                    this.editExpessionButton = new ToolBarButton();
+                    this.editExpessionButton.Style = ToolBarButtonStyle.PushButton;
+                    this.editExpessionButton.ToolTipText = "Edit Variable Expression (BIDS Helper)";
+                    toolbar.Buttons.Add(this.editExpessionButton);
+                    toolbar.ImageList.Images.Add(Properties.Resources.EditVariable);
+                    this.editExpessionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
-
-                    //TODO: Commented out till expression editor is worked out.
-                    ////Edit Variable Expression button
-                    //this.editExpessionButton = new ToolBarButton();
-                    //this.editExpessionButton.Style = ToolBarButtonStyle.PushButton;
-                    //this.editExpessionButton.ToolTipText = "Edit Variable Expression (BIDS Helper)";
-                    //toolbar.Buttons.Add(this.editExpessionButton);
-                    //toolbar.ImageList.Images.Add(Properties.Resources.EditVariable);
-                    //this.editExpessionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
-                    ////toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
-
                     toolbar.Wrappable = false;
 
                     SetButtonEnabled();
@@ -278,8 +273,7 @@ namespace BIDSHelper
             List<Variable> variables = GetSelectedVariables();
             this.moveCopyButton.Enabled = (variables.Count > 0);
 
-            //TODO: Uncomment to enable button.
-            //this.editExpessionButton.Enabled = CheckCurrentRowForExpression();
+            this.editExpessionButton.Enabled = CheckCurrentRowForExpression();
         }
 
         private bool CheckCurrentRowForExpression()
@@ -295,10 +289,69 @@ namespace BIDSHelper
 
         void toolbar_ButtonClick(object sender, ToolBarButtonClickEventArgs e)
         {
+            if (e.Button == this.moveCopyButton)
+                MoveCopyButtonClick();
+            else if (e.Button == this.editExpessionButton)
+                EditExpressionButtonClick();
+        }
+
+        void EditExpressionButtonClick()
+        {
             try
             {
-                if (e.Button != this.moveCopyButton) return;
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+                if (packageDesigner == null) return;
+                Package package = packageDesigner.Component as Package;
+                if (package == null) return;
 
+                int selectedRow;
+                int selectedCol;
+                grid.GetSelectedCell(out selectedRow, out selectedCol);
+
+                if (selectedRow < 0) return;
+
+                Variable variable = GetVariableForRow(selectedRow);
+
+                if (variable == null) return;
+                PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(variable);
+                PropertyDescriptor property = properties.Find("Value", false);
+                Type propertyType = System.Type.GetType("System." + variable.DataType.ToString());
+                DtsContainer sourceContainer = FindObjectForVariablePackagePath(package, variable.GetPackagePath());
+                Variables variables = sourceContainer.Variables;
+                VariableDispenser variableDispenser = sourceContainer.VariableDispenser;
+
+                System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
+
+                Form editor = BIDSHelper.SSIS.Konesans.CreateKonesansExpressionEditorForm(variables, variableDispenser, propertyType, property, variable.Expression);
+                if (editor.ShowDialog() == DialogResult.OK)
+                {
+                    string sExpression = (string)editor.GetType().InvokeMember("Expression", getpropflags, null, editor, null);
+                    if (!string.IsNullOrEmpty(sExpression) && string.IsNullOrEmpty(sExpression.Trim()))
+                        sExpression = null;
+
+                    variable.Expression = sExpression;
+                    changesvc.OnComponentChanging(sourceContainer, null);
+                    changesvc.OnComponentChanged(sourceContainer, null, null, null); //marks the package designer as dirty
+
+                    TypeDescriptor.Refresh(variable);
+                    System.Windows.Forms.Application.DoEvents();
+
+                    //refresh the grid
+                    variablesToolWindowControl.GetType().InvokeMember("FillGrid", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { });
+                    SetButtonEnabled();
+                    RefreshHighlights();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
+            }
+        }
+
+        void MoveCopyButtonClick()
+        {
+            try
+            {
                 List<Variable> variables = GetSelectedVariables();
                 if (variables.Count > 0)
                 {
@@ -338,11 +391,6 @@ namespace BIDSHelper
             {
                 MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
             }
-        }
-
-        private void OpenExpressionEditor()
-        {
-            //TODO: Rework code from Expression List plugin (maybe move to a common location)
         }
 
         private List<Variable> GetSelectedVariables()

@@ -218,6 +218,7 @@
     <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.Designer.cs">
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>
