@@ -273,18 +273,7 @@ namespace BIDSHelper
             List<Variable> variables = GetSelectedVariables();
             this.moveCopyButton.Enabled = (variables.Count > 0);
 
-            this.editExpressionButton.Enabled = CheckCurrentRowForExpression();
-        }
-
-        private bool CheckCurrentRowForExpression()
-        {
-            int selectedRow;
-            int selectedCol;
-            grid.GetSelectedCell(out selectedRow, out selectedCol);
-
-            if (selectedRow < 0) return false;
-
-            return GetVariableForRow(selectedRow).EvaluateAsExpression;
+            this.editExpressionButton.Enabled = (variables.Count > 0);
         }
 
         void toolbar_ButtonClick(object sender, ToolBarButtonClickEventArgs e)
@@ -330,6 +319,10 @@ namespace BIDSHelper
                     {
                         sExpression = null;
                         variable.EvaluateAsExpression = false;
+                    }
+                    else
+                    {
+                        variable.EvaluateAsExpression = true;
                     }
 
                     variable.Expression = sExpression;
