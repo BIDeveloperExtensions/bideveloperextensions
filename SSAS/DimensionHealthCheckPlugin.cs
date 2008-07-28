@@ -231,7 +231,7 @@ namespace BIDSHelper
                     this.changesvc.OnComponentChanging(this.oLastDimension, null);
                     this.changesvc.OnComponentChanged(this.oLastDimension, null, null, null);
 
-                    MessageBox.Show("Finished making [" + child.Name + "] related to [" + parent.Name + "].", "BIDS Helper - Fix Obvious Attribute Relationship Oversight");
+                    MessageBox.Show("Finished making [" + child.Name + "] related to [" + parent.Name + "].\r\n\r\nPlease rerun Dimension Health Check to see if any other warnings were resolved.", "BIDS Helper - Fix Obvious Attribute Relationship Oversight");
                 }
             }
             catch (Exception ex)
@@ -340,9 +340,9 @@ namespace BIDSHelper
                 {
                     try
                     {
-                        if (child.ID != da.ID && ContainsSubsetOfKeys(da, child) && !IsParentOf(child, da))
+                        if (child.ID != da.ID && da.AttributeHierarchyEnabled && ContainsSubsetOfKeys(da, child) && !IsParentOf(child, da))
                         {
-                            if (ContainsSubsetOfKeys(child, da) && (IsParentOf(da, child) || child.Name.CompareTo(da.Name) < 0))
+                            if (ContainsSubsetOfKeys(child, da) && (IsParentOf(da, child) || (child.Name.CompareTo(da.Name) < 0 && child.AttributeHierarchyEnabled)))
                             {
                                 //if the keys for both are the same, then skip this one if the opposite attribute relationship is defined... otherwise, only return one direction based on alphabetic order
                                 continue;
