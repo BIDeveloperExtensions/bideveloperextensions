@@ -8,11 +8,14 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.Data;
+using System.ComponentModel.Design;
 
 namespace BIDSHelper
 {
     public class DimensionHealthCheckPlugin : BIDSHelperPluginBase
     {
+        private Dimension oLastDimension;
+        private IComponentChangeService changesvc;
 
         public DimensionHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -98,6 +101,8 @@ namespace BIDSHelper
                 ApplicationObject.StatusBar.Progress(true, "Checking Dimension Health...", 0, d.Attributes.Count * 2);
 
                 DimensionError[] errors = Check(d);
+                this.oLastDimension = d;
+                this.changesvc = (IComponentChangeService)d.Site.GetService(typeof(IComponentChangeService));
 
                 int iErrorCnt = 0;
                 EnvDTE80.Windows2 toolWins;
@@ -109,7 +114,7 @@ namespace BIDSHelper
                 browser.Navigate("about:blank");
                 browser.Document.Write("<font style='font-family:Arial;font-size:10pt'>");
                 browser.Document.Write("<h3>" + d.Name + ": Dimension Health Check</h3>");
-                browser.Document.Write("<i>Checks whether attribute relationships hold true according to the data.<br>Also checks definition of attribute keys to determine if they are unique.</i><br><br>");
+                browser.Document.Write("<i>Checks whether attribute relationships hold true according to the data.<br>Also checks definition of attribute keys to determine if they are unique.<br>Also checks whether any obvious attribute relationships are missing.</i><br><br>");
                 if (errors.Length > 0)
                 {
                     browser.Document.Write("<b>Problems</b><br>");
@@ -118,22 +123,24 @@ namespace BIDSHelper
                         iErrorCnt++;
                         browser.Document.Write("<li>");
                         browser.Document.Write(e.ErrorDescription);
-                        if (e.ErrorTable != null)
+                        DimensionDataError de = e as DimensionDataError;
+                        DimensionRelationshipWarning rw = e as DimensionRelationshipWarning;
+                        if (de != null && de.ErrorTable != null)
                         {
                             browser.Document.Write(" <a href=\"javascript:void(null)\" id=expander" + iErrorCnt + " ErrorCnt=" + iErrorCnt + " style='color:blue'>Show/hide problem rows</a><br>\r\n");
                             browser.Document.Write("<table id=error" + iErrorCnt + " cellspacing=0 style='display:none;font-family:Arial;font-size:10pt'>");
                             browser.Document.Write("<tr><td></td>");
-                            for (int i = 0; i < e.ErrorTable.Columns.Count; i++)
+                            for (int i = 0; i < de.ErrorTable.Columns.Count; i++)
                             {
                                 browser.Document.Write("<td nowrap><b>");
-                                browser.Document.Write(System.Web.HttpUtility.HtmlEncode(e.ErrorTable.Columns[i].ColumnName));
+                                browser.Document.Write(System.Web.HttpUtility.HtmlEncode(de.ErrorTable.Columns[i].ColumnName));
                                 browser.Document.Write("</b></td><td>&nbsp;&nbsp;</td>");
                             }
                             browser.Document.Write("</tr>\r\n");
-                            foreach (DataRow dr in e.ErrorTable.Rows)
+                            foreach (DataRow dr in de.ErrorTable.Rows)
                             {
                                 browser.Document.Write("<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>");
-                                for (int i = 0; i < e.ErrorTable.Columns.Count; i++)
+                                for (int i = 0; i < de.ErrorTable.Columns.Count; i++)
                                 {
                                     browser.Document.Write("<td nowrap>");
                                     if (!Convert.IsDBNull(dr[i]))
@@ -145,6 +152,10 @@ namespace BIDSHelper
                                 browser.Document.Write("</tr>");
                             }
                             browser.Document.Write("</table>");
+                        }
+                        else if (rw != null)
+                        {
+                            browser.Document.Write(" <a href=\"javascript:void(null)\" id=expander" + iErrorCnt + " Attribute=\"" + rw.Attribute.ID + "\" RelatedAttribute=\"" + rw.RelatedAttribute.ID + "\" style='color:blue'>Change attribute relationship</a>\r\n");
                         }
                     }
                 }
@@ -190,13 +201,37 @@ namespace BIDSHelper
             try
             {
                 HtmlElement el = (HtmlElement)sender;
-                HtmlElement error = el.Document.GetElementById("error" + el.GetAttribute("ErrorCnt"));
-                if (error != null)
+                if (!string.IsNullOrEmpty(el.GetAttribute("ErrorCnt")))
                 {
-                    if (error.Style.ToLower().StartsWith("display"))
-                        error.Style = "font-family:Arial;font-size:10pt";
-                    else
-                        error.Style = "display:none;font-family:Arial;font-size:10pt";
+                    HtmlElement error = el.Document.GetElementById("error" + el.GetAttribute("ErrorCnt"));
+                    if (error != null)
+                    {
+                        if (error.Style.ToLower().StartsWith("display"))
+                            error.Style = "font-family:Arial;font-size:10pt";
+                        else
+                            error.Style = "display:none;font-family:Arial;font-size:10pt";
+                    }
+                }
+                else
+                {
+                    string sAttributeID = el.GetAttribute("Attribute");
+                    string sRelatedAttributeID = el.GetAttribute("RelatedAttribute");
+                    DimensionAttribute parent = this.oLastDimension.Attributes[sAttributeID];
+                    DimensionAttribute child = this.oLastDimension.Attributes[sRelatedAttributeID];
+                    foreach (DimensionAttribute da in this.oLastDimension.Attributes)
+                    {
+                        if (da.AttributeRelationships.Contains(child.ID))
+                        {
+                            da.AttributeRelationships.Remove(child.ID);
+                        }
+                    }
+                    parent.AttributeRelationships.Add(child.ID);
+
+                    //mark dimension as dirty
+                    this.changesvc.OnComponentChanging(this.oLastDimension, null);
+                    this.changesvc.OnComponentChanged(this.oLastDimension, null, null, null);
+
+                    MessageBox.Show("Finished making [" + child.Name + "] related to [" + parent.Name + "].", "BIDS Helper - Fix Obvious Attribute Relationship Oversight");
                 }
             }
             catch (Exception ex)
@@ -243,7 +278,7 @@ namespace BIDSHelper
                         if (ds.Tables[0].Rows.Count > 0)
                         {
                             string problem = "Attribute [" + da.Name + "] has key values with multiple names.";
-                            DimensionError err = new DimensionError();
+                            DimensionDataError err = new DimensionDataError();
                             err.ErrorDescription = problem;
                             err.ErrorTable = ds.Tables[0];
                             problems.Add(err);
@@ -278,7 +313,7 @@ namespace BIDSHelper
                             if (ds.Tables[0].Rows.Count > 0)
                             {
                                 string problem = "Attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] is not valid because it results in a many-to-many relationship.";
-                                DimensionError err = new DimensionError();
+                                DimensionDataError err = new DimensionDataError();
                                 err.ErrorDescription = problem;
                                 err.ErrorTable = ds.Tables[0];
                                 problems.Add(err);
@@ -297,7 +332,72 @@ namespace BIDSHelper
             }
             cartridge = null;
             openedDataSourceConnection.Close();
+
+            //check obvious attribute relationship mistakes
+            foreach (DimensionAttribute da in d.Attributes)
+            {
+                foreach (DimensionAttribute child in d.Attributes)
+                {
+                    try
+                    {
+                        if (child.ID != da.ID && ContainsSubsetOfKeys(da, child) && !IsParentOf(child, da))
+                        {
+                            if (ContainsSubsetOfKeys(child, da) && (IsParentOf(da, child) || child.Name.CompareTo(da.Name) < 0))
+                            {
+                                //if the keys for both are the same, then skip this one if the opposite attribute relationship is defined... otherwise, only return one direction based on alphabetic order
+                                continue;
+                            }
+
+                            DimensionRelationshipWarning warn = new DimensionRelationshipWarning();
+                            warn.ErrorDescription = "Attribute [" + child.Name + "] has a subset of the keys of attribute [" + da.Name + "]. Therefore, those attributes can be related.";
+                            warn.Attribute = da;
+                            warn.RelatedAttribute = child;
+                            problems.Add(warn);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        string problem = "Attempt to check for obvious attribute relationship oversights on [" + da.Name + "] and [" + child.Name + "] failed:" + ex.Message + ex.StackTrace;
+                        DimensionError err = new DimensionError();
+                        err.ErrorDescription = problem;
+                        problems.Add(err);
+                    }
+                }
+            }
+
             return problems.ToArray();
+        }
+
+        private static bool ContainsSubsetOfKeys(DimensionAttribute a1, DimensionAttribute a2)
+        {
+            //check that every a2.KeyColumns can be found in a1.KeyColumns
+            if (a2.KeyColumns.Count == 0) return false;
+            foreach (DataItem di2 in a2.KeyColumns)
+            {
+                bool bFoundKey = false;
+                foreach (DataItem di1 in a1.KeyColumns)
+                {
+                    if (CompareDataItems(di1, di2))
+                    {
+                        bFoundKey = true;
+                        break;
+                    }
+                }
+                if (!bFoundKey) return false;
+            }
+            return true;
+        }
+
+        private static bool IsParentOf(DimensionAttribute parent, DimensionAttribute child)
+        {
+            foreach (AttributeRelationship rel in child.AttributeRelationships)
+            {
+                if (rel.AttributeID == parent.ID)
+                    return true;
+                else if (IsParentOf(parent, rel.Attribute))
+                    return true;
+            }
+            return false;
         }
 
         private static bool CompareDataItems(DataItem a, DataItem b)
@@ -653,7 +753,17 @@ namespace BIDSHelper
         class DimensionError
         {
             public string ErrorDescription;
+        }
+
+        class DimensionDataError : DimensionError
+        {
             public DataTable ErrorTable;
+        }
+
+        class DimensionRelationshipWarning : DimensionError
+        {
+            public DimensionAttribute Attribute;
+            public DimensionAttribute RelatedAttribute;
         }
     }
 }
