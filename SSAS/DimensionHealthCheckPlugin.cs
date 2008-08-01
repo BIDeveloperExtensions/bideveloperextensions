@@ -349,7 +349,11 @@ namespace BIDSHelper
                             }
 
                             DimensionRelationshipWarning warn = new DimensionRelationshipWarning();
-                            warn.ErrorDescription = "Attribute [" + child.Name + "] has a subset of the keys of attribute [" + da.Name + "]. Therefore, those attributes can be related.";
+                            if (d.KeyAttribute.AttributeRelationships.Contains(child.ID))
+                                warn.ErrorDescription = "Attribute [" + child.Name + "] has a subset of the keys of attribute [" + da.Name + "]. Therefore, those attributes can be related which is preferable to leaving [" + child.Name + "] related directly to the key.";
+                            else
+                                warn.ErrorDescription = "Attribute [" + child.Name + "] has a subset of the keys of attribute [" + da.Name + "]. Therefore, those attributes can be related. However, this may not be necessary since [" + child.Name + "] is already part of a set of attribute relationships.";
+
                             warn.Attribute = da;
                             warn.RelatedAttribute = child;
                             problems.Add(warn);
