@@ -101,6 +101,8 @@ namespace BIDSHelper
                 ApplicationObject.StatusBar.Progress(true, "Checking Dimension Health...", 0, d.Attributes.Count * 2);
 
                 DimensionError[] errors = Check(d);
+                if (errors == null) return;
+
                 this.oLastDimension = d;
                 this.changesvc = (IComponentChangeService)d.Site.GetService(typeof(IComponentChangeService));
 
@@ -253,56 +255,30 @@ namespace BIDSHelper
             //TODO: need to add in code to allow you to cancel such that it will stop an executing query
 
             Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(d.DataSource);
-            sq = openedDataSourceConnection.Cartridge.IdentStartQuote;
-            fq = openedDataSourceConnection.Cartridge.IdentEndQuote;
-            DBServerName = openedDataSourceConnection.DBServerName;
-            cartridge = openedDataSourceConnection.Cartridge;
 
-            int iProgressCount = 0;
-            String sql = "";
-            bool bGotSQL = false;
-            foreach (DimensionAttribute da in d.Attributes)
+            if (openedDataSourceConnection == null)
             {
-                try
-                {
-                    bGotSQL = false;
-                    if (da.Usage != AttributeUsage.Parent)
-                        sql = GetQueryToValidateKeyUniqueness(da);
-                    else
-                        sql = null;
-                    if (sql != null)
-                    {
-                        bGotSQL = true;
-                        DataSet ds = new DataSet();
-                        openedDataSourceConnection.Fill(ds, sql);
-                        if (ds.Tables[0].Rows.Count > 0)
-                        {
-                            string problem = "Attribute [" + da.Name + "] has key values with multiple names.";
-                            DimensionDataError err = new DimensionDataError();
-                            err.ErrorDescription = problem;
-                            err.ErrorTable = ds.Tables[0];
-                            problems.Add(err);
-                        }
-                    }
-                    ApplicationObject.StatusBar.Progress(true, "Checking Attribute Key Uniqueness...", ++iProgressCount, d.Attributes.Count * 2);
-                }
-                catch (Exception ex)
-                {
-                    string problem = "Attempt to validate key and name relationship for attribute [" + da.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : "");
-                    DimensionError err = new DimensionError();
-                    err.ErrorDescription = problem;
-                    problems.Add(err);
-                }
+                DimensionError err = new DimensionError();
+                err.ErrorDescription = "Unable to connect to data source [" + d.DataSource.Name + "] to test attribute relationships and key uniqueness.";
+                problems.Add(err);
             }
-            foreach (DimensionAttribute da in d.Attributes)
+            else
             {
-                foreach (AttributeRelationship r in da.AttributeRelationships)
+                sq = openedDataSourceConnection.Cartridge.IdentStartQuote;
+                fq = openedDataSourceConnection.Cartridge.IdentEndQuote;
+                DBServerName = openedDataSourceConnection.DBServerName;
+                cartridge = openedDataSourceConnection.Cartridge;
+
+                int iProgressCount = 0;
+                String sql = "";
+                bool bGotSQL = false;
+                foreach (DimensionAttribute da in d.Attributes)
                 {
                     try
                     {
                         bGotSQL = false;
                         if (da.Usage != AttributeUsage.Parent)
-                            sql = GetQueryToValidateRelationship(r);
+                            sql = GetQueryToValidateKeyUniqueness(da);
                         else
                             sql = null;
                         if (sql != null)
@@ -312,26 +288,62 @@ namespace BIDSHelper
                             openedDataSourceConnection.Fill(ds, sql);
                             if (ds.Tables[0].Rows.Count > 0)
                             {
-                                string problem = "Attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] is not valid because it results in a many-to-many relationship.";
+                                string problem = "Attribute [" + da.Name + "] has key values with multiple names.";
                                 DimensionDataError err = new DimensionDataError();
                                 err.ErrorDescription = problem;
                                 err.ErrorTable = ds.Tables[0];
                                 problems.Add(err);
                             }
                         }
+                        ApplicationObject.StatusBar.Progress(true, "Checking Attribute Key Uniqueness...", ++iProgressCount, d.Attributes.Count * 2);
                     }
                     catch (Exception ex)
                     {
-                        string problem = "Attempt to validate attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : "");
+                        string problem = "Attempt to validate key and name relationship for attribute [" + da.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : "");
                         DimensionError err = new DimensionError();
                         err.ErrorDescription = problem;
                         problems.Add(err);
                     }
                 }
-                ApplicationObject.StatusBar.Progress(true, "Checking Attribute Relationships...", ++iProgressCount, d.Attributes.Count * 2);
+                foreach (DimensionAttribute da in d.Attributes)
+                {
+                    foreach (AttributeRelationship r in da.AttributeRelationships)
+                    {
+                        try
+                        {
+                            bGotSQL = false;
+                            if (da.Usage != AttributeUsage.Parent)
+                                sql = GetQueryToValidateRelationship(r);
+                            else
+                                sql = null;
+                            if (sql != null)
+                            {
+                                bGotSQL = true;
+                                DataSet ds = new DataSet();
+                                openedDataSourceConnection.Fill(ds, sql);
+                                if (ds.Tables[0].Rows.Count > 0)
+                                {
+                                    string problem = "Attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] is not valid because it results in a many-to-many relationship.";
+                                    DimensionDataError err = new DimensionDataError();
+                                    err.ErrorDescription = problem;
+                                    err.ErrorTable = ds.Tables[0];
+                                    problems.Add(err);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            string problem = "Attempt to validate attribute relationship [" + da.Name + "] -> [" + r.Attribute.Name + "] failed:" + ex.Message + ex.StackTrace + (bGotSQL ? "\r\nSQL query was: " + sql : "");
+                            DimensionError err = new DimensionError();
+                            err.ErrorDescription = problem;
+                            problems.Add(err);
+                        }
+                    }
+                    ApplicationObject.StatusBar.Progress(true, "Checking Attribute Relationships...", ++iProgressCount, d.Attributes.Count * 2);
+                }
+                cartridge = null;
+                openedDataSourceConnection.Close();
             }
-            cartridge = null;
-            openedDataSourceConnection.Close();
 
             //check obvious attribute relationship mistakes
             foreach (DimensionAttribute da in d.Attributes)
