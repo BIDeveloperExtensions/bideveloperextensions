@@ -54,7 +54,7 @@ SetCompressor lzma
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "BIDSHelperSetup(${PRODUCT_VERSION}).exe"
+OutFile "BIDSHelper2005Setup(${PRODUCT_VERSION}).exe"
 InstallDir "$PROGRAMFILES\BIDS Helper"
 InstallDirRegKey HKLM "${PRODUCT_SETTINGS_KEY}" "$INSTDIR"
 ShowInstDetails show
