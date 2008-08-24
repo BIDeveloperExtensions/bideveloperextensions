@@ -549,7 +549,7 @@ namespace BIDSHelper
                     outerSelect.Append((select.Length == 0 ? "select " : ","));
                     select.Append((select.Length == 0 ? "select distinct " : ","));
                     string sIsNull = "";
-                    //select.Append(" /*" + dc.DataType.FullName + "*/ "); //for troubleshooting data types
+                    string sForceDataTypeOnJoin = "";
                     if (dc.DataType == typeof(string))
                     {
                         if (DBServerName == "Oracle")
@@ -576,6 +576,14 @@ namespace BIDSHelper
                             else
                                 sIsNull = "to_date('12/30/1899','MM/DD/YYYY')"; //think this is what SSAS converts null dates to
                         }
+                        else if (DBServerName == "Teradata")
+                        {
+                            sForceDataTypeOnJoin = "timestamp";
+                            if (di.NullProcessing == NullProcessing.Preserve)
+                                sIsNull = "cast('1899/12/30 01:02:03.456789' as timestamp)"; //a unique value that shouldn't ever occur in the real data
+                            else
+                                sIsNull = "cast('1899/12/30 00:00:00' as timestamp)"; //think this is what SSAS converts null dates to
+                        }
                         else
                         {
                             if (di.NullProcessing == NullProcessing.Preserve)
@@ -591,7 +599,16 @@ namespace BIDSHelper
                         else
                             sIsNull = "0";
                     }
-                    join.Append((join.Length == 0 ? "on " : "and ")).Append("coalesce(y.").Append(sq).Append(colAlias).Append(fq).Append(",").Append(sIsNull).Append(") = coalesce(z.").Append(sq).Append(colAlias).Append(fq).Append(",").Append(sIsNull).AppendLine(")");
+
+                    if (!string.IsNullOrEmpty(sForceDataTypeOnJoin))
+                    {
+                        join.Append((join.Length == 0 ? "on " : "and ")).Append("coalesce(cast(y.").Append(sq).Append(colAlias).Append(fq).Append(" as ").Append(sForceDataTypeOnJoin).Append("),").Append(sIsNull).Append(") = coalesce(cast(z.").Append(sq).Append(colAlias).Append(fq).Append(" as ").Append(sForceDataTypeOnJoin).Append("),").Append(sIsNull).AppendLine(")");
+                    }
+                    else
+                    {
+                        join.Append((join.Length == 0 ? "on " : "and ")).Append("coalesce(y.").Append(sq).Append(colAlias).Append(fq).Append(",").Append(sIsNull).Append(") = coalesce(z.").Append(sq).Append(colAlias).Append(fq).Append(",").Append(sIsNull).AppendLine(")");
+                    }
+
                     groupBy.Append(sq).Append(colAlias).AppendLine(fq);
                     outerSelect.Append(sq).Append(colAlias).AppendLine(fq);
                     if (topLevelColumns.Length > 0) topLevelColumns.Append(",");

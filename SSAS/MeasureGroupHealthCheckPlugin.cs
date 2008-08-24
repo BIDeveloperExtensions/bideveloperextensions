@@ -161,12 +161,23 @@ namespace BIDSHelper
             fq = openedDataSourceConnection.Cartridge.IdentEndQuote;
 
             string sBitSqlDatatype = "bit";
-            string sCountBig = "count_big";
+            string sCountBig = "count_big(";
+            string sCountBigEnd = ")";
+            string sFloorFunctionBegin = "floor(";
+            string sFloorFunctionEnd = ")";
 
             if (openedDataSourceConnection.DBServerName == "Oracle")
             {
                 sBitSqlDatatype = "number(1,0)";
-                sCountBig = "count";
+                sCountBig = "count(";
+            }
+            else if (openedDataSourceConnection.DBServerName == "Teradata")
+            {
+                sBitSqlDatatype = "numeric(1,0)";
+                sCountBig = "cast(count(";
+                sCountBigEnd = ") as bigint)";
+                sFloorFunctionBegin = "cast(";
+                sFloorFunctionEnd = " as bigint)";
             }
 
             string sFactQuery = GetQueryDefinition(mg.ParentDatabase, mg, oTblBinding, null);
@@ -209,8 +220,8 @@ namespace BIDSHelper
                         sOuterQuery.Append("sum(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
                     sOuterQuery.Append(",min(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
                     sOuterQuery.Append(",max(").Append(sNegativeSign).Append("cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append(" as float))").AppendLine();
-                    sOuterQuery.Append(",cast(max(case when floor(").Append(sq).Append(cb.ColumnID).Append(fq).Append(") <> ").Append(sq).Append(cb.ColumnID).Append(fq).Append(" then 1 else 0 end) as ").Append(sBitSqlDatatype).Append(")").AppendLine();
-                    sOuterQuery.Append(",cast(max(case when floor(").Append(sq).Append(cb.ColumnID).Append(fq).Append("*10000.0) <> ").Append(sq).Append(cb.ColumnID).Append(fq).Append("*10000.0 then 1 else 0 end) as ").Append(sBitSqlDatatype).Append(")").AppendLine();
+                    sOuterQuery.Append(",cast(max(case when ").Append(sFloorFunctionBegin).Append(sq).Append(cb.ColumnID).Append(fq).Append(sFloorFunctionEnd).Append(" <> ").Append(sq).Append(cb.ColumnID).Append(fq).Append(" then 1 else 0 end) as ").Append(sBitSqlDatatype).Append(")").AppendLine();
+                    sOuterQuery.Append(",cast(max(case when ").Append(sFloorFunctionBegin).Append(sq).Append(cb.ColumnID).Append(fq).Append("*10000.0").Append(sFloorFunctionEnd).Append(" <> cast(").Append(sq).Append(cb.ColumnID).Append(fq).Append("*10000.0 as float) then 1 else 0 end) as ").Append(sBitSqlDatatype).Append(")").AppendLine();
                 }
                 else if (m.AggregateFunction == AggregationFunction.Count
                 || m.AggregateFunction == AggregationFunction.DistinctCount
@@ -225,7 +236,7 @@ namespace BIDSHelper
                         if (m.AggregateFunction == AggregationFunction.DistinctCount)
                             throw new Exception("RowBinding on a distinct count not allowed by Analysis Services");
                         else
-                            sOuterQuery.Append(sCountBig).Append("(*)").AppendLine();
+                            sOuterQuery.Append(sCountBig).Append("*").Append(sCountBigEnd).AppendLine();
                         sOuterQuery.Append(",0").AppendLine();
                         sOuterQuery.Append(",1").AppendLine();
                         sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
@@ -236,11 +247,11 @@ namespace BIDSHelper
                         ColumnBinding cb = GetColumnBindingForDataItem(m.Source);
                         DataColumn col = mg.Parent.DataSourceView.Schema.Tables[cb.TableID].Columns[cb.ColumnID];
                         if (m.AggregateFunction == AggregationFunction.DistinctCount)
-                            sOuterQuery.Append(sCountBig).Append("(distinct ").Append(sq).Append(cb.ColumnID).Append(fq).Append(")").AppendLine();
+                            sOuterQuery.Append(sCountBig).Append("distinct ").Append(sq).Append(cb.ColumnID).Append(fq).Append(sCountBigEnd).AppendLine();
                         else if (col.DataType == typeof(Byte[]))
                             sOuterQuery.Append("sum(cast(case when ").Append(sq).Append(cb.ColumnID).Append(fq).Append(" is not null then 1 else 0 end as float))").AppendLine();
                         else
-                            sOuterQuery.Append(sCountBig).Append("(").Append(sq).Append(cb.ColumnID).Append(fq).Append(")").AppendLine();
+                            sOuterQuery.Append(sCountBig).Append(sq).Append(cb.ColumnID).Append(fq).Append(sCountBigEnd).AppendLine();
                         sOuterQuery.Append(",0").AppendLine();
                         sOuterQuery.Append(",1").AppendLine();
                         sOuterQuery.Append(",cast(0 as ").Append(sBitSqlDatatype).Append(")").AppendLine();
