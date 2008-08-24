@@ -254,7 +254,16 @@ namespace BIDSHelper
             List<DimensionError> problems = new List<DimensionError>();
             //TODO: need to add in code to allow you to cancel such that it will stop an executing query
 
-            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(d.DataSource);
+            DataSource dataSource = d.DataSource;
+            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.DataWarehouse.DataWarehouseUtilities.GetOpenedDataSourceConnection((object)null, dataSource.ID, dataSource.Name, dataSource.ManagedProvider, dataSource.ConnectionString, dataSource.Site, false);
+            try
+            {
+                if (openedDataSourceConnection != null)
+                {
+                    openedDataSourceConnection.QueryTimeOut = (int)dataSource.Timeout.TotalSeconds;
+                }
+            }
+            catch { }
 
             if (openedDataSourceConnection == null)
             {

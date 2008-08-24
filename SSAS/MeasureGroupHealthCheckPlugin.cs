@@ -156,7 +156,16 @@ namespace BIDSHelper
                 oDataSource = mg.ParentDatabase.DataSources[dtTable.ExtendedProperties["DataSourceID"].ToString()];
             }
 
-            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(oDataSource);
+            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.DataWarehouse.DataWarehouseUtilities.GetOpenedDataSourceConnection((object)null, oDataSource.ID, oDataSource.Name, oDataSource.ManagedProvider, oDataSource.ConnectionString, oDataSource.Site, false);
+            try
+            {
+                if (openedDataSourceConnection != null)
+                {
+                    openedDataSourceConnection.QueryTimeOut = (int)oDataSource.Timeout.TotalSeconds;
+                }
+            }
+            catch { } 
+            
             sq = openedDataSourceConnection.Cartridge.IdentStartQuote;
             fq = openedDataSourceConnection.Cartridge.IdentEndQuote;
 
