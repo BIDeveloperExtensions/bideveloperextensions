@@ -34,6 +34,7 @@ namespace BIDSHelper
         private ToolBarButton moveCopyButton;
         private ToolBarButton editExpressionButton;
         private static DlgGridControl grid;
+        //private static GridControl grid;
         private static UserControl variablesToolWindowControl;
         private static IComponentChangeService changesvc;
         private static IDesignerHost serviceProvider;
@@ -114,6 +115,7 @@ namespace BIDSHelper
                     changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
 
                     grid = (DlgGridControl)variablesToolWindowControl.Controls["dlgGridControl1"];
+                    
                     ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls["toolBar1"];
                     if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
 
