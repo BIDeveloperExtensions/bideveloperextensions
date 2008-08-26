@@ -11,7 +11,11 @@ namespace BIDSHelper
         FormView = 12854,
         ScriptView = 12853,
         CalculationProperties = 12875,
+#if KATMAI 
         ProjectProperties = 131102
+#else
+        ProjectProperties = 393246
+#endif
     }
 
     public enum BIDSViewMenuItemCommandID
