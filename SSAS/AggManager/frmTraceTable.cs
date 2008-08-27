@@ -169,13 +169,16 @@ namespace AggManager
                 if (conn.State != ConnectionState.Open) conn.Open();
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = conn;
-                cmd.CommandText = "select name from sys.schemas where principal_id = user_id() order by name";
+                cmd.CommandText = @"select name
+                    ,IsDefault = cast(case when (select default_schema_name from sys.database_principals p where p.name = user_name() and p.default_schema_name = s.name) is not null then 1 else 0 end as bit)
+                    from sys.schemas s
+                    order by name";
                 SqlDataReader reader = cmd.ExecuteReader();
                 int iSelectedIndex = -1;
                 while (reader.Read())
                 {
                     int i = comboSchema.Items.Add(reader["name"]);
-                    if (reader["name"].ToString().ToLower() == "dbo") iSelectedIndex = i;
+                    if (Convert.ToBoolean(reader["IsDefault"])) iSelectedIndex = i;
                 }
                 reader.Close();
                 if (iSelectedIndex != -1) comboSchema.SelectedIndex = iSelectedIndex;
