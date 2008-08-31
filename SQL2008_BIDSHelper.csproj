@@ -221,6 +221,7 @@
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\Konesans.cs" />
+    <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>
@@ -436,7 +437,7 @@
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
     <Content Include="Resources\Edit.ico" />
-    <Content Include="Resources\Edit.ico" />
+    <Content Include="Resources\EditVariable.ico" />
     <Content Include="DLLs\SQL2008\ExpressionEditor.xml" />
     <Content Include="DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll" />
     <Content Include="Resources\RefreshExpressions.ico" />
@@ -550,6 +551,7 @@
       <SubType>Designer</SubType>
       <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -578,6 +580,7 @@
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
     <None Include="Properties\DataSources\NonDefaultPropertiesPlugin.NonDefaultProperty.datasource" />
+    <None Include="Properties\DataSources\SortablePackagePropertiesPlugin.PackageProperties.datasource" />
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UnusedColumn.datasource" />
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UsedColumn.datasource" />
     <None Include="Properties\DataSources\VisualizeAttributeLatticeImageForReport.datasource" />
