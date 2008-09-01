@@ -567,6 +567,7 @@
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />
+    <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+AggDimension.datasource" />
     <None Include="Properties\DataSources\AggManager.SearchSimilarAggs+SimilarAgg.datasource" />
     <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
     <None Include="Properties\DataSources\DataTypeDiscrepancyCheckPlugin.DataTypeDiscrepancy.datasource" />

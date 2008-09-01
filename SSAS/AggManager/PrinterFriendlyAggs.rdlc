@@ -58,11 +58,213 @@
         <rd:ObjectDataSourceType>AggManager.PrinterFriendlyAggs+Agg, BIDSHelper, Version=1.3.0.0, Culture=neutral, PublicKeyToken=068d480dc12f50e9</rd:ObjectDataSourceType>
       </rd:DataSetInfo>
     </DataSet>
+    <DataSet Name="AggManager_AggDimension">
+      <Fields>
+        <Field Name="AggDesignName">
+          <DataField>AggDesignName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="AggName">
+          <DataField>AggName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Attributes">
+          <DataField>Attributes</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CubeNameOrReportTitle">
+          <DataField>CubeNameOrReportTitle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DatabaseName">
+          <DataField>DatabaseName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Dimension">
+          <DataField>Dimension</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="HighlightRow">
+          <DataField>HighlightRow</DataField>
+          <rd:TypeName>System.Boolean</rd:TypeName>
+        </Field>
+        <Field Name="MeasureGroupName">
+          <DataField>MeasureGroupName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DummyDataSource</DataSourceName>
+        <CommandText />
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <rd:DataSetInfo>
+        <rd:DataSetName>AggManager</rd:DataSetName>
+        <rd:TableName>AggDimension</rd:TableName>
+        <rd:ObjectDataSourceType>AggManager.PrinterFriendlyAggs+AggDimension, BIDSHelper, Version=1.3.0.8, Culture=neutral, PublicKeyToken=068d480dc12f50e9</rd:ObjectDataSourceType>
+      </rd:DataSetInfo>
+    </DataSet>
   </DataSets>
   <Code />
   <Width>10.25in</Width>
   <Body>
     <ReportItems>
+      <List Name="list1">
+        <Sorting>
+          <SortBy>
+            <SortExpression>=Fields!MeasureGroupName.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+          <SortBy>
+            <SortExpression>=Fields!AggDesignName.Value</SortExpression>
+            <Direction>Ascending</Direction>
+          </SortBy>
+        </Sorting>
+        <ZIndex>3</ZIndex>
+        <DataSetName>AggManager_AggDimension</DataSetName>
+        <ReportItems>
+          <Textbox Name="MeasureGroupName">
+            <rd:DefaultName>MeasureGroupName</rd:DefaultName>
+            <Style>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Height>0.25in</Height>
+            <Value>=Fields!MeasureGroupName.Value &amp; " - " &amp; Fields!AggDesignName.Value</Value>
+          </Textbox>
+          <Matrix Name="matrix1">
+            <MatrixColumns>
+              <MatrixColumn>
+                <Width>1.5in</Width>
+              </MatrixColumn>
+            </MatrixColumns>
+            <DataSetName>AggManager_AggDimension</DataSetName>
+            <RowGroupings>
+              <RowGrouping>
+                <Width>2.1875in</Width>
+                <DynamicRows>
+                  <Grouping Name="matrix1_AggName">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!AggName.Value</GroupExpression>
+                      <GroupExpression>=Fields!HighlightRow.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <ReportItems>
+                    <Textbox Name="AggName_1">
+                      <rd:DefaultName>AggName_1</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>=iif(Fields!HighlightRow.Value, "LightGrey", "Transparent")</BackgroundColor>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!AggName.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicRows>
+              </RowGrouping>
+            </RowGroupings>
+            <Top>0.375in</Top>
+            <ColumnGroupings>
+              <ColumnGrouping>
+                <Height>0.1875in</Height>
+                <DynamicColumns>
+                  <Grouping Name="matrix1_Dimension">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!Dimension.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Sorting>
+                    <SortBy>
+                      <SortExpression>=Fields!Dimension.Value</SortExpression>
+                      <Direction>Ascending</Direction>
+                    </SortBy>
+                  </Sorting>
+                  <ReportItems>
+                    <Textbox Name="Dimension">
+                      <rd:DefaultName>Dimension</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>LightGrey</BackgroundColor>
+                        <FontSize>8pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!Dimension.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </DynamicColumns>
+              </ColumnGrouping>
+            </ColumnGroupings>
+            <Width>3.6875in</Width>
+            <Corner>
+              <ReportItems>
+                <Textbox Name="textbox4">
+                  <rd:DefaultName>textbox4</rd:DefaultName>
+                  <Style>
+                    <BackgroundColor>LightGrey</BackgroundColor>
+                    <FontSize>8pt</FontSize>
+                    <PaddingLeft>2pt</PaddingLeft>
+                    <PaddingRight>2pt</PaddingRight>
+                    <PaddingTop>2pt</PaddingTop>
+                    <PaddingBottom>2pt</PaddingBottom>
+                  </Style>
+                  <ZIndex>3</ZIndex>
+                  <CanGrow>true</CanGrow>
+                  <Value />
+                </Textbox>
+              </ReportItems>
+            </Corner>
+            <MatrixRows>
+              <MatrixRow>
+                <Height>0.1875in</Height>
+                <MatrixCells>
+                  <MatrixCell>
+                    <ReportItems>
+                      <Textbox Name="Attributes">
+                        <rd:DefaultName>Attributes</rd:DefaultName>
+                        <Style>
+                          <BackgroundColor>=iif(First(Fields!HighlightRow.Value), "LightGrey", "Transparent")</BackgroundColor>
+                          <FontSize>8pt</FontSize>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                        <CanGrow>true</CanGrow>
+                        <Value>=First(Fields!Attributes.Value)</Value>
+                      </Textbox>
+                    </ReportItems>
+                  </MatrixCell>
+                </MatrixCells>
+              </MatrixRow>
+            </MatrixRows>
+          </Matrix>
+        </ReportItems>
+        <Top>1.6875in</Top>
+        <Grouping Name="list1_Details_Group">
+          <GroupExpressions>
+            <GroupExpression>=Fields!MeasureGroupName.Value</GroupExpression>
+            <GroupExpression>=Fields!AggDesignName.Value</GroupExpression>
+          </GroupExpressions>
+          <PageBreakAtStart>true</PageBreakAtStart>
+        </Grouping>
+      </List>
       <Table Name="table1">
         <ZIndex>2</ZIndex>
         <DataSetName>AggManager_Agg</DataSetName>
@@ -261,7 +463,7 @@
         <ZIndex>1</ZIndex>
         <CanGrow>true</CanGrow>
         <Height>0.63492cm</Height>
-        <Value>="[Database: " &amp; First(Fields!DatabaseName.Value) &amp; "]"</Value>
+        <Value>="[Database: " &amp; First(Fields!DatabaseName.Value, "AggManager_AggDimension") &amp; "]"</Value>
       </Textbox>
       <Textbox Name="CubeName">
         <rd:DefaultName>CubeName</rd:DefaultName>
@@ -275,10 +477,10 @@
         </Style>
         <CanGrow>true</CanGrow>
         <Height>0.75cm</Height>
-        <Value>="Aggregations in " &amp; First(Fields!CubeNameOrReportTitle.Value)</Value>
+        <Value>="Aggregations in " &amp; First(Fields!CubeNameOrReportTitle.Value, "AggManager_AggDimension")</Value>
       </Textbox>
     </ReportItems>
-    <Height>1.6875in</Height>
+    <Height>2.4375in</Height>
   </Body>
   <PageFooter>
     <PrintOnFirstPage>true</PrintOnFirstPage>
