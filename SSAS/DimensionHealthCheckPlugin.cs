@@ -112,8 +112,15 @@ namespace BIDSHelper
                 object objTemp = null;
                 toolWins = (Windows2)ApplicationObject.Windows;
                 toolWin = toolWins.CreateToolWindow2(AddInInstance, typeof(WebBrowser).Assembly.Location, typeof(WebBrowser).FullName, d.Name + ": Dimension Health Check", "{" + typeof(WebBrowser).GUID.ToString() + "}", ref objTemp);
+
                 WebBrowser browser = (WebBrowser)objTemp;
-                browser.Navigate("about:blank");
+                browser.AllowNavigation = true;
+                if (browser.Document != null) //idea from http://geekswithblogs.net/paulwhitblog/archive/2005/12/12/62961.aspx
+                    browser.Document.OpenNew(true);
+                else
+                    browser.Navigate("about:blank");
+                Application.DoEvents();
+
                 browser.Document.Write("<font style='font-family:Arial;font-size:10pt'>");
                 browser.Document.Write("<h3>" + d.Name + ": Dimension Health Check</h3>");
                 browser.Document.Write("<i>Checks whether attribute relationships hold true according to the data.<br>Also checks definition of attribute keys to determine if they are unique.<br>Also checks whether any obvious attribute relationships are missing.</i><br><br>");
@@ -220,6 +227,12 @@ namespace BIDSHelper
                     string sRelatedAttributeID = el.GetAttribute("RelatedAttribute");
                     DimensionAttribute parent = this.oLastDimension.Attributes[sAttributeID];
                     DimensionAttribute child = this.oLastDimension.Attributes[sRelatedAttributeID];
+
+                    if (MessageBox.Show("Are you sure you want to make [" + child.Name + "] related to [" + parent.Name + "]?", "BIDS Helper - Fix Obvious Attribute Relationship Oversight?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return;
+                    }
+
                     foreach (DimensionAttribute da in this.oLastDimension.Attributes)
                     {
                         if (da.AttributeRelationships.Contains(child.ID))
