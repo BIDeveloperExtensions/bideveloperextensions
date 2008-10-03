@@ -18,11 +18,13 @@ namespace BIDSHelper
 {
     public class DeployPackagesPlugin : BIDSHelperPluginBase
     {
+        private CommandBarButton cmdButtonProperties = null;
 
         public DeployPackagesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
             RegisterClassesForCOM();
+            CaptureClickEventForProjectPropertiesMenu();
         }
 
         #region Standard Property Overrides
@@ -68,13 +70,7 @@ namespace BIDSHelper
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
-
-                    if (proj.Kind == BIDSProjectKinds.SSIS)
-                    {
-                        injectDeploymentOptionsIntoConfiguration(proj);
-                        return true;
-                    }
-                    return false;
+                    return (proj.Kind == BIDSProjectKinds.SSIS);
                 }
                 else if (solution != null)
                 {
@@ -82,15 +78,7 @@ namespace BIDSHelper
                     {
                         if (p.Kind != BIDSProjectKinds.SSIS) return false;
                     }
-                    if (solution.Projects.Count > 0)
-                    {
-                        injectDeploymentOptionsIntoConfiguration(proj);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return (solution.Projects.Count > 0);
                 }
                 else
                 {
@@ -107,32 +95,6 @@ namespace BIDSHelper
                     if (!sFileName.EndsWith(".dtsx")) return false;
                 }
                 return (((System.Array)solExplorer.SelectedItems).Length > 0);
-            }
-        }
-
-        private void injectDeploymentOptionsIntoConfiguration(Project proj)
-        {
-            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
-            projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
-
-            string sFileName = projectManager.GetSelectedProjectNode().FullPath + ".bidsHelper.user";
-            System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
-            if (System.IO.File.Exists(sFileName))
-            {
-                doc.Load(sFileName);
-            }
-
-            ConfigurationManager = projectManager.ConfigurationManager;
-            foreach (IProjectConfiguration config in projectManager.ConfigurationManager.Configurations)
-            {
-                DtsProjectExtendedConfigurationOptions newOptions = config.Options as DtsProjectExtendedConfigurationOptions;
-                if (newOptions == null)
-                {
-                    newOptions = new DtsProjectExtendedConfigurationOptions((DataTransformationsProjectConfigurationOptions)config.Options);
-                }
-
-                LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
-                config.Options = newOptions; //override the Options object in memory so the configuration properties dialog will show our dialog
             }
         }
 
@@ -415,6 +377,70 @@ namespace BIDSHelper
             catch (Exception ex)
             {
                 throw new Exception("Problem registering DtsProjectExtendedDeployPropertyPage for COM", ex);
+            }
+        }
+
+        private void CaptureClickEventForProjectPropertiesMenu()
+        {
+            CommandBars cmdBars = (CommandBars)this.ApplicationObject.CommandBars;
+            CommandBar pluginCmdBar = cmdBars["Project"];
+            foreach (CommandBarControl cmd in pluginCmdBar.Controls)
+            {
+                if (cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
+                {
+                    cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
+                    cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
+                }
+            }
+        }
+
+        private void cmdButtonProperties_Click(CommandBarButton Ctrl, ref bool CancelDefault)
+        {
+            if (Enabled)
+            {
+                try
+                {
+                    UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+                    if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                        return;
+
+                    UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = hierItem.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                    if (proj == null || proj.Kind != BIDSProjectKinds.SSIS) return;
+
+                    CancelDefault = true; //don't let the Microsoft code fire as I'm going to pop up the dialog myself
+
+                    Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                    projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
+
+                    string sFileName = projectManager.GetSelectedProjectNode().FullPath + ".bidsHelper.user";
+                    System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+                    if (System.IO.File.Exists(sFileName))
+                    {
+                        doc.Load(sFileName);
+                    }
+
+                    ConfigurationManager = projectManager.ConfigurationManager;
+                    foreach (IProjectConfiguration config in projectManager.ConfigurationManager.Configurations)
+                    {
+                        DtsProjectExtendedConfigurationOptions newOptions = new DtsProjectExtendedConfigurationOptions((DataTransformationsProjectConfigurationOptions)config.Options);
+                        LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
+                        config.Options = newOptions; //override the Options object in memory so the configuration properties dialog will show our dialog
+                    }
+
+                    //pop up the configuration properties dialog
+                    IVsPropertyPageFrame frame = (IVsPropertyPageFrame)((System.IServiceProvider)proj).GetService(typeof(SVsPropertyPageFrame));
+                    int hr = frame.ShowFrame(Guid.Empty); //could pass in the Guid for our custom frame to have it default to it
+                    if (hr < 0)
+                    {
+                        frame.ReportError(hr);
+                        MessageBox.Show("Could not open properties window");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.Forms.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                }
             }
         }
 
