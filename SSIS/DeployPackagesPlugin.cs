@@ -19,6 +19,7 @@ namespace BIDSHelper
     public class DeployPackagesPlugin : BIDSHelperPluginBase
     {
         private CommandBarButton cmdButtonProperties = null;
+        private Guid guidForCustomPropertyFrame;
 
         public DeployPackagesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -371,8 +372,8 @@ namespace BIDSHelper
                 object[] attributes = typeof(DtsProjectExtendedDeployPropertyPage).GetCustomAttributes(typeof(GuidAttribute), false);
                 if (attributes.Length == 0)
                     throw new Exception("Couldn't finding GuidAttribute on DtsProjectExtendedDeployPropertyPage");
-                Guid guid = new Guid(((GuidAttribute)attributes[0]).Value);
-                regSvc.RegisterTypeForComClients(typeof(DtsProjectExtendedDeployPropertyPage), ref guid);
+                guidForCustomPropertyFrame = new Guid(((GuidAttribute)attributes[0]).Value);
+                regSvc.RegisterTypeForComClients(typeof(DtsProjectExtendedDeployPropertyPage), ref guidForCustomPropertyFrame);
             }
             catch (Exception ex)
             {
@@ -425,12 +426,16 @@ namespace BIDSHelper
                     {
                         DtsProjectExtendedConfigurationOptions newOptions = new DtsProjectExtendedConfigurationOptions((DataTransformationsProjectConfigurationOptions)config.Options);
                         LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
-                        config.Options = newOptions; //override the Options object in memory so the configuration properties dialog will show our dialog
+
+                        if (!(config.Options is DtsProjectExtendedConfigurationOptions))
+                        {
+                            config.Options = newOptions; //override the Options object in memory so the configuration properties dialog will show our dialog
+                        }
                     }
 
                     //pop up the configuration properties dialog
                     IVsPropertyPageFrame frame = (IVsPropertyPageFrame)((System.IServiceProvider)proj).GetService(typeof(SVsPropertyPageFrame));
-                    int hr = frame.ShowFrame(Guid.Empty); //could pass in the Guid for our custom frame to have it default to it
+                    int hr = frame.ShowFrame(guidForCustomPropertyFrame);
                     if (hr < 0)
                     {
                         frame.ReportError(hr);
@@ -478,8 +483,12 @@ namespace BIDSHelper
             foreach (IProjectConfiguration config in ConfigurationManager.Configurations)
             {
                 DtsProjectExtendedConfigurationOptions newConfig = config.Options as DtsProjectExtendedConfigurationOptions;
-                if (newConfig != null)
+                while (newConfig != null)
+                {
                     config.Options = newConfig.GetBaseType();
+                    newConfig = config.Options as DtsProjectExtendedConfigurationOptions;
+                    System.Diagnostics.Debug.WriteLine("rolling back to plain project config options for " + config.DisplayName);
+                }
             }
         }
 
@@ -540,6 +549,20 @@ namespace BIDSHelper
                         }
                         this.GetType().InvokeMember(info.Name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, this, new object[] { info.GetGetMethod().Invoke(old, null) });
                     }
+                }
+
+                this.Disposed += new EventHandler(DtsProjectExtendedConfigurationOptions_Disposed);
+            }
+
+            void DtsProjectExtendedConfigurationOptions_Disposed(object sender, EventArgs e)
+            {
+                try
+                {
+                    DeployPackagesPlugin.ResetConfigurations();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Problem closing configurations properties dialog. Please restart Visual Studio.\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
 
