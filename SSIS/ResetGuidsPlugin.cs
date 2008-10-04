@@ -72,7 +72,7 @@ namespace BIDSHelper
 
                 if (System.Windows.Forms.MessageBox.Show("Are you sure you want to reset the GUIDs for all tasks, connection managers, configurations,\r\nevent handlers, and variables in package " + pi.Name + "?", "BIDS Helper - Reset GUIDs?", System.Windows.Forms.MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes) return;
 
-                Window w = pi.Open(BIDSViewKinds.SsisDesigner); //opens the designer
+                Window w = pi.Open(BIDSViewKinds.Designer); //opens the designer
                 w.Activate();
 
                 IDesignerHost designer = w.Object as IDesignerHost;
@@ -127,7 +127,7 @@ namespace BIDSHelper
                 ApplicationObject.ActiveDocument.Save(null);
                 w.Close(vsSaveChanges.vsSaveChangesNo); //close the designer
 
-                w = pi.Open(BIDSViewKinds.SsisDesigner); //opens the designer
+                w = pi.Open(BIDSViewKinds.Designer); //opens the designer
                 w.Activate();
                 //that was the quick and easy way to get the expression highlighter up to date
             }

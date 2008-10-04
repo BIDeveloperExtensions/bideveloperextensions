@@ -237,11 +237,11 @@ namespace BIDSHelper
         private PackageProperties GetPackageProperties(ProjectItem pi)
         {
             Package package;
-            bool bIsOpen = pi.get_IsOpen(BIDSViewKinds.SsisDesigner);
+            bool bIsOpen = pi.get_IsOpen(BIDSViewKinds.Designer);
 
             if (bIsOpen)
             {
-                Window w = pi.Open(BIDSViewKinds.SsisDesigner); //opens the designer
+                Window w = pi.Open(BIDSViewKinds.Designer); //opens the designer
                 w.Activate();
 
                 IDesignerHost designer = w.Object as IDesignerHost;

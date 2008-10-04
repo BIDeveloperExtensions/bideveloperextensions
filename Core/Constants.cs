@@ -31,6 +31,6 @@ namespace BIDSHelper
 
     public static class BIDSViewKinds
     {
-        public static string SsisDesigner = "{7651A702-06E5-11D1-8EBD-00A0C90F26EA}";
+        public static string Designer = "{7651A702-06E5-11D1-8EBD-00A0C90F26EA}";
     }
 }

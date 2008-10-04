@@ -176,6 +176,24 @@
     <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.Designer.cs">
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattener.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattener.designer.cs">
+      <DependentUpon>frmSQLFlattener.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.designer.cs">
+      <DependentUpon>frmSQLFlattenerOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizerPlugin.cs" />
+    <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizer.cs" />
+    <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
@@ -394,6 +412,9 @@
     <None Include="Resources\DestComponent.ico" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />
+    <None Include="Resources\Process Progress1052856.bmp" />
+    <None Include="Resources\process progress1704108.bmp" />
+    <None Include="Resources\Process Progress464342.gif" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
@@ -485,6 +506,15 @@
     <EmbeddedResource Include="SSAS\NonDefaultProperties.rdlc" />
     <EmbeddedResource Include="SSAS\NonDefaultPropertiesSelectionForm.resx">
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmProgress.resx">
+      <DependentUpon>frmProgress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmSQLFlattener.resx">
+      <DependentUpon>frmSQLFlattener.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.resx">
+      <DependentUpon>frmSQLFlattenerOptions.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />
     <EmbeddedResource Include="SSAS\UnusedColumns.rdlc" />

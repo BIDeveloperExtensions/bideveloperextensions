@@ -227,7 +227,7 @@ namespace BIDSHelper
                 {
                     try
                     {
-                        if (!item.get_IsOpen(BIDSViewKinds.SsisDesigner))
+                        if (!item.get_IsOpen(BIDSViewKinds.Designer))
                             continue;
                     }
                     catch
@@ -254,7 +254,7 @@ namespace BIDSHelper
                         }
                     }
 
-                    Window w = item.Open(BIDSViewKinds.SsisDesigner); //opens the designer
+                    Window w = item.Open(BIDSViewKinds.Designer); //opens the designer
                     w.Activate();
 
                     IDesignerHost designer = w.Object as IDesignerHost;
