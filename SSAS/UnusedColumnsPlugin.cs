@@ -121,7 +121,7 @@ namespace BIDSHelper
             //remove columns that are used in dimensions
             foreach (Dimension dim in dsv.Parent.Dimensions)
             {
-                if (dim.DataSourceView.ID == dsv.ID)
+                if (dim.DataSourceView != null && dim.DataSourceView.ID == dsv.ID)
                 {
                     foreach (DimensionAttribute attr in dim.Attributes)
                     {
@@ -146,7 +146,7 @@ namespace BIDSHelper
 
             foreach (Cube cube in dsv.Parent.Cubes)
             {
-                if (cube.DataSourceView.ID == dsv.ID)
+                if (cube.DataSourceView != null && cube.DataSourceView.ID == dsv.ID)
                 {
                     foreach (MeasureGroup mg in cube.MeasureGroups)
                     {
