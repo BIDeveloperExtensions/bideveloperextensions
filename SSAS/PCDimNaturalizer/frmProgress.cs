@@ -220,10 +220,9 @@ namespace PCDimNaturalizer
                 int MinLevels;
 
                 PCDimNaturalizer nat = null;
-                /*
-                if (this.Owner.GetType() == Type.GetType("PCDimNaturalizer.frmASFlattener"))
+                if (Program.ASFlattener != null)
                 {
-                    nat = new ASPCDimNaturalizer(Program.ASFlattener.srv.Name, Program.ASFlattener.db.Name, Program.ASFlattener.dim.Name, Program.ASFlattener.ActionLevel);
+                    nat = new ASPCDimNaturalizer(Program.ASFlattener.srv, Program.ASFlattener.db, Program.ASFlattener.dim, Program.ASFlattener.ActionLevel);
                     MinLevels = Program.ASFlattener.MinLevels;
                     if (Program.ASFlattener.AddAllNonPCHierarchies)
                     {
@@ -243,7 +242,7 @@ namespace PCDimNaturalizer
                         ((ASPCDimNaturalizer)nat).PCAttributesToInclude = Program.ASFlattener.PCAttributesToInclude;
                 }
                 else // if it is frmSQLFlattener, since there are only two types of calling forms for this
-                {*/
+                {
                     nat = new SQLPCDimNaturalizer(Program.SQLFlattener.Conn, Program.SQLFlattener.cmbTable.Text, Program.SQLFlattener.cmbID.Text, Program.SQLFlattener.cmbPID.Text, Program.SQLFlattener.MinLevels);
                     MinLevels = Program.SQLFlattener.MinLevels;
                     if (Program.SQLFlattener.AddAllAttributesPC)
@@ -264,7 +263,7 @@ namespace PCDimNaturalizer
                     }
                     else
                         ((SQLPCDimNaturalizer)nat).SQLColsAsNonPCAttributes = Program.SQLFlattener.AttributesNatural;
-                //}
+                }
                 nat.SourceWindowHandle = this.Handle;
                 NaturalizeThreadFunc natThreadFunc = new NaturalizeThreadFunc(nat.Naturalize);
                 AsyncCallback cbNat = new AsyncCallback(NaturalizeCompletion);
@@ -285,7 +284,7 @@ namespace PCDimNaturalizer
         {
             if (thrdNat != null && thrdNat.ThreadState != ThreadState.Stopped)
                 thrdNat.Abort();
-            this.Owner.Enabled = true;
+            //this.Owner.Enabled = true;
         }
 
         private void udStatus_Scroll(object sender, ScrollEventArgs e)

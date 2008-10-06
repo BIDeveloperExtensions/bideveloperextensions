@@ -179,6 +179,7 @@ namespace PCDimNaturalizer
             // 
             // btnNaturalize
             // 
+            this.btnNaturalize.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnNaturalize.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnNaturalize.Location = new System.Drawing.Point(230, 232);
             this.btnNaturalize.Name = "btnNaturalize";

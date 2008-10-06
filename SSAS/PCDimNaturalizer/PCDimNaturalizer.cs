@@ -57,7 +57,7 @@ namespace PCDimNaturalizer
         {
             OleDbCommand cmd = new OleDbCommand(";WITH PCStructure(" + PID + ", " + ID + ", Level) AS (" +
                 "SELECT " + PID + ", " + ID + ", 1 AS Level FROM " + Table +
-                " WHERE " + PID + " IS NULL OR CONVERT(INT," + PID + ") = 0 OR " + PID + " = " + ID + " " +
+                " WHERE " + PID + " IS NULL OR " + PID + " = 0 OR " + PID + " = " + ID + " " +
                 "UNION ALL  " +
                 "SELECT e." + PID + ", e." + ID + ", Level + 1  " +
                 "FROM " + Table + " e " +
@@ -112,7 +112,7 @@ namespace PCDimNaturalizer
             string CTESel = "CREATE VIEW " + txtNewView + " AS\r\n" +
                 "WITH PCStructure(Level, " + pid + ", CurrentMemberID, Level2, ";
             string CTEQry = "AS (SELECT 3 Level, " + pid + ", " + id + ", " + id + " as Level2,\r\n";
-            string strCTELevelEnumeration = "FROM " + table + " WHERE " + pid + " IS NULL OR CONVERT(INT," + pid + ") = 0 OR " + pid + " = " + id + "\r\n" +
+            string strCTELevelEnumeration = "FROM " + table + " WHERE " + pid + " IS NULL " +
                 "UNION ALL SELECT Level + 1, e." + pid + ", e." + id + ", ";
             string strSel = "select CurrentMemberSubselect.*,\r\n";
             string strQry = "from PCStructure a\r\nleft outer join (select " + id + " CurrentMemberID, ";
@@ -134,14 +134,14 @@ namespace PCDimNaturalizer
                 strSel += LevelName + "Subselect.*, ";
                 strQry += "left outer join (select " + id + " " + LevelName + ",\r\n";
                 foreach (string attr in SQLColsASPCAttributes)
-                    strQry += "[" + attr + "] [" + LevelName + "_" + attr + "],\r\n";
+                    strQry += "[" + attr + "] [" + LevelName + "_" + attr + "],\r\n"; 
                 strQry = strQry.Remove(strQry.Length - 3) + "\r\nfrom " + table + ") " + LevelName + "Subselect on " + LevelName + "Subselect." + LevelName + " = a." + LevelName + "\r\n";
             }
 
             CTESel = CTESel.Remove(CTESel.Length - 2) + ")\r\n";
             CTEQry = CTEQry.Remove(CTEQry.Length - 3) + "\r\n";
             strCTELevelEnumeration = strCTELevelEnumeration.Remove(strCTELevelEnumeration.Length - 3) + " FROM " + table + " e " +
-                "INNER JOIN PCStructure d ON e." + pid + " = d.CurrentMemberID AND e." + pid + " !=  e." + id + ")\r\n";
+                    "INNER JOIN PCStructure d ON e." + pid + " = d.CurrentMemberID)\r\n";
             strQry = CTESel + CTEQry + strCTELevelEnumeration + strSel.Remove(strSel.Length - 2) + "\r\n" + strQry;
             cmd.CommandText = strQry;
             cmd.ExecuteNonQuery();
@@ -176,8 +176,6 @@ namespace PCDimNaturalizer
             {
                 container.Add(column);
             }
-
-            Program.SQLFlattener.TableName = tbl.TableName;
         }
 
         public override void Naturalize(object MinLevels)
@@ -216,7 +214,7 @@ namespace PCDimNaturalizer
 
 
     }
-    /*
+
     public class ASPCDimNaturalizer : PCDimNaturalizer
     {
         public List<string> PCAttributesToInclude = new List<string>(), NonPCHierarchiesToInclude = new List<string>();
@@ -228,7 +226,7 @@ namespace PCDimNaturalizer
         private DataTable tbl;
         private EnhancedColumnBinding id, pid;
 
-        private Database OriginalDBClone = null;
+
 
         public ASPCDimNaturalizer(Server ASServer, Database ASDatabase, Dimension PCDimension, int ActionLevel)
         {
@@ -284,88 +282,48 @@ namespace PCDimNaturalizer
             tbl = id.Table;
         }
 
-        private MeasureGroupDimension GetMeasureGroupDimensionFromCubeDimension(MeasureGroup mg, string dimID)
-        {
-            return GetMeasureGroupDimensionFromCubeDimension(mg, db.Dimensions.Find(dimID));
-        }
-
-        private MeasureGroupDimension GetMeasureGroupDimensionFromCubeDimension(MeasureGroup mg, Dimension dim)
-        {
-            foreach (MeasureGroupDimension mgd in mg.Dimensions)
-                if (mgd.Dimension == dim)
-                    return mgd;
-            return null;
-        }
-
-        void AddDimToCubes(Dimension DimNew)
+        void AddDimToCubes(Dimension Dim)
         {
             foreach (Cube cub in db.Cubes)
             {
-                Cube OriginalCube = OriginalDBClone.Cubes.Find(cub.ID);
-                if (cub.Dimensions.ContainsName(dim.Name) || OriginalCube.Dimensions.Contains(dim.Name + "_Naturalized"))
-                {
-                    CubeDimension cubDim = cub.Dimensions.Add(DimNew.ID);
-
-                    if (OriginalCube.Dimensions.Contains(dim.Name + "_Naturalized"))
-                    {
-                        cubDim.Name = OriginalCube.Dimensions[dim.Name + "_Naturalized"].Name;
-                        cub.Dimensions.Move(cub.Dimensions[DimNew.ID], OriginalCube.Dimensions.IndexOf(dim.Name + "_Naturalized"));
-                    }
-                    else
-                        cub.Dimensions.Move(cub.Dimensions[DimNew.ID], cub.Dimensions.IndexOfName(dim.Name));
-                }
+                if (cub.Dimensions.Contains(dim.ID))
+                    cub.Dimensions.Add(Dim.ID);
 
                 foreach (MeasureGroup mg in cub.MeasureGroups)
-                {
-                    MeasureGroup OriginalMG = OriginalCube.MeasureGroups.Find(mg.ID);
-                    bool OriginalCubeContainedNaturalVersionOfDimension = GetMeasureGroupDimensionFromCubeDimension(OriginalMG, dim.Name + "_Naturalized") != null;
-                    if (GetMeasureGroupDimensionFromCubeDimension(mg, dim) != null || OriginalCubeContainedNaturalVersionOfDimension)
+                    if (mg.Dimensions.Contains(dim.ID))
                     {
-                        RegularMeasureGroupDimension rmgd = mg.Dimensions.Add(DimNew.ID);
-                        MeasureGroupAttribute mga = rmgd.Attributes.Add(DimNew.KeyAttribute.ID);
+                        RegularMeasureGroupDimension rmgd = mg.Dimensions.Add(Dim.ID);
+                        MeasureGroupAttribute mga = rmgd.Attributes.Add(Dim.KeyAttribute.ID);
                         mga.Type = MeasureGroupAttributeType.Granularity;
-                        MeasureGroup SourceMG = null;
-                        Dimension SourceDim = null;
-                        RegularMeasureGroupDimension SourceRMGD = null;
-                        if (OriginalCubeContainedNaturalVersionOfDimension)
-                        {
-                            SourceMG = OriginalMG;
-                            SourceDim = OriginalDBClone.Dimensions.Find(dim.Name + "_Naturalized");
-                            SourceRMGD = (RegularMeasureGroupDimension)GetMeasureGroupDimensionFromCubeDimension(SourceMG, dim.Name + "_Naturalized");
-                        }
-                        else
-                        {
-                            SourceMG = mg;
-                            SourceDim = dim;
-                            SourceRMGD = (RegularMeasureGroupDimension)GetMeasureGroupDimensionFromCubeDimension(SourceMG, dim);
-                        }
-                        foreach (DataItem keyCol in SourceRMGD.Attributes[SourceDim.KeyAttribute.ID].KeyColumns)
+                        foreach (DataItem keyCol in ((RegularMeasureGroupDimension)mg.Dimensions[dim.ID]).Attributes[dim.KeyAttribute.ID].KeyColumns)
                             mga.KeyColumns.Add(keyCol.Clone());
                     }
-                }
             }
         }
 
-        #region Materialize New Dimension
+
+
         string GetNaturalizedLevelName(int iLevel)
         {
             // Convoluted, but doing this to match the automatic PC naming behavior found in existing implementation of AS
 
             string[] NamingTemplate = null;
             if (PCParentAttribute().NamingTemplate != null)
-                NamingTemplate = PCParentAttribute().NamingTemplate.TrimEnd().TrimEnd(';').Split(';');
+                NamingTemplate = PCParentAttribute().NamingTemplate.Split(';');
             else
                 NamingTemplate = new string[] { "" };
             if (NamingTemplate[0] == "")
                 return "Level " + iLevel.ToString("00");
             else
             {
-                if (NamingTemplate.Length >= iLevel - 1 && !NamingTemplate[iLevel - 2].Contains("*"))
-                    return NamingTemplate[iLevel - 2];
+                if (NamingTemplate.Length - 1 > iLevel)
+                    return NamingTemplate[iLevel];
                 else
                     return NamingTemplate[NamingTemplate.Length - 1].Contains("*")
                         ? NamingTemplate[NamingTemplate.Length - 1].Replace("*", (iLevel).ToString("00"))
-                        : NamingTemplate[0] + " " + (iLevel - 2).ToString();
+                        : NamingTemplate[NamingTemplate.Length - 1] == ""
+                            ? NamingTemplate[0].Replace("*", (iLevel - 1).ToString())
+                            : NamingTemplate[NamingTemplate.Length - 1] + iLevel.ToString("00");
             }
         }
 
@@ -388,7 +346,7 @@ namespace PCDimNaturalizer
             for (int i = 2; i <= MinimumLevelCount + 1; i++)
             {
                 Level lvlNew = new Level(GetNaturalizedLevelName(i));
-                lvlNew.SourceAttribute = dimNew.Attributes[lvlNew.Name + "_Attribute"];
+                lvlNew.SourceAttribute = dimNew.Attributes[lvlNew.Name];
                 lvlNew.HideMemberIf = HideIfValue.ParentName;
                 hierNew.Levels.Add(lvlNew);
             }
@@ -440,7 +398,7 @@ namespace PCDimNaturalizer
             atList.Add(Attr);
 
             foreach (DimensionAttribute atRelOwner in Program.ASFlattener.dim.Attributes)
-                if (atRelOwner.AttributeRelationships.Contains(Attr.ID))
+                if (atRelOwner.AttributeRelationships.ContainsName(Attr.Name))
                 {
                     if (atRelOwner.Usage == AttributeUsage.Regular)
                         atList.AddRange(GetAttrRelOwnerChainToKey(atRelOwner));
@@ -472,11 +430,11 @@ namespace PCDimNaturalizer
                                     for (int k = 2; k <= MinimumLevelCount + 1; k++)
                                         // If it was related to the PC key, relate directly to level name in naturalized version, otherwise relate to the corresponding related attribute for the level...
                                         if (attRelOwner.Usage == AttributeUsage.Key)
-                                            dimNew.Attributes[GetNaturalizedLevelName(k) + "_Attribute"].AttributeRelationships.Add(
-                                                new AttributeRelationship(GetNaturalizedLevelName(k) + "_" + attRelated.Name + "_Attribute"));
+                                            dimNew.Attributes[GetNaturalizedLevelName(k)].AttributeRelationships.Add(
+                                                new AttributeRelationship(GetNaturalizedLevelName(k) + "_" + attRelated.Name));
                                         else
-                                            dimNew.Attributes[GetNaturalizedLevelName(k) + "_" + attRelOwner.Name + "_Attribute"].AttributeRelationships.Add(
-                                                    new AttributeRelationship(GetNaturalizedLevelName(k) + "_" + attRelated.Name + "_Attribute"));
+                                            dimNew.Attributes[GetNaturalizedLevelName(k) + "_" + attRelOwner.Name].AttributeRelationships.Add(
+                                                    new AttributeRelationship(GetNaturalizedLevelName(k) + "_" + attRelated.Name));
                                 // Finally if attribute exists as part of non-PC hierarchy, it will have a name without "LevelX" in front, so we need to add relationship for that
                                 if (dimNew.Attributes.Contains(attRelated.Name) && attRelOwner.Usage != AttributeUsage.Key)
                                     dimNew.Attributes[attRelOwner.Name].AttributeRelationships.Add(
@@ -485,7 +443,20 @@ namespace PCDimNaturalizer
 
                 // Relate each level of the naturalized hierarchy to the one below it to optimize hierarchy navigation
                 for (int i = 3; i <= MinimumLevelCount + 1; i++)
-                    dimNew.Attributes[GetNaturalizedLevelName(i) + "_Attribute"].AttributeRelationships.Add(new AttributeRelationship(GetNaturalizedLevelName(i - 1) + "_Attribute"));
+                    dimNew.Attributes[GetNaturalizedLevelName(i)].AttributeRelationships.Add(new AttributeRelationship(GetNaturalizedLevelName(i - 1)));
+
+                //relate the lowest level to the key
+                dimNew.KeyAttribute.AttributeRelationships.Add(new AttributeRelationship(GetNaturalizedLevelName(MinimumLevelCount + 1)));
+
+                //any attributes which aren't related directly or indirectly to the key, add that attribute relationship
+                foreach (DimensionAttribute attr in dimNew.Attributes)
+                {
+                    if (attr.ID != dimNew.KeyAttribute.ID && !IsAttributeRelated(attr, dimNew.KeyAttribute))
+                    {
+                        dimNew.KeyAttribute.AttributeRelationships.Add(new AttributeRelationship(attr.ID));
+                    }
+                }
+
                 return dimNew;
             }
             catch (Exception e)
@@ -503,8 +474,8 @@ namespace PCDimNaturalizer
             attr.KeyColumns.Clear();
             attr.CustomRollupColumn = null;
             attr.UnaryOperatorColumn = null;
-            attr.OrderBy = OrderBy.Key;
-            attr.OrderByAttributeID = null;
+
+
             attr.NameColumn = null;
             attr.ValueColumn = null;
 
@@ -540,8 +511,8 @@ namespace PCDimNaturalizer
                         OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[ColName].DataType),
                         tblNew.Columns[ColName].MaxLength);
                 }
-                if (attr.OrderByAttribute != null)
-                    attrNew.OrderByAttributeID = attr.OrderByAttributeID;
+
+
                 dimNew.Attributes.Add(attrNew);
             }
             return dimNew;
@@ -567,8 +538,8 @@ namespace PCDimNaturalizer
         {
             DimensionAttribute attr = null;
             attr = CloneAttributeSkeleton(attrOrig, MemberName);
-            MemberName = MemberName.Replace("_Attribute", "");
-            if (MemberName == dim.KeyAttribute.Name) MemberName = "CurrentMember";
+
+
             attr.KeyColumns.Add(
                 new DataItem(txtNewView, MemberName + "_KeyColumn", OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[MemberName + "_KeyColumn"].DataType), tblNew.Columns[MemberName + "_KeyColumn"].MaxLength));
             if (attrOrig.NameColumn != null)
@@ -581,14 +552,14 @@ namespace PCDimNaturalizer
                     attr.ValueColumn = new DataItem(txtNewView, MemberName + "_ValueColumn", OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[MemberName + "_ValueColumn"].DataType), tblNew.Columns[MemberName + "_ValueColumn"].MaxLength);
                 else
                     attr.ValueColumn = new DataItem(txtNewView, MemberName + "_KeyColumn", OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[MemberName + "_KeyColumn"].DataType), tblNew.Columns[MemberName + "_KeyColumn"].MaxLength);
-            if (MemberName != "CurrentMember")
+            if (MemberName != dim.KeyAttribute.Name)
             {
                 if (attrOrig.UnaryOperatorColumn != null || (attrOrig.Usage == AttributeUsage.Key && PCParentAttribute().UnaryOperatorColumn != null))
-                    attr.UnaryOperatorColumn = new DataItem(txtNewView, MemberName + "_UnaryOperatorColumnForRaggedHierarchy", OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[MemberName + "_UnaryOperatorColumn"].DataType), tblNew.Columns[MemberName + "_UnaryOperatorColumn"].MaxLength);
+                    attr.UnaryOperatorColumn = new DataItem(txtNewView, MemberName + "_UnaryOperatorColumn", OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[MemberName + "_UnaryOperatorColumn"].DataType), tblNew.Columns[MemberName + "_UnaryOperatorColumn"].MaxLength);
                 if (attrOrig.CustomRollupColumn != null || (attrOrig.Usage == AttributeUsage.Key && PCParentAttribute().CustomRollupColumn != null))
-                    attr.CustomRollupColumn = new DataItem(txtNewView, MemberName + "_CustomRollupColumnForRaggedHierarchy", OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[MemberName + "_CustomRollupColumn"].DataType), tblNew.Columns[MemberName + "_CustomRollupColumn"].MaxLength);
+                    attr.CustomRollupColumn = new DataItem(txtNewView, MemberName + "_CustomRollupColumn", OleDbTypeConverter.GetRestrictedOleDbType(tblNew.Columns[MemberName + "_CustomRollupColumn"].DataType), tblNew.Columns[MemberName + "_CustomRollupColumn"].MaxLength);
                 if (attrOrig.OrderByAttribute != null)
-                    attr.OrderByAttributeID = MemberName + "_" + attrOrig.OrderByAttribute.Name + "_Attribute";
+                    attr.OrderByAttributeID = MemberName + "_" + attrOrig.OrderByAttribute.Name;
             }
             return attr;
         }
@@ -612,14 +583,15 @@ namespace PCDimNaturalizer
                                 {
                                     attr = MaterializeAttributeColumns(attrOrig, tblNew, dim.KeyAttribute.Name);
                                     attr.Usage = AttributeUsage.Key;
+                                    attr.AttributeHierarchyVisible = false;
                                     dimNew.Attributes.Add(attr);
                                 }
                                 strNewAttribName = GetNaturalizedLevelName(j);
                             }
                             else
                                 strNewAttribName = GetNaturalizedLevelName(j) + "_" + attrOrig.Name;
+                            attr = MaterializeAttributeColumns(attrOrig, tblNew, strNewAttribName);
 
-                            attr = MaterializeAttributeColumns(attrOrig, tblNew, strNewAttribName + "_Attribute");
                             attr.Usage = AttributeUsage.Regular;
 
                             // Do not create PC attribute hierarchy unless another attribute requires it to relate to key.
@@ -652,20 +624,20 @@ namespace PCDimNaturalizer
         {
             try
             {
-                OriginalDBClone = db.Clone();
-                Dimension dimNew = dim.Clone();
+
+                Dimension dimNew = dim.Parent.Dimensions.GetByName(dim.Name + "_Naturalized");
                 DataTable tblNew = dim.DataSourceView.Schema.Tables[txtNewView];
-                foreach (Cube cub in db.Cubes)
-                {
-                    foreach (MeasureGroup mg in cub.MeasureGroups)
-                        if (mg.Dimensions.Contains(dim.Name + "_Naturalized"))
-                            mg.Dimensions.Remove(dim.Name + "_Naturalized", true);
-                    if (cub.Dimensions.Contains(dim.Name + "_Naturalized"))
-                        cub.Dimensions.Remove(dim.Name + "_Naturalized", true);
-                }
-                db.Dimensions.Remove(dim.Name + "_Naturalized");
-                dimNew.Name = dim.Name + "_Naturalized";
-                dimNew.ID = dimNew.Name;
+                //foreach (Cube cub in db.Cubes)
+                //{
+                //    foreach (MeasureGroup mg in cub.MeasureGroups)
+                //        if (mg.Dimensions.Contains(dim.Name + "_Naturalized")) mg.Dimensions.Remove(dim.Name + "_Naturalized", true);
+                //    if (cub.Dimensions.Contains(dim.Name + "_Naturalized")) cub.Dimensions.Remove(dim.Name + "_Naturalized", true);
+
+
+                //}
+                //db.Dimensions.Remove(dim.Name + "_Naturalized");
+                //dimNew.Name = dim.Name + "_Naturalized";
+                //dimNew.ID = dimNew.Name;
                 dimNew.Annotations.Clear();
                 dimNew.Attributes.Clear();
                 dimNew.Hierarchies.Clear();
@@ -675,7 +647,7 @@ namespace PCDimNaturalizer
                 dimNew = MaterializeNaturalizedAttributeRelationships(dimNew, tblNew);
                 dimNew = MaterializeHierarchies(dimNew, tblNew);
 
-                db.Dimensions.Add(dimNew);
+                //db.Dimensions.Add(dimNew);
                 return dimNew;
             }
             catch (Exception e)
@@ -683,9 +655,9 @@ namespace PCDimNaturalizer
                 throw e;
             }
         }
-        #endregion
 
-        #region Add View To DSV
+
+
 
         private string GetNonPCColNameOrExpressionFromDSVColumn(DataItem DSVColumn)
         {
@@ -698,7 +670,7 @@ namespace PCDimNaturalizer
 
         private void CreateRelationshipsForNamedQueryInDSV()
         {
-            dim.DataSourceView.Schema.Tables[txtNewView].PrimaryKey = new DataColumn[] { dim.DataSourceView.Schema.Tables[txtNewView].Columns["CurrentMember_KeyColumn"] };
+            dim.DataSourceView.Schema.Tables[txtNewView].PrimaryKey = new DataColumn[] { dim.DataSourceView.Schema.Tables[txtNewView].Columns[dim.KeyAttribute.Name + "_KeyColumn"] };
 
             // Add child relationships (primary key constraints against this table) for new named query in view
             for (int i = 0; i < tbl.ChildRelations.Count; i++)
@@ -707,7 +679,7 @@ namespace PCDimNaturalizer
                 {
                     DataColumn[] NewRelationColumns = tbl.ChildRelations[i].ParentColumns;
                     for (int j = 0; j < NewRelationColumns.Length; j++)
-                        NewRelationColumns[j] = dim.DataSourceView.Schema.Tables[txtNewView].Columns["CurrentMember_KeyColumn"];
+                        NewRelationColumns[j] = dim.DataSourceView.Schema.Tables[txtNewView].Columns[dim.KeyAttribute.Name + "_KeyColumn"];
 
                     DataRelation dataRelation = new DataRelation(tbl.ChildRelations[i].RelationName.Replace(tbl.ExtendedProperties["DbTableName"].ToString(), txtNewView),
                         NewRelationColumns,
@@ -781,57 +753,29 @@ namespace PCDimNaturalizer
 
         private void AddNaturalizedViewToDSV()
         {
-            // Clear any old instance of the PC view and relationships from DSV and add new view 
-
             string strQry = "select top 1 * from " + txtNewView;
             string strSchema = txtNewView.Substring(0, txtNewView.IndexOf("."));
             txtNewView = txtNewView.Substring(txtNewView.IndexOf(".") + 1); // Once it is in the DSV, the naturalized view no longer requires the schema name so strip it out...
+
+            string sTableName = txtNewView;
+            txtNewView = strSchema + "_" + txtNewView;
+
             ClearDSVOfOldVersionOfNamedQueryAndConstraints();
-            OleDbDataAdapter relAdapter = new OleDbDataAdapter(strQry, Conn.ConnectionString);
-            relAdapter.MissingSchemaAction = MissingSchemaAction.AddWithKey;
-            relAdapter.FillSchema(dim.DataSourceView.Schema, SchemaType.Source, txtNewView);
-            dim.DataSourceView.Schema.Tables[txtNewView].ExtendedProperties.Add("FriendlyName", txtNewView);
-            dim.DataSourceView.Schema.Tables[txtNewView].ExtendedProperties.Add("DbSchemaName", strSchema);
-            dim.DataSourceView.Schema.Tables[txtNewView].ExtendedProperties.Add("DbTableName", txtNewView);
-            dim.DataSourceView.Schema.Tables[txtNewView].ExtendedProperties.Add("TableType", "View");
 
-            CreateRelationshipsForNamedQueryInDSV();
+            DataSourceView dsv = dim.DataSourceView;
 
-            // In order to avoid a bug in AS in which custom rollup and unary operator is incorrectly handled with a ragged hierarchy using HideMemberIf=ParentName,
-            // children having the same name as their parents are hidden, but must also have a NULL custom rollup and unary operator.  Including this in the CTE view for 
-            // the query proved extremely expensive, making dimension processing time up to hundreds of times slower.  So for now, manually adding named calculations to the DSV
-            // which perform this function.  Hack but works well and with good performance results.
-            for (int i = 2; i <= MinimumLevelCount + 1; i++)
+            DataTable tbl = Program.ASFlattener.DataSourceConnection.FillDataSet(dsv.Schema, strSchema, sTableName, "View");
+
+            IContainer container = dsv.Schema.Site.Container;
+            container.Add(tbl);
+            foreach (DataColumn column in tbl.Columns)
             {
-                if (dim.DataSourceView.Schema.Tables[txtNewView].Columns["CurrentMember_CustomRollupColumn"] != null)
-                {
-                    DataColumn dc = dim.DataSourceView.Schema.Tables[txtNewView].Columns.Add(GetNaturalizedLevelName(i) + "_CustomRollupColumnForRaggedHierarchy",
-                        dim.DataSourceView.Schema.Tables[txtNewView].Columns["CurrentMember_CustomRollupColumn"].DataType);
-                    dc.ExtendedProperties.Add("ComputedColumnExpression",
-                        (i > 2
-                        ? "CASE WHEN [CurrentMember_KeyColumn] !=  [" + GetNaturalizedLevelName(i - 1) + "_KeyColumn] THEN [" + GetNaturalizedLevelName(i) + "_CustomRollupColumn] ELSE NULL END"
-                        : "[" + GetNaturalizedLevelName(i) + "_CustomRollupColumn]"));
-                    dc.ExtendedProperties.Add("IsLogical", "true");
-                }
-
-                if (dim.DataSourceView.Schema.Tables[txtNewView].Columns["CurrentMember_UnaryOperatorColumn"] != null)
-                {
-                    DataColumn dc = dim.DataSourceView.Schema.Tables[txtNewView].Columns.Add(GetNaturalizedLevelName(i) + "_UnaryOperatorColumnForRaggedHierarchy",
-                        dim.DataSourceView.Schema.Tables[txtNewView].Columns["CurrentMember_UnaryOperatorColumn"].DataType);
-                    dc.ExtendedProperties.Add("ComputedColumnExpression",
-                        (i > 2
-                        ? "CASE WHEN [CurrentMember_KeyColumn] !=  [" + GetNaturalizedLevelName(i - 1) + "_KeyColumn] THEN [" + GetNaturalizedLevelName(i) + "_UnaryOperatorColumn] ELSE NULL END"
-                        : "[" + GetNaturalizedLevelName(i) + "_UnaryOperatorColumn]"));
-                    dc.ExtendedProperties.Add("IsLogical", "true");
-                }
+                container.Add(column);
             }
 
-            dim.DataSourceView.Update(UpdateOptions.ExpandFull);
-            dim.DataSourceView.Refresh();
+            CreateRelationshipsForNamedQueryInDSV();
         }
-        #endregion
 
-        #region Build SQL CTE View
         private string GetPartialQueryForSingleAttributeColumn(DimensionAttribute Attr, DataItem Col, string ColType, int iLevel)
         {
             string qryView = "";
@@ -922,48 +866,29 @@ namespace PCDimNaturalizer
 
         private string GetNonPCUserHierarchyColumnNamesFromOriginalDimension()
         {
-            string strSubselect = " left outer join (select " + id.ColumnName + " [CurrentMember_KeyColumn], ";
+            string strSubselect = " CurrentMemberSubselect.* from " + id.TableName + " b,\r\n(select " + id.ColumnName + " [" + dim.KeyAttribute.Name + "_KeyColumn], ";
+            string strColAlias = "";
 
             if (dim.KeyAttribute.NameColumn != null && ColNameFromDataItem(dim.KeyAttribute.KeyColumns[0]) != ColNameFromDataItem(dim.KeyAttribute.NameColumn))
-                strSubselect += GetSingleColumnNameAndExpressionForView(dim.KeyAttribute.NameColumn, "[CurrentMember_NameColumn]");
+            {
+                strColAlias = GetSingleColumnNameAndExpressionForView(dim.KeyAttribute.NameColumn, "[" + dim.KeyAttribute.Name + "_NameColumn]");
+                if (!strSubselect.Contains(strColAlias)) strSubselect += strColAlias;
+            }
 
             if (dim.KeyAttribute.ValueColumn != null && ColNameFromDataItem(dim.KeyAttribute.KeyColumns[0]) != ColNameFromDataItem(dim.KeyAttribute.ValueColumn))
-                strSubselect += GetSingleColumnNameAndExpressionForView(dim.KeyAttribute.ValueColumn, "[CurrentMember_ValueColumn]");
+            {
+                strColAlias = GetSingleColumnNameAndExpressionForView(dim.KeyAttribute.ValueColumn, "[" + dim.KeyAttribute.Name + "_ValueColumn]");
+                if (!strSubselect.Contains(strColAlias)) strSubselect += strColAlias;
+            }
 
             foreach (DimensionAttribute attr in dim.Attributes)
                 if (NonPCHierarchiesToInclude.Contains(attr.Name))
-                    if (NonPCHierarchiesToInclude.Contains(attr.Name))
-                    {
-                        string strColAlias = GetSingleNonPCUserHierarchyColumnNamesFromOriginalDimension(attr);
-                        string[] strColAliasForMultipleColAttribute = strColAlias.Split(',');
-                        foreach (string strColAliasIndividualAttributeCol in strColAliasForMultipleColAttribute)
-                            if (!strSubselect.Contains(strColAliasIndividualAttributeCol.Replace("\r\n", ""))) strSubselect += strColAliasIndividualAttributeCol + ", ";
-                    }
+                {
+                    strColAlias = GetSingleNonPCUserHierarchyColumnNamesFromOriginalDimension(attr);
+                    if (!strSubselect.Contains(strColAlias)) strSubselect += strColAlias;
+                }
 
-             //AVOIDING BUG IN AS...  
-             //When members repeated to leaf level in PC hierarchy to simulate ragged hierarchy, 
-             //CustomRollup and UnaryOperator will work only if top level member has column assigned.
-             //Once this is fixed, the columns can just be joined to each member, until then, fastest solution is to just add as calc members to DSV.
-
-            if (PCParentAttribute().UnaryOperatorColumn != null)
-            {
-                EnhancedColumnBinding col = (EnhancedColumnBinding)PCParentAttribute().UnaryOperatorColumn.Source;
-                if (col.NamedCalculationExpression != "")
-                    strSubselect += col.NamedCalculationExpression + " [CurrentMember_UnaryOperatorColumn],\r\n";
-                else
-                    strSubselect += col.ColumnName + " [CurrentMember_UnaryOperatorColumn],\r\n";
-            }
-
-            if (PCParentAttribute().CustomRollupColumn != null)
-            {
-                EnhancedColumnBinding col = (EnhancedColumnBinding)PCParentAttribute().CustomRollupColumn.Source;
-                if (col.NamedCalculationExpression != "")
-                    strSubselect += col.NamedCalculationExpression + " [CurrentMember_CustomRollupColumn],\r\n";
-                else
-                    strSubselect += col.ColumnName + " [CurrentMember_CustomRollupColumn],\r\n";
-            }
-
-            return strSubselect.Remove(strSubselect.Length - 3) + "\r\nfrom " + id.TableName + ") CurrentMemberSubselect on CurrentMemberSubselect.[CurrentMember_KeyColumn] = a.[CurrentMember_KeyColumn] ";
+            return strSubselect.Remove(strSubselect.Length - 3) + "\r\nfrom " + id.TableName + " b)\r\nCurrentMemberSubselect\r\n";
         }
 
         private void CreateNaturalizedView()
@@ -974,49 +899,58 @@ namespace PCDimNaturalizer
                 OleDbCommand cmd = new OleDbCommand("IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'" + txtNewView + "') AND type in (N'V')) drop view " + txtNewView, Conn);
                 cmd.ExecuteNonQuery();
 
-                // Build naturalized CTE view
-                string CTESel = "CREATE VIEW " + txtNewView + " AS\r\n" +
-                    "WITH PCStructure(Level, " + pid.ColumnName + ", [CurrentMember_KeyColumn], [" + GetNaturalizedLevelName(2) + "_KeyColumn], ";
-                string CTEQry = "AS (SELECT 3 Level, " + pid.ColumnName + ", " + id.ColumnName + ", " + id.ColumnName + " as [" + GetNaturalizedLevelName(2) + "_KeyColumn],\r\n";
-                string strCTELevelEnumeration = "FROM " + id.TableName + " WHERE " + pid.ColumnName + " IS NULL OR CONVERT(INT," + pid.ColumnName + ") = 0 OR " + pid.ColumnName + " = " + id.ColumnName + "\r\n" +
-                    "UNION ALL SELECT Level + 1, e." + pid.ColumnName + ", e." + id.ColumnName + ", ";
-                string strSel = "select CurrentMemberSubselect.*,\r\n";
-                string strQry = "from PCStructure a\r\n" + GetNonPCUserHierarchyColumnNamesFromOriginalDimension();
+                // Build naturalized CTE view.  
+                string CTESel = "";
+                string CTEQry = "";
+                string strCTELevelEnumeration = "";
+                string strLevelsEnumerations = "";
+                string strSel = "select Level" + (MinimumLevelCount + 1).ToString() + "Subselect.*\r\n";
+                string strQry = "from PCStructure a, \r\n";
+                string strSelEnd = "";
+                string strWhere = "where\r\n";
 
-                for (int i = 2; i <= MinimumLevelCount + 1; i++)
+                for (int i = MinimumLevelCount + 1; i > 1; i--)
                 {
                     string LevelName = GetNaturalizedLevelName(i);
 
                     if (i != 2)
                     {
-                        CTESel += "[" + LevelName + "_KeyColumn], ";
-                        CTEQry += id.ColumnName + " as [" + LevelName + "_KeyColumn],\r\n";
+                        CTESel = "[" + LevelName + "_KeyColumn], " + CTESel;
+                        CTEQry = id.ColumnName + " as [" + LevelName + "_KeyColumn],\r\n" + CTEQry;
                     }
-                    strCTELevelEnumeration += "CASE Level\r\n";
+                    strCTELevelEnumeration = "CASE Level\r\n";
                     for (int j = 2; j < i; j++)
                     {
                         strCTELevelEnumeration += "WHEN " + j.ToString() + " THEN e." + id.ColumnName + "\r\n";
                     }
                     strCTELevelEnumeration += "WHEN " + i.ToString() + " THEN e." + id.ColumnName + " ELSE [" + LevelName + "_KeyColumn]\r\nEND\r\nAS [" + LevelName + "_KeyColumn],\r\n";
-                    strSel += "Level" + i.ToString() + "Subselect.*, ";
-                    strQry += "left outer join (select " + id.ColumnName + " [" + LevelName + "_KeyColumn], ";
+                    strQry += "(select " + id.ColumnName + " [" + LevelName + "_KeyColumn], ";
+
 
                     if (PCParentAttribute().UnaryOperatorColumn != null)
                     {
+                        if (i > 2)
+                            strQry += "CASE WHEN " + id.ColumnName + " = [" + GetNaturalizedLevelName(i - 1) + "_KeyColumn] THEN null ELSE ";
                         EnhancedColumnBinding col = (EnhancedColumnBinding)PCParentAttribute().UnaryOperatorColumn.Source;
                         if (col.NamedCalculationExpression != "")
-                            strQry += col.NamedCalculationExpression + " [" + LevelName + "_UnaryOperatorColumn],\r\n";
+                            strQry += col.NamedCalculationExpression + " " + (i > 2 ? " END [" : "[") + LevelName + "_UnaryOperatorColumn],\r\n";
                         else
-                            strQry += col.ColumnName + " [" + LevelName + "_UnaryOperatorColumn],\r\n";
+                            strQry += col.ColumnName + " " + (i > 2 ? " END [" : "[") + LevelName + "_UnaryOperatorColumn],\r\n";
                     }
 
                     if (PCParentAttribute().CustomRollupColumn != null)
                     {
+                        if (i > 2)
+                            strQry += "CASE WHEN " + id.ColumnName + " = [" + GetNaturalizedLevelName(i - 1) + "_KeyColumn] THEN null ELSE ";
                         EnhancedColumnBinding col = (EnhancedColumnBinding)PCParentAttribute().CustomRollupColumn.Source;
                         if (col.NamedCalculationExpression != "")
-                            strQry += col.NamedCalculationExpression + " [" + LevelName + "_CustomRollupColumn],\r\n";
+                            strQry += col.NamedCalculationExpression
+                                + (i > 2 ? " END [" : " [")
+                                + LevelName + "_CustomRollupColumn],\r\n";
                         else
-                            strQry += col.ColumnName + " [" + LevelName + "_CustomRollupColumn],\r\n";
+                            strQry += col.ColumnName
+                                + (i > 2 ? " END [" : " [")
+                                + LevelName + "_CustomRollupColumn],\r\n";
                     }
 
                     List<DimensionAttribute> das = new List<DimensionAttribute>();
@@ -1034,7 +968,10 @@ namespace PCDimNaturalizer
                                 if (da.ValueColumn != null && (da.KeyColumns.Count > 1 || ColNameFromDataItem(da.KeyColumns[0]) != ColNameFromDataItem(da.ValueColumn) && ColNameFromDataItem(da.NameColumn) != ColNameFromDataItem(da.ValueColumn)))
                                     strQry += GetPartialQueryForAttributeColumns(da, da.ValueColumn, "ValueColumn", i) + ",\r\n";
                                 if (da.OrderByAttribute != null && !PCAttributesToInclude.Contains(da.OrderByAttribute.Name))
-                                    PCAttributesToInclude.Add(da.OrderByAttribute.Name);
+                                {
+                                    da = da.OrderByAttribute;
+                                    PCAttributesToInclude.Add(da.Name);
+                                }
                                 else
                                     break;
                             }
@@ -1042,17 +979,24 @@ namespace PCDimNaturalizer
                         }
                     }
 
-                    strQry = strQry.Remove(strQry.Length - 3) + "\r\nfrom " + id.TableName + ") Level" + i.ToString() + "Subselect on Level" + i.ToString() +
-                        "Subselect.[" + LevelName + "_KeyColumn] = a.[" + LevelName + "_KeyColumn]\r\n";
+                    if (i > 2)
+                        strQry = strQry.Remove(strQry.Length - 3) + "\r\n, Level" + (i - 1).ToString() + "Subselect.*\r\nfrom " + id.TableName + " b,\r\n";
+                    strSelEnd = ") Level" + i.ToString() + "Subselect\r\n" + strSelEnd;
+                    strWhere += "Level" + (MinimumLevelCount + 1).ToString() + "Subselect.[" + LevelName + "_KeyColumn] = a.[" + LevelName + "_KeyColumn] and\r\n";
+                    strLevelsEnumerations = strCTELevelEnumeration + strLevelsEnumerations;
                 }
 
-                CTESel = CTESel.Remove(CTESel.Length - 2) + ")\r\n";
-                CTEQry = CTEQry.Remove(CTEQry.Length - 3) + "\r\n";
-                strCTELevelEnumeration = strCTELevelEnumeration.Remove(strCTELevelEnumeration.Length - 3) + " FROM " + id.TableName + " e " +
-                    "INNER JOIN PCStructure d ON e." + pid.ColumnName + " = d.[CurrentMember_KeyColumn] AND e." + pid.ColumnName + " != e." + id.ColumnName + ")\r\n";
-                strQry = CTESel + CTEQry + strCTELevelEnumeration + strSel.Remove(strSel.Length - 2) + "\r\n" + strQry;
+                CTESel = "CREATE VIEW " + txtNewView + " AS\r\n" +
+                    "WITH PCStructure(Level, " + pid.ColumnName + ", [" + dim.KeyAttribute.Name + "_KeyColumn], [" + GetNaturalizedLevelName(2) + "_KeyColumn], " + CTESel.Remove(CTESel.Length - 2) + ")\r\n";
+                CTEQry = "AS (SELECT 3 Level, " + pid.ColumnName + ", " + id.ColumnName + ",\r\n" + id.ColumnName + " as [" + GetNaturalizedLevelName(2) + "_KeyColumn],\r\n" + CTEQry.Remove(CTEQry.Length - 3) + "\r\n";
+                strWhere += "Level" + (MinimumLevelCount + 1).ToString() + "Subselect.[" + dim.KeyAttribute.Name + "_KeyColumn] = a.[" + dim.KeyAttribute.Name + "_KeyColumn]";
+                strLevelsEnumerations = "FROM " + id.TableName + " WHERE " + pid.ColumnName + " IS NULL OR " + pid.ColumnName + " = " + id.ColumnName + " " +
+                    "UNION ALL SELECT Level + 1, e." + pid.ColumnName + ", e." + id.ColumnName + ",\r\n" + strLevelsEnumerations.Remove(strLevelsEnumerations.Length - 3) + " FROM " + id.TableName + " e " +
+                    "INNER JOIN PCStructure d ON e." + pid.ColumnName + " = d.[" + dim.KeyAttribute.Name + "_KeyColumn] AND e." + pid.ColumnName + " != e." + id.ColumnName + ")\r\n";
+                strQry = CTESel + CTEQry + strLevelsEnumerations + strSel.Remove(strSel.Length - 2) + "\r\n" + strQry +
+                    GetNonPCUserHierarchyColumnNamesFromOriginalDimension() + strSelEnd + strWhere;
                 cmd.CommandText = strQry;
-                
+
                 cmd.ExecuteNonQuery();
             }
             catch (Exception e)
@@ -1060,9 +1004,9 @@ namespace PCDimNaturalizer
                 throw e;
             }
         }
-        #endregion
 
-        #region High Level Functions
+
+
         private OleDbConnection GetNonLocalizedConnection(string ConnStr)
         {
             OleDbConnection connTmp = new OleDbConnection(ConnStr);
@@ -1101,8 +1045,7 @@ namespace PCDimNaturalizer
                 // Initialize
                 UpdateStatus("Initializing connections and calculating level depth...");
                 EnsureAllIncludedPCAttributesRelateToKey();
-                Conn = GetNonLocalizedConnection(dim.DataSource.ConnectionString);
-                Conn.Open();
+                Conn = (OleDbConnection)Program.ASFlattener.DataSourceConnection.ConnectionObject;
                 MinimumLevelCount = GetLevelCountFromPCTable(id.TableName, id.ColumnName, pid.ColumnName);
                 int iMinLevels = Convert.ToInt32(MinLevels);
                 if (MinimumLevelCount < iMinLevels) MinimumLevelCount = iMinLevels;
@@ -1129,17 +1072,21 @@ namespace PCDimNaturalizer
                         }
                     }
                     UpdateStatus("Saving modified objects to server...");
-                    db.Update(UpdateOptions.ExpandFull | UpdateOptions.AlterDependents);
-                    if (ASNaturalizationActionLevel > 4)
+
+                    if (dim.ParentServer != null)
                     {
-                        UpdateStatus("Processing dimension: " + dimNew.Name);
-                        dimNew.Process(ProcessType.ProcessFull);
-                        foreach (Cube cub in db.Cubes)
+                        db.Update(UpdateOptions.ExpandFull | UpdateOptions.AlterDependents);
+                        if (ASNaturalizationActionLevel > 4)
                         {
-                            if (cub.Dimensions.Contains(dim.ID))
+                            UpdateStatus("Processing dimension: " + dimNew.Name);
+                            dimNew.Process(ProcessType.ProcessFull);
+                            foreach (Cube cub in db.Cubes)
                             {
-                                UpdateStatus("Processing cube: " + cub.Name);
-                                cub.Process(ProcessType.ProcessFull);
+                                if (cub.Dimensions.Contains(dim.ID))
+                                {
+                                    UpdateStatus("Processing cube: " + cub.Name);
+                                    cub.Process(ProcessType.ProcessFull);
+                                }
                             }
                         }
                     }
@@ -1162,9 +1109,8 @@ namespace PCDimNaturalizer
                 }
             }
         }
-        #endregion
+
     }
-    */
 
     class EnhancedColumnBinding
     {

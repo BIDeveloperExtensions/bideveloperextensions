@@ -40,11 +40,6 @@ namespace PCDimNaturalizer
             get { return "Parent-Child Dimension Naturalizer"; }
         }
 
-        /*public override string MenuName
-        {
-            get { return "DSV Background context menu"; } //could also use DSV Table context menu
-        }*/
-
         public override string ToolTip
         {
             get { return ""; } //not used anywhere
@@ -70,30 +65,23 @@ namespace PCDimNaturalizer
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 ProjectItem pi = (ProjectItem)hierItem.Object;
-                if (!(pi.Object is DataSourceView)) return false;
-                Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.ContainingProject;
-                return (projExt.Kind == BIDSProjectKinds.SSAS); //only show in an SSAS project, not in a report model or SSIS project (which also can have a DSV)
+                if (pi.Object is DataSourceView)
+                {
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.ContainingProject;
+                    return (projExt.Kind == BIDSProjectKinds.SSAS); //only show in an SSAS project, not in a report model or SSIS project (which also can have a DSV)
+                }
+                else if (pi.Object is Dimension)
+                {
+                    Dimension dim = pi.Object as Dimension;
+                    if (dim != null && dim.IsParentChild)
+                        return true;
+                }
+                return false;
             }
             catch
             {
                 return false;
             }
-            //try
-            //{
-            //    System.ComponentModel.Design.IDesignerHost host = (System.ComponentModel.Design.IDesignerHost)(ApplicationObject.ActiveWindow.Object);
-            //    DataSourceView dsv = (DataSourceView)host.RootComponent;
-            //    Microsoft.AnalysisServices.Design.DataSourceDesigner designer = (Microsoft.AnalysisServices.Design.DataSourceDesigner)host.GetDesigner(dsv);
-
-            //    System.Collections.ArrayList arrSelectedTables = designer.DataSourceDiagram.GetSelectedTableNames();
-            //    if (arrSelectedTables.Count > 1)
-            //        return false;
-
-            //    return true;
-            //}
-            //catch
-            //{
-            //    return false;
-            //}
         }
         #endregion
 
@@ -104,59 +92,167 @@ namespace PCDimNaturalizer
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 ProjectItem pi = (ProjectItem)hierItem.Object;
+                if (pi.Object is DataSourceView)
+                    ExecDSV(pi);
+                else if (pi.Object is Dimension)
+                    ExecDimension(pi);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
 
-                bool bIsOpen = pi.get_IsOpen(BIDSViewKinds.Designer);
-                if (bIsOpen)
+        private void ExecDimension(ProjectItem pi)
+        {
+            try
+            {
+                Dimension dim = pi.Object as Dimension;
+                Program.ASFlattener = new frmASFlattener();
+                Program.ASFlattener.dim = dim;
+                frmASFlattenerOptions Options = new frmASFlattenerOptions();
+                Options.lbHierarchies.Items.Clear();
+                Options.lbAttributes.Items.Clear();
+                if (dim != null)
                 {
-                    //if (MessageBox.Show("Save the DataSourceView?", "BIDS Helper - Naturalize Parent-Child Dimension", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                    //{
-                    //    return;
-                    //}
-                    Window win = pi.Open(BIDSViewKinds.Designer);
-                    win.Close(vsSaveChanges.vsSaveChangesPrompt);
+                    foreach (Hierarchy hier in dim.Hierarchies)
+                        Options.lbHierarchies.Items.Add(new ctlFancyCheckedListBoxItem(hier.Name, true));
+                    foreach (DimensionAttribute attr in dim.Attributes)
+                    {
+                        if (attr.Usage == AttributeUsage.Regular)
+                        {
+                            if (ASPCDimNaturalizer.IsAttributeRelated(attr, dim.KeyAttribute))
+                                Options.lbAttributes.Items.Add(attr.Name);
+                            Options.lbHierarchies.Items.Add(new ctlFancyCheckedListBoxItem(attr.Name, false));
+                        }
+                    }
+                }
+
+                for (int i = 0; i < Options.lbAttributes.Items.Count; i++)
+                    Options.lbAttributes.SetItemChecked(i, true);
+                for (int i = 0; i < Options.lbHierarchies.Items.Count; i++)
+                    Options.lbHierarchies.SetItemChecked(i, true);
+                Options.tabControl1.SelectedIndex = 0;
+                Options.numMinLevels.Value = 0;
+                Options.trkActionLevel.Value = 4;
+
+                if (Options.ShowDialog() == DialogResult.OK)
+                {
+                    ProjectItem piDsv = null;
+                    foreach (ProjectItem piTemp in pi.ContainingProject.ProjectItems)
+                    {
+                        if (piTemp.Object == dim.DataSourceView)
+                        {
+                            piDsv = piTemp;
+                            break;
+                        }
+                    }
+
+                    //close all project windows
+                    foreach (ProjectItem piTemp in pi.ContainingProject.ProjectItems)
+                    {
+                        bool bIsOpen = piTemp.get_IsOpen(BIDSViewKinds.Designer);
+                        if (bIsOpen)
+                        {
+                            Window win = piTemp.Open(BIDSViewKinds.Designer);
+                            win.Close(vsSaveChanges.vsSaveChangesYes);
+                        }
+                    }
+
+                    Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = GetOpenedDataSourceConnection(dim.DataSource);
+                    Program.ASFlattener.db = Program.ASFlattener.dim.Parent;
+                    Program.ASFlattener.DataSourceConnection = openedDataSourceConnection;
+
+                    Program.SQLFlattener = null;
+
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy projectService = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy));
+                    Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                    Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
+
+                    Dimension dimNew = dim.Clone();
+                    dimNew.Name = dim.Name + "_Naturalized";
+                    dimNew.ID = dimNew.Name;
+
+                    string sNewDimProjectItemName = dimNew.Name + ".dim";
+                    if (dim.ParentServer != null)
+                    {
+                        sNewDimProjectItemName = dimNew.Name;
+                    }
+                    if (dim.Parent.Dimensions.ContainsName(dimNew.Name))
+                    {
+                        projectManager.GetProjectItemFromName(sNewDimProjectItemName).Delete(); //deletes the project item and the dimension from the AMO dimensions collection
+                    }
+
+                    if (dim.ParentServer == null)
+                    {
+                        string sFullPath = pi.get_FileNames(0);
+                        sFullPath = sFullPath.Substring(0, sFullPath.Length - System.IO.Path.GetFileName(sFullPath).Length) + sNewDimProjectItemName;
+                        XmlWriter writer = new System.Xml.XmlTextWriter(sFullPath, Encoding.UTF8);
+                        Microsoft.AnalysisServices.Utils.Serialize(writer, dimNew, false);
+                        writer.Close();
+
+                        Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectNode parentNode = null;
+                        Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectNode projNode = projectManager.CreateFileProjectNode(ref parentNode, 1, sNewDimProjectItemName, sFullPath, 0, 0);
+
+                        projectService.Add(projNode, parentNode);
+                        ((Microsoft.DataWarehouse.VsIntegration.Shell.Project.ComponentModel.IFileProjectComponentManager)projectManager).UpdateComponentModel(Microsoft.DataWarehouse.VsIntegration.Shell.Project.ComponentModel.UpdateOperationType.AddObject, projNode);
+                    }
+                    else
+                    {
+                        dim.Parent.Dimensions.Add(dimNew);
+                    }
+
+                    Program.Progress = new frmProgress();
+                    Program.Progress.ShowDialog(); // The Progress form actually launches the naturalizer...
+
+                    if (piDsv != null && dim.ParentServer == null)
+                    {
+                        Window winDesigner = piDsv.Open(BIDSViewKinds.Designer);
+                        winDesigner.Activate();
+                        System.ComponentModel.Design.IDesignerHost host = (System.ComponentModel.Design.IDesignerHost)(winDesigner.Object);
+                        Microsoft.AnalysisServices.Design.DataSourceDesigner designer = (Microsoft.AnalysisServices.Design.DataSourceDesigner)host.GetDesigner(dim.DataSourceView);
+                        designer.MakeDesignerDirty();
+                    }
+
+                    ProjectItem piNew = projectManager.GetProjectItemFromName(sNewDimProjectItemName);
+                    if (dim.ParentServer == null)
+                    {
+                        piNew.Save(null);
+                        //piNew.ContainingProject.Save(null); //didn't work
+                    }
+                    else
+                    {
+                        //already processed inside the ASPCDimNaturalizer code
+                    }
+
+                    Window winNew = piNew.Open(BIDSViewKinds.Designer);
+                    winNew.Activate();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
+
+        private void ExecDSV(ProjectItem pi)
+        {
+            try
+            {
+                //close all project windows
+                foreach (ProjectItem piTemp in pi.ContainingProject.ProjectItems)
+                {
+                    bool bIsOpen = piTemp.get_IsOpen(BIDSViewKinds.Designer);
+                    if (bIsOpen)
+                    {
+                        Window win = piTemp.Open(BIDSViewKinds.Designer);
+                        win.Close(vsSaveChanges.vsSaveChangesYes);
+                    }
                 }
 
                 DataSourceView dsv = pi.Object as DataSourceView;
 
-                //System.ComponentModel.Design.IDesignerHost host = (System.ComponentModel.Design.IDesignerHost)(ApplicationObject.ActiveWindow.Object);
-                //DataSourceView dsv = (DataSourceView)host.RootComponent;
-
-                //ApplicationObject.ActiveWindow.Close(vsSaveChanges.vsSaveChangesYes);
-
-
-                //Microsoft.AnalysisServices.Design.DataSourceDesigner designer = (Microsoft.AnalysisServices.Design.DataSourceDesigner)host.GetDesigner(dsv);
-                DataSource dataSource = dsv.DataSource;
-
-                //System.Collections.ArrayList arrSelectedTables = designer.DataSourceDiagram.GetSelectedTableNames();
-                //if (arrSelectedTables.Count == 1)
-                //{
-                //    string sDataSourceID = dsv.Schema.Tables[arrSelectedTables[0]].ExtendedProperties["DataSourceID"];
-                //    if (!string.IsNullOrEmpty(sDataSourceID) && sDataSourceID != dataSource.ID)
-                //    {
-                //        dataSource = dsv.Parent.DataSources[sDataSourceID];
-                //    }
-                //}
-
-                Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.DataWarehouse.DataWarehouseUtilities.GetOpenedDataSourceConnection((object)null, dataSource.ID, dataSource.Name, dataSource.ManagedProvider, dataSource.ConnectionString, dataSource.Site, false);
-                try
-                {
-                    if (openedDataSourceConnection != null)
-                    {
-                        openedDataSourceConnection.QueryTimeOut = (int)dataSource.Timeout.TotalSeconds;
-                    }
-                }
-                catch { }
-
-                if (openedDataSourceConnection == null)
-                {
-                    MessageBox.Show("Unable to connect to data source [" + dataSource.Name + "]");
-                    return;
-                }
-                else if (!(openedDataSourceConnection.ConnectionObject is System.Data.OleDb.OleDbConnection))
-                {
-                    MessageBox.Show("Data source [" + dataSource.Name + "] is not an OLEDB connection. Only OLEDB connections are supported currently.");
-                    return;
-                }
+                Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = GetOpenedDataSourceConnection(dsv.DataSource);
 
                 Program.SQLFlattener = new frmSQLFlattener();
                 Program.SQLFlattener.txtServer.Text = openedDataSourceConnection.DataSource;
@@ -167,27 +263,48 @@ namespace PCDimNaturalizer
                 Program.SQLFlattener.cmbPID.Items[0] = string.Empty;
                 Program.SQLFlattener.dsv = dsv;
                 Program.SQLFlattener.DataSourceConnection = openedDataSourceConnection;
-                
-                Program.SQLFlattener.ShowDialog();
 
-                Window winDesigner = pi.Open(BIDSViewKinds.Designer);
-                winDesigner.Activate();
-                System.ComponentModel.Design.IDesignerHost host = (System.ComponentModel.Design.IDesignerHost)(winDesigner.Object);
-                Microsoft.AnalysisServices.Design.DataSourceDesigner designer = (Microsoft.AnalysisServices.Design.DataSourceDesigner)host.GetDesigner(dsv);
+                Program.ASFlattener = null;
 
-                //Application.DoEvents();
-
-                //System.Collections.ArrayList listTables = new System.Collections.ArrayList();
-                //listTables.Add(Program.SQLFlattener.TableName);
-                //designer.DataSourceDiagram.RearrangeTables(listTables, true);
-                //System.Collections.ArrayList shapesByTableNames = designer.DataSourceDiagram.GetShapesByTableNames(listTables);
-                //designer.DataSourceDiagram.RearrangeTables(shapesByTableNames, true);
-                designer.MakeDesignerDirty();
+                if (Program.SQLFlattener.ShowDialog() == DialogResult.OK)
+                {
+                    Window winDesigner = pi.Open(BIDSViewKinds.Designer);
+                    winDesigner.Activate();
+                    System.ComponentModel.Design.IDesignerHost host = (System.ComponentModel.Design.IDesignerHost)(winDesigner.Object);
+                    Microsoft.AnalysisServices.Design.DataSourceDesigner designer = (Microsoft.AnalysisServices.Design.DataSourceDesigner)host.GetDesigner(dsv);
+                    designer.MakeDesignerDirty();
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
+        }
+
+        private Microsoft.DataWarehouse.Design.DataSourceConnection GetOpenedDataSourceConnection(DataSource dataSource)
+        {
+            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.DataWarehouse.DataWarehouseUtilities.GetOpenedDataSourceConnection((object)null, dataSource.ID, dataSource.Name, dataSource.ManagedProvider, dataSource.ConnectionString, dataSource.Site, false);
+            try
+            {
+                if (openedDataSourceConnection != null)
+                {
+                    openedDataSourceConnection.QueryTimeOut = (int)dataSource.Timeout.TotalSeconds;
+                }
+            }
+            catch { }
+
+            if (openedDataSourceConnection == null)
+            {
+                MessageBox.Show("Unable to connect to data source [" + dataSource.Name + "]");
+                return null;
+            }
+            else if (!(openedDataSourceConnection.ConnectionObject is System.Data.OleDb.OleDbConnection))
+            {
+                MessageBox.Show("Data source [" + dataSource.Name + "] is not an OLEDB connection. Only OLEDB connections are supported currently.");
+                return null;
+            }
+
+            return openedDataSourceConnection;
         }
     }
 }

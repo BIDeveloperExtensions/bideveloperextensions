@@ -15,12 +15,10 @@ namespace PCDimNaturalizer
     partial class frmSQLFlattener : Form
     {
         public Microsoft.AnalysisServices.DataSourceView dsv = null;
-        public Microsoft.AnalysisServices.Design.DataSourceDesigner designer = null;
         public int MinLevels = 0;
         public bool AddAllAttributesNatural = false, AddAllAttributesPC = true;
         public List<string> AttributesNatural = new List<string>(), AttributesPC = new List<string>();
         public Microsoft.DataWarehouse.Design.DataSourceConnection DataSourceConnection = null;
-        public string TableName;
 
         private frmSQLFlattenerOptions Options;
         public OleDbConnection Conn;
