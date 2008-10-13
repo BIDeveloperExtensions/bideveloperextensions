@@ -415,6 +415,19 @@ namespace BIDSHelper
                 CheckProperties((IDTSPropertiesProvider)container, worker, path);
             }
 
+            //JCW 2008/10/13
+            //New Section to scan EventHandlers - in response to issue #18816
+            if (container is EventsProvider)
+            {
+                EventsProvider ep = (EventsProvider)container;
+
+                foreach (DtsEventHandler eh in ep.EventHandlers)
+                {
+                    IterateContainer((DtsContainer)eh, worker, path + ".EventHandler["+ eh.Name + "].");
+                }
+            }
+            //End new section
+
             IDTSSequence sequence = (IDTSSequence)container;
 
             foreach (Executable exec in sequence.Executables)
@@ -430,6 +443,50 @@ namespace BIDSHelper
                     CheckProperties((IDTSPropertiesProvider)exec, worker, sNewPath);
                 }
             }
+        }
+        public static DtsContainer FindExecutable(IDTSSequence parentExecutable, string taskId)
+        {
+
+            //TODO: Determine what to do when name is used in mutiple containers, think it just finds the first one now
+
+            DtsContainer matchingExecutable = null;
+            DtsContainer parent = (DtsContainer)parentExecutable;
+
+            if (parent.ID == taskId || parent.Name == taskId)
+            {
+                return parent;
+            }
+            else
+            {
+                if (parent is EventsProvider)
+                {
+                    EventsProvider ep = (EventsProvider)parent;
+
+                    foreach (DtsEventHandler eh in ep.EventHandlers)
+                    {
+                        matchingExecutable = FindExecutable((IDTSSequence)eh, taskId);
+                        if (matchingExecutable != null) return matchingExecutable;
+                    }
+                }
+
+                if (parentExecutable.Executables.Contains(taskId))
+                {
+                    return (TaskHost)parentExecutable.Executables[taskId];
+                }
+                else
+                {
+                    foreach (Executable e in parentExecutable.Executables)
+                    {
+                        if (e is IDTSSequence)
+                        {
+                            matchingExecutable = FindExecutable((IDTSSequence)e, taskId);
+                            if (matchingExecutable != null) return matchingExecutable;
+                        }
+                    }
+                }
+            }
+
+            return matchingExecutable;
         }
 
         private Package GetPackageFromContainer(DtsContainer container)
