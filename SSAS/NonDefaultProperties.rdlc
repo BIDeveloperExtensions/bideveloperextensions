@@ -85,7 +85,7 @@
                 <TableRow>
                   <TableCells>
                     <TableCell>
-                      <ColSpan>2</ColSpan>
+                      <ColSpan>3</ColSpan>
                       <ReportItems>
                         <Textbox Name="txtPropertyName">
                           <Style>
@@ -107,15 +107,92 @@
               </TableRows>
             </Header>
           </TableGroup>
+          <TableGroup>
+            <Grouping Name="table2_Group2">
+              <GroupExpressions>
+                <GroupExpression>=Fields!PropertyName.Value</GroupExpression>
+                <GroupExpression>=Fields!Value.Value</GroupExpression>
+              </GroupExpressions>
+            </Grouping>
+            <Sorting>
+              <SortBy>
+                <SortExpression>=Fields!PropertyName.Value</SortExpression>
+                <Direction>Ascending</Direction>
+              </SortBy>
+              <SortBy>
+                <SortExpression>=Fields!Value.Value</SortExpression>
+                <Direction>Ascending</Direction>
+              </SortBy>
+            </Sorting>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                    <ToggleItem>txtPropertyName</ToggleItem>
+                  </Visibility>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox5">
+                          <rd:DefaultName>textbox5</rd:DefaultName>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ColSpan>2</ColSpan>
+                      <ReportItems>
+                        <Textbox Name="txtVal">
+                          <Style>
+                            <FontStyle>Italic</FontStyle>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!Value.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.1875in</Height>
+                </TableRow>
+              </TableRows>
+            </Header>
+          </TableGroup>
         </TableGroups>
         <Details>
           <TableRows>
             <TableRow>
               <Visibility>
                 <Hidden>true</Hidden>
-                <ToggleItem>txtPropertyName</ToggleItem>
+                <ToggleItem>txtVal</ToggleItem>
               </Visibility>
               <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox11">
+                      <rd:DefaultName>textbox11</rd:DefaultName>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
                 <TableCell>
                   <ReportItems>
                     <Textbox Name="textbox7">
@@ -159,6 +236,10 @@
               <Direction>Ascending</Direction>
             </SortBy>
             <SortBy>
+              <SortExpression>=Fields!Value.Value</SortExpression>
+              <Direction>Ascending</Direction>
+            </SortBy>
+            <SortBy>
               <SortExpression>=Fields!FriendlyPath.Value</SortExpression>
               <Direction>Ascending</Direction>
             </SortBy>
@@ -169,7 +250,7 @@
             <TableRow>
               <TableCells>
                 <TableCell>
-                  <ColSpan>2</ColSpan>
+                  <ColSpan>3</ColSpan>
                   <ReportItems>
                     <Textbox Name="textbox12">
                       <Style>
@@ -194,13 +275,16 @@
         </Header>
         <TableColumns>
           <TableColumn>
-            <Width>0.375in</Width>
+            <Width>0.36176in</Width>
           </TableColumn>
           <TableColumn>
-            <Width>9.875in</Width>
+            <Width>0.36176in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>9.52647in</Width>
           </TableColumn>
         </TableColumns>
-        <Height>0.75in</Height>
+        <Height>0.9375in</Height>
       </Table>
       <Table Name="table1">
         <ZIndex>2</ZIndex>
