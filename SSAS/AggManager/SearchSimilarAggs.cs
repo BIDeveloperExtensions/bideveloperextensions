@@ -78,7 +78,7 @@ namespace AggManager
             return aggs;
         }
 
-        private static Boolean IsAggregationIncluded(Aggregation agg1, Aggregation agg2, Boolean bCountMembers)
+        internal static Boolean IsAggregationIncluded(Aggregation agg1, Aggregation agg2, Boolean bCountMembers)
         {
             Boolean bIsAttribute1Included = false;
 
@@ -112,28 +112,15 @@ namespace AggManager
 
                     foreach (AggregationAttribute att1 in dim1Purged.Attributes)
                     {
+                        if (dim2Purged.Attributes.Contains(att1.AttributeID))
+                            continue;
 
-                        Boolean bExistsAttributeNotInSameTree = false;
-                        //Boolean bExistsAttributeInSameTree = false;
+                        Boolean bExistsAttributeInSameTree = false;
                         foreach (AggregationAttribute att2 in dim2Purged.Attributes)
                         {
 
-                            if (att2.AttributeID == att1.AttributeID)
-                            // By pass when both att1 and att2 are standed on same attribute
-                            {
-                                //bExistsAttributeInSameTree = true;
-                                continue;
-                            }
-
                             bIsAttribute1Included = IsRedundantAttribute(agg1.ParentMeasureGroup, dim1.CubeDimensionID, att1.AttributeID, att2.AttributeID, false, -1);
                             //bIsAttribute2Included = IsRedundantAttribute(agg1.ParentMeasureGroup, dim1.CubeDimensionID, att2.AttributeID, att1.AttributeID, false, -1);
-
-                            if (!bIsAttribute1Included)
-                            // By pass because attributes belong to different relationship trees and cannot be related
-                            {
-                                bExistsAttributeNotInSameTree = true;
-                                continue;
-                            }
 
                             if (bIsAttribute1Included)
                             // Attribute att1 is included in att2, then if countmembers is turned on
@@ -148,13 +135,13 @@ namespace AggManager
                                 }
                                 else
                                 {
-                                    //bExistsAttributeInSameTree = true;
+                                    bExistsAttributeInSameTree = true;
                                     break;
                                 }
                             }
 
                         }
-                        if (bExistsAttributeNotInSameTree) // && !bExistsAttributeInSameTree)
+                        if (!bExistsAttributeInSameTree)
                             // if dim1 does not have attributes in same tree as dim2, then agg1 is not included.
                             return false;
 
