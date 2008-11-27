@@ -464,6 +464,7 @@ namespace AggManager
                 if (livePartition == null) return;
 
                 string sAggID = e.TextData.Split(new char[] { '\r', '\n' })[0];
+                if (livePartition.AggregationDesign == null) return;
                 Aggregation liveAgg = livePartition.AggregationDesign.Aggregations.Find(sAggID);
                 if (liveAgg == null) return;
 

@@ -57,6 +57,8 @@ namespace AggManager
             this.validateAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.printerFriendlyAggregationsReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.searchSimilarAggregationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testAggregationPerformanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testAggregationPerformanceToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripMG.SuspendLayout();
             this.contextMenuStripAggDes.SuspendLayout();
             this.contextMenuStripSave.SuspendLayout();
@@ -133,9 +135,10 @@ namespace AggManager
             this.cmdAddAggregationsFromQueryLogToExisting,
             this.addPartitionsToolStripMenuItem,
             this.searchSimilarAggregationsToolStripMenuItem1,
-            this.exportToASQLTableToolStripMenuItem});
+            this.exportToASQLTableToolStripMenuItem,
+            this.testAggregationPerformanceToolStripMenuItem1});
             this.contextMenuStripAggDes.Name = "contextMenuStripAggDes";
-            this.contextMenuStripAggDes.Size = new System.Drawing.Size(262, 136);
+            this.contextMenuStripAggDes.Size = new System.Drawing.Size(262, 180);
             // 
             // cmdEditAggDes
             // 
@@ -272,7 +275,8 @@ namespace AggManager
             this.deleteUnusedAggregationsToolStripMenuItem1,
             this.validateAggregationsToolStripMenuItem,
             this.printerFriendlyAggregationsReportToolStripMenuItem,
-            this.searchSimilarAggregationsToolStripMenuItem});
+            this.searchSimilarAggregationsToolStripMenuItem,
+            this.testAggregationPerformanceToolStripMenuItem});
             this.contextMenuStripCube.Name = "contextMenuStripCube";
             this.contextMenuStripCube.Size = new System.Drawing.Size(275, 114);
             // 
@@ -303,6 +307,20 @@ namespace AggManager
             this.searchSimilarAggregationsToolStripMenuItem.Size = new System.Drawing.Size(274, 22);
             this.searchSimilarAggregationsToolStripMenuItem.Text = "Search Similar Aggregations...";
             this.searchSimilarAggregationsToolStripMenuItem.Click += new System.EventHandler(this.searchSimilarAggregationsToolStripMenuItem_Click);
+            // 
+            // testAggregationPerformanceToolStripMenuItem
+            // 
+            this.testAggregationPerformanceToolStripMenuItem.Name = "testAggregationPerformanceToolStripMenuItem";
+            this.testAggregationPerformanceToolStripMenuItem.Size = new System.Drawing.Size(274, 22);
+            this.testAggregationPerformanceToolStripMenuItem.Text = "Test Aggregation Performance...";
+            this.testAggregationPerformanceToolStripMenuItem.Click += new System.EventHandler(this.testAggregationPerformanceToolStripMenuItem_Click);
+            // 
+            // testAggregationPerformanceToolStripMenuItem1
+            // 
+            this.testAggregationPerformanceToolStripMenuItem1.Name = "testAggregationPerformanceToolStripMenuItem1";
+            this.testAggregationPerformanceToolStripMenuItem1.Size = new System.Drawing.Size(261, 22);
+            this.testAggregationPerformanceToolStripMenuItem1.Text = "Test Aggregation Performance...";
+            this.testAggregationPerformanceToolStripMenuItem1.Click += new System.EventHandler(this.testAggregationPerformanceToolStripMenuItem1_Click_1);
             // 
             // MainForm
             // 
@@ -359,5 +377,7 @@ namespace AggManager
         private System.Windows.Forms.ToolStripMenuItem searchSimilarAggregationsToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem exportToASQLTableToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem searchSimilarAggregationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testAggregationPerformanceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testAggregationPerformanceToolStripMenuItem1;
     }
 }

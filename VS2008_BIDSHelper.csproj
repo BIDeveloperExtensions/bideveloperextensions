@@ -191,6 +191,13 @@
     </Compile>
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\ReportViewerForm.Designer.cs" />
+    <Compile Include="SSAS\AggManager\AggregationPerformance.cs" />
+    <Compile Include="SSAS\AggManager\AggregationPerformanceProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\AggregationPerformanceProgress.Designer.cs">
+      <DependentUpon>AggregationPerformanceProgress.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSAS\AggManager\frmExportTable.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -504,6 +511,11 @@
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
+    <EmbeddedResource Include="SSAS\AggManager\AggregationPerformance.rdlc" />
+    <EmbeddedResource Include="SSAS\AggManager\AggregationPerformanceProgress.resx">
+      <DependentUpon>AggregationPerformanceProgress.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\AggManager\frmExportTable.resx">
       <DependentUpon>frmExportTable.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -622,6 +634,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
+    <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+AggregationPerformance.datasource" />
+    <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+MissingAggregationPerformance.datasource" />
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+AggDimension.datasource" />
     <None Include="Properties\DataSources\AggManager.SearchSimilarAggs+SimilarAgg.datasource" />

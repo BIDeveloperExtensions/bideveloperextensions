@@ -770,6 +770,201 @@ namespace AggManager
 
         }
 
+        private void testAggregationPerformanceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Server s = new Server();
+            try
+            {
+                string serverName = "";
+                string databaseName = "";
+                if ((realCube != null) && (realCube.ParentServer != null))
+                {
+                    // if we are in Online mode there will be a parent server
+                    serverName = realCube.ParentServer.Name;
+                    databaseName = realCube.Parent.Name;
+                }
+                else
+                {
+                    // if we are in Project mode we will use the server name from 
+                    // the deployment settings
+                    DeploymentSettings deploySet = new DeploymentSettings(mProjItem);
+                    serverName = deploySet.TargetServer;
+                    databaseName = deploySet.TargetDatabase; //use the target database instead of selectedCube.Parent.Name because selectedCube.Parent.Name only reflects the last place it was deployed to, and we want the user to be able to use the deployment settings to control which deployed server/database to check against
+                }
 
+                s.Connect("Data Source=" + serverName);
+
+                Database db = s.Databases.FindByName(databaseName);
+                if (db == null)
+                {
+                    MessageBox.Show("Database " + databaseName + " isn't deployed to server " + serverName + ".");
+                    return;
+                }
+
+                Cube cube = db.Cubes.Find(realCube.ID);
+                if (cube == null)
+                {
+                    MessageBox.Show("Cube " + realCube.Name + " isn't deployed to database " + databaseName + " on server " + serverName + ".");
+                    return;
+                }
+
+                AggregationPerformanceProgress progressForm = new AggregationPerformanceProgress();
+                progressForm.Init(cube);
+                progressForm.ShowDialog(this);
+
+                if (progressForm.Results.Count > 0)
+                {
+                    OpenAggPerfReport(progressForm.Results, progressForm.MissingResults, progressForm.chkWithoutIndividualAggs.Checked);
+                }
+                else if (progressForm.Started)
+                {
+                    if (string.IsNullOrEmpty(progressForm.Errors))
+                    {
+                        MessageBox.Show("No processed aggregations found in cube " + cube.Name + " on database " + cube.Parent.Name + " on server " + cube.ParentServer.Name + ".");
+                    }
+                    else
+                    {
+                        MessageBox.Show(progressForm.Errors);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+            finally
+            {
+                try
+                {
+                    s.Disconnect();
+                }
+                catch { }
+            }
+        }
+
+        private void testAggregationPerformanceToolStripMenuItem1_Click_1(object sender, EventArgs e)
+        {
+            Server s = new Server();
+            try
+            {
+                AggregationDesign aggD = ((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag).AggregationDesigns.GetByName(treeView1.SelectedNode.Tag.ToString());
+                if (aggD.Parent.IsLinked)
+                {
+                    MessageBox.Show("This measure group is linked.");
+                    return;
+                }
+
+                string serverName = "";
+                string databaseName = "";
+                if (aggD.ParentServer != null)
+                {
+                    // if we are in Online mode there will be a parent server
+                    serverName = aggD.ParentServer.Name;
+                    databaseName = aggD.ParentDatabase.Name;
+                }
+                else
+                {
+                    // if we are in Project mode we will use the server name from 
+                    // the deployment settings
+                    DeploymentSettings deploySet = new DeploymentSettings(mProjItem);
+                    serverName = deploySet.TargetServer;
+                    databaseName = deploySet.TargetDatabase; //use the target database instead of selectedCube.Parent.Name because selectedCube.Parent.Name only reflects the last place it was deployed to, and we want the user to be able to use the deployment settings to control which deployed server/database to check against
+                }
+
+                s.Connect("Data Source=" + serverName);
+
+                Database db = s.Databases.FindByName(databaseName);
+                if (db == null)
+                {
+                    MessageBox.Show("Database " + databaseName + " isn't deployed to server " + serverName + ".");
+                    return;
+                }
+
+                Cube cube = db.Cubes.Find(realCube.ID);
+                if (cube == null)
+                {
+                    MessageBox.Show("Cube " + realCube.Name + " isn't deployed to database " + databaseName + " on server " + serverName + ".");
+                    return;
+                }
+
+                MeasureGroup liveMG = cube.MeasureGroups.Find(aggD.Parent.ID);
+                if (liveMG == null)
+                {
+                    MessageBox.Show("Measure group " + aggD.Parent.Name + " in cube " + realCube.Name + " isn't deployed to database " + databaseName + " on server " + serverName + ".");
+                    return;
+                }
+
+                AggregationDesign liveAggD = liveMG.AggregationDesigns.Find(aggD.ID);
+                if (liveMG == null)
+                {
+                    MessageBox.Show("Agg design " + aggD.Name + " in measure group " + aggD.Parent.Name + " in cube " + realCube.Name + " isn't deployed to database " + databaseName + " on server " + serverName + ".");
+                    return;
+                }
+
+                AggregationPerformanceProgress progressForm = new AggregationPerformanceProgress();
+                progressForm.Init(liveAggD);
+                progressForm.ShowDialog(this);
+
+                if (progressForm.Results.Count > 0)
+                {
+                    OpenAggPerfReport(progressForm.Results, progressForm.MissingResults, progressForm.chkWithoutIndividualAggs.Checked);
+                }
+                else if (progressForm.Started)
+                {
+                    if (string.IsNullOrEmpty(progressForm.Errors))
+                    {
+                        MessageBox.Show("No processed aggregations found in agg design " + liveAggD.Name + " in measure group " + liveMG.Name + " in cube " + liveMG.Parent.Name + " on database " + liveMG.ParentDatabase.Name + " on server " + liveMG.ParentServer.Name + ".");
+                    }
+                    else
+                    {
+                        MessageBox.Show(progressForm.Errors);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+            finally
+            {
+                try
+                {
+                    s.Disconnect();
+                }
+                catch { }
+            }
+        }
+
+        private void OpenAggPerfReport(List<AggregationPerformanceTester.AggregationPerformance> listPerf, List<AggregationPerformanceTester.MissingAggregationPerformance> missingPerf, bool showMissingAggs)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new MethodInvoker(delegate() { OpenAggPerfReport(listPerf, missingPerf, showMissingAggs); }));
+            }
+            else
+            {
+                if (listPerf == null) return;
+
+                BIDSHelper.ReportViewerForm frm = new BIDSHelper.ReportViewerForm();
+                frm.ReportBindingSource.DataSource = listPerf;
+                frm.Report = "SSAS.AggManager.AggregationPerformance.rdlc";
+
+                Microsoft.Reporting.WinForms.ReportDataSource reportDataSource1 = new Microsoft.Reporting.WinForms.ReportDataSource();
+                reportDataSource1.Name = "AggManager_AggregationPerformance";
+                reportDataSource1.Value = frm.ReportBindingSource;
+                frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource1);
+
+                Microsoft.Reporting.WinForms.ReportDataSource reportDataSource2 = new Microsoft.Reporting.WinForms.ReportDataSource();
+                reportDataSource2.Name = "AggManager_MissingAggregationPerformance";
+                reportDataSource2.Value = missingPerf;
+                frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource2);
+
+                frm.Parameters.Add(new Microsoft.Reporting.WinForms.ReportParameter("ShowMissingAggs", showMissingAggs.ToString()));
+
+                frm.Caption = "Aggregation Performance Report";
+                frm.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+                frm.Show(this);
+            }
+        }
     }
 }
