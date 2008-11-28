@@ -118,6 +118,7 @@ namespace AggManager
                     {
                         if (mg.IsLinked) continue;
 
+                        long lngMeasureGroupRowCount = 0;
                         foreach (AggregationDesign aggD in mg.AggregationDesigns)
                         {
                             bool bPartitionUsesAggD = false;
@@ -137,6 +138,19 @@ namespace AggManager
                             tester.StartTest();
                             listPerf.AddRange(tester.Results);
                             missingPerf.AddRange(tester.MissingResults);
+
+                            if (tester.Results.Length > 0)
+                            {
+                                lngMeasureGroupRowCount += tester.Results[0].PartitionRowCount;
+                                foreach (AggregationPerformanceTester.AggregationPerformance aggP in listPerf)
+                                {
+                                    if (aggP.MeasureGroupName == mg.Name)
+                                    {
+                                        aggP.MeasureGroupRowCount = lngMeasureGroupRowCount;
+                                    }
+                                }
+                            }
+
                             sErrors += tester.Errors;
                             if (tester.Cancelled) break;
                         }

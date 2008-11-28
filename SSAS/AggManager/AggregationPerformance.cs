@@ -220,10 +220,7 @@ namespace AggManager
                             AggregationPerformance aggP = new AggregationPerformance(a);
                             aggP.AggregationRowCount = dictAggRowCount[a];
                             aggP.PartitionRowCount = dictAggDesignRowCount[a.Parent];
-                            foreach (long l in dictAggDesignRowCount.Values)
-                            {
-                                aggP.MeasureGroupRowCount += l;
-                            }
+                            aggP.MeasureGroupRowCount = aggP.PartitionRowCount; //if there are multiple aggregation designs, outside code will fix that
 
                             ServerExecute(s, "<ClearCache xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" + "\r\n"
                             + "    <Object>" + "\r\n"
@@ -822,6 +819,9 @@ namespace AggManager
                 set { _aggRowCount = value; }
             }
 
+            /// <summary>
+            /// The rowcount of the fact-level data for all partitions in this agg design
+            /// </summary>
             public long PartitionRowCount
             {
                 get { return _partitionRowCount; }
