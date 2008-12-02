@@ -100,10 +100,13 @@ namespace AggManager
                             Aggregation a = p.AggregationDesign.Aggregations.FindByName(Convert.ToString(row["AGGREGATION_NAME"]));
                             if (a == null) throw new Exception("Couldn't find aggregation [" + row["AGGREGATION_NAME"] + "]");
                             long lngAggRowCount = Convert.ToInt64(row["AGGREGATION_SIZE"]);
-                            if (!dictAggRowCount.ContainsKey(a))
-                                dictAggRowCount.Add(a, lngAggRowCount);
-                            else
-                                dictAggRowCount[a] += lngAggRowCount;
+                            if (lngAggRowCount > 0)
+                            {
+                                if (!dictAggRowCount.ContainsKey(a))
+                                    dictAggRowCount.Add(a, lngAggRowCount);
+                                else
+                                    dictAggRowCount[a] += lngAggRowCount;
+                            }
                         }
                         else
                         {
