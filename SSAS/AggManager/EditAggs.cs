@@ -156,17 +156,19 @@ namespace AggManager
             nameColumnStyle.Width = iWidth0;
             myGridStyle.GridColumnStyles.Add(nameColumnStyle);
 
+            DataGridTextBoxColumn nameColumnStyle2 = new DataGridTextBoxColumn();
+            nameColumnStyle2.MappingName = "Type";
+            nameColumnStyle2.HeaderText = "Type";
+            nameColumnStyle2.Width = 50;
+            myGridStyle.GridColumnStyles.Add(nameColumnStyle2);
+
             DataGridTextBoxColumn nameColumnStyle1 = new DataGridTextBoxColumn();
             nameColumnStyle1.MappingName = "Aggregations";
             nameColumnStyle1.HeaderText = "Aggregation Definition";
             nameColumnStyle1.Width = iWidth1;
             myGridStyle.GridColumnStyles.Add(nameColumnStyle1);
 
-            DataGridTextBoxColumn nameColumnStyle2 = new DataGridTextBoxColumn();
-            nameColumnStyle2.MappingName = "Type";
-            nameColumnStyle2.HeaderText = "Type";
-            nameColumnStyle2.Width = 50;
-            myGridStyle.GridColumnStyles.Add(nameColumnStyle2);
+
 
             dataGrid1.TableStyles.Add(myGridStyle);
         }
@@ -822,8 +824,27 @@ namespace AggManager
             catch
             { }
             sychContr = SynchControls.Unknown;
-        }   
 
+            txtSummary.Text = GetCheckedNodeText(treeViewAggregation.Nodes);
+            
+        }
+
+        private string GetCheckedNodeText(TreeNodeCollection nodes)
+        {
+            string text = "";
+            foreach (TreeNode tn in nodes)
+            {
+                if (tn.Checked)
+                {
+                    text += tn.Text + "\r\n";
+                }
+                if (tn.Nodes.Count > 0) 
+                {
+                    text += GetCheckedNodeText(tn.Nodes);
+                }
+            }
+            return text;
+        }
         private void dataGrid1_CurrentCellChanged(object sender, EventArgs e)
         {
             dataGrid1_Click(sender, e);
@@ -893,12 +914,14 @@ namespace AggManager
 
                 System.Drawing.Color ii = dataGrid1.HeaderBackColor;
                 e.Node.BackColor = ii;
+            //    txtSummary.Text += e.Node.Text + ", ";
             }
             else
             {
                 strAgg = strAgg.Insert(intAttrCount, "0");
                 strAgg = strAgg.Remove(intAttrCount + 1, 1);
                 e.Node.BackColor = treeViewAggregation.BackColor;
+            //    txtSummary.Text.Replace(e.Node.Text + ", ", "");
             }
             dr[1] = strAgg;
 
@@ -1283,7 +1306,10 @@ namespace AggManager
 
         }
 
-
+        private void chkVerbose_CheckChanged(object sender, EventArgs e)
+        {
+            splitDetails.Panel2Collapsed = !chkVerbose.Checked;
+        }
 
     }
 
