@@ -171,6 +171,8 @@ namespace AggManager
             this.treeViewAggregation.Size = new System.Drawing.Size(205, 306);
             this.treeViewAggregation.StateImageList = this.imageList1;
             this.treeViewAggregation.TabIndex = 7;
+            this.treeViewAggregation.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterCheck);
+            this.treeViewAggregation.Click += new System.EventHandler(this.treeViewAggregation_Click);
             // 
             // txtSummary
             // 
