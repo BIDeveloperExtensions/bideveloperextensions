@@ -820,13 +820,13 @@ namespace AggManager
                     }
                 }
                 SetEstimatedSize(GetAggregationFromString(strAggName, strAgg));
+
+                txtSummary.Text = GetCheckedNodeText(treeViewAggregation.Nodes);
             }
             catch
             { }
             sychContr = SynchControls.Unknown;
 
-            txtSummary.Text = GetCheckedNodeText(treeViewAggregation.Nodes);
-            
         }
 
         private string GetCheckedNodeText(TreeNodeCollection nodes)
@@ -836,7 +836,29 @@ namespace AggManager
             {
                 if (tn.Checked)
                 {
-                    text += tn.Text + "\r\n";
+                    int iCntMatchingName = 0;
+                    foreach (MeasureGroupDimension mgd in mg1.Dimensions)
+                    {
+                        foreach (CubeAttribute ca in mgd.CubeDimension.Attributes)
+                        {
+                            if (ca.AttributeHierarchyEnabled && ca.Attribute.AttributeHierarchyEnabled && string.Compare(ca.Attribute.Name, tn.Text, true) == 0)
+                            {
+                                iCntMatchingName++;
+                            }
+                        }
+                    }
+                    if (iCntMatchingName > 1)
+                    {
+                        //put the cube dimension name on the end to disambiguate
+                        TreeNode parentNode = tn;
+                        while (parentNode.Parent != null) //loop until you hit the dimension
+                            parentNode = parentNode.Parent;
+                        text += tn.Text + " (" + parentNode.Text + ")\r\n";
+                    }
+                    else
+                    {
+                        text += tn.Text + "\r\n";
+                    }
                 }
                 if (tn.Nodes.Count > 0) 
                 {
@@ -914,14 +936,12 @@ namespace AggManager
 
                 System.Drawing.Color ii = dataGrid1.HeaderBackColor;
                 e.Node.BackColor = ii;
-            //    txtSummary.Text += e.Node.Text + ", ";
             }
             else
             {
                 strAgg = strAgg.Insert(intAttrCount, "0");
                 strAgg = strAgg.Remove(intAttrCount + 1, 1);
                 e.Node.BackColor = treeViewAggregation.BackColor;
-            //    txtSummary.Text.Replace(e.Node.Text + ", ", "");
             }
             dr[1] = strAgg;
 
@@ -1066,6 +1086,7 @@ namespace AggManager
 
             DataRow dr = GetCurrentDataGridRow();
             SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
+            txtSummary.Text = GetCheckedNodeText(treeViewAggregation.Nodes);
 
             this.Cursor = Cursors.Default;
         }
@@ -1220,6 +1241,8 @@ namespace AggManager
                         DataRow dr = GetCurrentDataGridRow();
                         SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
                         boolInExpandOrCollapse = false;
+
+                        txtSummary.Text = GetCheckedNodeText(treeViewAggregation.Nodes);
                     }
                 }
             }
@@ -1310,6 +1333,7 @@ namespace AggManager
         {
             splitDetails.Panel2Collapsed = !chkVerbose.Checked;
         }
+
 
     }
 

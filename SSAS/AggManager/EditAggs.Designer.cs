@@ -179,9 +179,11 @@ namespace AggManager
             this.txtSummary.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSummary.BackColor = System.Drawing.SystemColors.Window;
             this.txtSummary.Location = new System.Drawing.Point(0, 3);
             this.txtSummary.Multiline = true;
             this.txtSummary.Name = "txtSummary";
+            this.txtSummary.ReadOnly = true;
             this.txtSummary.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtSummary.Size = new System.Drawing.Size(204, 130);
             this.txtSummary.TabIndex = 14;
