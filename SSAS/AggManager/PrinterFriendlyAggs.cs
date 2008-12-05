@@ -32,7 +32,6 @@ namespace AggManager
                 if (mg.IsLinked) continue;
                 foreach (AggregationDesign aggDesign in mg.AggregationDesigns)
                 {
-                    aggs.AddRange(ListAggs(aggDesign, aggDesign.Name, null));
                     aggDimensions.AddRange(ListAggDimensions(aggDesign, aggDesign.Name, null));
                 }
             }
