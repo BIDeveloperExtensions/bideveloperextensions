@@ -14,9 +14,13 @@ namespace BIDSHelper
 {
     public class SmartDiffPlugin : BIDSHelperPluginBase
     {
+        private static string _VisualStudioRegistryPath;
+        private static System.Collections.Generic.Dictionary<string, string> _dictPasswords = new System.Collections.Generic.Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+
         public SmartDiffPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
+            _VisualStudioRegistryPath = this.ApplicationObject.RegistryRoot;
         }
 
         public override string ShortName
@@ -83,7 +87,7 @@ namespace BIDSHelper
         public static string PROVIDER_NAME_SOURCESAFE = "MSSCCI:Microsoft Visual SourceSafe";
         public static string PROVIDER_NAME_TFS = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
 
-        //TODO: SSAS and SSRS filetypes
+        //TODO: SSRS filetypes
         public override void Exec()
         {
             try
@@ -107,7 +111,7 @@ namespace BIDSHelper
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("You must have either Microsoft Visual SourceSafe 2005 or Microsoft Visual Studio 2005 Team Explorer Client installed.\r\n\r\nError was: " + ex.Message);
+                        MessageBox.Show("You must have either Microsoft Visual SourceSafe 2005 or Microsoft Visual Studio 2005/2008 Team Explorer Client installed.\r\n\r\nError was: " + ex.Message);
                         return;
                     }
                     if (bindings != null)
@@ -254,14 +258,10 @@ namespace BIDSHelper
                 sSourceSafePath = sSourceSafePath.Substring(0, sSourceSafePath.IndexOf(':'));
             }
 
-            string sUsername = GetVSSUsername();
-            string sPassword = "";
+            object db = OpenSourceSafeDatabase(sIniDirectory, sSourceSafePath);
 
             System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
             System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-            System.Reflection.Assembly vssAssembly = System.Reflection.Assembly.Load(VSS_ASSEMBLY_FULL_NAME);
-            object db = vssAssembly.CreateInstance("Microsoft.VisualStudio.SourceSafe.Interop.VSSDatabaseClass");
-            db.GetType().InvokeMember("Open", getmethodflags, null, db, new object[] { sIniDirectory + "\\srcsafe.ini", sUsername, sPassword });
 
             try
             {
@@ -297,14 +297,11 @@ namespace BIDSHelper
                 sSourceSafePath = sSourceSafePath.Substring(0, sSourceSafePath.IndexOf(':'));
             }
 
-            string sUsername = GetVSSUsername();
-            string sPassword = "";
+            object db = OpenSourceSafeDatabase(sIniDirectory, sSourceSafePath);
 
             System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
             System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-            System.Reflection.Assembly vssAssembly = System.Reflection.Assembly.Load(VSS_ASSEMBLY_FULL_NAME);
-            object db = vssAssembly.CreateInstance("Microsoft.VisualStudio.SourceSafe.Interop.VSSDatabaseClass");
-            db.GetType().InvokeMember("Open", getmethodflags, null, db, new object[] { sIniDirectory + "\\srcsafe.ini", sUsername, sPassword });
+
             try
             {
                 object item;
@@ -339,12 +336,132 @@ namespace BIDSHelper
             }
         }
 
-        //the following didn't work: System.Threading.Thread.CurrentPrincipal.Identity.Name
-        //so we get it from the registry
+        private static object OpenSourceSafeDatabase(string sIniDirectory, string sSourceSafePath)
+        {
+            string sUsername = GetVSSUsername();
+            string sPassword = "";
+            if (_dictPasswords.ContainsKey(sUsername))
+                sPassword = _dictPasswords[sUsername];
+
+            System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+            System.Reflection.Assembly vssAssembly = System.Reflection.Assembly.Load(VSS_ASSEMBLY_FULL_NAME);
+            object db = null;
+            bool bRetry = true;
+            while (bRetry)
+            {
+                try
+                {
+                    db = vssAssembly.CreateInstance("Microsoft.VisualStudio.SourceSafe.Interop.VSSDatabaseClass");
+                    db.GetType().InvokeMember("Open", getmethodflags, null, db, new object[] { sIniDirectory + "\\srcsafe.ini", sUsername, sPassword });
+                    bRetry = false;
+                }
+                catch
+                {
+                    try
+                    {
+                        db.GetType().InvokeMember("Close", getmethodflags, null, db, null);
+                    }
+                    catch { }
+
+                    Form passwordForm = new Form();
+                    passwordForm.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+                    passwordForm.Text = "SourceSafe Login";
+                    passwordForm.MaximizeBox = false;
+                    passwordForm.MinimizeBox = false;
+                    passwordForm.SizeGripStyle = SizeGripStyle.Hide;
+                    passwordForm.ShowInTaskbar = false;
+                    passwordForm.Width = 500;
+                    passwordForm.Height = 150;
+                    passwordForm.MaximumSize = new System.Drawing.Size(1600, passwordForm.Height);
+                    passwordForm.MinimumSize = new System.Drawing.Size(300, passwordForm.Height);
+                    passwordForm.StartPosition = FormStartPosition.CenterParent;
+
+                    TextBox txtUsername = new TextBox();
+                    txtUsername.Width = passwordForm.Width - 100;
+                    txtUsername.Left = 80;
+                    txtUsername.Top = 20;
+                    txtUsername.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+                    passwordForm.Controls.Add(txtUsername);
+                    txtUsername.Text = sUsername;
+
+                    Label lblUsername = new Label();
+                    lblUsername.Text = "Username:";
+                    lblUsername.Width = 60;
+                    lblUsername.Left = 15;
+                    lblUsername.Top = txtUsername.Top;
+                    passwordForm.Controls.Add(lblUsername);
+
+                    TextBox txtPassword = new TextBox();
+                    txtPassword.Name = "txtPassword";
+                    txtPassword.PasswordChar = '*';
+                    txtPassword.Width = passwordForm.Width - 100;
+                    txtPassword.Left = 80;
+                    txtPassword.Top = 50;
+                    txtPassword.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+                    passwordForm.Controls.Add(txtPassword);
+                    txtPassword.Focus();
+
+                    Label lblPassword = new Label();
+                    lblPassword.Text = "Password:";
+                    lblPassword.Width = 60;
+                    lblPassword.Left = 15;
+                    lblPassword.Top = txtPassword.Top;
+                    passwordForm.Controls.Add(lblPassword);
+
+                    Button ok = new Button();
+                    ok.Text = "OK";
+                    ok.Width = 80;
+                    ok.Left = txtPassword.Right - ok.Width;
+                    ok.Top = txtPassword.Bottom + 15;
+                    ok.Anchor = AnchorStyles.Right;
+                    ok.Click += new EventHandler(passwordFormOK_Click);
+                    passwordForm.Controls.Add(ok);
+
+                    passwordForm.AcceptButton = ok;
+                    passwordForm.Load += new EventHandler(passwordForm_Load);
+                    DialogResult res = passwordForm.ShowDialog();
+                    if (res != DialogResult.OK) throw new Exception("Unable to login using username " + sUsername);
+
+                    sUsername = txtUsername.Text;
+                    sPassword = txtPassword.Text;
+                    _dictPasswords[sUsername] = sPassword;
+
+                    bRetry = true;
+                }
+            }
+
+            return db;
+        }
+
+        static void passwordForm_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                Form form = (Form)sender;
+                form.Controls["txtPassword"].Select();
+            }
+            catch { }
+        }
+
+        private static void passwordFormOK_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Button b = (Button)sender;
+                Form form = (Form)b.Parent;
+                form.DialogResult = DialogResult.OK;
+                form.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        
         private static string GetVSSUsername()
         {
             string sUsername = "";
-            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\8.0\SourceControl\UserNames");
+            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(_VisualStudioRegistryPath + @"\SourceControl\UserNames");
             if (rk != null)
             {
                 sUsername = (string)rk.GetValue("0", "");
