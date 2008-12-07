@@ -227,7 +227,14 @@ namespace BIDSHelper
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                string sError = "";
+                Exception exLoop = ex;
+                while (exLoop != null)
+                {
+                    sError += exLoop.Message + "\r\n";
+                    exLoop = exLoop.InnerException;
+                }
+                MessageBox.Show(sError, "BIDS Helper Smart Diff Error");
             }
         }
 
@@ -274,7 +281,7 @@ namespace BIDSHelper
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Cannot open that path in SourceSafe. Error was: " + ex.Message);
+                    throw new Exception("Cannot open that path in SourceSafe.", ex);
                 }
                 if (iVersion < 0) iVersion = (int)item.GetType().InvokeMember("VersionNumber", getpropflags, null, item, null);
                 object version = item.GetType().InvokeMember("Version", getpropflags, null, item, new object[] { iVersion });
@@ -311,7 +318,7 @@ namespace BIDSHelper
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Cannot open that path in SourceSafe. Error was: " + ex.Message);
+                    throw new Exception("Cannot open that path in SourceSafe to find versions.", ex);
                 }
                 object versions = item.GetType().InvokeMember("Versions", getpropflags, null, item, new object[] { 0 });
                 System.Collections.IEnumerator enumerator = (System.Collections.IEnumerator)versions.GetType().InvokeMember("GetEnumerator", getmethodflags, null, versions, null);
@@ -345,8 +352,10 @@ namespace BIDSHelper
 
             System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
             System.Reflection.Assembly vssAssembly = System.Reflection.Assembly.Load(VSS_ASSEMBLY_FULL_NAME);
+            
             object db = null;
             bool bRetry = true;
+            bool bFirstTime = true;
             while (bRetry)
             {
                 try
@@ -355,7 +364,7 @@ namespace BIDSHelper
                     db.GetType().InvokeMember("Open", getmethodflags, null, db, new object[] { sIniDirectory + "\\srcsafe.ini", sUsername, sPassword });
                     bRetry = false;
                 }
-                catch
+                catch (Exception ex)
                 {
                     try
                     {
@@ -417,10 +426,22 @@ namespace BIDSHelper
                     ok.Click += new EventHandler(passwordFormOK_Click);
                     passwordForm.Controls.Add(ok);
 
+                    if (!bFirstTime && ex.InnerException != null)
+                    {
+                        Label lblError = new Label();
+                        lblError.ForeColor = System.Drawing.Color.Red;
+                        lblError.Left = 15;
+                        lblError.Width = passwordForm.Width - 45 - ok.Width;
+                        lblError.Top = txtPassword.Bottom + 15;
+                        lblError.Text = ex.InnerException.Message;
+                        passwordForm.Controls.Add(lblError);
+                    }
+                    bFirstTime = false;
+
                     passwordForm.AcceptButton = ok;
                     passwordForm.Load += new EventHandler(passwordForm_Load);
                     DialogResult res = passwordForm.ShowDialog();
-                    if (res != DialogResult.OK) throw new Exception("Unable to login using username " + sUsername);
+                    if (res != DialogResult.OK) throw new Exception("Unable to login using username " + sUsername, ex);
 
                     sUsername = txtUsername.Text;
                     sPassword = txtPassword.Text;

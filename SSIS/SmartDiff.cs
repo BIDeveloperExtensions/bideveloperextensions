@@ -150,7 +150,14 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                string sError = "";
+                Exception exLoop = ex;
+                while (exLoop != null)
+                {
+                    sError += exLoop.Message + "\r\n";
+                    exLoop = exLoop.InnerException;
+                }
+                MessageBox.Show(sError, "BIDS Helper Smart Diff Error");
             }
         }
 
