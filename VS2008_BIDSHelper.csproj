@@ -422,6 +422,9 @@
       <DependentUpon>SmartDiff.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\SmartDiffPlugin.cs" />
+    <Compile Include="SSRS\ExpressionInfo.cs" />
+    <Compile Include="SSRS\UnusedDatasetsPlugin.cs" />
+    <Compile Include="SSRS\VBExpressionParser.cs" />
     <COMReference Include="EnvDTE">
       <Lcid>0</Lcid>
       <VersionMinor>0</VersionMinor>
@@ -632,6 +635,8 @@
       <DependentUpon>VariablesMove.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="SSRS\UsedDatasets.rdlc" />
+    <EmbeddedResource Include="SSRS\UnusedDatasets.rdlc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
@@ -641,6 +646,7 @@
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+AggDimension.datasource" />
     <None Include="Properties\DataSources\AggManager.SearchSimilarAggs+SimilarAgg.datasource" />
     <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
+    <None Include="Properties\DataSources\BIDSHelper.SSRS.UsedRsDataSets+RsDataSetUsage.datasource" />
     <None Include="Properties\DataSources\DataTypeDiscrepancyCheckPlugin.DataTypeDiscrepancy.datasource" />
     <None Include="Properties\DataSources\DimensionOptimizationReportPlugin.DimensionOptimizations.datasource" />
     <None Include="Properties\DataSources\DimensionUsage.datasource" />
