@@ -65,14 +65,14 @@ namespace BIDSHelper.SSRS
                 if (hierItem.Object is Project)
                 {
                     Project p = (Project)hierItem.Object;
-                    if (GetRdlFilesInProjectItems(p.ProjectItems).Length > 0)
+                    if (GetRdlFilesInProjectItems(p.ProjectItems, true).Length > 0)
                         return true;
                 }
                 else if (solution != null)
                 {
                     foreach (Project p in solution.Projects)
                     {
-                        if (GetRdlFilesInProjectItems(p.ProjectItems).Length > 0)
+                        if (GetRdlFilesInProjectItems(p.ProjectItems, true).Length > 0)
                             return true;
                     }
                 }
@@ -84,18 +84,18 @@ namespace BIDSHelper.SSRS
             }
         }
 
-        private string[] GetRdlFilesInProjectItems(ProjectItems pis)
+        public static string[] GetRdlFilesInProjectItems(ProjectItems pis, bool bGetRDLC)
         {
             if (pis == null) return new string[] {};
 
             List<string> lst = new List<string>();
             foreach (ProjectItem pi in pis)
             {
-                if (pi.Name.ToLower().EndsWith(".rdl") || pi.Name.ToLower().EndsWith(".rdlc"))
+                if (pi.Name.ToLower().EndsWith(".rdl") || (bGetRDLC && pi.Name.ToLower().EndsWith(".rdlc")))
                 {
                     lst.Add(pi.get_FileNames(1));
                 }
-                lst.AddRange(GetRdlFilesInProjectItems(pi.ProjectItems));
+                lst.AddRange(GetRdlFilesInProjectItems(pi.ProjectItems, bGetRDLC));
             }
             return lst.ToArray();
         }
@@ -118,13 +118,13 @@ namespace BIDSHelper.SSRS
                 if (hierItem.Object is Project)
                 {
                     Project p = (Project)hierItem.Object;
-                    lstRdls.AddRange(GetRdlFilesInProjectItems(p.ProjectItems));
+                    lstRdls.AddRange(GetRdlFilesInProjectItems(p.ProjectItems, true));
                 }
                 else if (solution != null)
                 {
                     foreach (Project p in solution.Projects)
                     {
-                        lstRdls.AddRange(GetRdlFilesInProjectItems(p.ProjectItems));
+                        lstRdls.AddRange(GetRdlFilesInProjectItems(p.ProjectItems, true));
                     }
                 }
 
