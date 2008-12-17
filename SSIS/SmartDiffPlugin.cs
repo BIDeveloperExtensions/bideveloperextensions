@@ -130,7 +130,14 @@ namespace BIDSHelper
                         }
                         if (oSourceControl.IsItemUnderSCC(projItem.get_FileNames(0)))
                         {
-                            sDefaultSourceSafePath = sProject + "/" + projItem.Name;
+                            if (projItem.get_FileNames(0).StartsWith(bindings.LocalBinding))
+                            {
+                                sDefaultSourceSafePath = sProject + projItem.get_FileNames(0).Substring(bindings.LocalBinding.Length).Replace('\\','/');
+                            }
+                            else
+                            {
+                                sDefaultSourceSafePath = sProject + "/" + projItem.Name;
+                            }
                         }
                     }
                 }
