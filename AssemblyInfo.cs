@@ -13,7 +13,7 @@ using System.Resources;
 [assembly: AssemblyDescription("Provides additional useful features to the BI Development Studio")]
 [assembly: AssemblyCompany("http://www.codeplex.com/bidshelper")]
 [assembly: AssemblyProduct("BIDS Helper")]
-[assembly: AssemblyCopyright("2007")]
+[assembly: AssemblyCopyright("2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -27,7 +27,7 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("1.3.0.8")]
+[assembly: AssemblyVersion("1.4.0.0")]
 [assembly: ComVisible(true)]
 [assembly: NeutralResourcesLanguageAttribute("")]
-[assembly: AssemblyFileVersionAttribute("1.3.0.8")]
+[assembly: AssemblyFileVersionAttribute("1.4.0.0")]
