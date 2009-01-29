@@ -53,19 +53,20 @@ namespace PCDimNaturalizer
                 SendMessage(SourceWindowHandle, WM_USER2, IntPtr.Zero, NewImage.GetHbitmap());
         }
 
-        protected int GetLevelCountFromPCTable(string Table, string ID, string PID)
+        protected int GetLevelCountFromPCTable(string Table, string ID, string PID) { return GetLevelCountFromPCTable(Table, ID, PID, true); }
+
+        protected int GetLevelCountFromPCTable(string Table, string ID, string PID, bool IsIDNumeric)
         {
             OleDbCommand cmd = new OleDbCommand(";WITH PCStructure(" + PID + ", " + ID + ", Level) AS (" +
                 "SELECT " + PID + ", " + ID + ", 1 AS Level FROM " + Table +
-                " WHERE " + PID + " IS NULL OR " + PID + " = 0 OR " + PID + " = " + ID + " " +
+                " WHERE " + PID + " IS NULL OR " + PID +
+                " = " + (IsIDNumeric ? "0" : "''") + " OR " + PID + " = " + ID + " " +
                 "UNION ALL  " +
                 "SELECT e." + PID + ", e." + ID + ", Level + 1  " +
                 "FROM " + Table + " e " +
                 "INNER JOIN PCStructure d ON e." + PID + " = d." + ID + " AND e." + PID + " != e." + ID + ")  " +
                 "SELECT Max(Level) FROM PCStructure", Conn);
             object res = cmd.ExecuteScalar();
-            if (res.GetType().ToString() != "System.Int32")
-                throw new Exception("The level structure is not parsable for the source table of the specified dimension.");
             return (int)res;
         }
 
@@ -235,8 +236,8 @@ namespace PCDimNaturalizer
                 srv = ASServer;
                 db = ASDatabase;
                 dim = PCDimension;
-                txtNewView = ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbSchemaName"] + ".DimNaturalized_" +
-                        ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbTableName"];
+                txtNewView = ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbSchemaName"] + ".[DimNaturalized_" +
+                        ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbTableName"] + "]";
                 ASNaturalizationActionLevel = ActionLevel;
                 InitIDCols();
             }
@@ -256,8 +257,12 @@ namespace PCDimNaturalizer
                 srv.Connect("Integrated Security=SSPI;Persist Security Info=False;Data Source=" + ASServer);
                 db = srv.Databases.GetByName(ASDatabase);
                 dim = db.Dimensions.GetByName(PCDimension);
-                txtNewView = ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbSchemaName"] + ".DimNaturalized_" +
-                        ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbTableName"]; ;
+                if (((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbSchemaName"] != null)
+                    txtNewView = ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbSchemaName"] + ".[DimNaturalized_" +
+                        ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.ExtendedProperties["DbTableName"] + "]";
+                else
+                    txtNewView = "[DimNaturalized_" +
+                        ((EnhancedColumnBinding)dim.KeyAttribute.KeyColumns[0].Source).Table.TableName + "]";
                 ASNaturalizationActionLevel = ActionLevel;
                 InitIDCols();
             }
@@ -681,7 +686,7 @@ namespace PCDimNaturalizer
                     for (int j = 0; j < NewRelationColumns.Length; j++)
                         NewRelationColumns[j] = dim.DataSourceView.Schema.Tables[txtNewView].Columns[dim.KeyAttribute.Name + "_KeyColumn"];
 
-                    DataRelation dataRelation = new DataRelation(tbl.ChildRelations[i].RelationName.Replace(tbl.ExtendedProperties["DbTableName"].ToString(), txtNewView),
+                    DataRelation dataRelation = new DataRelation(tbl.ChildRelations[i].RelationName.Replace((string)tbl.ChildRelations[i].ParentTable.ExtendedProperties["FriendlyName"], txtNewView),
                         NewRelationColumns,
                         tbl.ChildRelations[i].ChildColumns);
                     dim.DataSourceView.Schema.Relations.Add(dataRelation);
@@ -718,7 +723,7 @@ namespace PCDimNaturalizer
                         }
                         if (!MissingRelationColumnInImportedDimension)
                         {
-                            DataRelation dataRelation = new DataRelation(tbl.ParentRelations[i].RelationName.Replace(tbl.ExtendedProperties["DbTableName"].ToString(), txtNewView + j.ToString()),
+                            DataRelation dataRelation = new DataRelation(tbl.ParentRelations[i].RelationName.Replace(tbl.TableName, txtNewView + j.ToString()),
                                 tbl.ParentRelations[i].ParentColumns,
                                 NewRelationColumns);
                             dim.DataSourceView.Schema.Relations.Add(dataRelation);
@@ -754,8 +759,12 @@ namespace PCDimNaturalizer
         private void AddNaturalizedViewToDSV()
         {
             string strQry = "select top 1 * from " + txtNewView;
-            string strSchema = txtNewView.Substring(0, txtNewView.IndexOf("."));
+            string strSchema = "";
+            if (txtNewView.IndexOf(".") != -1) strSchema = txtNewView.Substring(0, txtNewView.IndexOf("."));
             txtNewView = txtNewView.Substring(txtNewView.IndexOf(".") + 1); // Once it is in the DSV, the naturalized view no longer requires the schema name so strip it out...
+
+            if (txtNewView.StartsWith("[") && txtNewView.EndsWith("]"))
+                txtNewView = txtNewView.Substring(1, txtNewView.Length - 2);
 
             string sTableName = txtNewView;
             txtNewView = strSchema + "_" + txtNewView;
@@ -1038,6 +1047,31 @@ namespace PCDimNaturalizer
             }
         }
 
+        private bool IsOLEDBTypeNumeric(OleDbType typ)
+        {
+            if (typ == OleDbType.Integer ||
+                typ == OleDbType.BigInt ||
+                typ == OleDbType.Binary ||
+                typ == OleDbType.Boolean ||
+                typ == OleDbType.Currency ||
+                typ == OleDbType.Decimal ||
+                typ == OleDbType.Double ||
+                typ == OleDbType.LongVarBinary ||
+                typ == OleDbType.Numeric ||
+                typ == OleDbType.Single ||
+                typ == OleDbType.SmallInt ||
+                typ == OleDbType.TinyInt ||
+                typ == OleDbType.UnsignedBigInt ||
+                typ == OleDbType.UnsignedInt ||
+                typ == OleDbType.UnsignedSmallInt ||
+                typ == OleDbType.UnsignedTinyInt ||
+                typ == OleDbType.VarBinary ||
+                typ == OleDbType.VarNumeric)
+                return true;
+            else
+                return false;
+        }
+
         public override void Naturalize(object MinLevels)
         {
             try
@@ -1046,7 +1080,7 @@ namespace PCDimNaturalizer
                 UpdateStatus("Initializing connections and calculating level depth...");
                 EnsureAllIncludedPCAttributesRelateToKey();
                 Conn = (OleDbConnection)Program.ASFlattener.DataSourceConnection.ConnectionObject;
-                MinimumLevelCount = GetLevelCountFromPCTable(id.TableName, id.ColumnName, pid.ColumnName);
+                MinimumLevelCount = GetLevelCountFromPCTable(id.TableName, id.ColumnName, pid.ColumnName, IsOLEDBTypeNumeric(PCParentAttribute().KeyColumns[0].DataType));
                 int iMinLevels = Convert.ToInt32(MinLevels);
                 if (MinimumLevelCount < iMinLevels) MinimumLevelCount = iMinLevels;
 
@@ -1163,7 +1197,12 @@ namespace PCDimNaturalizer
 
         public string TableName
         {
-            get { return "[" + DSV.Schema.Tables[col.TableID].ExtendedProperties["DbSchemaName"].ToString().Trim() + "].[" + DSV.Schema.Tables[col.TableID].ExtendedProperties["DbTableName"].ToString().Trim() + "]"; }
+            get {
+                if (DSV.Schema.Tables[col.TableID].ExtendedProperties.Contains("DbSchemaName") && DSV.Schema.Tables[col.TableID].ExtendedProperties.Contains("DbTableName"))
+                    return "[" + DSV.Schema.Tables[col.TableID].ExtendedProperties["DbSchemaName"].ToString().Trim() + "].[" + DSV.Schema.Tables[col.TableID].ExtendedProperties["DbTableName"].ToString().Trim() + "]";
+                else
+                    return DSV.Schema.Tables[col.TableID].TableName;
+            }
         }
 
         public string ColumnName
