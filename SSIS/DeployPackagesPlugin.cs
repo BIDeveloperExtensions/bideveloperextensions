@@ -247,17 +247,13 @@ namespace BIDSHelper
                     sBatFileContents.Append("mkdir \"").Append(sDestFolder).AppendLine("\"");
                 }
 
-                //could find full path to dtutil this way:
-                //SSIS.PerformanceVisualization.PerformanceTab.GetPathToDtsExecutable("dtutil.exe", false);
-                //but that may make the bat file less portable... so we'll just leave it not specifying the full path to dtutil
-
                 //setup Process object to call the dtutil EXE
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.CreateNoWindow = true;
-                process.StartInfo.FileName = "dtutil";
+                process.StartInfo.FileName = SSIS.PerformanceVisualization.PerformanceTab.GetPathToDtsExecutable("dtutil.exe", false); //makes the bat file less portable, but does workaround the problem if SSIS2005 and SSIS2008 are both installed... issue 21074
 
                 if (newOptions.DeploymentType != DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
                 {
@@ -270,7 +266,7 @@ namespace BIDSHelper
                             if (!(string.IsNullOrEmpty(sAccumulatingDir) && sDestType == "DTS"))
                             {
                                 process.StartInfo.Arguments = string.Format("/FCreate {0};{1};\"{2}\" /SourceServer {3} ", sDestType, (sAccumulatingDir == "" ? "\\" : "\"" + sAccumulatingDir + "\""), dir, newOptions.DestinationServer);
-                                sBatFileContents.Append(process.StartInfo.FileName).Append(" ").AppendLine(process.StartInfo.Arguments);
+                                sBatFileContents.Append("\"").Append(process.StartInfo.FileName).Append("\" ").AppendLine(process.StartInfo.Arguments);
                                 process.Start();
                                 process.WaitForExit();
                             }
@@ -324,14 +320,14 @@ namespace BIDSHelper
                     {
                         process.Refresh();
                         process.StartInfo.Arguments = string.Format("/FILE \"{0}\" /DestServer {1} /COPY {2};\"{3}\" /Q", sFilePath, newOptions.DestinationServer, sDestType, sDestFolder + sFileName.Substring(0, sFileName.Length - ".dtsx".Length));
-                        sBatFileContents.Append(process.StartInfo.FileName).Append(" ").AppendLine(process.StartInfo.Arguments);
+                        sBatFileContents.Append("\"").Append(process.StartInfo.FileName).Append("\" ").AppendLine(process.StartInfo.Arguments);
                         process.Start();
                         string sError = process.StandardError.ReadToEnd();
                         string sStandardOutput = process.StandardOutput.ReadToEnd();
                         process.WaitForExit();
                         if (process.ExitCode > 0)
                         {
-                            outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "BIDS Helper encountered an error when deploying package " + sFileName + "!\r\ndtutil " + process.StartInfo.Arguments + "\r\nexit code = " + process.ExitCode + "\r\n" + sStandardOutput);
+                            outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, "BIDS Helper encountered an error when deploying package " + sFileName + "!\r\n\"" + process.StartInfo.FileName + "\" " + process.StartInfo.Arguments + "\r\nexit code = " + process.ExitCode + "\r\n" + sStandardOutput);
                             this.ApplicationObject.ToolWindows.OutputWindow.Parent.AutoHides = false; //pin the window open so you can see the problem
                             return;
                         }
@@ -344,7 +340,10 @@ namespace BIDSHelper
                 if (bCreateBat)
                 {
                     string sBatFilename = System.IO.Path.GetDirectoryName(((Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj).FullName);
-                    sBatFilename += "\\" + newOptions.OutputPath + "\\bidsHelperDeployPackages.bat";
+                    sBatFilename += "\\" + newOptions.OutputPath;
+                    if (!System.IO.Directory.Exists(sBatFilename))
+                        System.IO.Directory.CreateDirectory(sBatFilename);
+                    sBatFilename += "\\bidsHelperDeployPackages.bat";
                     if (System.IO.File.Exists(sBatFilename))
                     {
                         System.IO.File.SetAttributes(sBatFilename, System.IO.FileAttributes.Normal);
