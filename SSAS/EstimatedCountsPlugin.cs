@@ -252,6 +252,26 @@ namespace BIDSHelper
                             }
                             foreach (AggregationDesign aggd in mg.AggregationDesigns)
                             {
+                                //make sure each measure group dimension and attribute is in each agg design... fixes issue 21220
+                                foreach (MeasureGroupDimension mgd in mg.Dimensions)
+                                {
+                                    if (mgd is RegularMeasureGroupDimension)
+                                    {
+                                        if (!aggd.Dimensions.Contains(mgd.CubeDimensionID))
+                                        {
+                                            aggd.Dimensions.Add(mgd.CubeDimensionID);
+                                        }
+                                        AggregationDesignDimension aggdd = aggd.Dimensions[mgd.CubeDimensionID];
+                                        foreach (DimensionAttribute da in mgd.Dimension.Attributes)
+                                        {
+                                            if (da.AttributeHierarchyEnabled && mgd.CubeDimension.Attributes[da.ID].AttributeHierarchyEnabled && !aggdd.Attributes.Contains(da.ID))
+                                            {
+                                                aggdd.Attributes.Add(da.ID);
+                                            }
+                                        }
+                                    }
+                                }
+                                
                                 foreach (AggregationDesignDimension aggdim in aggd.Dimensions)
                                 {
                                     foreach (AggregationDesignAttribute attr in aggdim.Attributes)
