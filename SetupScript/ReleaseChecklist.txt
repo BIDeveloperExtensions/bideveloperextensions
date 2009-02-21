@@ -17,3 +17,7 @@ Doing a release of BIDSHelper
 5. Label the file in the SCC system with the release version number
 
 6. Add the files back that were excluded from the project in step 2.
+
+7. After the next release is posted on the BIDS Helper website, then update the following files to trigger a notification there's a new version available:
+   SQL2005CurrentReleaseVersion.xml
+   SQL2008CurrentReleaseVersion.xml

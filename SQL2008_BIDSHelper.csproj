@@ -185,6 +185,13 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Compile Include="Core\VersionCheckNotificationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Core\VersionCheckNotificationForm.Designer.cs">
+      <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\VersionCheckPlugin.cs" />
     <Compile Include="Core\BIDSHelperOptionsPage.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -193,6 +200,12 @@
     </Compile>
     <Compile Include="Core\BIDSHelperWindowActivatedPluginBase.cs" />
     <Compile Include="Core\Constants.cs" />
+    <Compile Include="Core\BIDSHelperOptionsVersionCheckPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\BIDSHelperOptionsVersionCheckPage.Designer.cs">
+      <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Core\ImageToPictureDispConverter.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -480,6 +493,7 @@
     <None Include="Resources\End.ico" />
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
+    <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />
@@ -514,6 +528,13 @@
     <EmbeddedResource Include="Core\BIDSHelperOptionsPage.resx">
       <SubType>Designer</SubType>
       <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\BIDSHelperOptionsVersionCheckPage.resx">
+      <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\VersionCheckNotificationForm.resx">
+      <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\BIDSHelper.ico" />
     <Content Include="Resources\DeployMdxScript.ico" />
