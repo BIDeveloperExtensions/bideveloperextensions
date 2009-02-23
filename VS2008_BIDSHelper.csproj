@@ -487,6 +487,7 @@
     <None Include="Resources\End.ico" />
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
+    <None Include="Resources\SmartDiffSSRS.xslt" />
     <Content Include="SetupScript\SQL2005CurrentReleaseVersion.xml" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />

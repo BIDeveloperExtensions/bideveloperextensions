@@ -50,6 +50,7 @@ namespace BIDSHelper
 
         private string[] DTS_FILE_EXTENSIONS = { ".dtsx" };
         private string[] SSAS_FILE_EXTENSIONS = { ".dim", ".cube", ".dmm", ".dsv" };
+        private string[] SSRS_FILE_EXTENSIONS = { ".rdl", ".rdlc" };
 
         /// <summary>
         /// Determines if the command should be displayed or not.
@@ -76,6 +77,11 @@ namespace BIDSHelper
                     if (sFileName.EndsWith(extension))
                         return true;
                 }
+                foreach (string extension in SSRS_FILE_EXTENSIONS)
+                {
+                    if (sFileName.EndsWith(extension))
+                        return true;
+                }
                 return false;
             }
             catch
@@ -87,7 +93,6 @@ namespace BIDSHelper
         public static string PROVIDER_NAME_SOURCESAFE = "MSSCCI:Microsoft Visual SourceSafe";
         public static string PROVIDER_NAME_TFS = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
 
-        //TODO: SSRS filetypes
         public override void Exec()
         {
             try
@@ -130,7 +135,7 @@ namespace BIDSHelper
                         }
                         if (oSourceControl.IsItemUnderSCC(projItem.get_FileNames(0)))
                         {
-                            if (projItem.get_FileNames(0).StartsWith(bindings.LocalBinding))
+                            if (projItem.get_FileNames(0).ToLower().StartsWith(bindings.LocalBinding.ToLower()))
                             {
                                 sDefaultSourceSafePath = sProject + projItem.get_FileNames(0).Substring(bindings.LocalBinding.Length).Replace('\\','/');
                             }
@@ -163,6 +168,7 @@ namespace BIDSHelper
                 //get the XSLT for this file extension
                 string sXslt = null;
                 string sProjectItemFileName = projItem.Name.ToLower();
+                bool bNewLineOnAttributes = true;
                 foreach (string extension in DTS_FILE_EXTENSIONS)
                 {
                     if (sProjectItemFileName.EndsWith(extension))
@@ -176,6 +182,15 @@ namespace BIDSHelper
                     if (sProjectItemFileName.EndsWith(extension))
                     {
                         sXslt = BIDSHelper.Properties.Resources.SmartDiffSSAS;
+                        break;
+                    }
+                }
+                foreach (string extension in SSRS_FILE_EXTENSIONS)
+                {
+                    if (sProjectItemFileName.EndsWith(extension))
+                    {
+                        sXslt = BIDSHelper.Properties.Resources.SmartDiffSSRS;
+                        bNewLineOnAttributes = false;
                         break;
                     }
                 }
@@ -216,8 +231,8 @@ namespace BIDSHelper
                         sNewFileName += " (local)";
                     }
 
-                    PrepXmlForDiff(sOldFile, sXslt);
-                    PrepXmlForDiff(sNewFile, sXslt);
+                    PrepXmlForDiff(sOldFile, sXslt, bNewLineOnAttributes);
+                    PrepXmlForDiff(sNewFile, sXslt, bNewLineOnAttributes);
 
                     ShowDiff(sOldFile, sNewFile, form.checkIgnoreCase.Checked, form.checkIgnoreEOL.Checked, form.checkIgnoreWhiteSpace.Checked, sOldFileName, sNewFileName);
                 }
@@ -567,7 +582,7 @@ namespace BIDSHelper
         }
         #endregion
 
-        private void PrepXmlForDiff(string sFilename, string sXSL)
+        private void PrepXmlForDiff(string sFilename, string sXSL, bool bNewLineOnAttributes)
         {
             System.IO.File.SetAttributes(sFilename, System.IO.FileAttributes.Normal); //unhide the file so you can overwrite it
 
@@ -581,7 +596,7 @@ namespace BIDSHelper
             doc.Load(sFilename);
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
-            settings.NewLineOnAttributes = true;
+            settings.NewLineOnAttributes = bNewLineOnAttributes;
             XmlWriter wr = XmlWriter.Create(sFilename, settings);
             doc.Save(wr);
             wr.Close();
