@@ -100,7 +100,8 @@ namespace BIDSHelper.Core
                     }
                     else
                     {
-                        lblServerVersion.Visible = false;
+                        lblServerVersion.Text = "BIDS Helper is up to date.";
+                        lblServerVersion.Visible = true;
                         linkNewVersion.Visible = false;
                     }
                 }

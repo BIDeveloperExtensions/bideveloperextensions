@@ -12,6 +12,7 @@ namespace BIDSHelper.Core
     {
         private VersionCheckPlugin _versionCheckPlugin;
         private EnvDTE.DTEEvents _events;
+        private System.Threading.Mutex _mtx = new System.Threading.Mutex(false, "BIDS Helper Version Notification");
 
         public VersionCheckNotificationForm(VersionCheckPlugin versionCheckPlugin)
         {
@@ -22,11 +23,16 @@ namespace BIDSHelper.Core
             _events.OnBeginShutdown += new EnvDTE._dispDTEEvents_OnBeginShutdownEventHandler(DTEEvents_OnBeginShutdown);
         }
 
-        void DTEEvents_OnBeginShutdown()
+        private void DTEEvents_OnBeginShutdown()
         {
             try
             {
                 notifyIcon1.Visible = false;
+            }
+            catch { }
+            try
+            {
+                _mtx.Close();
             }
             catch { }
         }
@@ -43,7 +49,16 @@ namespace BIDSHelper.Core
 
         private void remindMeLaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            try
+            {
+                _versionCheckPlugin.LastVersionCheck = DateTime.Today;
+                _mtx.Close();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void dismissToolStripMenuItem_Click(object sender, EventArgs e)
@@ -51,6 +66,7 @@ namespace BIDSHelper.Core
             try
             {
                 _versionCheckPlugin.DismissedVersion = _versionCheckPlugin.ServerVersion;
+                _mtx.Close();
                 this.Close();
             }
             catch (Exception ex)
@@ -79,9 +95,12 @@ namespace BIDSHelper.Core
                 }
                 else
                 {
-                    notifyIcon1.BalloonTipText = "You are currently running BIDS Helper version " + _versionCheckPlugin.LocalVersion + "\r\nThe latest version of BIDS Helper available is version " + _versionCheckPlugin.ServerVersion + "\r\nClick to download the latest version.";
-                    notifyIcon1.Visible = true;
-                    notifyIcon1.ShowBalloonTip(10000);
+                    if (_mtx.WaitOne(0, false)) //only returns true if no other BIDS Helper notification is open
+                    {
+                        notifyIcon1.BalloonTipText = "You are currently running BIDS Helper version " + _versionCheckPlugin.LocalVersion + "\r\nThe latest version of BIDS Helper available is version " + _versionCheckPlugin.ServerVersion + "\r\nClick to download the latest version.";
+                        notifyIcon1.Visible = true;
+                        notifyIcon1.ShowBalloonTip(int.MaxValue);
+                    }
                 }
             }
             catch (Exception ex)
@@ -92,7 +111,7 @@ namespace BIDSHelper.Core
 
         private void VersionCheckNotificationForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            notifyIcon1.Visible = false;
+            DTEEvents_OnBeginShutdown();
         }
 
 

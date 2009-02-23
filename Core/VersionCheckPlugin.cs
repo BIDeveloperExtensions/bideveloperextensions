@@ -7,22 +7,26 @@ using System.Windows.Forms;
 using System.IO;
 using Microsoft.Win32;
 using System.ComponentModel;
+//using System.Runtime.InteropServices;
 
 namespace BIDSHelper
 {
     public class VersionCheckPlugin : BIDSHelperPluginBase
     {
-        #if KATMAI
+
+#if KATMAI
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2008CurrentReleaseVersion.xml";
-        #else
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2008";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2008";
+#else
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2005CurrentReleaseVersion.xml";
-        #endif
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2005";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2005";
+#endif
 
         public static string BIDS_HELPER_RELEASE_URL = "http://www.codeplex.com/bidshelper/Release/ProjectReleases.aspx";
         private const int CHECK_EVERY_DAYS = 7;
         private const int CHECK_SECONDS_AFTER_STARTUP = 60;
-        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck";
-        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion";
 
         private BackgroundWorker worker = new BackgroundWorker();
         private Core.VersionCheckNotificationForm versionCheckForm;
@@ -33,6 +37,7 @@ namespace BIDSHelper
             : base(con, appObject, addinInstance)
         {
             VersionCheckPluginInstance = this;
+
             if (this.Enabled && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
                 //create this form on the main thread
@@ -54,7 +59,6 @@ namespace BIDSHelper
         {
             try
             {
-                LastVersionCheck = DateTime.Today;
                 if (!VersionIsLatest(LocalVersion, ServerVersion) && ServerVersion != DismissedVersion)
                 {
                     versionCheckForm.ShowNotification();
@@ -116,8 +120,7 @@ namespace BIDSHelper
         {
             get
             {
-                System.Reflection.AssemblyFileVersionAttribute attrVersion = (System.Reflection.AssemblyFileVersionAttribute)typeof(VersionCheckPlugin).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyFileVersionAttribute), true)[0];
-                return attrVersion.Version;
+                return this.GetType().Assembly.GetName().Version.ToString();
             }
         }
 
@@ -220,5 +223,8 @@ namespace BIDSHelper
         public override void Exec()
         {
         }
+
     }
+
 }
+
