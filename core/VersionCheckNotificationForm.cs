@@ -32,7 +32,7 @@ namespace BIDSHelper.Core
             catch { }
             try
             {
-                _mtx.Close();
+                _mtx.ReleaseMutex();
             }
             catch { }
         }
@@ -52,7 +52,7 @@ namespace BIDSHelper.Core
             try
             {
                 _versionCheckPlugin.LastVersionCheck = DateTime.Today;
-                _mtx.Close();
+                _mtx.ReleaseMutex();
                 this.Close();
             }
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace BIDSHelper.Core
             try
             {
                 _versionCheckPlugin.DismissedVersion = _versionCheckPlugin.ServerVersion;
-                _mtx.Close();
+                _mtx.ReleaseMutex();
                 this.Close();
             }
             catch (Exception ex)
