@@ -273,6 +273,7 @@
     <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizerPlugin.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizer.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
     <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
