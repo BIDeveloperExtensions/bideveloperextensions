@@ -384,12 +384,18 @@ namespace BIDSHelper
         {
             CommandBars cmdBars = (CommandBars)this.ApplicationObject.CommandBars;
             CommandBar pluginCmdBar = cmdBars["Project"];
+
             foreach (CommandBarControl cmd in pluginCmdBar.Controls)
             {
-                if (cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
+                int iID = 0;
+                string sGuid = "";
+                this.ApplicationObject.Commands.CommandInfo(cmd, out sGuid, out iID);
+                Command cmd2 = this.ApplicationObject.Commands.Item(sGuid, iID);
+                if (false || cmd2.Name == "ClassViewContextMenus.ClassViewProject.Properties" || cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
                 {
                     cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
                     cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
+                    break;
                 }
             }
         }
