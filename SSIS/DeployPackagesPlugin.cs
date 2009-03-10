@@ -391,7 +391,7 @@ namespace BIDSHelper
                 string sGuid = "";
                 this.ApplicationObject.Commands.CommandInfo(cmd, out sGuid, out iID);
                 Command cmd2 = this.ApplicationObject.Commands.Item(sGuid, iID);
-                if (false || cmd2.Name == "ClassViewContextMenus.ClassViewProject.Properties" || cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
+                if (cmd2.Name == "ClassViewContextMenus.ClassViewProject.Properties" || cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
                 {
                     cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
                     cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
