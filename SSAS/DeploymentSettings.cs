@@ -28,19 +28,26 @@ public class DeploymentSettings
 	//// * can be overridden at the user's project level (set as a project option)
 	private string mTargetDatabase = "";
 
+    public DeploymentSettings(EnvDTE.ProjectItem projectItm)
+    {
+        PopulateDeploymentSettings(projectItm.ContainingProject);
+    }
+    public DeploymentSettings(EnvDTE.Project project)
+    {
+        PopulateDeploymentSettings(project);
+    }
 
-	public DeploymentSettings(EnvDTE.ProjectItem projectItm)
+    void PopulateDeploymentSettings(Project project)
 	{
         //// A default target deployment server can be set at the user level
         //// under tools options in visual studio.
         SetDefaultTargetServer();
         //// The default database name is the project name if it is not overriden
         //// by the user settings
-        SetDefaultDatabaseName(projectItm);
+        SetDefaultDatabaseName(project);
 
-        Project project = projectItm.ContainingProject;
         System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance;
-        object oService = typeof(System.IServiceProvider).InvokeMember("GetService", flags, null, projectItm.ContainingProject, new object[] { typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings) });
+        object oService = typeof(System.IServiceProvider).InvokeMember("GetService", flags, null, project, new object[] { typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings) });
         string sTargetServer = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetServer" });
         if (!String.IsNullOrEmpty(sTargetServer)) mTargetServer = sTargetServer;
         string sTargetDatabase = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetDatabase" });
@@ -69,8 +76,8 @@ public class DeploymentSettings
 
     }
 
-    private void SetDefaultDatabaseName(ProjectItem projectItm)
+    private void SetDefaultDatabaseName(Project project)
     {
-        mTargetDatabase = projectItm.ContainingProject.Name;
+        mTargetDatabase = project.Name;
     }
 }
