@@ -488,6 +488,7 @@
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
     <None Include="Resources\SmartDiffSSRS.xslt" />
+    <Content Include="Build\Readme.txt" />
     <Content Include="SetupScript\SQL2005CurrentReleaseVersion.xml" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />
@@ -663,6 +664,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
+    <None Include="Build\default.ps1" />
+    <None Include="Build\psake.ps1" />
     <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+AggregationPerformance.datasource" />
     <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+MissingAggregationPerformance.datasource" />
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />
