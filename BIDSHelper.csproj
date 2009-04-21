@@ -182,6 +182,12 @@
     </Compile>
     <Compile Include="SSAS\AggManager\PrinterFriendlyAggs.cs" />
     <Compile Include="SSAS\AggManager\SearchSimilarAggs.cs" />
+    <Compile Include="SSAS\SyncDescriptionsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\SyncDescriptionsForm.Designer.cs">
+      <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSAS\NonDefaultPropertiesPlugin.cs" />
     <Compile Include="SSAS\DataTypeDiscrepancyCheckForm.cs">
       <SubType>Form</SubType>
@@ -229,6 +235,8 @@
     <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizerPlugin.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizer.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
+    <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
     <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
@@ -450,6 +458,7 @@
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
     <None Include="Resources\SmartDiffSSRS.xslt" />
+    <Content Include="Build\Readme.txt" />
     <Content Include="SetupScript\SQL2005CurrentReleaseVersion.xml" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />
@@ -551,6 +560,9 @@
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\SyncDescriptionsForm.resx">
+      <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\DataTypeDiscrepancyCheckForm.resx">
       <DependentUpon>DataTypeDiscrepancyCheckForm.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -623,6 +635,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
+    <None Include="Build\default.ps1" />
+    <None Include="Build\psake.ps1" />
     <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+AggregationPerformance.datasource" />
     <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+MissingAggregationPerformance.datasource" />
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />
