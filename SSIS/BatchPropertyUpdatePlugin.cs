@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using Extensibility;
 using EnvDTE;
 using EnvDTE80;
@@ -12,6 +13,9 @@ using System.Collections.Generic;
 
 namespace BIDSHelper
 {
+    /// <summary>
+    /// SSIS plugin that supports updating a property across multiple packages
+    /// </summary>
     public class BatchPropertyUpdatePlugin : BIDSHelperPluginBase
     {
         public BatchPropertyUpdatePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -46,93 +50,228 @@ namespace BIDSHelper
 
         public override bool DisplayCommand(UIHierarchyItem item)
         {
-            if (ApplicationObject.Mode == vsIDEMode.vsIDEModeDebug) return false;
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                return false;
+            if (((System.Array)solExplorer.SelectedItems).Length == 1)
+            {
+                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-            return (sFileName.EndsWith(".dtsx"));
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                return (sFileName.EndsWith(".dtsx"));
+            }
+            else
+            {
+                foreach (object selected in ((System.Array)solExplorer.SelectedItems))
+                {
+                    UIHierarchyItem hierItem = (UIHierarchyItem)selected;
+                    string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                    if (!sFileName.EndsWith(".dtsx")) return false;
+                }
+                return (((System.Array)solExplorer.SelectedItems).Length > 0);
+            }
+
+            //if (ApplicationObject.Mode == vsIDEMode.vsIDEModeDebug) return false;
+            //UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+            //if (((System.Array)solExplorer.SelectedItems).Length != 1)
+            //    return false;
+
+            //UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            //string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            //return (sFileName.EndsWith(".dtsx")||sFileName.EndsWith(".dtproj"));
         }
 
         public override void Exec()
         {
-        //    try
-        //    {
-        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
-        //            return;
 
-        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-        //        ProjectItem pi = (ProjectItem)hierItem.Object;
+            try
+            {
+                string propertyPath;
+                string newValue;
 
-        //        if (System.Windows.Forms.MessageBox.Show("Are you sure you want to reset the GUIDs for all tasks, connection managers, configurations,\r\nevent handlers, and variables in package " + pi.Name + "?", "BIDS Helper - Reset GUIDs?", System.Windows.Forms.MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes) return;
+                //Get PropertyPath values
+                BatchPropertyUpdateForm frm = new BatchPropertyUpdateForm();
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    propertyPath = frm.PropertyPath;
+                    newValue = frm.NewValue;
+                }
+                else
+                {
+                    return;
+                }
 
-        //        Window w = pi.Open(BIDSViewKinds.Designer); //opens the designer
-        //        w.Activate();
+                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
 
-        //        IDesignerHost designer = w.Object as IDesignerHost;
-        //        if (designer == null) return;
-        //        EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-        //        Package package = win.PropertiesLinkComponent as Package;
-        //        if (package == null) return;
+                foreach (UIHierarchyItem hi in ((System.Array)solExplorer.SelectedItems))
+                {
+                    ProjectItem pi = (ProjectItem)hi.Object;
 
+                    Window w = pi.Open(BIDSViewKinds.Designer); //opens the designer
+                    w.Activate();
 
-        //        //capture list of GUIDs to replace
-        //        _listGuidsToReplace = new List<string>();
-        //        AddGuid(package.ID);
-        //        RecurseExecutablesAndCaptureGuids(package);
-        //        foreach (DtsEventHandler h in package.EventHandlers)
-        //        {
-        //            AddGuid(h.ID);
-        //            RecurseExecutablesAndCaptureGuids(h);
-        //        }
-        //        foreach (ConnectionManager cm in package.Connections)
-        //        {
-        //            AddGuid(cm.ID);
-        //        }
-        //        foreach (Microsoft.SqlServer.Dts.Runtime.Configuration conf in package.Configurations)
-        //        {
-        //            AddGuid(conf.ID);
-        //        }
+                    IDesignerHost designer = w.Object as IDesignerHost;
+                    if (designer == null) continue;
+                    EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                    Package package = win.PropertiesLinkComponent as Package;
+                    if (package == null) continue;
+                    SetPropertyValue(package, propertyPath, newValue);
 
-        //        //open package XML 
-        //        ApplicationObject.ExecuteCommand("View.ViewCode", String.Empty);
-
-        //        // Loop through GUIDs captured and replace
-        //        foreach (string sOldGuid in _listGuidsToReplace)
-        //        {
-
-        //            ApplicationObject.Find.FindWhat = sOldGuid;
-        //            ApplicationObject.Find.ReplaceWith = "{" + System.Guid.NewGuid().ToString().ToUpper() + "}";
-        //            ApplicationObject.Find.Target = vsFindTarget.vsFindTargetCurrentDocument;
-        //            ApplicationObject.Find.MatchCase = false;
-        //            ApplicationObject.Find.MatchWholeWord = true;
-        //            ApplicationObject.Find.MatchInHiddenText = false;
-        //            ApplicationObject.Find.Action = vsFindAction.vsFindActionReplaceAll;
-
-        //            if (ApplicationObject.Find.Execute() == vsFindResult.vsFindResultNotFound)
-        //            {
-        //                System.Diagnostics.Debug.WriteLine("couldn't find " + sOldGuid);
-        //                System.Windows.Forms.MessageBox.Show("Resetting GUIDs did NOT complete successfully as the package has changed.\r\n\r\nThis may have happened if you did not have the latest version from source control before running the Reset GUIDs command.", "BIDS Helper - Problem Resetting GUIDs");
-        //                return;
-        //            }
-        //        }
-
-        //        ApplicationObject.ActiveWindow.Close(vsSaveChanges.vsSaveChangesNo); //close the package XML
-        //        ApplicationObject.ActiveDocument.Save(null);
-        //        w.Close(vsSaveChanges.vsSaveChangesNo); //close the designer
-
-        //        w = pi.Open(BIDSViewKinds.Designer); //opens the designer
-        //        w.Activate();
-        //        //that was the quick and easy way to get the expression highlighter up to date
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        System.Windows.Forms.MessageBox.Show(ex.Message + " " + ex.StackTrace);
-        //    }
+                    //ApplicationObject.ActiveDocument.Save(null);
+                    w.Close(vsSaveChanges.vsSaveChangesYes);
+                    //w.Close(vsSaveChanges.vsSaveChangesNo); //close the designer
+                    w = pi.Open(BIDSViewKinds.Designer); //opens the designer
+                    w.Activate(); //that was the quick and easy way to get the expression highlighter up to date
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message + " " + ex.StackTrace);
+            }
         }
 
+        private static object SetPropertyValue(DtsObject dtsObject, string propertyPath, object value)
+        {
+            propertyPath = propertyPath.Replace("\\", ".");
+            object returnValue = null;
+            string firstPart = propertyPath;
+            string restOfString = string.Empty;
+
+            if (propertyPath.Contains("."))
+            {
+                //Can have periods in object names (like connection manager names)
+                //Need to verify that period is not between an index marker
+                int delimiterIndex = propertyPath.IndexOf(".");
+                //while (delimiterIndex > propertyPath.IndexOf("[") &&
+                //    delimiterIndex < propertyPath.IndexOf("]"))
+                //{
+                //    delimiterIndex = propertyPath.IndexOf(".", delimiterIndex + 1 );
+                //}
+                if (delimiterIndex > propertyPath.IndexOf("[") &&
+                    delimiterIndex < propertyPath.IndexOf("]"))
+                {
+                    delimiterIndex = propertyPath.IndexOf(".", propertyPath.IndexOf("]"));
+                }
+
+                if (delimiterIndex > -1)
+                {
+                    firstPart = propertyPath.Substring(0, delimiterIndex);
+                    restOfString = propertyPath.Substring(delimiterIndex + 1, (propertyPath.Length - (delimiterIndex + 1)));
+                    if (firstPart.Length == 0)
+                    {
+                        return SetPropertyValue(dtsObject, restOfString, value);
+                    }
+                }
+            }
+
+
+            if (firstPart.ToUpper().StartsWith("PACKAGE"))
+            {
+                if (!(dtsObject is Package))
+                {
+                    throw new ArgumentException("The initial object must be of type Package.", "dtsObject");
+                }
+                return SetPropertyValue(dtsObject, restOfString, value);
+            }
+
+            //    \Package.Variables[User::TestVar].Properties[Value]
+            if (firstPart.ToUpper().StartsWith("VARIABLES"))
+            {
+                if (!(dtsObject is DtsContainer))
+                {
+                    throw new ArgumentException("Object must be of type DtsContainer to reference variables.", "dtsObject");
+                }
+                Variables vars = null;
+                string varName = GetSubStringBetween(firstPart, "[", "]");
+
+                DtsContainer cont = (DtsContainer)dtsObject;
+                cont.VariableDispenser.LockOneForRead(varName, ref vars);
+                returnValue = SetPropertyValue(vars[varName], restOfString, value);
+                vars.Unlock();
+                return returnValue;
+            }
+
+            //    \Package.Properties[CreationDate]
+            if (firstPart.ToUpper().StartsWith("PROPERTIES"))
+            {
+                if (!(dtsObject is IDTSPropertiesProvider))
+                {
+                    throw new ArgumentException("Object must be of type IDTSPropertiesProvider to reference properties.", "dtsObject");
+                }
+                IDTSPropertiesProvider propProv = (IDTSPropertiesProvider)dtsObject;
+                string propIndex = GetSubStringBetween(firstPart, "[", "]");
+
+                DtsProperty prop = propProv.Properties[propIndex];
+                if (dtsObject is Variable)
+                {
+                    Variable var = (Variable)dtsObject;
+                    prop.SetValue(dtsObject, Convert.ChangeType(value, var.DataType));
+                }
+                else
+                {
+                    prop.SetValue(dtsObject, Convert.ChangeType(value, propProv.Properties[propIndex].Type));
+                }
+                return prop.GetValue(dtsObject);
+            }
+
+            //    \Package.Connections[localhost.AdventureWorksDW2008].Properties[Description]
+            if (firstPart.ToUpper().StartsWith("CONNECTIONS"))
+            {
+                if (!(dtsObject is Package))
+                {
+                    throw new ArgumentException("Object must be of type Package to reference Connections.", "dtsObject");
+                }
+                string connIndex = GetSubStringBetween(firstPart, "[", "]");
+                Package pkg = (Package)dtsObject;
+                return SetPropertyValue(pkg.Connections[connIndex], restOfString, value);
+            }
+
+            //    \Package.EventHandlers[OnError].Properties[Description]
+            if (firstPart.ToUpper().StartsWith("EVENTHANDLERS"))
+            {
+                if (!(dtsObject is EventsProvider))
+                {
+                    throw new ArgumentException("Object must be of type EventsProvider to reference events.", "dtsObject");
+                }
+                EventsProvider eventProvider = (EventsProvider)dtsObject;
+                string eventIndex = GetSubStringBetween(firstPart, "[", "]");
+                return SetPropertyValue(eventProvider.EventHandlers[eventIndex], restOfString, value);
+            }
+
+            //First Part of string is not one of the hard-coded values - it's either a task or container
+            if (!(dtsObject is IDTSSequence))
+            {
+                throw new ArgumentException("Object must be of type IDTSSequence to reference other tasks or containers.", "dtsObject");
+            }
+
+            IDTSSequence seq = (IDTSSequence)dtsObject;
+            if (seq.Executables.Contains(firstPart))
+            {
+                return SetPropertyValue(seq.Executables[firstPart], restOfString, value);
+            }
+
+
+            //            \Package\Sequence Container\Script Task.Properties[Description]
+            //    \Package\Sequence Container.Properties[Description]
+            //    \Package\Execute SQL Task.Properties[Description]
+
+            //\Package.EventHandlers[OnError].Variables[System::Cancel].Properties[Value]
+            //    \Package.EventHandlers[OnError]\Script Task.Properties[Description]
+
+
+            if (restOfString.Length > 0)
+            {
+                returnValue = SetPropertyValue(dtsObject, restOfString, value);
+            }
+
+            return returnValue;
+        }
+
+        private static string GetSubStringBetween(string stringToParse, string startString, string endString)
+        {
+            string subString;
+            int startPosition = stringToParse.IndexOf(startString) + 1;
+            int endPosition = stringToParse.IndexOf(endString);
+            subString = stringToParse.Substring(startPosition, endPosition - startPosition);
+            return subString;
+        }
     }
 }

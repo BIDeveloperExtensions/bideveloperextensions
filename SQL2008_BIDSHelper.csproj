@@ -185,6 +185,12 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Core\VersionCheckNotificationForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -656,6 +662,9 @@
     <EmbeddedResource Include="SSAS\VisualizeAttributeLatticeForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
