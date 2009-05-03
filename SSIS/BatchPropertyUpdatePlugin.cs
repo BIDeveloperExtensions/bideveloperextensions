@@ -50,33 +50,27 @@ namespace BIDSHelper
 
         public override bool DisplayCommand(UIHierarchyItem item)
         {
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length == 1)
-            {
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            return false;
 
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                return (sFileName.EndsWith(".dtsx"));
-            }
-            else
-            {
-                foreach (object selected in ((System.Array)solExplorer.SelectedItems))
-                {
-                    UIHierarchyItem hierItem = (UIHierarchyItem)selected;
-                    string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                    if (!sFileName.EndsWith(".dtsx")) return false;
-                }
-                return (((System.Array)solExplorer.SelectedItems).Length > 0);
-            }
-
-            //if (ApplicationObject.Mode == vsIDEMode.vsIDEModeDebug) return false;
             //UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            //if (((System.Array)solExplorer.SelectedItems).Length != 1)
-            //    return false;
+            //if (((System.Array)solExplorer.SelectedItems).Length == 1)
+            //{
+            //    UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-            //UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            //string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-            //return (sFileName.EndsWith(".dtsx")||sFileName.EndsWith(".dtproj"));
+            //    string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            //    return (sFileName.EndsWith(".dtsx"));
+            //}
+            //else
+            //{
+            //    foreach (object selected in ((System.Array)solExplorer.SelectedItems))
+            //    {
+            //        UIHierarchyItem hierItem = (UIHierarchyItem)selected;
+            //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            //        if (!sFileName.EndsWith(".dtsx")) return false;
+            //    }
+            //    return (((System.Array)solExplorer.SelectedItems).Length > 0);
+            //}
+
         }
 
         public override void Exec()
