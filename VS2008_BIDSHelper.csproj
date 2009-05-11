@@ -274,6 +274,12 @@
     <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizer.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
     <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
@@ -652,6 +658,9 @@
     <EmbeddedResource Include="SSAS\VisualizeAttributeLatticeForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">

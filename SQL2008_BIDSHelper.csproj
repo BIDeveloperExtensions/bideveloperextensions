@@ -23,6 +23,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>BIDSHelper.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkSubset>Full</TargetFrameworkSubset>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,7 +44,8 @@
     <IncrementalBuild>false</IncrementalBuild>
     <Optimize>true</Optimize>
     <OutputPath>bin\</OutputPath>
-    <DocumentationFile>BIDSHelper.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <DefineConstants>KATMAI</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
@@ -714,4 +716,7 @@
   <PropertyGroup>
     <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS"</PreBuildEvent>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Build\examples\" />
+  </ItemGroup>
 </Project>
