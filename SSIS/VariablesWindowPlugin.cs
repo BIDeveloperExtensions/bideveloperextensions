@@ -353,6 +353,7 @@ namespace BIDSHelper
                 List<Variable> variables = GetSelectedVariables();
                 if (variables.Count > 0)
                 {
+                    System.Collections.ArrayList variableDesigners = GetSelectedVariableDesigners();
                     packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
                     Package package = packageDesigner.Component as Package;
 
@@ -365,7 +366,7 @@ namespace BIDSHelper
                         bool move = form.radMove.Checked;
                         try
                         {
-                            CopyVariables(variables, move, MoveToContainer, package);
+                            CopyVariables(variables, move, MoveToContainer, package, variableDesigners);
                         }
                         finally
                         {
@@ -419,6 +420,33 @@ namespace BIDSHelper
             return variable;
         }
 
+        private System.Collections.ArrayList GetSelectedVariableDesigners()
+        {
+            System.Collections.ArrayList list = new System.Collections.ArrayList();
+
+            int[] selectedRows = (int[])grid.GetType().InvokeMember("SelectedRows", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, grid, null);
+            if ((selectedRows != null) && (selectedRows.Length > 0))
+            {
+                foreach (int iRow in selectedRows)
+                {
+                    Variable variable = GetVariableForRow(iRow);
+                    if (!variable.SystemVariable)
+                    {
+                        DtsBaseDesigner variableDesigner = GetVariableDesignerForRow(iRow);
+                        list.Add(variableDesigner);
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        private static DtsBaseDesigner GetVariableDesignerForRow(int iRow)
+        {
+            GridCell cell = grid.GetCellInfo(iRow, 1);
+            return (DtsBaseDesigner)cell.Tag;
+        }
+
         private DtsContainer FindObjectForVariablePackagePath(DtsContainer parent, string PackagePath)
         {
             IDTSSequence seq = (IDTSSequence)parent;
@@ -447,7 +475,7 @@ namespace BIDSHelper
             return null;
         }
 
-        private void CopyVariables(List<Variable> variables, bool move, DtsContainer targetContainer, Package package)
+        private void CopyVariables(List<Variable> variables, bool move, DtsContainer targetContainer, Package package, System.Collections.ArrayList sourceVariableDesigners)
         {
             foreach (Variable sourceVar in variables)
             {
@@ -484,7 +512,8 @@ namespace BIDSHelper
                 if (move)
                 {
                     DtsContainer sourceContainer = FindObjectForVariablePackagePath(package, sourceVar.GetPackagePath());
-                    serviceProvider.DestroyComponent(sourceVar);
+
+                    variablesToolWindowControl.GetType().InvokeMember("DeleteVariables", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { sourceVariableDesigners });
 
                     changesvc.OnComponentChanging(sourceContainer, null);
                     changesvc.OnComponentChanged(sourceContainer, null, null, null); //marks the package designer as dirty
