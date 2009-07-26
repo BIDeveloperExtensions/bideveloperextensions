@@ -16,7 +16,7 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
 
         public override void Check(Package package, EnvDTE.ProjectItem projectItem)
         {
-
+            Results.Clear();
             string sVisualStudioRelativePath = projectItem.DTE.FullName.Substring(0, projectItem.DTE.FullName.LastIndexOf('\\') + 1);
 
             bool bOfflineMode = false;
@@ -40,15 +40,18 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
 
             foreach (ConnectionManager cm in package.Connections)
             {
-                string sPackagePath = cm.Properties["ConnectionString"].GetPackagePath(cm);
+                DtsProperty prop = cm.Properties["ConnectionString"];
+                string sPackagePath = prop.GetPackagePath(cm);
+
                 string hasConfig = "does not have ";
+
                 bool result = false;
-                if (configPaths.Contains(sPackagePath))
+                if (configPaths.Contains(sPackagePath) || (! string.IsNullOrEmpty(cm.GetExpression(prop.Name))))
                 {
-                        hasConfig = "has";
+                    hasConfig = "has";
                     result = true;
                 }
-                Results.Add(new Result(result, string.Format("The connection manager {0} {1} a configuration defined.", cm.Name,
+                Results.Add(new Result(result, string.Format("The connection manager {0} {1} a configuration or expression defined for the connection string.", cm.Name,
                                             hasConfig), ResultSeverity.Normal));
             }
         }

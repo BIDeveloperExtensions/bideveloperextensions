@@ -91,15 +91,15 @@ namespace BIDSHelper.SSIS
             Package package = win.PropertiesLinkComponent as Package;
             if (package == null) return;
 
+            Results results = new Results();
+
             foreach (DesignPractice practice in _practices)
             {
                 practice.Check(package, pi);
-
-
-                AddErrorsToVSErrorList(w, practice.Results);
-                
+                results.AddRange(practice.Results);
             }
 
+            AddErrorsToVSErrorList(w, results);                
         }
 
         private void AddErrorsToVSErrorList(Window window, Results errors)
