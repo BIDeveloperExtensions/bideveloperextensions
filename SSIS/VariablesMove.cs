@@ -33,20 +33,39 @@ namespace BIDSHelper.SSIS
             if (parent.ID == CurrentlySelectedID)
                 node.TreeView.SelectedNode = node;
 
-            IDTSSequence seq = (IDTSSequence)parent;
-
-            foreach (Executable e in seq.Executables)
+            IDTSSequence seq = parent as IDTSSequence;
+            if (seq != null)
             {
-                if (e is IDTSSequence)
+                foreach (Executable e in seq.Executables)
                 {
-                    IterateContainers((DtsContainer)e, node.Nodes, CurrentlySelectedID);
+                    if (e is IDTSSequence || e is EventsProvider)
+                    {
+                        IterateContainers((DtsContainer)e, node.Nodes, CurrentlySelectedID);
+                    }
+                    else
+                    {
+                        DtsContainer task = (DtsContainer)e;
+                        TreeNode childNode = new TreeNode();
+                        childNode.Name = task.Name;
+                        childNode.Text = task.Name;
+                        childNode.Tag = task;
+                        node.Nodes.Add(childNode);
+
+                        if (task.ID == CurrentlySelectedID)
+                            node.TreeView.SelectedNode = childNode;
+                    }
                 }
-                else
+            }
+
+            EventsProvider prov = parent as EventsProvider;
+            if (prov != null)
+            {
+                foreach (DtsEventHandler p in prov.EventHandlers)
                 {
-                    DtsContainer task = (DtsContainer)e;
+                    DtsContainer task = (DtsContainer)p;
                     TreeNode childNode = new TreeNode();
-                    childNode.Name = task.Name;
-                    childNode.Text = task.Name;
+                    childNode.Name = "EVENT: " + p.Name;
+                    childNode.Text = "EVENT: " + p.Name;
                     childNode.Tag = task;
                     node.Nodes.Add(childNode);
 
@@ -54,7 +73,6 @@ namespace BIDSHelper.SSIS
                         node.TreeView.SelectedNode = childNode;
                 }
             }
-
             return;
         }
 

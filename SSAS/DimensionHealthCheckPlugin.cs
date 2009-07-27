@@ -614,6 +614,13 @@ namespace BIDSHelper
                                 sIsNull = "'12/30/1899'"; //think this is what SSAS converts null dates to
                         }
                     }
+                    else if (dc.DataType == typeof(Guid)) // Guid
+                    {
+                        if (di.NullProcessing == NullProcessing.Preserve)
+                            sIsNull = "'" + (new Guid()).ToString() + "'"; //a unique value that shouldn't ever occur in the real data
+                        else
+                            sIsNull = "'" + Guid.Empty.ToString() + "'";
+                    }
                     else //numeric
                     {
                         if (di.NullProcessing == NullProcessing.Preserve)

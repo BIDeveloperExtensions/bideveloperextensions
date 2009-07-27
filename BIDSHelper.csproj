@@ -236,7 +236,25 @@
     <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizer.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DataFlowPerformancePractices.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.Designer.cs">
+      <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
@@ -612,6 +630,14 @@
     <EmbeddedResource Include="SSAS\VisualizeAttributeLatticeForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.resx">
+      <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">

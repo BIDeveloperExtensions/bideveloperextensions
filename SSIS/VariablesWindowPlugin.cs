@@ -449,29 +449,51 @@ namespace BIDSHelper
 
         private DtsContainer FindObjectForVariablePackagePath(DtsContainer parent, string PackagePath)
         {
-            IDTSSequence seq = (IDTSSequence)parent;
-
+                        
             if (PackagePath.StartsWith(((IDTSPackagePath)parent).GetPackagePath() + ".Variables["))
             {
                 return ((DtsContainer)parent);
             }
 
-            foreach (Executable e in seq.Executables)
+            IDTSSequence seq = parent as IDTSSequence;
+            if (seq != null)
             {
-                if (e is IDTSPackagePath)
+                foreach (Executable e in seq.Executables)
                 {
-                    if (PackagePath.StartsWith(((IDTSPackagePath)e).GetPackagePath() + ".Variables["))
+                    if (e is IDTSPackagePath)
                     {
-                        return ((DtsContainer)e);
+                        if (PackagePath.StartsWith(((IDTSPackagePath)e).GetPackagePath() + ".Variables["))
+                        {
+                            return ((DtsContainer)e);
+                        }
                     }
-                }
-                if (e is IDTSSequence)
-                {
-                    DtsContainer ret = FindObjectForVariablePackagePath((DtsContainer)e, PackagePath);
-                    if (ret != null) return ret;
+                    if (e is DtsContainer)
+                    {
+                        DtsContainer ret = FindObjectForVariablePackagePath((DtsContainer)e, PackagePath);
+                        if (ret != null) return ret;
+                    }
                 }
             }
 
+            EventsProvider prov = parent as EventsProvider;
+            if (prov != null)
+            {
+                foreach (DtsEventHandler eh in prov.EventHandlers)
+                {
+                    if (eh is IDTSPackagePath)
+                    {
+                        if (PackagePath.StartsWith(((IDTSPackagePath)eh).GetPackagePath() + ".Variables["))
+                        {
+                            return ((DtsContainer)eh);
+                        }
+                    }
+                    if (eh is IDTSSequence)
+                    {
+                        DtsContainer ret = FindObjectForVariablePackagePath((DtsContainer)eh, PackagePath);
+                        if (ret != null) return ret;
+                    }
+                }
+            }
             return null;
         }
 
