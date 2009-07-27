@@ -47,6 +47,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <DefineConstants>KATMAI</DefineConstants>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
