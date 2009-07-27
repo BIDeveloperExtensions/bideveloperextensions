@@ -8,7 +8,7 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
 {
     class ConnectionConfigurationsPractice : DesignPractice
     {
-        public ConnectionConfigurationsPractice()
+        public ConnectionConfigurationsPractice(string registryPath) : base(registryPath)
         {
             base.Name = "Connection Configurations";
             base.Description = "Checks to see if all connection strings have configurations set";

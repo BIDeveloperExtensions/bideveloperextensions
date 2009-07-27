@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.SqlServer.Dts.Runtime;
 using EnvDTE;
+using Microsoft.Win32;
 
 namespace BIDSHelper.SSIS.DesignPracticeScanner
 {
@@ -12,6 +13,14 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
         private string _name;
         private string _description;
         private Results _results = new Results();
+        private bool _enabled = true;
+        private bool _isEnabledCached = false;
+        private string _practiceRegistryBasePath;
+
+        public DesignPractice(string registryBasePath)
+        {
+            _practiceRegistryBasePath = registryBasePath;
+        }
 
         public string Name
         {
@@ -30,7 +39,57 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
             get { return _results; }
         }
 
+        public string PracticeRegistryPath
+        {
+            get { return _practiceRegistryBasePath + "\\" + Name; }
+        }
+
+        public bool Enabled
+        {
+            get
+            {
+                if (!_isEnabledCached)
+                {
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(PracticeRegistryPath);
+                    _enabled = ((int)regKey.GetValue("Enabled", 1) == 1) ? true : false;
+                    regKey.Close();
+                    _isEnabledCached = true;
+                }
+                return _enabled;
+            }
+
+            set
+            {
+                // if the setting is being changed
+                if (value != Enabled)
+                {
+
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(PracticeRegistryPath);
+                    _enabled = value;
+
+                    if (_enabled)
+                    {
+                        // the default state is enabled so we can remove the Enabled key
+                        regKey.DeleteValue("Enabled");
+                        regKey.Close();
+                    }
+                    else
+                    {
+                        // set the enabled property to 0
+                        regKey.SetValue("Enabled", _enabled, RegistryValueKind.DWord);
+                        regKey.Close();
+                    }
+
+                }
+            }
+        }
+
         public abstract void Check(Package package, ProjectItem projectItem);
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     public class Results : List<Result>
@@ -70,9 +129,9 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
 
     public enum ResultSeverity
     {
-        Low=0,
-        Normal=1,
-        High=2
+        Low = 0,
+        Normal = 1,
+        High = 2
     }
 
 }

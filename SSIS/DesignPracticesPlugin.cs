@@ -13,7 +13,7 @@ namespace BIDSHelper.SSIS
 {
     class DesignPracticesPlugin : BIDSHelperPluginBase
     {
-        private DesignPractices _practices = new DesignPractices();
+        private static DesignPractices _practices = new DesignPractices();
 
         public DesignPracticesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -25,31 +25,29 @@ namespace BIDSHelper.SSIS
                     && (!t.IsAbstract))
                 {
                     DesignPractice ext;
-                    System.Type[] @params = { };
-                    System.Reflection.ConstructorInfo constructor;
+                    System.Type[] @params = { typeof(string) };
+                    System.Reflection.ConstructorInfo constructor = t.GetConstructor(@params);
 
-                    constructor = t.GetConstructor(@params);
                     if (constructor == null)
                     {
                         System.Windows.Forms.MessageBox.Show("Problem loading type " + t.Name + ". No constructor found.");
                         continue;
                     }
-                    ext = (DesignPractice)constructor.Invoke(new object[] { });
+                    ext = (DesignPractice)constructor.Invoke(new object[]{ PluginRegistryPath });
                     _practices.Add(ext);
 
                 }
             }
-
         }
 
         public override string ShortName
         {
-            get { return "Design Practices Scanner"; }
+            get { return "Design Warnings Scanner"; }
         }
 
         public override string ButtonText
         {
-            get { return "Design Practices Scanner"; }
+            get { return "Design Warnings Scanner"; }
         }
 
         public override string ToolTip
@@ -66,7 +64,7 @@ namespace BIDSHelper.SSIS
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             if (((System.Array)solExplorer.SelectedItems).Length != 1) return false;
-        
+
             UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
             string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
@@ -95,11 +93,12 @@ namespace BIDSHelper.SSIS
 
             foreach (DesignPractice practice in _practices)
             {
+                if (!practice.Enabled) continue;
                 practice.Check(package, pi);
                 results.AddRange(practice.Results);
             }
 
-            AddErrorsToVSErrorList(w, results);                
+            AddErrorsToVSErrorList(w, results);
         }
 
         private void AddErrorsToVSErrorList(Window window, Results errors)
@@ -154,14 +153,16 @@ namespace BIDSHelper.SSIS
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                ;
                 item.Document = window.ProjectItem.Name;
                 item.CustomInfo = this;
                 service.Add(item);
             }
         }
 
-
+        public static DesignPractices DesignPractices
+        {
+            get { return _practices; }
+        }
 
     }
 }
