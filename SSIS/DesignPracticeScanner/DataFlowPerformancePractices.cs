@@ -175,7 +175,7 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
                         {
                             case SourceAccessMode.AM_OPENROWSET:
                             case SourceAccessMode.AM_OPENROWSET_VARIABLE:
-                                Results.Add(new Result(false, String.Format("Change the {0} component to use a SQL Command access mode, as this performs better than the OpenRowset access mode.", comp.Name), ResultSeverity.High));
+                                Results.Add(new Result(false, String.Format("Change the {0} component to use a SQL Command access mode, as this performs better than the OpenRowset access mode.", comp.Name), ResultSeverity.Normal));
                                 break;
                         }
                     }
