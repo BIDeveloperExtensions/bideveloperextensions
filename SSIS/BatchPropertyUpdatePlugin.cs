@@ -18,6 +18,8 @@ namespace BIDSHelper
     /// </summary>
     public class BatchPropertyUpdatePlugin : BIDSHelperPluginBase
     {
+        private IComponentChangeService changesvc;
+
         public BatchPropertyUpdatePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
@@ -50,26 +52,26 @@ namespace BIDSHelper
 
         public override bool DisplayCommand(UIHierarchyItem item)
         {
-            return false;
+            //return false;
 
-            //UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            //if (((System.Array)solExplorer.SelectedItems).Length == 1)
-            //{
-            //    UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+            if (((System.Array)solExplorer.SelectedItems).Length == 1)
+            {
+                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-            //    string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-            //    return (sFileName.EndsWith(".dtsx"));
-            //}
-            //else
-            //{
-            //    foreach (object selected in ((System.Array)solExplorer.SelectedItems))
-            //    {
-            //        UIHierarchyItem hierItem = (UIHierarchyItem)selected;
-            //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-            //        if (!sFileName.EndsWith(".dtsx")) return false;
-            //    }
-            //    return (((System.Array)solExplorer.SelectedItems).Length > 0);
-            //}
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                return (sFileName.EndsWith(".dtsx"));
+            }
+            else
+            {
+                foreach (object selected in ((System.Array)solExplorer.SelectedItems))
+                {
+                    UIHierarchyItem hierItem = (UIHierarchyItem)selected;
+                    string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                    if (!sFileName.EndsWith(".dtsx")) return false;
+                }
+                return (((System.Array)solExplorer.SelectedItems).Length > 0);
+            }
 
         }
 
@@ -104,15 +106,18 @@ namespace BIDSHelper
 
                     IDesignerHost designer = w.Object as IDesignerHost;
                     if (designer == null) continue;
+                    changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
+
+
                     EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                     Package package = win.PropertiesLinkComponent as Package;
                     if (package == null) continue;
                     SetPropertyValue(package, propertyPath, newValue);
 
                     //ApplicationObject.ActiveDocument.Save(null);
-                    w.Close(vsSaveChanges.vsSaveChangesYes);
+                    //w.Close(vsSaveChanges.vsSaveChangesYes);
                     //w.Close(vsSaveChanges.vsSaveChangesNo); //close the designer
-                    w = pi.Open(BIDSViewKinds.Designer); //opens the designer
+                    //w = pi.Open(BIDSViewKinds.Designer); //opens the designer
                     w.Activate(); //that was the quick and easy way to get the expression highlighter up to date
                 }
             }
@@ -122,7 +127,7 @@ namespace BIDSHelper
             }
         }
 
-        private static object SetPropertyValue(DtsObject dtsObject, string propertyPath, object value)
+        private object SetPropertyValue(DtsObject dtsObject, string propertyPath, object value)
         {
             propertyPath = propertyPath.Replace("\\", ".");
             object returnValue = null;
@@ -203,6 +208,11 @@ namespace BIDSHelper
                 {
                     prop.SetValue(dtsObject, Convert.ChangeType(value, propProv.Properties[propIndex].Type));
                 }
+
+                //Flag value as changing
+                changesvc.OnComponentChanging(prop, null);
+                changesvc.OnComponentChanged(prop, null, null, null); //marks the package designer as dirty
+
                 return prop.GetValue(dtsObject);
             }
 
