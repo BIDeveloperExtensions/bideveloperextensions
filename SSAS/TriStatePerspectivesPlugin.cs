@@ -71,6 +71,7 @@ namespace BIDSHelper
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
                 Cube cube = (Cube)pi.Object;
 
+
                 IntPtr ptr = win.Handle;
                 string sHandle = ptr.ToInt64().ToString();
 
@@ -83,6 +84,8 @@ namespace BIDSHelper
                 //if (win.SelectedView.Caption == "Perspectives")
                 if (win.SelectedView.MenuItemCommandID.ID == (int) BIDSViewMenuItemCommandID.Perspectives)
                 {
+                    Microsoft.AnalysisServices.Design.Scripts mdxScriptCache = new Microsoft.AnalysisServices.Design.Scripts(cube);
+
                     Control perspectiveBuilder = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null); //Microsoft.AnalysisServices.Design.PerspectivesBuilder
                     Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
 
@@ -205,11 +208,84 @@ namespace BIDSHelper
                                 }
                             }
                         }
+                        else if (rowObjectType == "Kpi")
+                        {
+                            cell = columns[1];
+                            string rowObjectName = (string)cell.GetType().InvokeMember("CellData", getpropertyflags, null, cell, null);
+                            rowObjectName = rowObjectName.Trim();
+                            Kpi kpi = cube.Kpis.GetByName(rowObjectName);
+                            for (int j = 3; j < columns.Length; j += 2)
+                            {
+                                cell = perspectivesColumns[j + 1];
+                                string perspectiveName = (string)cell.GetType().InvokeMember("CellData", getpropertyflags, null, cell, null);
+                                Perspective perspective = cube.Perspectives.GetByName(perspectiveName);
+                                cell = columns[j];
+                                bool bHighlight = false;
+                                if (perspective.Kpis.Contains(kpi.ID))
+                                {
+                                    PerspectiveKpi pkpi = perspective.Kpis[kpi.ID];
+                                    bHighlight = ShouldPerspectiveKpiBeHighlighted(pkpi, mdxScriptCache);
+                                }
+                                System.Reflection.BindingFlags setpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+                                System.Drawing.SolidBrush brush = null;
+                                if (bHighlight)
+                                {
+                                    brush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
+                                }
+                                else
+                                {
+                                    brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
+                                }
+                                lock (cell)
+                                {
+                                    cell.GetType().InvokeMember("BkBrush", setpropertyflags, null, cell, new object[] { brush });
+                                }
+                            }
+                        }
                     }
                     grid.Refresh();
                 }
             }
             catch { }
+        }
+
+        private bool ShouldPerspectiveKpiBeHighlighted(PerspectiveKpi pkpi, Microsoft.AnalysisServices.Design.Scripts mdxScript)
+        {
+            return ShouldPerspectiveKpiColumnBeHighlighted(pkpi, mdxScript, pkpi.Kpi.Value)
+            || ShouldPerspectiveKpiColumnBeHighlighted(pkpi, mdxScript, pkpi.Kpi.Goal)
+            || ShouldPerspectiveKpiColumnBeHighlighted(pkpi, mdxScript, pkpi.Kpi.Status)
+            || ShouldPerspectiveKpiColumnBeHighlighted(pkpi, mdxScript, pkpi.Kpi.Trend);
+        }
+
+        //return true if the kpi column is a reference to a measure, and if that measure isn't in the perspective
+        private bool ShouldPerspectiveKpiColumnBeHighlighted(PerspectiveKpi pkpi, Microsoft.AnalysisServices.Design.Scripts mdxScript, string column)
+        {
+            if (string.IsNullOrEmpty(column)) return false;
+            if (pkpi.Parent.Calculations.Contains(column)) return false;
+            foreach (MeasureGroup mg in pkpi.ParentCube.MeasureGroups)
+            {
+                foreach (Measure m in mg.Measures)
+                {
+                    if (string.Compare("[Measures].[" + m.Name + "]", column, true) == 0)
+                    {
+                        if (pkpi.Parent.MeasureGroups.Contains(mg.ID) && pkpi.Parent.MeasureGroups[mg.ID].Measures.Contains(m.ID))
+                            return false;
+                        else
+                            return true;
+                    }
+                }
+            }
+
+            foreach (object calcMember in mdxScript.CalculatedMembers)
+            {
+                Microsoft.AnalysisServices.Design.Script calc = calcMember as Microsoft.AnalysisServices.Design.Script;
+                if (calc != null && calc.CalculationProperty != null && string.Compare(calc.CalculationProperty.CalculationReference, column, true) == 0)
+                {
+                    //found the calc, but it isn't in the perspective
+                    return true;
+                }
+            }
+            return false;
         }
 
         void grid_KeyPress(object sender, KeyPressEventArgs e)
