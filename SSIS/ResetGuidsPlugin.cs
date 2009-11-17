@@ -114,6 +114,7 @@ namespace BIDSHelper
                     ApplicationObject.Find.MatchWholeWord = true;
                     ApplicationObject.Find.MatchInHiddenText = false;
                     ApplicationObject.Find.Action = vsFindAction.vsFindActionReplaceAll;
+                    ApplicationObject.Find.PatternSyntax = vsFindPatternSyntax.vsFindPatternSyntaxLiteral;
 
                     if (ApplicationObject.Find.Execute() == vsFindResult.vsFindResultNotFound)
                     {
