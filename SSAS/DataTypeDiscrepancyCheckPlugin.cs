@@ -102,6 +102,12 @@ namespace BIDSHelper
                         foreach (DataItem di in da.KeyColumns)
                             CheckDataTypeDiscrepancies(di, ColumnType.KeyColumn);
                         CheckDataTypeDiscrepancies(da.NameColumn, ColumnType.NameColumn);
+                        CheckDataTypeDiscrepancies(da.CustomRollupColumn, ColumnType.CustomRollup);
+                        CheckDataTypeDiscrepancies(da.CustomRollupPropertiesColumn, ColumnType.CustomRollupProperties);
+                        CheckDataTypeDiscrepancies(da.UnaryOperatorColumn, ColumnType.UnaryOperator);
+                        CheckDataTypeDiscrepancies(da.ValueColumn, ColumnType.ValueColumn);
+                        foreach (AttributeTranslation t in da.Translations)
+                            CheckDataTypeDiscrepancies(t.CaptionColumn, ColumnType.TranslationCaption);
                     }
                 }
 
@@ -151,7 +157,11 @@ namespace BIDSHelper
             ColumnBinding cb = di.Source as ColumnBinding;
             if (cb == null) return;
 
-            DimensionAttribute da = (DimensionAttribute)di.Parent;
+            IModelComponent parent = di.Parent;
+            while (parent != null && !(parent is DimensionAttribute))
+                parent = parent.Parent;
+            DimensionAttribute da = (DimensionAttribute)parent;
+
             if (!da.Parent.DataSourceView.Schema.Tables.Contains(cb.TableID)) return;
             if (!da.Parent.DataSourceView.Schema.Tables[cb.TableID].Columns.Contains(cb.ColumnID)) return;
             DataColumn col = da.Parent.DataSourceView.Schema.Tables[cb.TableID].Columns[cb.ColumnID];
@@ -191,7 +201,7 @@ namespace BIDSHelper
         }
 
         #region DataTypeDiscrepancy class
-        public enum ColumnType { KeyColumn, NameColumn };
+        public enum ColumnType { KeyColumn, NameColumn, CustomRollup, CustomRollupProperties, SkippedLevels, TranslationCaption, UnaryOperator, ValueColumn };
         public class DataTypeDiscrepancy
         {
             public DimensionAttribute DimensionAttribute;
@@ -266,7 +276,7 @@ namespace BIDSHelper
             {
                 get
                 {
-                    if (AnalysisServicesColumnType == ColumnType.NameColumn) return false;
+                    if (AnalysisServicesColumnType != ColumnType.KeyColumn) return false;
                     foreach (Cube c in DimensionAttribute.ParentDatabase.Cubes)
                     {
                         foreach (MeasureGroup mg in c.MeasureGroups)
