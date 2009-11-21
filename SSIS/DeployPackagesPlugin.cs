@@ -385,18 +385,71 @@ namespace BIDSHelper
             CommandBars cmdBars = (CommandBars)this.ApplicationObject.CommandBars;
             CommandBar pluginCmdBar = cmdBars["Project"];
 
+            bool bSuccess = false;
             foreach (CommandBarControl cmd in pluginCmdBar.Controls)
             {
                 int iID = 0;
                 string sGuid = "";
                 this.ApplicationObject.Commands.CommandInfo(cmd, out sGuid, out iID);
                 Command cmd2 = this.ApplicationObject.Commands.Item(sGuid, iID);
-                if (cmd2.Name == "ClassViewContextMenus.ClassViewProject.Properties" || cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
+                if (cmd2.Name == "ClassViewContextMenus.ClassViewProject.Properties" 
+                    || cmd2.Name == "ClassViewContextMenus.ClassViewMultiselectProjectreferencesItems.Properties" 
+                    || cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties 
+                    || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
                 {
                     cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
                     cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
+                    bSuccess = true;
                     break;
                 }
+            }
+
+            if (!bSuccess)
+            {
+                foreach (CommandBarControl cmd in pluginCmdBar.Controls)
+                {
+                    int iID = 0;
+                    string sGuid = "";
+                    this.ApplicationObject.Commands.CommandInfo(cmd, out sGuid, out iID);
+                    Command cmd2 = this.ApplicationObject.Commands.Item(sGuid, iID);
+                    if (cmd2.Name.EndsWith(".Properties"))
+                    {
+                        cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
+                        cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
+                        bSuccess = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!bSuccess)
+            {
+                foreach (CommandBarControl cmd in pluginCmdBar.Controls)
+                {
+                    if (cmd.Caption.Replace("&", string.Empty) == "Properties")
+                    {
+                        cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
+                        cmdButtonProperties.Click += new _CommandBarButtonEvents_ClickEventHandler(cmdButtonProperties_Click);
+                        bSuccess = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!bSuccess)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("cmd.Caption").Append('|').Append("cmd.Id").Append('|').Append("cmd2.Name").Append('|').Append("cmd2.LocalizedName").Append('|').Append("cmd2.Guid").Append('|').Append("cmd2.ID").AppendLine();
+                foreach (CommandBarControl cmd in pluginCmdBar.Controls)
+                {
+                    int iID = 0;
+                    string sGuid = "";
+                    this.ApplicationObject.Commands.CommandInfo(cmd, out sGuid, out iID);
+                    Command cmd2 = this.ApplicationObject.Commands.Item(sGuid, iID);
+
+                    sb.Append(cmd.Caption).Append('|').Append(cmd.Id).Append('|').Append(cmd2.Name).Append('|').Append(cmd2.LocalizedName).Append('|').Append(cmd2.Guid).Append('|').Append(cmd2.ID).AppendLine();
+                }
+                System.IO.File.WriteAllText(Microsoft.VisualBasic.FileIO.SpecialDirectories.Temp + "\\BidsHelperDeploySSISPackagesPropertiesMenuDebugLog.txt", sb.ToString());
             }
         }
 
