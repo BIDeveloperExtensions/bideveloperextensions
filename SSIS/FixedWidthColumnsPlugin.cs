@@ -211,7 +211,7 @@ namespace BIDSHelper
 
                     foreach (DataGridViewRow row in form.dataGridView1.Rows)
                     {
-                        string sName = row.Cells[0].Value.ToString();
+                        string sName = row.Cells[0].Value.ToString().Trim();
                         string sOriginalName = sName;
                         int i = 1;
                         while (listUsedNames.Contains(sName)) //find a unique name for the column
