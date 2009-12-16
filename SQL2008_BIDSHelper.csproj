@@ -160,6 +160,7 @@
       <Name>System.Data</Name>
     </Reference>
     <Reference Include="System.Design" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Services" />
@@ -188,6 +189,7 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Compile Include="SSAS\RolesReportPlugin.cs" />
     <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -626,6 +628,7 @@
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\RolesReport.rdlc" />
     <EmbeddedResource Include="SSAS\SyncDescriptionsForm.resx">
       <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -723,6 +726,7 @@
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
     <None Include="Properties\DataSources\NonDefaultPropertiesPlugin.NonDefaultProperty.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleMemberInfo.datasource" />
     <None Include="Properties\DataSources\SortablePackagePropertiesPlugin.PackageProperties.datasource" />
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UnusedColumn.datasource" />
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UsedColumn.datasource" />
