@@ -726,7 +726,11 @@
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
     <None Include="Properties\DataSources\NonDefaultPropertiesPlugin.NonDefaultProperty.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleCubeInfo.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleDataSourceInfo.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleDimensionInfo.datasource" />
     <None Include="Properties\DataSources\RolesReportPlugin.RoleMemberInfo.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleMiningInfo.datasource" />
     <None Include="Properties\DataSources\SortablePackagePropertiesPlugin.PackageProperties.datasource" />
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UnusedColumn.datasource" />
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UsedColumn.datasource" />

@@ -101,6 +101,11 @@ namespace BIDSHelper
                     _deploymentTargetServer = _deploymentTargetServer.Substring(0, _deploymentTargetServer.IndexOf('\\') - 1);
 
                 List<RoleMemberInfo> listRoleMembers = new List<RoleMemberInfo>();
+                List<RoleDataSourceInfo> listRoleDataSources = new List<RoleDataSourceInfo>();
+                List<RoleCubeInfo> listRoleCubes = new List<RoleCubeInfo>();
+                List<RoleDimensionInfo> listRoleDimensions = new List<RoleDimensionInfo>();
+                List<RoleMiningInfo> listRoleMining = new List<RoleMiningInfo>();
+
                 foreach (Role r in db.Roles)
                 {
                     if (r.Members.Count == 0)
@@ -124,6 +129,81 @@ namespace BIDSHelper
 
                         listRoleMembers.AddRange(GetGroupMembers(infoMember.directoryEntry, db, r, 1));
                     }
+
+                    foreach (DataSource ds in db.DataSources)
+                    {
+                        RoleDataSourceInfo info = new RoleDataSourceInfo();
+                        info.role = r;
+                        info.dataSource = ds;
+                        listRoleDataSources.Add(info);
+                    }
+
+                    foreach (Cube c in db.Cubes)
+                    {
+                        RoleCubeInfo info = new RoleCubeInfo();
+                        info.role = r;
+                        info.cube = c;
+                        listRoleCubes.Add(info);
+                    }
+
+                    foreach (MiningStructure ms in db.MiningStructures)
+                    {
+                        RoleMiningInfo info = new RoleMiningInfo();
+                        info.role = r;
+                        info.miningStructure = ms;
+                        listRoleMining.Add(info);
+
+                        foreach (MiningModel mm in ms.MiningModels)
+                        {
+                            info = new RoleMiningInfo();
+                            info.role = r;
+                            info.miningStructure = ms;
+                            info.miningModel = mm;
+                            listRoleMining.Add(info);
+                        }
+                    }
+
+                    foreach (Dimension d in db.Dimensions)
+                    {
+                        RoleDimensionInfo info = new RoleDimensionInfo();
+                        info.role = r;
+                        info.dimension = d;
+                        listRoleDimensions.Add(info);
+
+                        foreach (DimensionAttribute da in d.Attributes)
+                        {
+                            RoleDimensionInfo info2 = new RoleDimensionInfo();
+                            info2.role = r;
+                            info2.dimension = d;
+                            info2.dimensionAttribute = da;
+                            if (!string.IsNullOrEmpty(info2.AllowedMemberSet) || !string.IsNullOrEmpty(info2.DeniedMemberSet) || !string.IsNullOrEmpty(info2.DefaultMember) || !string.IsNullOrEmpty(info2.VisualTotals))
+                                listRoleDimensions.Add(info2);
+                        }
+                    }
+
+                    foreach (Cube c in db.Cubes)
+                    {
+                        foreach (CubeDimension cd in c.Dimensions)
+                        {
+                            RoleDimensionInfo info = new RoleDimensionInfo();
+                            info.role = r;
+                            info.dimension = cd.Dimension;
+                            info.cubeDimension = cd;
+                            if (info.ReadAccess != "Inherited")
+                                listRoleDimensions.Add(info);
+
+                            foreach (CubeAttribute ca in cd.Attributes)
+                            {
+                                RoleDimensionInfo info2 = new RoleDimensionInfo();
+                                info2.role = r;
+                                info2.dimension = cd.Dimension;
+                                info2.cubeDimension = cd;
+                                info2.dimensionAttribute = ca.Attribute;
+                                if (!string.IsNullOrEmpty(info2.AllowedMemberSet) || !string.IsNullOrEmpty(info2.DeniedMemberSet) || !string.IsNullOrEmpty(info2.DefaultMember) || !string.IsNullOrEmpty(info2.VisualTotals))
+                                    listRoleDimensions.Add(info2);
+                            }
+                        }
+                    }
                 }
 
                 ReportViewerForm frm = new ReportViewerForm();
@@ -134,6 +214,27 @@ namespace BIDSHelper
                 reportDataSource1.Name = "BIDSHelper_RoleMemberInfo";
                 reportDataSource1.Value = frm.ReportBindingSource;
                 frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource1);
+
+                Microsoft.Reporting.WinForms.ReportDataSource reportDataSource2 = new Microsoft.Reporting.WinForms.ReportDataSource();
+                reportDataSource2.Name = "BIDSHelper_RoleDataSourceInfo";
+                reportDataSource2.Value = listRoleDataSources;
+                frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource2);
+
+                Microsoft.Reporting.WinForms.ReportDataSource reportDataSource3 = new Microsoft.Reporting.WinForms.ReportDataSource();
+                reportDataSource3.Name = "BIDSHelper_RoleCubeInfo";
+                reportDataSource3.Value = listRoleCubes;
+                frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource3);
+
+                Microsoft.Reporting.WinForms.ReportDataSource reportDataSource4 = new Microsoft.Reporting.WinForms.ReportDataSource();
+                reportDataSource4.Name = "BIDSHelper_RoleDimensionInfo";
+                reportDataSource4.Value = listRoleDimensions;
+                frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource4);
+
+                Microsoft.Reporting.WinForms.ReportDataSource reportDataSource5 = new Microsoft.Reporting.WinForms.ReportDataSource();
+                reportDataSource5.Name = "BIDSHelper_RoleMiningInfo";
+                reportDataSource5.Value = listRoleMining;
+                frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource5);
+
                 frm.ReportViewerControl.LocalReport.ReportEmbeddedResource = frm.Report;
 
                 frm.Caption = "Roles Report";
@@ -571,6 +672,447 @@ namespace BIDSHelper
                 PasswordExpired_DEPRECATED = 8388608,
                 TrustedToAuthenticateForDelegation = 16777216,
                 NoAuthDataRequired = 33554432
+            }
+        }
+        #endregion
+
+        #region RoleDataSourceInfo class
+        public class RoleDataSourceInfo
+        {
+            public Role role;
+            public DataSource dataSource;
+
+            public string DataSourceName
+            {
+                get { return dataSource.Name; }
+            }
+
+            public string RoleName
+            {
+                get { return role.Name; }
+            }
+
+            public string ReadAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = dataSource.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    DataSourcePermission perm = dataSource.DataSourcePermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    return perm.Read.ToString();
+                }
+            }
+
+            public string ReadDefinitionAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = dataSource.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    if (dbPerm != null && dbPerm.ReadDefinition == Microsoft.AnalysisServices.ReadDefinitionAccess.Allowed) return "Allowed";
+                    DataSourcePermission perm = dataSource.DataSourcePermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    return perm.ReadDefinition.ToString();
+                }
+            }
+        }
+        #endregion
+
+        #region RoleCubeInfo class
+        public class RoleCubeInfo
+        {
+            public Role role;
+            public Cube cube;
+
+            public string CubeName
+            {
+                get { return cube.Name; }
+            }
+
+            public string RoleName
+            {
+                get { return role.Name; }
+            }
+
+            public string ReadAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = cube.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    CubePermission perm = cube.CubePermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    if (perm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed && perm.Write == Microsoft.AnalysisServices.WriteAccess.Allowed)
+                        return "Read/Write";
+                    else if (perm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed)
+                        return "Read";
+                    else
+                        return "None";
+                }
+            }
+
+            public string ReadDefinitionAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = cube.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    if (dbPerm != null && dbPerm.ReadDefinition == Microsoft.AnalysisServices.ReadDefinitionAccess.Allowed) return "Allowed";
+                    CubePermission perm = cube.CubePermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    if (perm.ReadDefinition == Microsoft.AnalysisServices.ReadDefinitionAccess.Basic) return "Basic (Local Cube)";
+                    return perm.ReadDefinition.ToString();
+                }
+            }
+
+            public string ProcessAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = cube.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    if (dbPerm != null && dbPerm.Process) return "Process";
+                    CubePermission perm = cube.CubePermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    return (perm.Process ? "Process" : "None");
+                }
+            }
+
+            public string DrillthroughAccess
+            {
+                get
+                {
+                    CubePermission perm = cube.CubePermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    return perm.ReadSourceData.ToString();
+                }
+            }
+
+            public string CellSecurityReadPermissions
+            {
+                get
+                {
+                    return GetCellSecurityPermission(CellPermissionAccess.Read);
+                }
+            }
+
+            public string CellSecurityReadContingentPermissions
+            {
+                get
+                {
+                    return GetCellSecurityPermission(CellPermissionAccess.ReadContingent);
+                }
+            }
+
+            public string CellSecurityReadWritePermissions
+            {
+                get
+                {
+                    return GetCellSecurityPermission(CellPermissionAccess.ReadWrite);
+                }
+            }
+
+            private string GetCellSecurityPermission(CellPermissionAccess type)
+            {
+                CubePermission perm = cube.CubePermissions.FindByRole(role.ID);
+                if (perm == null) return null;
+                foreach (CellPermission cp in perm.CellPermissions)
+                {
+                    if (cp.Access == type)
+                    {
+                        return cp.Expression;
+                    }
+                }
+                return null;
+            }
+        }
+        #endregion
+
+        #region RoleDimensionInfo class
+        public class RoleDimensionInfo
+        {
+            public Role role;
+            public Dimension dimension;
+            public CubeDimension cubeDimension;
+            public DimensionAttribute dimensionAttribute;
+
+            public string DimensionName
+            {
+                get { return dimension.Name; }
+            }
+
+            public string CubeDimensionName
+            {
+                get
+                {
+                    if (cubeDimension == null) return dimension.Name;
+                    if (cubeDimension.Name == dimension.Name) return cubeDimension.Name + " (" + cubeDimension.Parent.Name + ")";
+                    else return cubeDimension.Name + " (" + dimension.Name + " - " + cubeDimension.Parent.Name + ")";
+                }
+            }
+
+            public string RoleName
+            {
+                get { return role.Name; }
+            }
+
+            public string ReadAccess
+            {
+                get
+                {
+                    if (cubeDimension != null && cubeDimension.Parent.CubePermissions != null)
+                    {
+                        CubePermission cubePerm = cubeDimension.Parent.CubePermissions.FindByRole(role.ID);
+                        if (cubePerm != null && cubePerm.DimensionPermissions != null)
+                        {
+                            CubeDimensionPermission cubeDimPerm = cubePerm.DimensionPermissions.Find(cubeDimension.ID);
+                            if (cubeDimPerm != null)
+                            {
+                                if (cubeDimPerm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed && cubeDimPerm.Write == Microsoft.AnalysisServices.WriteAccess.Allowed)
+                                    return "Read/Write";
+                                else if (cubeDimPerm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed)
+                                    return "Read";
+                                else
+                                    return "None";
+                            }
+                            else
+                            {
+                                return "Inherited";
+                            }
+                        }
+                        else
+                        {
+                            return "Inherited";
+                        }
+                    }
+                    else
+                    {
+                        DatabasePermission dbPerm = dimension.Parent.DatabasePermissions.FindByRole(role.ID);
+                        if (dbPerm != null && dbPerm.Administer) return "Admin";
+                        if (dimension.DimensionPermissions == null) return "None";
+                        DimensionPermission perm = dimension.DimensionPermissions.FindByRole(role.ID);
+                        if (perm == null) return "Read";
+                        if (perm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed && perm.Write == Microsoft.AnalysisServices.WriteAccess.Allowed)
+                            return "Read/Write";
+                        else if (perm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed)
+                            return "Read";
+                        else
+                            return "None";
+                    }
+                }
+            }
+
+            public string ReadDefinitionAccess
+            {
+                get
+                {
+                    if (cubeDimension != null)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        DatabasePermission dbPerm = dimension.Parent.DatabasePermissions.FindByRole(role.ID);
+                        if (dbPerm != null && dbPerm.Administer) return "Admin";
+                        if (dbPerm != null && dbPerm.ReadDefinition == Microsoft.AnalysisServices.ReadDefinitionAccess.Allowed) return "Allowed";
+                        if (dimension.DimensionPermissions == null) return "None";
+                        DimensionPermission perm = dimension.DimensionPermissions.FindByRole(role.ID);
+                        if (perm == null) return "None";
+                        return perm.ReadDefinition.ToString();
+                    }
+                }
+            }
+
+            public string ProcessAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = dimension.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    if (dbPerm != null && dbPerm.Process) return "Process";
+                    if (dimension.DimensionPermissions == null) return "None";
+                    DimensionPermission perm = dimension.DimensionPermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    return (perm.Process ? "Process" : "None");
+                }
+            }
+
+            public string AttributeName
+            {
+                get
+                {
+                    if (dimensionAttribute == null) return null;
+                    else return dimensionAttribute.Name;
+                }
+            }
+
+            public string VisualTotals
+            {
+                get
+                {
+                    AttributePermission perm = GetDimensionAttributeSecurityPermission();
+                    return (perm == null || perm.VisualTotals != "1") ? null : "Visual Totals Enabled";
+                }
+            }
+
+            public string AllowedMemberSet
+            {
+                get
+                {
+                    AttributePermission perm = GetDimensionAttributeSecurityPermission();
+                    return (perm == null || string.IsNullOrEmpty(perm.AllowedSet)) ? null : perm.AllowedSet;
+                }
+            }
+
+            public string DeniedMemberSet
+            {
+                get
+                {
+                    AttributePermission perm = GetDimensionAttributeSecurityPermission();
+                    return (perm == null || string.IsNullOrEmpty(perm.DeniedSet)) ? null : perm.DeniedSet;
+                }
+            }
+
+            public string DefaultMember
+            {
+                get
+                {
+                    AttributePermission perm = GetDimensionAttributeSecurityPermission();
+                    return (perm == null || string.IsNullOrEmpty(perm.DefaultMember)) ? null : perm.DefaultMember;
+                }
+            }
+
+
+            private AttributePermission GetDimensionAttributeSecurityPermission()
+            {
+                if (dimensionAttribute == null) return null;
+                if (cubeDimension != null && cubeDimension.Parent.CubePermissions != null)
+                {
+                    CubePermission cubePerm = cubeDimension.Parent.CubePermissions.FindByRole(role.ID);
+                    if (cubePerm != null)
+                    {
+                        CubeDimensionPermission cubeDimPerm = cubePerm.DimensionPermissions.Find(cubeDimension.ID);
+                        if (cubeDimPerm != null && cubeDimPerm.AttributePermissions != null)
+                        {
+                            return cubeDimPerm.AttributePermissions.Find(dimensionAttribute.ID);
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    DimensionPermission perm = dimension.DimensionPermissions.FindByRole(role.ID);
+                    if (perm == null || perm.AttributePermissions == null) return null;
+                    return perm.AttributePermissions.Find(dimensionAttribute.ID);
+                }
+            }
+        }
+        #endregion
+
+        #region RoleMiningInfo class
+        public class RoleMiningInfo
+        {
+            public Role role;
+            public MiningStructure miningStructure;
+            public MiningModel miningModel;
+
+            public string MiningStructureName
+            {
+                get { return miningStructure.Name; }
+            }
+
+            public string MiningModelName
+            {
+                get { return miningModel == null ? null : miningModel.Name; }
+            }
+
+            public string RoleName
+            {
+                get { return role.Name; }
+            }
+
+            public string ReadAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = miningStructure.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    Permission perm;
+                    if (miningModel != null)
+                        perm = miningModel.MiningModelPermissions.FindByRole(role.ID);
+                    else
+                        perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
+
+                    if (perm == null) return "None";
+                    if (perm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed && perm.Write == Microsoft.AnalysisServices.WriteAccess.Allowed)
+                        return "Read/Write";
+                    else if (perm.Read == Microsoft.AnalysisServices.ReadAccess.Allowed)
+                        return "Read";
+                    else
+                        return "None";
+                }
+            }
+
+            public string ReadDefinitionAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = miningStructure.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    if (dbPerm != null && dbPerm.ReadDefinition == Microsoft.AnalysisServices.ReadDefinitionAccess.Allowed) return "Allowed";
+                    Permission perm = null;
+                    if (miningModel != null)
+                        perm = miningModel.MiningModelPermissions.FindByRole(role.ID);
+                    else
+                        perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
+
+                    if (perm == null) return "None";
+                    return perm.ReadDefinition.ToString();
+                }
+            }
+
+            public string ProcessAccess
+            {
+                get
+                {
+                    DatabasePermission dbPerm = miningStructure.Parent.DatabasePermissions.FindByRole(role.ID);
+                    if (dbPerm != null && dbPerm.Administer) return "Admin";
+                    if (dbPerm != null && dbPerm.Process) return "Process";
+                    Permission perm = null;
+                    if (miningModel != null)
+                        perm = miningModel.MiningModelPermissions.FindByRole(role.ID);
+                    else
+                        perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
+                    if (perm == null) return "None";
+                    return (perm.Process ? "Process" : "None");
+                }
+            }
+
+            public string DrillthroughBrowseAccess
+            {
+                get
+                {
+                    if (miningModel != null)
+                    {
+                        MiningModelPermission perm = miningModel.MiningModelPermissions.FindByRole(role.ID);
+                        if (perm == null) return "None";
+                        return perm.AllowBrowsing ? "Browse" : "None";
+                    }
+                    else
+                    {
+                        MiningStructurePermission perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
+                        if (perm == null) return "None";
+                        return perm.AllowDrillThrough ? "Drillthrough" : "None";
+                    }
+                }
             }
         }
         #endregion
