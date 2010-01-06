@@ -275,11 +275,24 @@
   <Width>19.36508cm</Width>
   <Body>
     <ReportItems>
+      <Rectangle Name="rectangle2">
+        <ZIndex>8</ZIndex>
+        <Top>2.75in</Top>
+        <PageBreakAtEnd>true</PageBreakAtEnd>
+        <Height>0.0625in</Height>
+      </Rectangle>
+      <Rectangle Name="rectangle1">
+        <ZIndex>7</ZIndex>
+        <Top>4in</Top>
+        <PageBreakAtEnd>true</PageBreakAtEnd>
+        <Height>0.0625in</Height>
+      </Rectangle>
       <Table Name="table5">
+        <NoRows>No mining structures</NoRows>
         <ZIndex>6</ZIndex>
         <DataSetName>BIDSHelper_RoleMiningInfo</DataSetName>
         <PageBreakAtStart>true</PageBreakAtStart>
-        <Top>5.4375in</Top>
+        <Top>5.875in</Top>
         <Details>
           <TableRows>
             <TableRow>
@@ -530,13 +543,11 @@
             <Width>1in</Width>
           </TableColumn>
         </TableColumns>
-        <Height>0.375in</Height>
       </Table>
       <Table Name="table4">
         <ZIndex>5</ZIndex>
         <DataSetName>BIDSHelper_RoleDimensionInfo</DataSetName>
-        <PageBreakAtStart>true</PageBreakAtStart>
-        <Top>3.9375in</Top>
+        <Top>4.125in</Top>
         <TableGroups>
           <TableGroup>
             <Grouping Name="table4_Group1">
@@ -555,6 +566,12 @@
                 <Direction>Ascending</Direction>
               </SortBy>
             </Sorting>
+            <Visibility>
+              <Hidden>=Sum(IIf(Fields!AttributeName.Value is nothing,0,1))=0 
+AndAlso Fields!ReadAccess.Value="Read" 
+AndAlso Fields!ProcessAccess.Value="None" 
+AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
+            </Visibility>
             <Header>
               <TableRows>
                 <TableRow>
@@ -920,6 +937,29 @@
             <TableRow>
               <TableCells>
                 <TableCell>
+                  <ColSpan>5</ColSpan>
+                  <ReportItems>
+                    <Textbox Name="textbox71">
+                      <rd:DefaultName>textbox71</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>White</BackgroundColor>
+                        <FontSize>8pt</FontSize>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Hiding rows which have default permissions (read access, no process access, and no read definition access)</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.1875in</Height>
+            </TableRow>
+            <TableRow>
+              <TableCells>
+                <TableCell>
                   <ReportItems>
                     <Textbox Name="textbox61">
                       <Style>
@@ -1027,13 +1067,12 @@
             <Width>1.375in</Width>
           </TableColumn>
         </TableColumns>
-        <Height>1.3125in</Height>
+        <Height>1.5in</Height>
       </Table>
       <Table Name="table3">
         <ZIndex>4</ZIndex>
         <DataSetName>BIDSHelper_RoleCubeInfo</DataSetName>
-        <PageBreakAtStart>true</PageBreakAtStart>
-        <Top>2.8125in</Top>
+        <Top>2.9375in</Top>
         <Details>
           <TableRows>
             <TableRow>
@@ -2133,7 +2172,7 @@
         <Height>1.5in</Height>
       </Table>
     </ReportItems>
-    <Height>5.9375in</Height>
+    <Height>6.25in</Height>
   </Body>
   <PageFooter>
     <PrintOnFirstPage>true</PrintOnFirstPage>
