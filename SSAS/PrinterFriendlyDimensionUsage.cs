@@ -94,12 +94,18 @@ namespace BIDSHelper
                             {
                                 tableId = ((ColumnBinding)di2.Source).TableID;
                                 DataSourceView dsv = mga.Parent.Dimension.DataSourceView;
-                                DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
-                                if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                                if (dsv.Schema.Tables.Contains(tableId))
                                 {
-                                    usage.Column2Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                    DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
+                                    if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                                    {
+                                        usage.Column2Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                    }
                                 }
-                                //usage.Column2Value += ((ColumnBinding)di2.Source).TableID + ".";
+                                else
+                                {
+                                    usage.Column2Value += ((ColumnBinding)di2.Source).TableID + ".";
+                                }
                                 usage.Column2Value += ((ColumnBinding)di2.Source).ColumnID + "\n";
                             }
                         }
@@ -110,12 +116,19 @@ namespace BIDSHelper
                             {
                                 tableId = ((ColumnBinding)di3.Source).TableID;
                                 DataSourceView dsv = mga.ParentCube.DataSourceView;
-                                DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
-                                if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                                if (dsv.Schema.Tables.Contains(tableId))
                                 {
-                                    usage.Column3Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                    DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(tableId)];
+                                    if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                                    {
+                                        usage.Column3Value += oTable.ExtendedProperties["FriendlyName"] + ".";
+                                    }
                                 }
-                                //usage.Column3Value += ((ColumnBinding)di3.Source).TableID + ".";
+                                else
+                                {
+                                    usage.Column3Value += ((ColumnBinding)di3.Source).TableID + ".";
+                                }
+
                                 usage.Column3Value += ((ColumnBinding)di3.Source).ColumnID;
                                 usage.Column3Value += "  (" + di3.NullProcessing.ToString().Substring(0, 1) + ")";
                                 usage.Column3Value += "\n";
