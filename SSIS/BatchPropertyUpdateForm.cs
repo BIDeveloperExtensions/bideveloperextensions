@@ -8,15 +8,25 @@ namespace BIDSHelper
     ///</summary>
     public partial class BatchPropertyUpdateForm : Form
     {
+        private string _PropertyPath;
         /// <summary>
         /// Property Path to look for
         /// </summary>
-        public string PropertyPath { get; set; }
+        public string PropertyPath
+        {
+            get { return _PropertyPath; }
+            set { _PropertyPath = value; }
+        }
 
+        private string _NewValue;
         /// <summary>
         /// New value to apply to property
         /// </summary>
-        public string NewValue { get; set; }
+        public string NewValue
+        {
+            get { return _NewValue; }
+            set { _NewValue = value; }
+        }
 
         /// <summary>
         /// Constructor for form to capture PropertyPath and NewValue from user

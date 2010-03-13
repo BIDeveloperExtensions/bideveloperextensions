@@ -134,10 +134,33 @@ namespace BIDSHelper.SSIS
             CreationName = componentInfo.CreationName;
         }
 
-        public DTSPipelineComponentType ComponentType { get; set; }
-        public string ID { get; set; }
-        public string Name { get; set; }
-        public string CreationName { get; set; }
+        private DTSPipelineComponentType _ComponentType;
+        public DTSPipelineComponentType ComponentType
+        {
+            get { return _ComponentType; }
+            set { _ComponentType = value; }
+        }
+
+        private string _ID;
+        public string ID
+        {
+            get { return _ID; }
+            set { _ID = value; }
+        }
+
+        private string _Name;
+        public string Name
+        {
+            get { return _Name; }
+            set { _Name = value; }
+        }
+
+        private string _CreationName;
+        public string CreationName
+        {
+            get { return _CreationName; }
+            set { _CreationName = value; }
+        }
     }
 
 

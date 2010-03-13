@@ -1110,7 +1110,11 @@ namespace BIDSHelper
                     {
                         MiningStructurePermission perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
                         if (perm == null) return "None";
+#if KATMAI
                         return perm.AllowDrillThrough ? "Drillthrough" : "None";
+#else
+                        return "None";
+#endif
                     }
                 }
             }
