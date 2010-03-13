@@ -29,7 +29,12 @@ namespace BIDSHelper
 
         public override string ButtonText
         {
-            get { return "Printer Friendly DimensionUsage"; }
+            get { return "Printer Friendly Dimension Usage..."; }
+        }
+
+        public override string FriendlyName
+        {
+            get { return "Printer Friendly Dimension Usage"; }
         }
 
         public override string ToolTip
@@ -71,7 +76,7 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
-                ProjectItem projItem = (ProjectItem)hierItem.Object;
+                ProjectItem projItem = this.ApplicationObject.ActiveWindow.ProjectItem;
                 Cube cub = (Cube)projItem.Object;
 
                 ReportViewerForm frm = new ReportViewerForm();

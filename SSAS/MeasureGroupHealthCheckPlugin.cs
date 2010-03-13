@@ -138,8 +138,8 @@ namespace BIDSHelper
         };
 
         //making these static allows me not to have to change all the function signatures below... and it is fine as static because multiple dimension health checks can't be run in parallel
-        private static string sq = "[";
-        private static string fq = "]";
+        internal static string sq = "[";
+        internal static string fq = "]";
 
         public static void Check(MeasureGroup mg, IDesignerHost designer)
         {
@@ -466,7 +466,7 @@ namespace BIDSHelper
         }
 
         #region DSV Query Functions
-        private static string GetQueryDefinition(Database d, NamedComponent nc, Microsoft.AnalysisServices.Binding b, List<DataItem> columnsNeeded)
+        internal static string GetQueryDefinition(Database d, NamedComponent nc, Microsoft.AnalysisServices.Binding b, List<DataItem> columnsNeeded)
         {
             StringBuilder sQuery = new StringBuilder();
             if (b is DsvTableBinding)
@@ -474,7 +474,12 @@ namespace BIDSHelper
                 DsvTableBinding oDsvTableBinding = (DsvTableBinding)b;
                 DataSourceView oDSV = d.DataSourceViews[oDsvTableBinding.DataSourceViewID];
                 DataTable oTable = oDSV.Schema.Tables[oDsvTableBinding.TableID];
-                if (!oTable.ExtendedProperties.ContainsKey("QueryDefinition") && oTable.ExtendedProperties.ContainsKey("DbTableName"))
+
+                if (oTable == null)
+                {
+                    throw new Exception("DSV table " + oDsvTableBinding.TableID + " not found");
+                }
+                else if (!oTable.ExtendedProperties.ContainsKey("QueryDefinition") && oTable.ExtendedProperties.ContainsKey("DbTableName"))
                 {
                     foreach (DataColumn oColumn in oTable.Columns)
                     {
@@ -583,7 +588,7 @@ namespace BIDSHelper
             }
         }
 
-        private static string GetTableIdForDataItem(DataItem di)
+        internal static string GetTableIdForDataItem(DataItem di)
         {
             if (di.Source is ColumnBinding)
             {

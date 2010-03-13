@@ -142,6 +142,13 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\M2MMatrixCompressionForm.Designer.cs">
+      <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
     <Compile Include="Core\VersionCheckNotificationForm.cs">
       <SubType>Form</SubType>
@@ -258,6 +265,7 @@
     </Compile>
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\Konesans.cs" />
+    <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
@@ -479,6 +487,8 @@
     <None Include="Resources\DestComponent.ico" />
     <None Include="Resources\SmartDiffSSRS.xslt" />
     <Content Include="Build\Readme.txt" />
+    <None Include="Resources\M2MIcon.ico" />
+    <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
     <Content Include="SetupScript\SQL2005CurrentReleaseVersion.xml" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />
@@ -580,6 +590,10 @@
     <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\M2MMatrixCompressionForm.resx">
+      <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\RolesReport.rdlc" />
     <EmbeddedResource Include="SSAS\SyncDescriptionsForm.resx">
       <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
@@ -676,6 +690,7 @@
     <None Include="Properties\DataSources\DataTypeDiscrepancyCheckPlugin.DataTypeDiscrepancy.datasource" />
     <None Include="Properties\DataSources\DimensionOptimizationReportPlugin.DimensionOptimizations.datasource" />
     <None Include="Properties\DataSources\DimensionUsage.datasource" />
+    <None Include="Properties\DataSources\M2MMatrixCompressionPlugin.M2MMatrixCompressionStat.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
     <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
     <None Include="Properties\DataSources\NonDefaultPropertiesPlugin.NonDefaultProperty.datasource" />
