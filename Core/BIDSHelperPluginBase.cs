@@ -173,6 +173,7 @@ namespace BIDSHelper
                         }
                         else if (AddCommandToMultipleMenus)
                         {
+                            //note, this doesn't look recursively through command bars, so non-top level command bars like "Other Windows" won't work using this option
                             foreach (CommandBar bar in (CommandBars)(appObj.CommandBars))
                             {
                                 if (bar.Name == sMenuName)
@@ -388,7 +389,7 @@ namespace BIDSHelper
         /// </summary>
         public virtual bool AddCommandToMultipleMenus
         {
-            get { return false; }
+            get { return true; }
         }
 
         #endregion

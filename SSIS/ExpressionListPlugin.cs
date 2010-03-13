@@ -711,6 +711,11 @@ namespace BIDSHelper
             get { return toolWindow.Visible; }
         }
 
+        public override bool AddCommandToMultipleMenus
+        {
+            get { return false; } //the Other Windows menu is nested under other menus, so this Add to multiple menus logic won't work here
+        }
+
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>

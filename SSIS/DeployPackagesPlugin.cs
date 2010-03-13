@@ -450,6 +450,14 @@ namespace BIDSHelper
                     sb.Append(cmd.Caption).Append('|').Append(cmd.Id).Append('|').Append(cmd2.Name).Append('|').Append(cmd2.LocalizedName).Append('|').Append(cmd2.Guid).Append('|').Append(cmd2.ID).AppendLine();
                 }
                 System.IO.File.WriteAllText(Microsoft.VisualBasic.FileIO.SpecialDirectories.Temp + "\\BidsHelperDeploySSISPackagesPropertiesMenuDebugLog.txt", sb.ToString());
+
+                sb = new StringBuilder();
+                sb.Append("bar.Name").Append('|').Append("bar.NameLocal").Append('|').Append("bar.Visible").Append('|').Append("bar.Type").Append('|').Append("bar.Id").Append('|').Append("bar.Index").Append('|').Append("bar.InstanceId").Append('|').Append("bar.Enabled").AppendLine();
+                foreach (CommandBar bar in cmdBars)
+                {
+                    sb.Append(bar.Name).Append('|').Append(bar.NameLocal).Append('|').Append(bar.Visible).Append('|').Append(bar.Type.ToString()).Append('|').Append(bar.Id).Append('|').Append(bar.Index).Append('|').Append(bar.InstanceId).Append('|').Append(bar.Enabled).AppendLine();
+                }
+                System.IO.File.WriteAllText(Microsoft.VisualBasic.FileIO.SpecialDirectories.Temp + "\\BidsHelperDeploySSISPackagesMenuDebugLog.txt", sb.ToString());
             }
         }
 
