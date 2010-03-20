@@ -284,6 +284,8 @@ namespace PCDimNaturalizer
                     break;
                 }
             if (pid == null) throw new Exception("Dimension is not parent child.");
+            if (id.Table.ExtendedProperties["TableType"] != null && ((string)id.Table.ExtendedProperties["TableType"]) == "View")
+                throw new Exception("DSV views are not supported currently.  The PC Dimension Naturalizer only supports SQL tables or views for the dimension source.");
             tbl = id.Table;
         }
 
@@ -314,21 +316,23 @@ namespace PCDimNaturalizer
 
             string[] NamingTemplate = null;
             if (PCParentAttribute().NamingTemplate != null)
-                NamingTemplate = PCParentAttribute().NamingTemplate.Split(';');
+                NamingTemplate = PCParentAttribute().NamingTemplate.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             else
                 NamingTemplate = new string[] { "" };
             if (NamingTemplate[0] == "")
                 return "Level " + iLevel.ToString("00");
             else
             {
-                if (NamingTemplate.Length - 1 > iLevel)
-                    return NamingTemplate[iLevel];
+                if (NamingTemplate.Length > iLevel - 1)
+                    return NamingTemplate[iLevel - 2];
                 else
                     return NamingTemplate[NamingTemplate.Length - 1].Contains("*")
-                        ? NamingTemplate[NamingTemplate.Length - 1].Replace("*", (iLevel).ToString("00"))
+                        ? NamingTemplate[NamingTemplate.Length - 1].Replace("*", (iLevel - 1).ToString("00"))
                         : NamingTemplate[NamingTemplate.Length - 1] == ""
                             ? NamingTemplate[0].Replace("*", (iLevel - 1).ToString())
-                            : NamingTemplate[NamingTemplate.Length - 1] + iLevel.ToString("00");
+                            : NamingTemplate.Length < iLevel - 1
+                                ? NamingTemplate[NamingTemplate.Length - 1] + " " + (iLevel - 1).ToString("00")
+                                : NamingTemplate[NamingTemplate.Length - 1];
             }
         }
 
@@ -362,7 +366,10 @@ namespace PCDimNaturalizer
             {
                 if (NonPCHierarchiesToInclude.Contains(hier.Name))
                 {
-                    hierNew = dimNew.Hierarchies.Add(hier.Name);
+                    if (dimNew.Attributes.ContainsName(hier.Name))
+                        hierNew = dimNew.Hierarchies.Add(hier.Name + "Hierarchy");
+                    else
+                        hierNew = dimNew.Hierarchies.Add(hier.Name);
                     for (int j = 0; j < hier.Levels.Count; j++)
                     {
                         hierNew.Levels.Add(new Level(hier.Levels[j].Name));
@@ -410,7 +417,7 @@ namespace PCDimNaturalizer
                     atList.Add(atRelOwner);
                     return atList;
                 }
-            return null;
+            return atList;
         }
 
         private Dimension MaterializeNaturalizedAttributeRelationships(Dimension Dim, DataTable tblNew)
@@ -479,10 +486,10 @@ namespace PCDimNaturalizer
             attr.KeyColumns.Clear();
             attr.CustomRollupColumn = null;
             attr.UnaryOperatorColumn = null;
-
-
             attr.NameColumn = null;
             attr.ValueColumn = null;
+            attr.OrderBy = OrderBy.Key;
+            attr.OrderByAttributeID = null;
 
             // Do not know why but when this was copied from PC settings it caused failure in new attributes, possibly because of breakdown into levels?
             attr.DiscretizationMethod = DiscretizationMethod.None;
@@ -695,9 +702,9 @@ namespace PCDimNaturalizer
             // Add parent relationships (foriegn key constraints against this table) for new named query in view...
             for (int i = 0; i < tbl.ParentRelations.Count; i++)
             {
-                for (int j = 1; j <= MinimumLevelCount; j++) // Must add a FK relationship for each level in flattened hierarchy!  argh!
+                for (int j = 2; j <= MinimumLevelCount + 1; j++) // Must add a FK relationship for each level in flattened hierarchy!  argh!
                 {
-                    if (tbl.ChildRelations[i].ParentTable != tbl.ChildRelations[i].ChildTable)
+                    if (tbl.ParentRelations[i].ParentTable != tbl.ParentRelations[i].ChildTable)
                     {
                         bool MissingRelationColumnInImportedDimension = false;
                         DataColumn[] NewRelationColumns = tbl.ParentRelations[i].ChildColumns;
@@ -707,11 +714,11 @@ namespace PCDimNaturalizer
                             for (int l = 0; l < dim.Attributes.Count; l++)  // OK, find the current FK column in the attribute columns list to figure out its name in the named query...
                             {
                                 if (dim.Attributes[l].KeyColumns.Count == 1 && ColNameFromDataItem(dim.Attributes[l].KeyColumns[0]) == NewRelationColumns[k].ColumnName)
-                                    strFKCol = "Level" + j.ToString() + "_" + dim.Attributes[l].Name + "_KeyColumn";
+                                    strFKCol = GetNaturalizedLevelName(j) + "_" + dim.Attributes[l].Name + "_KeyColumn";
                                 else if (dim.Attributes[l].NameColumn != null && ColNameFromDataItem(dim.Attributes[l].NameColumn) == NewRelationColumns[k].ColumnName)
-                                    strFKCol = "Level" + j.ToString() + "_" + dim.Attributes[l].Name + "_NameColumn";
+                                    strFKCol = GetNaturalizedLevelName(j) + "_" + dim.Attributes[l].Name + "_NameColumn";
                                 else if (dim.Attributes[l].ValueColumn != null && ColNameFromDataItem(dim.Attributes[l].ValueColumn) == NewRelationColumns[k].ColumnName)
-                                    strFKCol = "Level" + j.ToString() + "_" + dim.Attributes[l].Name + "_ValueColumn";
+                                    strFKCol = GetNaturalizedLevelName(j) + "_" + dim.Attributes[l].Name + "_ValueColumn";
                                 if (strFKCol != "") break;
                             }
                             NewRelationColumns[k] = dim.DataSourceView.Schema.Tables[txtNewView].Columns[strFKCol];
@@ -723,7 +730,7 @@ namespace PCDimNaturalizer
                         }
                         if (!MissingRelationColumnInImportedDimension)
                         {
-                            DataRelation dataRelation = new DataRelation(tbl.ParentRelations[i].RelationName.Replace(tbl.TableName, txtNewView + j.ToString()),
+                            DataRelation dataRelation = new DataRelation("[" + tbl.ParentRelations[i].RelationName.Replace(tbl.ExtendedProperties["DbTableName"].ToString(), txtNewView.Replace("[", "").Replace("]", "") + j.ToString()) + "]",
                                 tbl.ParentRelations[i].ParentColumns,
                                 NewRelationColumns);
                             dim.DataSourceView.Schema.Relations.Add(dataRelation);
@@ -761,7 +768,7 @@ namespace PCDimNaturalizer
             string strQry = "select top 1 * from " + txtNewView;
             string strSchema = "";
             if (txtNewView.IndexOf(".") != -1) strSchema = txtNewView.Substring(0, txtNewView.IndexOf("."));
-            txtNewView = txtNewView.Substring(txtNewView.IndexOf(".") + 1); // Once it is in the DSV, the naturalized view no longer requires the schema name so strip it out...
+            txtNewView = txtNewView.Substring(txtNewView.IndexOf(".") + 1).Replace("[", "").Replace("]", ""); // Once it is in the DSV, the naturalized view no longer requires the schema name so strip it out...
 
             if (txtNewView.StartsWith("[") && txtNewView.EndsWith("]"))
                 txtNewView = txtNewView.Substring(1, txtNewView.Length - 2);
@@ -817,7 +824,7 @@ namespace PCDimNaturalizer
                             qryView += "CONVERT(VARCHAR(MAX), " + cb.ColumnName + ") + ";
                     }
                     qryView = qryView.Trim().Trim('+');
-                    qryView += " [Level" + iLevel.ToString() + "_" + Attr.Name + "_" + ColType + "]";
+                    qryView += " [" + GetNaturalizedLevelName(iLevel) + "_" + Attr.Name + "_" + ColType + "]";
                 }
                 else
                     qryView += GetPartialQueryForSingleAttributeColumn(Attr, Cols[0], ColType, iLevel);
@@ -849,16 +856,16 @@ namespace PCDimNaturalizer
             bool ValueColumnCoveredInKey = false;
             foreach (DataItem di in attr.KeyColumns)
             {
-                strSubselect += GetNonPCColNameOrExpressionFromDSVColumn(di) + ",\r\n";
+                strSubselect += GetNonPCColNameOrExpressionFromDSVColumn(di) + ", -- End of column definition\r\n";
                 if (attr.NameColumn != null && ColNameFromDataItem(di) == ColNameFromDataItem(attr.NameColumn))
                     NameColumnCoveredInKey = true;
                 if (attr.ValueColumn != null && ColNameFromDataItem(di) == ColNameFromDataItem(attr.ValueColumn))
                     ValueColumnCoveredInKey = true;
             }
             if (!NameColumnCoveredInKey && attr.NameColumn != null)
-                strSubselect += GetNonPCColNameOrExpressionFromDSVColumn(attr.NameColumn) + ",\r\n";
+                strSubselect += GetNonPCColNameOrExpressionFromDSVColumn(attr.NameColumn) + ", -- End of column definition\r\n";
             if (!ValueColumnCoveredInKey && attr.ValueColumn != null)
-                strSubselect += GetNonPCColNameOrExpressionFromDSVColumn(attr.ValueColumn) + ",\r\n";
+                strSubselect += GetNonPCColNameOrExpressionFromDSVColumn(attr.ValueColumn) + ", -- End of column definition\r\n";
             return strSubselect;
         }
 
@@ -894,7 +901,10 @@ namespace PCDimNaturalizer
                 if (NonPCHierarchiesToInclude.Contains(attr.Name))
                 {
                     strColAlias = GetSingleNonPCUserHierarchyColumnNamesFromOriginalDimension(attr);
-                    if (!strSubselect.Contains(strColAlias)) strSubselect += strColAlias;
+                    string[] strAllCols = strColAlias.Split(new string[] { ", -- End of column definition\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string strCurCol in strAllCols)
+                        if (!strSubselect.Contains(strCurCol))
+                            strSubselect += strCurCol.Replace(", -- End of column definition\r\n", "") + ",\r\n";
                 }
 
             return strSubselect.Remove(strSubselect.Length - 3) + "\r\nfrom " + id.TableName + " b)\r\nCurrentMemberSubselect\r\n";
@@ -996,8 +1006,8 @@ namespace PCDimNaturalizer
                 }
 
                 CTESel = "CREATE VIEW " + txtNewView + " AS\r\n" +
-                    "WITH PCStructure(Level, " + pid.ColumnName + ", [" + dim.KeyAttribute.Name + "_KeyColumn], [" + GetNaturalizedLevelName(2) + "_KeyColumn], " + CTESel.Remove(CTESel.Length - 2) + ")\r\n";
-                CTEQry = "AS (SELECT 3 Level, " + pid.ColumnName + ", " + id.ColumnName + ",\r\n" + id.ColumnName + " as [" + GetNaturalizedLevelName(2) + "_KeyColumn],\r\n" + CTEQry.Remove(CTEQry.Length - 3) + "\r\n";
+                    "WITH PCStructure(Level, " + pid.ColumnName + ", [" + dim.KeyAttribute.Name + "_KeyColumn], [" + GetNaturalizedLevelName(2) + "_KeyColumn]" + ((CTESel.Length > 0) ? ", " + CTESel.Remove(CTESel.Length - 2) : "") + ")\r\n";
+                CTEQry = "AS (SELECT 3 Level, " + pid.ColumnName + ", " + id.ColumnName + ",\r\n" + id.ColumnName + " as [" + GetNaturalizedLevelName(2) + "_KeyColumn]" + (CTEQry.Length > 0 ? ", \r\n" + CTEQry.Remove(CTEQry.Length - 3) : "") + "\r\n";
                 strWhere += "Level" + (MinimumLevelCount + 1).ToString() + "Subselect.[" + dim.KeyAttribute.Name + "_KeyColumn] = a.[" + dim.KeyAttribute.Name + "_KeyColumn]";
                 strLevelsEnumerations = "FROM " + id.TableName + " WHERE " + pid.ColumnName + " IS NULL OR " + pid.ColumnName + " = " + id.ColumnName + " " +
                     "UNION ALL SELECT Level + 1, e." + pid.ColumnName + ", e." + id.ColumnName + ",\r\n" + strLevelsEnumerations.Remove(strLevelsEnumerations.Length - 3) + " FROM " + id.TableName + " e " +
@@ -1197,7 +1207,8 @@ namespace PCDimNaturalizer
 
         public string TableName
         {
-            get {
+            get
+            {
                 if (DSV.Schema.Tables[col.TableID].ExtendedProperties.Contains("DbSchemaName") && DSV.Schema.Tables[col.TableID].ExtendedProperties.Contains("DbTableName"))
                     return "[" + DSV.Schema.Tables[col.TableID].ExtendedProperties["DbSchemaName"].ToString().Trim() + "].[" + DSV.Schema.Tables[col.TableID].ExtendedProperties["DbTableName"].ToString().Trim() + "]";
                 else
