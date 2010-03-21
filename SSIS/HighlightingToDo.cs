@@ -9,7 +9,6 @@ using Microsoft.SqlServer.Dts.Runtime;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-
 namespace BIDSHelper
 {
     public abstract class HighlightingToDo
@@ -268,8 +267,8 @@ namespace BIDSHelper
         public abstract void Highlight();
 
 
-        public static System.Drawing.Color expressionColor = System.Drawing.Color.Magenta;
-        public static System.Drawing.Color configurationColor = System.Drawing.Color.FromArgb(17, 200, 255);
+        public static System.Drawing.Color expressionColor = ExpressionHighlighterPlugin.ExpressionColor;
+        public static System.Drawing.Color configurationColor = ExpressionHighlighterPlugin.ConfigurationColor;
         
         public static void ModifyIcon(System.Drawing.Bitmap icon, System.Drawing.Color color)
         {

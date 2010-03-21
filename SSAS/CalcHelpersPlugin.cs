@@ -234,9 +234,8 @@ namespace BIDSHelper
             }
             set
             {
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(this.PluginRegistryPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(this.PluginRegistryPath);
                 settingKey.SetValue(REGISTRY_SCRIPT_VIEW_SETTING_NAME, value, RegistryValueKind.DWord);
                 settingKey.Close();
             }

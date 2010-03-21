@@ -27,19 +27,19 @@ namespace BIDSHelper
         private static System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> addins = new System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase>();
 
 
-        public const string REGISTRY_BASE_PATH = "SOFTWARE\\BIDS Helper";
+        public static string REGISTRY_BASE_PATH = "SOFTWARE\\BIDS Helper";
 
         ///<summary>Implements the constructor for the Add-in object. Place your initialization code within this method.</summary>
         public Connect()
         {
         }
 
-        public string RegistryBasePath
+        public static string RegistryBasePath
         {
             get { return REGISTRY_BASE_PATH; }
         }
 
-        public string PluginRegistryPath(Type t)
+        public static string PluginRegistryPath(Type t)
         {
             return RegistryBasePath + "\\" + t.Name;
         }

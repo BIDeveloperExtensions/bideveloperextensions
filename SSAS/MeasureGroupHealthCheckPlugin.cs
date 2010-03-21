@@ -12,6 +12,7 @@ using System.Data.OleDb;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
+using Microsoft.Win32;
 
 namespace BIDSHelper
 {
@@ -22,6 +23,39 @@ namespace BIDSHelper
         public MeasureGroupHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
+        }
+
+        private static string REGISTRY_FREE_SPACE_FACTOR_SETTING_NAME = "FreeSpaceFactor";
+        public static int FreeSpaceFactorDefault = 20;
+        private static int? _FreeSpaceFactor = null;
+        public static int FreeSpaceFactor
+        {
+            get
+            {
+                if (_FreeSpaceFactor == null)
+                {
+                    int i = FreeSpaceFactorDefault;
+                    RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                    if (rk != null)
+                    {
+                        i = (int)rk.GetValue(REGISTRY_FREE_SPACE_FACTOR_SETTING_NAME, i);
+                        rk.Close();
+                    }
+                    return i;
+                }
+                else
+                {
+                    return _FreeSpaceFactor.Value;
+                }
+            }
+            set
+            {
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                settingKey.SetValue(REGISTRY_FREE_SPACE_FACTOR_SETTING_NAME, value, RegistryValueKind.DWord);
+                settingKey.Close();
+                _FreeSpaceFactor = value;
+            }
         }
 
         public override string ShortName
@@ -340,7 +374,7 @@ namespace BIDSHelper
                         {
                             possible.Add(option);
                             if (
-                             (total == null || (total * 20 < option.max && total * 20 > option.min))
+                             (total == null || (total * FreeSpaceFactor < option.max && total * FreeSpaceFactor > option.min))
                              && option.max < recommendedMaxValue
                              && option.max >= dsvColMaxValue
                              && (dsvColAllowsDecimals == option.allowsDecimals)
@@ -349,7 +383,6 @@ namespace BIDSHelper
                             {
                                 recommendedMaxValue = option.max;
                             }
-                            //TODO: parameterize the "free space factor" which is currently hardcoded to 20x
                         }
                     }
 

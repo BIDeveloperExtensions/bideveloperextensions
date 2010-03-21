@@ -181,6 +181,12 @@
     <Import Include="System.Collections" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Compile Include="Core\BIDSHelperPreferencesPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\BIDSHelperPreferencesPage.Designer.cs">
+      <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -561,6 +567,10 @@
     <EmbeddedResource Include="Core\BIDSHelperOptionsPage.resx">
       <SubType>Designer</SubType>
       <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\BIDSHelperPreferencesPage.resx">
+      <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\BIDSHelperOptionsVersionCheckPage.resx">
       <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>

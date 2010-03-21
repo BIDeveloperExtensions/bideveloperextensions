@@ -59,7 +59,7 @@ namespace BIDSHelper
             get {
                 if (!isEnabledCached)
                 {
-                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(PluginRegistryPath);
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(this.PluginRegistryPath);
                     isEnabled = ((int)regKey.GetValue("Enabled", 1) == 1) ? true : false;
                     regKey.Close();
                     isEnabledCached = true;
@@ -72,7 +72,7 @@ namespace BIDSHelper
                 if (value != Enabled)
                 {
 
-                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(PluginRegistryPath);
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(this.PluginRegistryPath);
                     isEnabled = value;
 
                     if (isEnabled)
@@ -274,7 +274,15 @@ namespace BIDSHelper
 
         public string PluginRegistryPath
         {
-            get { return addinCore.PluginRegistryPath(this.GetType()); }
+            get { return Connect.PluginRegistryPath(this.GetType()); }
+        }
+
+        public static string StaticPluginRegistryPath
+        {
+            get
+            {
+                return Connect.PluginRegistryPath(new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().DeclaringType);
+            }
         }
 
         #endregion

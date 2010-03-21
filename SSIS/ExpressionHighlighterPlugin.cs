@@ -11,6 +11,7 @@ using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.Win32;
 
 #if KATMAI
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
@@ -42,6 +43,56 @@ namespace BIDSHelper
             workerToDos.DoWork += new System.ComponentModel.DoWorkEventHandler(workerToDos_DoWork);
         }
 
+        private static string REGISTRY_EXPRESSION_COLOR_SETTING_NAME = "ExpressionColor";
+        private static string REGISTRY_CONFIGURATION_COLOR_SETTING_NAME = "ConfigurationColor";
+
+        public static System.Drawing.Color ExpressionColorDefault = System.Drawing.Color.Magenta;
+        public static System.Drawing.Color ExpressionColor
+        {
+            get
+            {
+                int iColor = ExpressionColorDefault.ToArgb();
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                if (rk != null)
+                {
+                    iColor = (int)rk.GetValue(REGISTRY_EXPRESSION_COLOR_SETTING_NAME, iColor);
+                    rk.Close();
+                }
+                return System.Drawing.Color.FromArgb(iColor);
+            }
+            set
+            {
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                settingKey.SetValue(REGISTRY_EXPRESSION_COLOR_SETTING_NAME, value.ToArgb(), RegistryValueKind.DWord);
+                settingKey.Close();
+                HighlightingToDo.expressionColor = value;
+            }
+        }
+
+        public static System.Drawing.Color ConfigurationColorDefault = System.Drawing.Color.FromArgb(17, 200, 255);
+        public static System.Drawing.Color ConfigurationColor
+        {
+            get
+            {
+                int iColor = ConfigurationColorDefault.ToArgb();
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                if (rk != null)
+                {
+                    iColor = (int)rk.GetValue(REGISTRY_CONFIGURATION_COLOR_SETTING_NAME, iColor);
+                    rk.Close();
+                }
+                return System.Drawing.Color.FromArgb(iColor);
+            }
+            set
+            {
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                settingKey.SetValue(REGISTRY_CONFIGURATION_COLOR_SETTING_NAME, value.ToArgb(), RegistryValueKind.DWord);
+                settingKey.Close();
+                HighlightingToDo.configurationColor = value;
+            }
+        }
 
         #region Window Events Overrides and Disable Event
         public override bool ShouldHookWindowCreated
@@ -880,5 +931,7 @@ namespace BIDSHelper
         {
         }
         #endregion
+
+
     }
 }

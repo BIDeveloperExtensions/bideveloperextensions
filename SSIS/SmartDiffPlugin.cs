@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using Microsoft.Win32;
 
 namespace BIDSHelper
 {
@@ -16,6 +17,7 @@ namespace BIDSHelper
     {
         private static string _VisualStudioRegistryPath;
         private static System.Collections.Generic.Dictionary<string, string> _dictPasswords = new System.Collections.Generic.Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+        private const string REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME = "CustomDiffViewer";
 
         public SmartDiffPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -114,10 +116,9 @@ namespace BIDSHelper
                     {
                         bindings = oSourceControl.GetBindings(projItem.ContainingProject.FileName);
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        MessageBox.Show("You must have either Microsoft Visual SourceSafe 2005 or Microsoft Visual Studio 2005/2008 Team Explorer Client installed.\r\n\r\nError was: " + ex.Message);
-                        return;
+                        //now that you can have custom diff viewers via the preferences window
                     }
                     if (bindings != null)
                     {
@@ -626,6 +627,23 @@ namespace BIDSHelper
 
         private void ShowDiff(string oldFile, string newFile, bool bIgnoreCase, bool bIgnoreEOL, bool bIgnoreWhiteSpace, string sOldFileName, string sNewFileName)
         {
+            string sCustomDiffViewer = CustomDiffViewer;
+            if (!string.IsNullOrEmpty(sCustomDiffViewer))
+            {
+                try
+                {
+                    int iOldFile = sCustomDiffViewer.IndexOf('?');
+                    int iNewFile = sCustomDiffViewer.LastIndexOf('?');
+                    sCustomDiffViewer = sCustomDiffViewer.Substring(0, iOldFile) + '"' + oldFile + '"' + sCustomDiffViewer.Substring(iOldFile + 1, iNewFile - iOldFile - 1) + '"' + newFile + '"' + sCustomDiffViewer.Substring(iNewFile + 1);
+                    Microsoft.VisualBasic.Interaction.Shell(sCustomDiffViewer, Microsoft.VisualBasic.AppWinStyle.MaximizedFocus, true, -1);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("There was a problem using the custom diff viewer: " + sCustomDiffViewer, ex);
+                }
+            }
+
             int fFlags = 0;
             string sFlags = "";
             if (bIgnoreCase)
@@ -655,13 +673,7 @@ namespace BIDSHelper
                 //try VSS EXE
                 try
                 {
-                    string sVSSDir = "";
-                    Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\8.0\Setup\VS\VSS");
-                    if (rk != null)
-                    {
-                        sVSSDir = (string)rk.GetValue("ProductDir", "");
-                        rk.Close();
-                    }
+                    string sVSSDir = VSSInstallDir;
                     if (string.IsNullOrEmpty(sVSSDir))
                     {
                         throw new Exception("");
@@ -683,6 +695,89 @@ namespace BIDSHelper
 
         [DllImport("msdiff")]
         private static extern void MSDiff_Cleanup();
+
+        private static string VSSInstallDir
+        {
+            get
+            {
+                Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\8.0\Setup\VS\VSS");
+                if (rk != null)
+                {
+                    string s = (string)rk.GetValue("ProductDir", "");
+                    rk.Close();
+                    return s;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        public static bool VSSInstalled
+        {
+            get
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(VSSInstallDir))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        public static bool TFSInstalled
+        {
+            get
+            {
+                try
+                {
+                    MSDiff_Cleanup(); //test whether we can hit the msdiff DLL
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        public static string CustomDiffViewer
+        {
+            get
+            {
+                string sCustomDiffViewer = null;
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                if (rk != null)
+                {
+                    sCustomDiffViewer = (string)rk.GetValue(REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME, null);
+                    rk.Close();
+                }
+                return sCustomDiffViewer;
+            }
+            set
+            {
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                if (value == null)
+                {
+                    settingKey.DeleteValue(REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME, false);
+                }
+                else
+                    settingKey.SetValue(REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME, value, RegistryValueKind.String);
+                settingKey.Close();
+            }
+        }
     }
 
 
