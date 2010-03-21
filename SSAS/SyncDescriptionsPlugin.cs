@@ -223,7 +223,7 @@ namespace BIDSHelper
                     {
                         sql = "SELECT PropertyName = p.name" + "\r\n"
                          + ",PropertyValue = CAST(p.value AS sql_variant)" + "\r\n"
-                         + "FROM sys.tables AS tbl" + "\r\n"
+                         + "FROM sys.all_objects AS tbl" + "\r\n"
                          + "INNER JOIN sys.schemas sch ON sch.schema_id = tbl.schema_id" + "\r\n"
                          + "INNER JOIN sys.extended_properties AS p ON p.major_id=tbl.object_id AND p.minor_id=0 AND p.class=1" + "\r\n"
                          + "where sch.name = '" + oDimensionKeyTable.ExtendedProperties["DbSchemaName"].ToString().Replace("'", "''") + "'\r\n"
@@ -286,7 +286,7 @@ namespace BIDSHelper
                         {
                             sql = "SELECT PropertyName = p.name" + "\r\n"
                              + ",PropertyValue = CAST(p.value AS sql_variant)" + "\r\n"
-                             + "FROM sys.tables AS tbl" + "\r\n"
+                             + "FROM sys.all_objects AS tbl" + "\r\n"
                              + "INNER JOIN sys.schemas sch ON sch.schema_id = tbl.schema_id" + "\r\n"
                              + "INNER JOIN sys.all_columns AS clmns ON clmns.object_id=tbl.object_id" + "\r\n"
                              + "INNER JOIN sys.extended_properties AS p ON p.major_id=clmns.object_id AND p.minor_id=clmns.column_id AND p.class=1" + "\r\n"
