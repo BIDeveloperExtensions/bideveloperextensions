@@ -766,4 +766,47 @@ namespace BIDSHelper
             return returnValue;
         }
     }
+
+
+
+    /// <summary>
+    /// A to-do for rerunning BuildToDos after the paste operation has finished
+    /// </summary>
+    public class RequeueToDo : HighlightingToDo
+    {
+        public RequeueToDo()
+        {
+            _mostRecentReQueue = DateTime.Now;
+        }
+        public Window GotFocus;
+        public DtsObject oIncrementalObject;
+        public int? iIncrementalTransformID;
+        public Microsoft.DataWarehouse.Design.EditorWindow editorWin;
+        public ExpressionHighlighterPlugin plugin;
+        private static DateTime _mostRecentReQueue = DateTime.MinValue;
+
+        public override void Highlight()
+        {
+            if (editorWin.InvokeRequired)
+            {
+                if (DateTime.Now.AddSeconds(-2) < _mostRecentReQueue)
+                {
+                    System.Diagnostics.Debug.WriteLine("RequeueToDo.Highlight sleeping");
+                    System.Threading.Thread.Sleep(1000); //give it some time for the paste to complete
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("RequeueToDo.Highlight skipped sleeping");
+                }
+
+                System.Diagnostics.Debug.WriteLine("BeginInvoke on background thread " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+                editorWin.BeginInvoke(new MethodInvoker(delegate() { Highlight(); }));
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("calling BuildToDos on thread " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+                plugin.BuildToDos(GotFocus, oIncrementalObject, iIncrementalTransformID);
+            }
+        }
+    }
 }

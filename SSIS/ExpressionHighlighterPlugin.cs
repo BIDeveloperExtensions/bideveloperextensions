@@ -168,7 +168,7 @@ namespace BIDSHelper
             BuildToDos(GotFocus, oIncrementalObject, null);
         }
 
-        private void BuildToDos(Window GotFocus, DtsObject oIncrementalObject, int? iIncrementalTransformID)
+        internal void BuildToDos(Window GotFocus, DtsObject oIncrementalObject, int? iIncrementalTransformID)
         {
             try
             {
@@ -198,6 +198,103 @@ namespace BIDSHelper
 
                 //check whether we should abort because highlighting has been disabled for this window
                 if (disableHighlighting.ContainsKey(win) && disableHighlighting[win]) return;
+
+
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////
+                //NEW REQUEUE CODE DESIGNED TO POSTPONE WORK DONE DURING A PASTE OPERATION UNTIL AFTER IS HAS COMPLETED
+                bool bRequeue = false;
+                try
+                {
+                    for (int iViewIndex = 0; iViewIndex < 3; iViewIndex++)
+                    {
+                        if (bRequeue) break;
+                        EditorWindow.EditorView view = win.Views[iViewIndex];
+                        Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
+                        if (viewControl == null) continue;
+
+                        if (iViewIndex == 0) //Control Flow
+                        {
+                            DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
+                            if (diagram == null) continue;
+                            if (diagram.ComponentDiagram == null) continue;
+                            object oDtrControlFlowDiagram = diagram.ComponentDiagram;
+                            Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipoardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)oDtrControlFlowDiagram.GetType().InvokeMember("clipboardCommandHandler", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
+                            bool bPasteInProgress = (bool)clipoardCommandHelper.GetType().InvokeMember("PasteInProgress", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance, null, clipoardCommandHelper, null);
+                            if (bPasteInProgress)
+                            {
+                                //limiting to this allowed an ex SQL with event handler to be pasted: oIncrementalObject is Microsoft.SqlServer.Dts.Runtime.DtsEventHandler
+                                System.Diagnostics.Debug.WriteLine("paste in progress on control flow");
+                                bRequeue = true;
+                                break;
+                            }
+                        }
+                        else if (iViewIndex == 2) //Event Handlers
+                        {
+                            foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
+                            {
+                                DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
+                                if (diagram == null) continue;
+                                if (diagram.ComponentDiagram == null) continue;
+                                object oDtrControlFlowDiagram = diagram.ComponentDiagram;
+                                Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipoardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)oDtrControlFlowDiagram.GetType().InvokeMember("clipboardCommandHandler", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
+                                bool bPasteInProgress = (bool)clipoardCommandHelper.GetType().InvokeMember("PasteInProgress", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance, null, clipoardCommandHelper, null);
+                                if (bPasteInProgress)
+                                {
+                                    System.Diagnostics.Debug.WriteLine("paste in progress on event handlers");
+                                    bRequeue = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else if (iViewIndex == 1) //Data Flow
+                        {
+                            foreach (Control c in viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls)
+                            {
+                                DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
+                                if (diagram == null) continue;
+                                if (diagram.ComponentDiagram == null) continue;
+                                ComponentDiagram oDtrControlFlowDiagram = diagram.ComponentDiagram;
+                                Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipboardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)typeof(ComponentDiagram).InvokeMember("clipboardCommands", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
+                                Microsoft.SqlServer.Dts.Design.IDtsClipboardService clipService = (Microsoft.SqlServer.Dts.Design.IDtsClipboardService)clipboardCommandHelper.GetType().BaseType.InvokeMember("dtsClipboardService", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, clipboardCommandHelper, null);
+
+                                bool bPasteInProgress = clipService.IsPasteActive;
+                                if (bPasteInProgress)
+                                {
+                                    System.Diagnostics.Debug.WriteLine("paste in progress on data flow");
+                                    bRequeue = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Problem checking if there is a paste underway: " + ex.Message + "\r\n" + ex.StackTrace);
+                }
+
+                if (bRequeue)
+                {
+                    RequeueToDo todo = new RequeueToDo();
+                    lock (highlightingToDos)
+                    {
+                        highlightingToDos.Add(todo, todo);
+                        todo.editorWin = win;
+                        todo.GotFocus = GotFocus;
+                        todo.oIncrementalObject = oIncrementalObject;
+                        todo.iIncrementalTransformID = iIncrementalTransformID;
+                        todo.package = package;
+                        todo.plugin = this;
+                        todo.BackgroundOnly = true;
+                        todo.Rescan = false;
+                    }
+                    System.Diagnostics.Debug.WriteLine("requeued as todo");
+                    StartToDosThread(dtSynchronousHighlightingCutoff);
+                    return;
+                }
+                //END OF NEW REQUEUE CODE
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
                 try
                 {
