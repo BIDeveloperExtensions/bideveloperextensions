@@ -34,6 +34,8 @@ namespace BIDSHelper
         private bool bWorkerThreadDoneWithWork = false;
         private Dictionary<object, HighlightingToDo> highlightingToDos = new Dictionary<object, HighlightingToDo>();
         private Dictionary<EditorWindow, bool> disableHighlighting = new Dictionary<EditorWindow, bool>();
+        private Dictionary<EditorWindow, DateTime> mostRecentDDSRefresh = new Dictionary<EditorWindow, DateTime>();
+        private DateTime mostRecentComponentEvent = DateTime.MinValue;
 
         public ExpressionHighlighterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -285,7 +287,7 @@ namespace BIDSHelper
                         todo.iIncrementalTransformID = iIncrementalTransformID;
                         todo.package = package;
                         todo.plugin = this;
-                        todo.BackgroundOnly = true;
+                        todo.BackgroundOnly = false; //run all the requeues first as it will avoid redoing lots of work
                         todo.Rescan = false;
                     }
                     System.Diagnostics.Debug.WriteLine("requeued as todo");
@@ -298,14 +300,23 @@ namespace BIDSHelper
 
                 try
                 {
-                    ExpressionListPlugin.bShouldSkipExpressionHighlighting = true; //don't come into this design time properties code until the prior one finished
-                    
-                    //refresh DDS objects as all their properties aren't updated until you save the DTSX file
-                    //this code is to workaround a problem such that a newly copied/pasted TaskHost isn't linked in via the DDS objects correctly until this refresh
-                    System.Collections.Hashtable designTimeProperties = new System.Collections.Hashtable();
-                    System.Reflection.BindingFlags publicstaticflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
-                    TYPE_DTS_SERIALIZATION.InvokeMember("CollectDesignTimeProperties", publicstaticflags, null, null, new object[] { package, designTimeProperties });
-                    TYPE_DTS_SERIALIZATION.InvokeMember("SaveDesignTimePropertiesToPackage", publicstaticflags, null, null, new object[] { package, designTimeProperties });
+                    if (!mostRecentDDSRefresh.ContainsKey(win))
+                        mostRecentDDSRefresh.Add(win, DateTime.MinValue);
+
+                    //only call this code if the last time you called it is less than the last time one of the component added events fired for this package
+                    if (mostRecentDDSRefresh[win] < mostRecentComponentEvent)
+                    {
+                        mostRecentDDSRefresh[win] = DateTime.Now;
+                        ExpressionListPlugin.bShouldSkipExpressionHighlighting = true; //don't come into this design time properties code until the prior one finished
+
+                        //refresh DDS objects as all their properties aren't updated until you save the DTSX file
+                        //this code is to workaround a problem such that a newly copied/pasted TaskHost isn't linked in via the DDS objects correctly until this refresh
+                        System.Diagnostics.Debug.WriteLine("refreshing DDS objects");
+                        System.Collections.Hashtable designTimeProperties = new System.Collections.Hashtable();
+                        System.Reflection.BindingFlags publicstaticflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
+                        TYPE_DTS_SERIALIZATION.InvokeMember("CollectDesignTimeProperties", publicstaticflags, null, null, new object[] { package, designTimeProperties });
+                        TYPE_DTS_SERIALIZATION.InvokeMember("SaveDesignTimePropertiesToPackage", publicstaticflags, null, null, new object[] { package, designTimeProperties });
+                    }
                 }
                 finally
                 {
@@ -624,7 +635,16 @@ namespace BIDSHelper
                         {
                             todoKey = k;
                             todo = highlightingToDos[todoKey];
-                            if (!todo.BackgroundOnly) break;
+                            if (todo is RequeueToDo) break;
+                        }
+                        if (todo == null)
+                        {
+                            foreach (object k in highlightingToDos.Keys)
+                            {
+                                todoKey = k;
+                                todo = highlightingToDos[todoKey];
+                                if (!todo.BackgroundOnly) break;
+                            }
                         }
                     }
 
@@ -753,6 +773,7 @@ namespace BIDSHelper
         {
             try
             {
+                mostRecentComponentEvent = DateTime.Now;
                 System.Diagnostics.Debug.WriteLine(e.Component.GetType().FullName + " added");
                 if (e.Component is DtsContainer)
                 {
@@ -796,6 +817,7 @@ namespace BIDSHelper
             bool bHighlightCalled = false;
             try
             {
+                mostRecentComponentEvent = DateTime.Now;
                 System.Diagnostics.Debug.WriteLine("enter " + e.Component.GetType().FullName + " ComponentChanged");
                 if (e.Member != null)
                     System.Diagnostics.Debug.WriteLine("member descriptor type: " + e.Member.GetType().FullName);

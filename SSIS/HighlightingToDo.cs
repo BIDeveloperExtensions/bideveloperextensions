@@ -800,7 +800,8 @@ namespace BIDSHelper
                 }
 
                 System.Diagnostics.Debug.WriteLine("BeginInvoke on background thread " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-                editorWin.BeginInvoke(new MethodInvoker(delegate() { Highlight(); }));
+                IAsyncResult r = editorWin.BeginInvoke(new MethodInvoker(delegate() { Highlight(); })); //use Invoke, not BeginInvoke which does it asynchronously
+                r.AsyncWaitHandle.WaitOne();
             }
             else
             {
