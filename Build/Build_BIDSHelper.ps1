@@ -2,6 +2,9 @@ param(
     [string]$ReleaseVersion = ""
 )
 
+#IntPtr in 64bit is 8 bytes
+function is64bit() {    if ([IntPtr].Size -eq 4) { return $false }    else { return $true }}
+
 #$framework_dir_2 = "$env:systemroot\microsoft.net\framework\v2.0.50727"
 $framework_dir_3_5 = "$env:systemroot\microsoft.net\framework\v3.5"
 $base_dir = [System.IO.Directory]::GetParent("$pwd")
@@ -13,6 +16,14 @@ $sln_file_2008 = "$base_dir\SQL2008_bidshelper.sln"
 $msbuild = "$framework_dir_3_5\msbuild.exe"  
 $tf = "$env:ProgramFiles\Microsoft Visual Studio 9.0\Common7\IDE\tf.exe"
 $nsisPath = "$env:ProgramFiles\NSIS\makensis.exe"
+
+if(is64bit -eq $true) 
+{
+$tf = "$env:ProgramFiles (x86)\Microsoft Visual Studio 9.0\Common7\IDE\tf.exe"
+$nsisPath = "$env:ProgramFiles (x86)\NSIS\makensis.exe"
+}
+
+
 $zip = "$env:ProgramFiles\7-zip\7z.exe"
 
 #version files
@@ -34,6 +45,11 @@ $lastReleaseFile = "$base_dir\setupScript\SQL2005CurrentReleaseVersion.xml"
         # of the current release by 1.
         [string]$(get-Content "$($lastReleaseFile)") -cmatch '\d+\.\d+\.\d+\.\d+'
         $ver = $matches[0]
+        
+   		# HACK: having this regex match appears to make the replace statement work
+		# removing it makes the following replace line fail for some reason.
+        $null = $ver -cmatch "(?'main'\d+\.\d+\.\d+\.)(?'build'\d+)"
+        
         $ReleaseVersion = $ver -replace "(?'main'\d+\.\d+\.\d+\.)(?'build'\d+)", "$($matches['main'])$([int]$matches['build']+1)"
     }
     

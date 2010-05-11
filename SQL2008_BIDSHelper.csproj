@@ -738,6 +738,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
+    <None Include="Build\Build_BIDSHelper.ps1" />
     <None Include="Build\default.ps1" />
     <None Include="Build\psake.ps1" />
     <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+AggregationPerformance.datasource" />

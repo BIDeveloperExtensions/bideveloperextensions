@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BIDS Helper 2008"
-!define PRODUCT_VERSION "1.4.2.1"
+!define PRODUCT_VERSION "1.4.3.0"
 !define PRODUCT_PUBLISHER "BIDS Helper"
 !define PRODUCT_WEB_SITE "http://www.codeplex.com/bidshelper"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -116,17 +116,15 @@ Section Uninstall
 SectionEnd
 
 Function CloseParentWithUserApproval
-Push $5
 
 loop:
-  push "devenv.exe"
-  processwork::existsprocess
-  pop $5
-  IntCmp $5 0 done
+
+  processes::FindProcess "devenv.exe"
+  IntCmp $R0 0 done
 
   MessageBox MB_RETRYCANCEL|MB_ICONSTOP 'Visual Studio.Net must be closed during this installation.$\r$\nClose Visual Studio.Net now, or press $\r$\n"Retry" to automatically close Visual Studio.Net and continue or press $\r$\n"Cancel" to cancel the installation entirely.'  IDCANCEL BailOut
-  push "devenv.exe"
-  processwork::KillProcess
+
+  processes::KillProcess "devenv.exe"
   Sleep 2000
 Goto loop
 
@@ -134,21 +132,17 @@ BailOut:
   Abort
 
 done:
-Pop $5
 FunctionEnd
 
 Function un.CloseParentWithUserApproval
-Push $5
 
 loop:
-  push "devenv.exe"
-  processwork::existsprocess
-  pop $5
-  IntCmp $5 0 done
+
+  processes::FindProcess "devenv.exe"
+  IntCmp $R0 0 done
 
   MessageBox MB_RETRYCANCEL|MB_ICONSTOP 'Visual Studio.Net must be closed during this installation.$\r$\nClose Visual Studio.Net now, or press $\r$\n"Retry" to automatically close Visual Studio.Net and continue or press $\r$\n"Cancel" to cancel the installation entirely.'  IDCANCEL BailOut
-  push "devenv.exe"
-  processwork::KillProcess
+  processes::KillProcess "devenv.exe"
   Sleep 2000
 Goto loop
 
@@ -156,5 +150,4 @@ BailOut:
   Abort
 
 done:
-Pop $5
 FunctionEnd
