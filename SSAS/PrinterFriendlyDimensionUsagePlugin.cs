@@ -76,7 +76,7 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
-                ProjectItem projItem = this.ApplicationObject.ActiveWindow.ProjectItem;
+                ProjectItem projItem = (ProjectItem)hierItem.Object;
                 Cube cub = (Cube)projItem.Object;
 
                 ReportViewerForm frm = new ReportViewerForm();
