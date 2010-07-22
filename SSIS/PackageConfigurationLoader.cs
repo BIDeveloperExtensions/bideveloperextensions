@@ -42,10 +42,10 @@ namespace BIDSHelper
             }
             else if (c.ConfigurationType == DTSConfigurationType.SqlServer && !bOfflineMode) //not when in offline mode
             {
-                string[] settings = c.ConfigurationString.Split(new string[] { "\";" }, StringSplitOptions.None);
-                string sConnectionManagerName = settings[0].Substring(1);
-                string sTableName = settings[1].Substring(1);
-                string sFilter = settings[2].Substring(1);
+                string sConnectionManagerName;
+                string sTableName;
+                string sFilter;
+                Microsoft.DataTransformationServices.Design.DesignUtils.ParseSqlServerConfigurationString(c.ConfigurationString, out sConnectionManagerName, out sTableName, out sFilter);
 
                 ConnectionManager cm = p.Connections[sConnectionManagerName];
                 ISessionProperties o = cm.AcquireConnection(null) as ISessionProperties;
