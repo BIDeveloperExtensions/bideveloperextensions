@@ -187,6 +187,9 @@
     <Compile Include="Core\BIDSHelperPreferencesPage.Designer.cs">
       <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Core\CustomClass.cs" />
+    <Compile Include="Core\CustomProperty.cs" />
+    <Compile Include="Core\CustomPropertyDescriptor.cs" />
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>

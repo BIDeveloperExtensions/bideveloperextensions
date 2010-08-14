@@ -50,6 +50,15 @@ namespace BIDSHelper.SSIS
             get { return "Design Warnings Scanner"; }
         }
 
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>
+        /// <value>The help page Url.</value>
+        public override string HelpUrl
+        {
+            get { return base.GetCodePlexHelpUrl("Design Warnings"); }
+        }
+
         public override string ToolTip
         {
             get { return "This tool will scan the package for adherence to good design practices with SSIS."; }
@@ -58,6 +67,15 @@ namespace BIDSHelper.SSIS
         public override int Bitmap
         {
             get { return 313; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
         }
 
         public override bool DisplayCommand(UIHierarchyItem item)

@@ -36,12 +36,30 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Reset the IDs for all tasks, connection managers, configurations, event handlers, variables, and the package ID itself. Ensures that all IDs in the current package are unique."; }
         }
 
         public override bool DisplayCommand(UIHierarchyItem item)

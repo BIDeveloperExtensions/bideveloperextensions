@@ -44,7 +44,7 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; } //not used anywhere
+            get { return string.Empty; } //not used anywhere
         }
 
         public override bool ShouldPositionAtEnd
@@ -60,6 +60,24 @@ namespace BIDSHelper
         public override string MenuName
         {
             get { return "Project Node"; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Adds a 'Sort by name' menu option to the SSIS Packages folder allowing you to easily re-order the packages. (Available in SQL Server 2005 Only)"; }
         }
 
         /// <summary>

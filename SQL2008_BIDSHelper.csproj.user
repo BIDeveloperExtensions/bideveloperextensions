@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\devenv.exe</StartProgram>
-    <StartArguments>"C:\Projects\SsisBestPracticeScanner\TestPackages\TestPackages.dtproj"</StartArguments>
+    <StartProgram>C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\devenv.exe</StartProgram>
+    <StartArguments>"C:\Projects\ClientDevelopment\Main\KonesansDG\SSISPlay2008\SSISPlay2008.sln"</StartArguments>
   </PropertyGroup>
 </Project>

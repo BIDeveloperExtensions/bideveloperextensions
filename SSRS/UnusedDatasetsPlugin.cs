@@ -34,7 +34,7 @@ namespace BIDSHelper.SSRS
 
         public override string ToolTip
         {
-            get { return ""; } //not used anywhere
+            get { return string.Empty; } //not used anywhere
         }
 
         public override string MenuName
@@ -45,6 +45,42 @@ namespace BIDSHelper.SSRS
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the name of the friendly name of the plug-in.
+        /// </summary>
+        /// <value>The friendly name.</value>
+        public override string FriendlyName
+        {
+            get { return "Unused Report Datasets"; }
+        }
+
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>
+        /// <value>The help page Url.</value>
+        public override string  HelpUrl
+        {
+	        get { return this.GetCodePlexHelpUrl("Dataset Usage Reports"); }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSRS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Provides a report of unused datasets. You can then delete the unused datasets, thus speeding report performance and scalability."; }
         }
 
         /// <summary>
@@ -217,6 +253,24 @@ namespace BIDSHelper.SSRS
         public override string ButtonText
         {
             get { return "Used Report Datasets..."; }
+        }
+
+        /// <summary>
+        /// Gets the name of the friendly name of the plug-in.
+        /// </summary>
+        /// <value>The friendly name.</value>
+        public override string FriendlyName
+        {
+            get { return "Used Report Datasets"; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Provides a report of datasets in use. It also lists which parts of the report use each dataset."; }
         }
 
         public override void Exec()

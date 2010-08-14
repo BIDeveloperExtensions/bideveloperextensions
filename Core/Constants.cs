@@ -34,4 +34,16 @@ namespace BIDSHelper
     {
         public static string Designer = "{7651A702-06E5-11D1-8EBD-00A0C90F26EA}";
     }
+
+    /// <summary>
+    /// Feature categories, as assigned to plug-ins, and used in features options dialog.
+    /// </summary>
+    public enum BIDSFeatureCategories
+    {
+        General,
+        SSAS,
+        SSIS,
+        SSRS
+        
+    }
 }

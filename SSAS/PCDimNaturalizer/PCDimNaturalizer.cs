@@ -1178,13 +1178,13 @@ namespace PCDimNaturalizer
                 {
                     string strColExp = (string)DSV.Schema.Tables[col.TableID].Columns[col.ColumnID].ExtendedProperties["ComputedColumnExpression"];
                     if (strColExp == null)
-                        return "";
+                        return string.Empty;
                     else
                         return strColExp.ToString().Trim();
                 }
                 catch (Exception)
                 {
-                    return "";
+                    return string.Empty;
                 }
             }
         }

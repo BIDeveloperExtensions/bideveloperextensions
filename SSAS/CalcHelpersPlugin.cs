@@ -500,12 +500,30 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override string MenuName
         {
-            get { return ""; } //no need to have a menu command
+            get { return string.Empty; } //no need to have a menu command
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Extends the Calculations tab of the cube editor, including an enhanced Calculation Properties dialog."; }
         }
 
         /// <summary>

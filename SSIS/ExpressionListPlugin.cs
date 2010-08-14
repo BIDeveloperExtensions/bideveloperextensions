@@ -688,7 +688,7 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override bool ShouldPositionAtEnd
@@ -709,6 +709,24 @@ namespace BIDSHelper
         public override bool Checked
         {
             get { return toolWindow.Visible; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Provides a tool window listing expressions defined in a package, making it easy to review and manage expressions. Editing uses the integrated advanced expression editor."; }
         }
 
         public override bool AddCommandToMultipleMenus

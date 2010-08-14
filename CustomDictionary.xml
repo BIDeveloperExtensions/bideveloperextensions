@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Dictionary>
+  <Words>
+    <Recognized>
+      <Word>Agg</Word>
+      <Word>Dsv</Word>
+      <Word>Konesans</Word>
+      <Word>Naturalizer</Word>
+      <Word>CodePlex</Word>
+      <Word>Plugin</Word>
+    </Recognized>
+  </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <Acronym>BIDS</Acronym>
+      <Acronym>SSAS</Acronym>
+      <Acronym>SSIS</Acronym>
+      <Acronym>SSRS</Acronym>
+    </CasingExceptions>
+  </Acronyms>
+</Dictionary>

@@ -2,4 +2,9 @@
   <PropertyGroup>
     <ReferencePath>C:\Program Files (x86)\Microsoft SQL Server\90\Tools\binn\VSShell\Common7\IDE\;C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies;C:\Program Files\Microsoft Visual Studio 8\Common7\IDE\PrivateAssemblies;C:\Projects\CodePlex\bidshelper\SSIS\</ReferencePath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Program Files\Microsoft Visual Studio 8\Common7\IDE\devenv.exe</StartProgram>
+    <StartArguments>"C:\Projects\ClientDevelopment\Main\KonesansDG\SSISPlay2005\SSISPlay2005.sln"</StartArguments>
+  </PropertyGroup>
 </Project>

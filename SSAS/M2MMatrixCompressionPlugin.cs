@@ -194,7 +194,7 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; /*doesn't show anywhere*/ }
+            get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
         public override bool ShouldPositionAtEnd
@@ -204,7 +204,34 @@ namespace BIDSHelper
 
         public override string MenuName
         {
-            get { return ""; } //only show in Dimension Usage tab toolbar
+            get { return string.Empty; } //only show in Dimension Usage tab toolbar
+        }
+
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>
+        /// <value>The help page Url.</value>
+        public override string HelpUrl
+        {
+            get { return this.GetCodePlexHelpUrl("Many-to-Many Matrix Compression"); }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Analyzes the data for each many to many relationship to determine whether it can be compressed, presenting the results in an easy to interpret format."; }
         }
         #endregion
 

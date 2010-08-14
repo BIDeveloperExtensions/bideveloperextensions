@@ -51,7 +51,7 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override string MenuName
@@ -62,6 +62,24 @@ namespace BIDSHelper
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Allows you to easily define Flat File Connections with fixed width columns, designed to allow you to easy copy and paste column name and with information from Excel or similar source."; }
         }
 
         /// <summary>

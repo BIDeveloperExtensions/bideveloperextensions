@@ -749,12 +749,40 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override string MenuName
         {
-            get { return ""; } //no need to have a menu command
+            get { return string.Empty; } //no need to have a menu command
+        }
+
+        /// <summary>
+        /// Gets the name of the friendly name of the plug-in.
+        /// </summary>
+        /// <value>The friendly name.</value>
+        /// <remarks>Used for <see cref="HelpUrl"/> as <see cref="ButtonText"/> does not match Wiki page.</remarks>
+        public override string FriendlyName
+        {
+            get { return "Variables Window Extensions"; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Extended features for the Variables window. Move or copy a variable between scopes in a package, expression and configuration highlighting of the variables and the advanced expression editor."; }
         }
 
         /// <summary>

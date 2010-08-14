@@ -1,22 +1,31 @@
 using System;
+using System.Globalization;
+using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.CommandBars;
-using System.Windows.Forms;
 using Microsoft.Win32;
 
 namespace BIDSHelper
 {
     public abstract class BIDSHelperPluginBase: IDisposable
     {
+        /// <summary>
+        /// Defines the base Url for the plug-in help page. See <see cref="HelpUrl"/> property.
+        /// </summary>
+        private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
 
+        /// <summary>
+        /// Standard caption for message boxes shown by plug-ins.
+        /// </summary>
+        private const string DefaultMessageBoxCaption = "BIDS Helper";
 
         private const string BASE_NAME = "BIDSHelper.Connect.";
+        private const int UNKNOWN_CMD_ID = -1;
         private Command pluginCmd;
         static CommandBarPopup toolsCommandBarPopup;
         private DTE2 appObj;
         private AddIn addIn;
-        private const int UNKNOWN_CMD_ID = -1;
         private Connect addinCore;
         private bool isEnabled;
         private bool isEnabledCached = false;
@@ -114,8 +123,6 @@ namespace BIDSHelper
         #endregion
 
         #region "Helper Functions"
-
-
         public void AddCommand()
         {
             try
@@ -327,25 +334,19 @@ namespace BIDSHelper
             get;
         }
 
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public abstract BIDSFeatureCategories FeatureCategory
+        {
+            get;
+        }
+
         public virtual void Dispose()
         {
             this.DeleteCommand();
         }
-
-        /*public abstract bool ShouldPositionAtEnd
-        {
-            get;
-        }*/
-
-        /*public abstract string MenuName
-        {
-            get;
-        }*/
-
-        /*public abstract bool Checked
-        {
-            get;
-        }*/
 
         public abstract void Exec();
 
@@ -354,10 +355,6 @@ namespace BIDSHelper
         #endregion
 
         #region "virtual methods/properties
-        public override string ToString()
-        {
-            return FriendlyName;
-        }
 
         public virtual bool ShouldPositionAtEnd
         {
@@ -382,11 +379,23 @@ namespace BIDSHelper
             get { return false; }
         }
 
+        /// <summary>
+        /// Gets the name of the friendly name of the plug-in.
+        /// </summary>
+        /// <value>The friendly name.</value>
+        /// <remarks>
+        ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
+        ///     The FriendlyName is the default page title used for by the <see cref="HelpUrl"/>.
+        /// </remarks>
         public virtual string FriendlyName
         {
             get { return this.ButtonText; }
         }
 
+        /// <summary>
+        /// Gets the custom menu icon.
+        /// </summary>
+        /// <value>The custom menu icon.</value>
         public virtual System.Drawing.Icon CustomMenuIcon
         {
             get { return null; }
@@ -399,8 +408,72 @@ namespace BIDSHelper
         {
             get { return true; }
         }
+        
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        /// <remarks>If not overridden then the <see cref="ToolTip"/> will be used instead.</remarks>
+        public virtual string Description
+        {
+            get { return this.ToolTip; }
+        }
 
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>
+        /// <value>The help page Url.</value>
+        /// <remarks>If no help is appropriate return null.</remarks>
+        public virtual string HelpUrl
+        {
+            // Default implementation of Help Url using FriendlyName. 
+            // Override this property if you need a different value
+            get { return this.GetCodePlexHelpUrl(this.FriendlyName); }
+        }
         #endregion
+
+        /// <summary>
+        /// Gets the CodePlex help page URL.
+        /// </summary>
+        /// <param name="wikiTitle">The wiki page title.</param>
+        /// <returns>The full help page URL.</returns>
+        /// <remarks>Used by default implementation of <see cref="HelpUrl"/>, as well as being 
+        /// available for derived classes that need to override that property.</remarks>
+        protected string GetCodePlexHelpUrl(string wikiTitle)
+        {
+            return string.Format(CultureInfo.InvariantCulture, DefaultUrlFormat, wikiTitle);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance. 
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.FriendlyName;
+        }
+
+        /// <summary>
+        /// Opens a URL, using Internet Explorer
+        /// </summary>
+        /// <param name="url">The URL to open.</param>
+        protected static void OpenUrl(string url)
+        {
+            try
+            {
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.FileName = "iexplore.exe";
+                process.StartInfo.Arguments = url;
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
+            }
+        }
     }
 
 }

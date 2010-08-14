@@ -219,7 +219,7 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override bool ShouldPositionAtEnd
@@ -229,12 +229,30 @@ namespace BIDSHelper
 
         public override string MenuName
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override bool Checked
         {
             get { return bInEffect; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Exposes hidden properties on several Analysis Services objects, such as the Annotations property. It also provides a better UI for editing descriptions on Analysis Services objects."; }
         }
 
         //Determines if the command should be displayed or not.

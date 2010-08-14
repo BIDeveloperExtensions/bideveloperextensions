@@ -540,12 +540,42 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override string MenuName
         {
-            get { return ""; } //no need to have a menu command
+            get { return string.Empty; } //no need to have a menu command
+        }
+
+        /// <summary>
+        /// Gets the name of the friendly name of the plug-in.
+        /// </summary>
+        /// <value>The friendly name.</value>
+        public override string FriendlyName
+        {
+            get
+            {
+                return "Update Estimated Counts";
+            }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Allows you to update the EstimatedCount property of every dimension attribute and partition with exact counts. Better counts help the Aggregation Design Wizard choose better aggregations."; }
         }
 
         /// <summary>

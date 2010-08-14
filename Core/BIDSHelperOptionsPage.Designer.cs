@@ -30,7 +30,7 @@ namespace BIDSHelper.Core
         {
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblCurrentlyDisabled = new System.Windows.Forms.Label();
-            this.lstPlugins = new System.Windows.Forms.CheckedListBox();
+            this.propertyGridFeatures = new System.Windows.Forms.PropertyGrid();
             this.SuspendLayout();
             // 
             // lblTitle
@@ -44,38 +44,35 @@ namespace BIDSHelper.Core
             // 
             // lblCurrentlyDisabled
             // 
-            this.lblCurrentlyDisabled.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCurrentlyDisabled.AutoSize = true;
-            this.lblCurrentlyDisabled.Location = new System.Drawing.Point(136, 103);
+            this.lblCurrentlyDisabled.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblCurrentlyDisabled.Location = new System.Drawing.Point(0, 0);
             this.lblCurrentlyDisabled.Name = "lblCurrentlyDisabled";
-            this.lblCurrentlyDisabled.Size = new System.Drawing.Size(233, 13);
+            this.lblCurrentlyDisabled.Size = new System.Drawing.Size(394, 290);
             this.lblCurrentlyDisabled.TabIndex = 2;
             this.lblCurrentlyDisabled.Text = "The BIDS Helper Add-in is not currently enabled";
+            this.lblCurrentlyDisabled.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // lstPlugins
+            // propertyGridFeatures
             // 
-            this.lstPlugins.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.propertyGridFeatures.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstPlugins.FormattingEnabled = true;
-            this.lstPlugins.Location = new System.Drawing.Point(3, 20);
-            this.lstPlugins.Name = "lstPlugins";
-            this.lstPlugins.Size = new System.Drawing.Size(394, 259);
-            this.lstPlugins.Sorted = true;
-            this.lstPlugins.TabIndex = 3;
-            this.lstPlugins.Visible = false;
+            this.propertyGridFeatures.Location = new System.Drawing.Point(0, 19);
+            this.propertyGridFeatures.Name = "propertyGridFeatures";
+            this.propertyGridFeatures.Size = new System.Drawing.Size(394, 268);
+            this.propertyGridFeatures.TabIndex = 4;
+            this.propertyGridFeatures.ToolbarVisible = false;
             // 
             // BIDSHelperOptionsPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.lstPlugins);
-            this.Controls.Add(this.lblCurrentlyDisabled);
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.Controls.Add(this.propertyGridFeatures);
             this.Controls.Add(this.lblTitle);
+            this.Controls.Add(this.lblCurrentlyDisabled);
             this.Name = "BIDSHelperOptionsPage";
-            this.Size = new System.Drawing.Size(422, 314);
-            this.Load += new System.EventHandler(this.BIDSHelperOptionsPage_Load);
+            this.Size = new System.Drawing.Size(394, 290);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -85,6 +82,6 @@ namespace BIDSHelper.Core
 
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label lblCurrentlyDisabled;
-        private System.Windows.Forms.CheckedListBox lstPlugins;
+        private System.Windows.Forms.PropertyGrid propertyGridFeatures;
     }
 }

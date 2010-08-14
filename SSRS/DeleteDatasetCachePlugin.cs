@@ -34,7 +34,7 @@ namespace BIDSHelper.SSRS
 
         public override string ToolTip
         {
-            get { return ""; } //not used anywhere
+            get { return string.Empty; } //not used anywhere
         }
 
         public override string MenuName
@@ -45,6 +45,24 @@ namespace BIDSHelper.SSRS
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSRS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Allows you to quickly and easily delete dataset cache files, ensuring you see current data when previewing your reports."; }
         }
 
         /// <summary>

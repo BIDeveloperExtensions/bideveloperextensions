@@ -61,12 +61,30 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; } //not used anywhere
+            get { return string.Empty; } //not used anywhere
         }
 
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Displays a report of all packages in a project or solution, with key properties such as Name, Id, Description and Version information."; }
         }
 
         /// <summary>

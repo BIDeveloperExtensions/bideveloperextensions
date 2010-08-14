@@ -1,16 +1,13 @@
-using System;
-using EnvDTE;
-using EnvDTE80;
-using System.Xml;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
-using Microsoft.Win32;
-using System.ComponentModel;
-//using System.Runtime.InteropServices;
-
 namespace BIDSHelper
 {
+    using System;
+    using System.ComponentModel;
+    using System.IO;
+    using System.Xml;
+    using EnvDTE;
+    using EnvDTE80;
+    using Microsoft.Win32;
+
     public class VersionCheckPlugin : BIDSHelperPluginBase
     {
 
@@ -33,8 +30,18 @@ namespace BIDSHelper
 
         public static VersionCheckPlugin VersionCheckPluginInstance;
 
-        public VersionCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        /// <summary>
+        /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
+        /// </summary>
+        private string serverVersion;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VersionCheckPlugin"/> class.
+        /// </summary>
+        /// <param name="con">The connect object.</param>
+        /// <param name="appObject">The application object.</param>
+        /// <param name="addinInstance">The add-in instance.</param>
+        public VersionCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
         {
             VersionCheckPluginInstance = this;
 
@@ -81,6 +88,7 @@ namespace BIDSHelper
                     DateTime.TryParse((string)rk.GetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, DateTime.MinValue.ToShortDateString()), out dtReturnVal);
                     rk.Close();
                 }
+
                 return dtReturnVal;
             }
             set
@@ -104,6 +112,7 @@ namespace BIDSHelper
                     sReturnVal = (string)rk.GetValue(REGISTRY_DISMISSED_VERSION_SETTING_NAME, string.Empty);
                     rk.Close();
                 }
+
                 return sReturnVal;
             }
             set
@@ -124,23 +133,25 @@ namespace BIDSHelper
             }
         }
 
-        private string _serverVersion;
         public string ServerVersion
         {
             get
             {
-                if (_serverVersion != null)
-                    return _serverVersion;
+                if (this.serverVersion != null)
+                {
+                    return this.serverVersion;
+                }
 
                 System.Net.WebClient http = new System.Net.WebClient();
-                MemoryStream ms = new MemoryStream(http.DownloadData(new System.Uri(CURRENT_VERSION_URL)));
+                MemoryStream ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
                 XmlReader reader = XmlReader.Create(ms);
                 XmlDocument doc = new XmlDocument();
                 doc.Load(reader);
-                _serverVersion = doc.DocumentElement.SelectSingleNode("Version").InnerText;
+                this.serverVersion = doc.DocumentElement.SelectSingleNode("Version").InnerText;
                 ms.Close();
                 reader.Close();
-                return _serverVersion;
+
+                return this.serverVersion;
             }
         }
 
@@ -170,28 +181,12 @@ namespace BIDSHelper
 
         public static void OpenBidsHelperReleasePageInBrowser()
         {
-            try
-            {
-                System.Diagnostics.Process process = new System.Diagnostics.Process();
-                process.StartInfo.UseShellExecute = true;
-                process.StartInfo.FileName = "iexplore.exe";
-                process.StartInfo.Arguments = BIDS_HELPER_RELEASE_URL;
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
-            }
+            OpenUrl(BIDS_HELPER_RELEASE_URL);
         }
 
         public override string ShortName
         {
             get { return "VersionCheckPlugin"; }
-        }
-
-        public override string FriendlyName
-        {
-            get { return "BIDS Helper Version Notification"; }
         }
 
         public override int Bitmap
@@ -201,7 +196,7 @@ namespace BIDSHelper
 
         public override string ButtonText
         {
-            get { return FriendlyName; }
+            get { return "BIDS Helper Version Notification"; }
         }
 
         public override string ToolTip
@@ -209,10 +204,36 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-
         public override string MenuName
         {
             get { return string.Empty; }
+        }
+
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>s
+        /// <value>The help page Url.</value>
+        public override string HelpUrl
+        {
+            get { return base.GetCodePlexHelpUrl("Version Notification"); }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.General; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Get notified when a new BIDS Helper version is released. A balloon and icon will appear in the system tray, which will link to the download page for the new release."; }
         }
 
         public override bool DisplayCommand(UIHierarchyItem item)
@@ -222,8 +243,8 @@ namespace BIDSHelper
 
         public override void Exec()
         {
+            // Nothing required
         }
-
     }
 
 }

@@ -695,13 +695,21 @@ namespace BIDSHelper
             lock (lviConn)
             {
                 System.Drawing.Bitmap icon = null;
-                if (lviConn.ImageList.Images.Count > lviConn.ImageIndex && lviConn.ListView != null)
+                if (lviConn.ImageList != null && lviConn.ListView != null && lviConn.ImageList.Images.Count > lviConn.ImageIndex)
+                {
                     icon = lviConn.ImageList.Images[lviConn.ImageIndex] as System.Drawing.Bitmap;
+                }
                 else
+                {
+                    // ImageList is null on the first pass following the renaming of a connection, with an expression
+                    // Other cases too....
                     System.Diagnostics.Debug.WriteLine("couldn't find current connection manager icon");
-                if (icon == null)
-                    return;
+                }
 
+                if (icon == null)
+                {
+                    return;
+                }
 
                 System.Diagnostics.Debug.WriteLine("connection has " + (bHasExpression || bHasConfiguration ? " an " : " no ") + " expression/configuration");
                 System.Diagnostics.Debug.WriteLine("lviConn.Tag: " + (lviConn.Tag == null ? "null" : lviConn.Tag.ToString()));

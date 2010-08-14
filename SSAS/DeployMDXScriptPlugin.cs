@@ -51,7 +51,32 @@ namespace BIDSHelper
             get { return "Deploys just the MDX Script for this cube"; }
         }
 
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>
+        /// <value>The help page Url.</value>
+        public override string HelpUrl
+        {
+            get { return this.GetCodePlexHelpUrl("Deploy MDX Script"); }
+        }
 
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Allows you to right click on a cube in an Analysis Services solution and deploy just the calculation script."; }
+        }
 
         /// <summary>
         /// Determines if the command should be displayed or not.

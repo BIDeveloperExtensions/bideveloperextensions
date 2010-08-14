@@ -36,12 +36,44 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; } //not used anywhere
+            get { return string.Empty; } //not used anywhere
         }
 
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        public override string FriendlyName
+        {
+            get { return "Unused Columns Report"; }
+        }
+
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>
+        /// <value>The help page Url.</value>
+        public override string HelpUrl
+        {
+            get { return this.GetCodePlexHelpUrl("Column Usage Reports"); }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "This report lists all columns in the DSV which are not used in dimensions, cubes, or mining structures."; }
         }
 
         /// <summary>
@@ -387,6 +419,20 @@ namespace BIDSHelper
         public override string ButtonText
         {
             get { return "Used Columns Report..."; }
+        }
+
+        public override string FriendlyName
+        {
+            get { return "Used Columns Report"; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "This report lists all columns in the DSV which are used in dimensions, cubes, or mining structures. This report can be used for proof reading the setup of your cube or for documentation."; }
         }
 
         public override void Exec()

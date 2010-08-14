@@ -34,12 +34,35 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return "Allows for Manually editing aggregation designs"; }
+            get { return "Allows for manually editing aggregation designs"; }
         }
 
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        public override string FriendlyName
+        {
+            get { return "Aggregation Manager"; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Provides an advanced interface for manually editing and managing aggregations."; }
         }
 
         /// <summary>

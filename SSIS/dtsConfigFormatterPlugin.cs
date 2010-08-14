@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {
-    class dtsConfigFormatterPlugin:BIDSHelperWindowActivatedPluginBase
+    public class dtsConfigFormatterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         //private WindowEvents windowEvents;
         private DocumentEvents docEvents;
@@ -196,12 +196,40 @@ namespace BIDSHelper.SSIS
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override string MenuName
         {
-            get { return ""; } //no need to have a menu command
+            get { return string.Empty; } //no need to have a menu command
+        }
+
+        /// <summary>
+        /// Gets the Url of the online help page for this plug-in.
+        /// </summary>
+        /// <value>The help page Url.</value>
+        /// <remarks>Wiki page title is non-formatted string, differs from text.</remarks>
+        public override string HelpUrl
+        {
+            get { return this.GetCodePlexHelpUrl("dtsConfigFormatter"); }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Automatically applies easy to read formatting to your dtsConfig files as they are opened."; }
         }
 
         /// <summary>

@@ -161,7 +161,7 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override string MenuName
@@ -169,14 +169,38 @@ namespace BIDSHelper
             get { return "Project"; }
         }
 
+
+        /// <summary>
+        /// Gets the name of the friendly name of the plug-in.
+        /// </summary>
+        /// <value>The friendly name.</value>
+        /// <remarks>Used for <see cref="HelpUrl"/> as <see cref="ButtonText"/> does not match Wiki page.</remarks>
         public override string FriendlyName
         {
-            get { return "SSIS Relative Paths"; }
+            get { return "Fix Relative Paths"; }
         }
 
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Allows you to change all configuration and connection file paths to be relative paths at the click of a button."; }
         }
         #endregion
 

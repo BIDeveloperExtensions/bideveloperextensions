@@ -48,6 +48,24 @@ namespace BIDSHelper
         }
 
         /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSAS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Displays a printer friendly version of Dimension Usage, showing relationships between dimensions and measure groups."; }
+        }
+
+        /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
         /// <param name="item"></param>

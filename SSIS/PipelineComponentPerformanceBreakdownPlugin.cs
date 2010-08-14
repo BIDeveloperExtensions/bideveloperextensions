@@ -50,7 +50,7 @@ namespace BIDSHelper
 
         public override string ToolTip
         {
-            get { return ""; }
+            get { return string.Empty; }
         }
 
         public override string FriendlyName
@@ -74,6 +74,24 @@ namespace BIDSHelper
         public override bool BeginMenuGroup
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.SSIS; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Executes an individual Data Flow task and displays a performance breakdown for each component in the task, helping you to identify any bottlenecks you may have."; }
         }
 
         public override bool DisplayCommand(UIHierarchyItem item)
@@ -139,7 +157,6 @@ namespace BIDSHelper
             catch { }
             return false;
         }
-
 
         public override void Exec()
         {

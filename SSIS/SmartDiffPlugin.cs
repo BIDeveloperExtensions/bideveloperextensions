@@ -40,14 +40,37 @@ namespace BIDSHelper
             get { return "Smart Diff..."; }
         }
 
+        public override string FriendlyName
+        {
+            get { return "Smart Diff"; }
+        }
+
         public override string ToolTip
         {
-            get { return ""; } //not seen anywhere
+            get { return string.Empty; }
+        }
+
+        /// <summary>
+        /// Gets the full description used for the features options dialog.
+        /// </summary>
+        /// <value>The description.</value>
+        public override string Description
+        {
+            get { return "Compare differences between two versions of a file, including those in source control. Works across the BI stack including Packages, Cubes, Dimensions, Data Sources and Reports."; }
         }
 
         public override bool ShouldPositionAtEnd
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        /// </summary>
+        /// <value>The feature category.</value>
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { return BIDSFeatureCategories.General; }
         }
 
         private string[] DTS_FILE_EXTENSIONS = { ".dtsx" };
