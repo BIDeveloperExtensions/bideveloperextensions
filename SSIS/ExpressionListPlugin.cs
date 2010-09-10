@@ -112,17 +112,17 @@ namespace BIDSHelper
                     Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
                     DdsDiagramHostControl diagram = null;
 
-                    if (win.SelectedIndex == 0) //Control Flow
+                    if (win.SelectedIndex == 0) // Control Flow
                     {
                         diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
                         container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
                     }
-                    else if (win.SelectedIndex == 1) //data flow
+                    else if (win.SelectedIndex == 1) // Data Flow
                     {
                         diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
                         container = (IDTSSequence)((TaskHost)diagram.ComponentDiagram.RootComponent).Parent;
                     }
-                    else if (win.SelectedIndex == 2) //Event Handlers
+                    else if (win.SelectedIndex == 2) // Event Handlers
                     {
                         diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
                         container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
@@ -147,10 +147,12 @@ namespace BIDSHelper
                 TaskHost taskHost = FindTaskHost(container, e.ObjectID);
                 DtsContainer foundContainer = FindContainer(container, e.ObjectID);
                 Variable variable = null;
+                
                 if (e.ObjectType.StartsWith("Variable "))
                 {
                     variable = FindVariable(package, taskHost, foundContainer, e.Property);
                 }
+
                 ConnectionManager connection = FindConnectionManager(package, e.ObjectID);
                 if (variable != null)
                 {
@@ -199,38 +201,38 @@ namespace BIDSHelper
                 }
                 else
                 {
-                    throw new Exception("Expression editing not supported on this object."); //will usually be when trying to edit an expression on the Package object itself; TODO: figure out a way to see if this is possible
+                    throw new Exception("Expression editing not supported on this object."); // Will usually be when trying to edit an expression on the Package object itself; TODO: figure out a way to see if this is possible
                 }
 
-                System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
-
-                Form editor = BIDSHelper.SSIS.Konesans.CreateKonesansExpressionEditorForm(variables, variableDispenser, propertyType, property, e.Expression);
+                Konesans.Dts.ExpressionEditor.ExpressionEditorPublic editor = new Konesans.Dts.ExpressionEditor.ExpressionEditorPublic(variables, variableDispenser, propertyType, property.Name, e.Expression);
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
-                    string sExpression = (string)editor.GetType().InvokeMember("Expression", getpropflags, null, editor, null);
-                    if (!string.IsNullOrEmpty(sExpression) && string.IsNullOrEmpty(sExpression.Trim()))
-                        sExpression = null;
+                    string expression = editor.Expression;
+                    if (string.IsNullOrEmpty(expression) || string.IsNullOrEmpty(expression.Trim()))
+                    {
+                        expression = null;
+                    }
 
-                    object oObjectChanged = null;
+                    object objectChanged = null;
                     if (variable != null)
                     {
-                        variable.Expression = sExpression;
-                        oObjectChanged = variable;
+                        variable.Expression = expression;
+                        objectChanged = variable;
                     }
                     else if (taskHost != null)
                     {
-                        taskHost.SetExpression(e.Property, sExpression);
-                        oObjectChanged = taskHost;
+                        taskHost.SetExpression(e.Property, expression);
+                        objectChanged = taskHost;
                     }
                     else if (connection != null)
                     {
-                        connection.SetExpression(e.Property, sExpression);
-                        oObjectChanged = connection;
+                        connection.SetExpression(e.Property, expression);
+                        objectChanged = connection;
                     }
                     else if (e.ObjectID == ((Package)container).ID)
                     {
-                        package.SetExpression(e.Property, sExpression);
-                        oObjectChanged = package;
+                        package.SetExpression(e.Property, expression);
+                        objectChanged = package;
                     }
 
                     expressionListWindow_RefreshExpressions(null, null);
@@ -238,23 +240,25 @@ namespace BIDSHelper
 
                     try
                     {
-                        if (!string.IsNullOrEmpty(sExpression))
+                        if (!string.IsNullOrEmpty(expression))
+                        {
                             bShouldSkipExpressionHighlighting = true; //this flag is used by the expression highlighter to skip re-highlighting if all that's changed is the string of an existing expression... if one has been removed, then re-highlight
+                        }
 
-                        PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(oObjectChanged);
+                        PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(objectChanged);
                         System.ComponentModel.PropertyDescriptor myProperty = properties.Find("Expressions", false);
 
-                        //mark package object as dirty
+                        // Mark package object as dirty
                         IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
-                        if (oObjectChanged == null)
+                        if (objectChanged == null)
                         {
                             changesvc.OnComponentChanging(container, null);
                             changesvc.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
                         }
                         else
                         {
-                            changesvc.OnComponentChanging(oObjectChanged, myProperty);
-                            changesvc.OnComponentChanged(oObjectChanged, myProperty, null, null); //marks the package designer as dirty
+                            changesvc.OnComponentChanging(objectChanged, myProperty);
+                            changesvc.OnComponentChanged(objectChanged, myProperty, null, null); //marks the package designer as dirty
                         }
                     }
                     finally
@@ -269,46 +273,58 @@ namespace BIDSHelper
             }
         }
 
-
-
-
         void expressionListWindow_RefreshExpressions(object sender, EventArgs e)
         {
-            IDTSSequence container = null;
-            TaskHost taskHost = null;
-
             expressionListWindow.ClearResults();
 
-            if (win == null) return;
+            if (win == null)
+            {
+                return;
+            }
 
             try
             {
                 Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-                DdsDiagramHostControl diagram = null;
+
+                // Get the package, but may have to walk up the object hierarchy.
+                // We need to start at the top with the Package in the worker thread, 
+                // otherwise string path functions fail and stuff gets missed.
+                DtsContainer container = null;
 
                 if (win.SelectedIndex == 0) //Control Flow
                 {
-                    diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                    container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
+                    // Parent of Control Flow diagram is the Package
+                    DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
+                    container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
                 }
-                else if (win.SelectedIndex == 1) //data flow
+                else if (win.SelectedIndex == 1) // Data flow
                 {
-                    diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                    taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
-                    container = (IDTSSequence)taskHost.Parent;
+                    // Parent of Data Flow diagram is a Task
+                    DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
+                    TaskHost taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
+                    container = (DtsContainer)taskHost.Parent; // container is Package
                 }
                 else if (win.SelectedIndex == 2) //Event Handlers
                 {
-                    diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
-                    container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
+                    // Parent of Event Handlers diagram is a DtsEventHandler
+                    DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
+                    container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
                 }
                 else
                 {
                     return;
                 }
 
+                // Get the root container, i.e the Package
+                while (container.Parent != null)
+                {
+                    container = container.Parent;
+                }
+
                 expressionListWindow.StartProgressBar();
-                processPackage.RunWorkerAsync(container);
+
+                IDTSSequence sequence = (IDTSSequence)container;
+                processPackage.RunWorkerAsync(sequence);
             }
             catch (Exception ex)
             {
