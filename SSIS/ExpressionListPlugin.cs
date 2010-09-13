@@ -18,7 +18,6 @@ namespace BIDSHelper.SSIS
         private const string REGISTRY_EXTENDED_PATH = "ExpressionListPlugin";
         private const string REGISTRY_SETTING_NAME = "InEffect";
         public static bool shouldSkipExpressionHighlighting = false;
-
         
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ExpressionListControl expressionListWindow = null;
@@ -82,9 +81,18 @@ namespace BIDSHelper.SSIS
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);
 
-            ////Set the picture displayed when the window is tab docked
-            ////expressionListWindow.SetTabPicture(BIDSHelper.Resources.Resource.ExpressionList.ToBitmap().GetHbitmap());
-            ////toolWindow.Visible = true;
+            // Set the picture displayed when the window is tab docked
+            // Clean build required when switching between VS 2005 and VS 2008 
+            // during testing, otherwise we get some strange behaviour with this
+            IntPtr icon = BIDSHelper.Properties.Resources.ExpressionListIcon.ToBitmap().GetHbitmap();
+
+#if KATMAI
+            toolWindow.SetTabPicture(icon.ToInt32()); 
+#else
+            toolWindow.SetTabPicture(icon); 
+#endif
+
+            toolWindow.Visible = true;
         }
 
         void expressionListWindow_EditExpressionSelected(object sender, EditExpressionSelectedEventArgs e)
