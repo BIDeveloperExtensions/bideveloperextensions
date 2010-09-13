@@ -36,6 +36,7 @@
     <NoWarn>1591</NoWarn>
     <DefineConstants>DEBUG;KATMAI</DefineConstants>
     <DebugType>full</DebugType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -67,13 +68,12 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="ExpressionEditor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\SQL2008\ExpressionEditor.dll</HintPath>
+    </Reference>
     <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>True</SpecificVersion>
-    </Reference>
-    <Reference Include="Konesans.Dts.CommonLibrary, Version=4.0.0.1, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
-      <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
@@ -324,7 +324,6 @@
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
-    <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
@@ -549,14 +548,14 @@
     <Content Include="Build\Readme.txt" />
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
+    <CodeAnalysisDictionary Include="CustomDictionary.xml" />
+    <None Include="DLLs\SQL2008\ExpressionEditor.dll" />
     <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />
     <None Include="Resources\process progress1704108.bmp" />
     <None Include="Resources\Process Progress464342.gif" />
-    <Content Include="DLLs\SQL2008\ExpressionEditor.xml" />
-    <Content Include="DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll" />
     <Content Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
@@ -772,7 +771,8 @@
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2008\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Build\examples\" />

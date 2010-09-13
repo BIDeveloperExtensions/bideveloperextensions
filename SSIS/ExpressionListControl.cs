@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using Microsoft.SqlServer.Dts.Runtime;
-
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
+    using System;
+    using System.Drawing;
+    using System.Windows.Forms;
+
     public partial class ExpressionListControl : UserControl
     {
         //TODO: Add "Live Update" - automatically filter diplay based on currently selected object.
@@ -16,12 +11,16 @@ namespace BIDSHelper
         public ExpressionListControl()
         {
             InitializeComponent();
+
+            // Hide internal columns - Do it here as easy to make visible when debugging
+            this.expressionGrid.Columns[0].Visible = false;
+            this.expressionGrid.Columns[1].Visible = false;
+            this.expressionGrid.Columns[4].Visible = false;
+
             StopProgressBar();
             btnRefresh.Image = (Image) BIDSHelper.Properties.Resources.RefreshExpressions.ToBitmap();
 
-            dataGridView1.CellContentClick += new DataGridViewCellEventHandler(dataGridView1_CellContentClick);
-
-
+            expressionGrid.CellContentClick += new DataGridViewCellEventHandler(expressionGrid_CellContentClick);
         }
 
         public event EventHandler RefreshExpressions;
@@ -57,34 +56,39 @@ namespace BIDSHelper
             }
         }
 
-        public void AddExpression(string objectID, string objectType, string objectPath, string objectName, string propertyName, string expression)
+        public void AddExpression(Type type, string containerID, string objectID, string objectType, string objectPath, string objectName, string propertyName, string expression)
         {
             int lastPart = objectType.LastIndexOf(".") + 1;
 
-            string objectTypeAdjusted = objectType.Substring(lastPart, objectType.Length - lastPart) //TODO: Adjust Length
-                + " [" + objectType.Substring(0, objectType.LastIndexOf(".")) + "]";
-            string[] newRow = { objectID, objectTypeAdjusted, objectPath, objectName, propertyName, expression };
+            //string objectTypeAdjusted = objectType.Substring(lastPart, objectType.Length - lastPart) //TODO: Adjust Length
+                //+ " [" + objectType.Substring(0, objectType.LastIndexOf(".")) + "]";
+            string[] newRow = { containerID, objectID, objectType, objectPath, objectName, propertyName, expression };
 
-            dataGridView1.Rows.Add(newRow);
+            int index = expressionGrid.Rows.Add(newRow);
+            expressionGrid.Rows[index].Tag = type;
         }
 
         public void ClearResults()
         {
-            dataGridView1.Rows.Clear();
+            expressionGrid.Rows.Clear();
         }
 
-        void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        void expressionGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             try
             {
-                if (dataGridView1.Columns[e.ColumnIndex].Name == "EditorBtn")
+                if (expressionGrid.Columns[e.ColumnIndex].Name == "EditorBtn")
                 {
+                    DataGridViewRow row = expressionGrid.Rows[e.RowIndex];
+
                     OnRaiseEditExpressionSelected(
-                        new EditExpressionSelectedEventArgs(dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectPath"].Index].Value.ToString(),
-                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["Expression"].Index].Value.ToString(),
-                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["Property"].Index].Value.ToString(), 
-                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectID"].Index].Value.ToString(),
-                            dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["ObjectType"].Index].Value.ToString()));
+                        new EditExpressionSelectedEventArgs(row.Tag as Type,
+                            row.Cells[expressionGrid.Columns["ObjectPath"].Index].Value.ToString(),
+                            row.Cells[expressionGrid.Columns["Expression"].Index].Value.ToString(),
+                            row.Cells[expressionGrid.Columns["Property"].Index].Value.ToString(),
+                            row.Cells[expressionGrid.Columns["ContainerID"].Index].Value.ToString(),
+                            row.Cells[expressionGrid.Columns["ObjectID"].Index].Value.ToString(),
+                            row.Cells[expressionGrid.Columns["ObjectType"].Index].Value.ToString()));
                 }
             }
             catch (Exception ex)
@@ -116,40 +120,54 @@ namespace BIDSHelper
     
     public class EditExpressionSelectedEventArgs : EventArgs
     {
-        public EditExpressionSelectedEventArgs(string objectPath, string expression, string property, string objectID, string objectType)
+        public EditExpressionSelectedEventArgs(Type type, string objectPath, string expression, string property, string containerID, string objectID, string objectType)
         {
+            this.type = type;
+            this.containerID = containerID;
             this.path = objectPath;
             this.expression = expression;
             this.property = property;
             this.objectID = objectID;
             this.objectType = objectType;
         }
+
+        private Type type;
         private string expression;
         private string property;
         private string path;
+        private string containerID; 
         private string objectID;
         private string objectType;
 
+        public Type Type
+        {
+            get { return this.type; }
+        }
+
         public string TaskPath
         {
-            get { return path; }
+            get { return this.path; }
         }
         public string Expression
         {
-            get { return expression; }
+            get { return this.expression; }
         }
         public string Property
         {
-            get { return property; }
+            get { return this.property; }
+        }
+
+        public string ContainerID
+        {
+            get { return this.containerID; }
         }
         public string ObjectID
         {
-            get { return objectID; }
+            get { return this.objectID; }
         }
         public string ObjectType
         {
-            get { return objectType; }
+            get { return this.objectType; }
         }
     }
-
 }

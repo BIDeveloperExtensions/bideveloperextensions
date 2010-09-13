@@ -1,13 +1,7 @@
+using System;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Resources;
-
-
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-
-//TODO: Review the values of the assembly attributes
+using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("BIDS Helper")]
 [assembly: AssemblyDescription("Provides additional useful features to the BI Development Studio")]
@@ -17,17 +11,10 @@ using System.Resources;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Revision
-//      Build Number
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-
 [assembly: AssemblyVersion("1.4.3.0")]
-[assembly: ComVisible(true)]
-[assembly: NeutralResourcesLanguageAttribute("")]
 [assembly: AssemblyFileVersionAttribute("1.4.3.0")]
+
+[assembly: ComVisible(true)]
+[assembly: CLSCompliant(false)]
+[assembly: NeutralResourcesLanguageAttribute("")]
+

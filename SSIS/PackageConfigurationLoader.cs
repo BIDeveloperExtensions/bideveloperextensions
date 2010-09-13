@@ -1,15 +1,15 @@
-using System.Xml;
-using System.Text;
-using System.ComponentModel.Design;
-using System;
-using Microsoft.SqlServer.Dts.Runtime;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Security;
-
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
-    class PackageConfigurationLoader
+    using System.Xml;
+    using System.Text;
+    using System.ComponentModel.Design;
+    using System;
+    using Microsoft.SqlServer.Dts.Runtime;
+    using System.Collections.Generic;
+    using System.Runtime.InteropServices;
+    using System.Security;
+    
+    internal class PackageConfigurationLoader
     {
         public static PackageConfigurationSetting[] GetPackageConfigurationSettings(Microsoft.SqlServer.Dts.Runtime.Configuration c, Package p, string sVisualStudioRelativePath, bool bOfflineMode)
         {

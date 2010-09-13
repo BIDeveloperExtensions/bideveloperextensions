@@ -1,61 +1,51 @@
-using Extensibility;
+using System;
+using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.Globalization;
+using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using System.Windows.Forms;
-using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
-using System;
-using Microsoft.Win32;
-using MSDDS;
-using Microsoft.SqlServer.Dts.Runtime;
+using Microsoft.DataWarehouse.Design;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-using System.ComponentModel;
+using Microsoft.SqlServer.Dts.Runtime;
+using Microsoft.Win32;
 
-
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class ExpressionListPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private const string REGISTRY_EXTENDED_PATH = "ExpressionListPlugin";
         private const string REGISTRY_SETTING_NAME = "InEffect";
-        public static bool bShouldSkipExpressionHighlighting = false;
+        public static bool shouldSkipExpressionHighlighting = false;
 
         
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ExpressionListControl expressionListWindow = null;
-        Window toolWindow = null;
+        private Window toolWindow = null;
+        private EditorWindow win = null;
+        private IDesignerHost designer = null;
+        private BackgroundWorker processPackage = null;
 
-        EditorWindow win = null;
-        IDesignerHost designer = null;
-        System.ComponentModel.BackgroundWorker processPackage = null;
-
-
-        public ExpressionListPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public ExpressionListPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
         {
         }
 
         public override bool ShouldHookWindowCreated
         {
-            get
-            {
-                return true;
-            }
+            get { return true; }
         }
+
         public override bool ShouldHookWindowClosing
         {
-            get
-            {
-                return true;
-            }
+            get { return true; }
         }
 
         public override void OnDisable()
         {
             base.OnDisable();
-            // hide the tool window
+
+            // Hide the tool window
             toolWindow.Visible = false;    
         }
 
@@ -87,184 +77,144 @@ namespace BIDSHelper
             String guidstr = "{6679390F-A712-40EA-8729-E2184A1436BF}";
             EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)this.ApplicationObject.Windows;
             System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-            toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
+            toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.SSIS.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
             expressionListWindow = (ExpressionListControl)programmableObject;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);
 
-            //Set the picture displayed when the window is tab docked
-            //expressionListWindow.SetTabPicture(BIDSHelper.Resources.Resource.ExpressionList.ToBitmap().GetHbitmap());
-
-            //toolWindow.Visible = true;
-
+            ////Set the picture displayed when the window is tab docked
+            ////expressionListWindow.SetTabPicture(BIDSHelper.Resources.Resource.ExpressionList.ToBitmap().GetHbitmap());
+            ////toolWindow.Visible = true;
         }
 
         void expressionListWindow_EditExpressionSelected(object sender, EditExpressionSelectedEventArgs e)
         {
             try
             {
+                Package package = null;
+                DtsContainer container = null;
 
-                IDTSSequence container = null;
-                if (win == null) return;
-
-                try
-                {
-                    Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-                    DdsDiagramHostControl diagram = null;
-
-                    if (win.SelectedIndex == 0) // Control Flow
-                    {
-                        diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                        container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-                    }
-                    else if (win.SelectedIndex == 1) // Data Flow
-                    {
-                        diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                        container = (IDTSSequence)((TaskHost)diagram.ComponentDiagram.RootComponent).Parent;
-                    }
-                    else if (win.SelectedIndex == 2) // Event Handlers
-                    {
-                        diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
-                        container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-                    }
-                    else
-                    {
-                        return;
-                    }
-
-                    container = (IDTSSequence)GetPackageFromContainer((DtsContainer)container);
-                }
-                catch (Exception)
+                if (win == null)
                 {
                     return;
                 }
 
-                Package package = (Package)container;
-                Variables variables = null;
-                VariableDispenser variableDispenser = null;
-                PropertyDescriptor property = null;
-                Type propertyType = null;
-                TaskHost taskHost = FindTaskHost(container, e.ObjectID);
-                DtsContainer foundContainer = FindContainer(container, e.ObjectID);
-                Variable variable = null;
-                
-                if (e.ObjectType.StartsWith("Variable "))
+                try
                 {
-                    variable = FindVariable(package, taskHost, foundContainer, e.Property);
+                    package = GetCurrentPackage();
+                    if (package == null)
+                    {
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Assert(false, ex.ToString());
+                    return;
                 }
 
-                ConnectionManager connection = FindConnectionManager(package, e.ObjectID);
-                if (variable != null)
+                // Parameters for Expression Editor
+                Variables variables = null;
+                VariableDispenser variableDispenser = null;
+                string propertyName = string.Empty;
+                Type propertyType = null;
+
+                // Target objects
+                IDTSPropertiesProvider propertiesProvider = null;
+                Variable variable = null;
+                PrecedenceConstraint constraint = null;
+
+                // Get the container
+                container = FindContainer(package, e.ContainerID);
+
+                // Get the property details and variable objects for the editor
+                if (e.Type == typeof(Variable))
                 {
-                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(variable);
-                    property = properties.Find("Value", false);
+                    variable = FindVariable(container, e.ObjectID);
+
+                    propertyName = "Value";
                     propertyType = System.Type.GetType("System." + variable.DataType.ToString());
-                    if (taskHost != null)
-                    {
-                        variables = taskHost.Variables;
-                        variableDispenser = taskHost.VariableDispenser;
-                    }
-                    else if (foundContainer != null)
-                    {
-                        variables = foundContainer.Variables;
-                        variableDispenser = foundContainer.VariableDispenser;
-                    }
-                    else
-                    {
-                        variables = package.Variables;
-                        variableDispenser = package.VariableDispenser;
-                    }
+
+                    variables = container.Variables;
+                    variableDispenser = container.VariableDispenser;
                 }
-                else if (taskHost != null)
+                else if (e.Type == typeof(PrecedenceConstraint))
                 {
-                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(taskHost);
-                    property = properties.Find(e.Property, false);
-                    propertyType = property.PropertyType;
-                    variables = taskHost.Variables;
-                    variableDispenser = taskHost.VariableDispenser;
-                }
-                else if (connection != null)
-                {
-                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(connection);
-                    property = properties.Find(e.Property, false);
-                    propertyType = property.PropertyType;
-                    variables = package.Variables;
-                    variableDispenser = package.VariableDispenser;
-                }
-                else if (e.ObjectID == ((Package)container).ID)
-                {
-                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(container);
-                    property = properties.Find(e.Property, false);
-                    propertyType = property.PropertyType;
-                    variables = package.Variables;
-                    variableDispenser = package.VariableDispenser;
+                    constraint = FindConstraint(container, e.ObjectID);
+                    
+                    propertyName = "Expression";
+                    propertyType = typeof(bool);
+
+                    variables = container.Variables;
+                    variableDispenser = container.VariableDispenser;
                 }
                 else
                 {
-                    throw new Exception("Expression editing not supported on this object."); // Will usually be when trying to edit an expression on the Package object itself; TODO: figure out a way to see if this is possible
+                    if (e.Type == typeof(ConnectionManager))
+                    {
+                        propertiesProvider = FindConnectionManager(package, e.ObjectID) as IDTSPropertiesProvider;
+                    }
+                    else if (e.Type == typeof(ForEachEnumerator))
+                    {
+                        ForEachLoop forEachLoop = container as ForEachLoop;
+                        propertiesProvider = forEachLoop.ForEachEnumerator as IDTSPropertiesProvider;
+                    }
+                    else
+                    {
+                        propertiesProvider = container as IDTSPropertiesProvider;
+                    }
+
+                    if (propertiesProvider != null)
+                    {
+                        DtsProperty property = propertiesProvider.Properties[e.Property];
+                        propertyName = property.Name;
+                        propertyType = PackageHelper.GetTypeFromTypeCode(property.Type);
+                        variables = container.Variables;
+                        variableDispenser = container.VariableDispenser;
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format(CultureInfo.InvariantCulture, "Expression editing not supported on this object ({0}).", e.ObjectID));
+                    }
                 }
 
-                Konesans.Dts.ExpressionEditor.ExpressionEditorPublic editor = new Konesans.Dts.ExpressionEditor.ExpressionEditorPublic(variables, variableDispenser, propertyType, property.Name, e.Expression);
+                // Show the editor
+                Konesans.Dts.ExpressionEditor.ExpressionEditorPublic editor = new Konesans.Dts.ExpressionEditor.ExpressionEditorPublic(variables, variableDispenser, propertyType, propertyName, e.Expression);
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
+                    // Get expression
                     string expression = editor.Expression;
-                    if (string.IsNullOrEmpty(expression) || string.IsNullOrEmpty(expression.Trim()))
+                    if (expression == null || string.IsNullOrEmpty(expression.Trim()))
                     {
                         expression = null;
                     }
 
+                    // Set the new expression on the target object
                     object objectChanged = null;
                     if (variable != null)
                     {
                         variable.Expression = expression;
                         objectChanged = variable;
                     }
-                    else if (taskHost != null)
+                    else if (constraint != null)
                     {
-                        taskHost.SetExpression(e.Property, expression);
-                        objectChanged = taskHost;
+                        constraint.Expression = expression;
+                        objectChanged = constraint;
                     }
-                    else if (connection != null)
+                    else if (propertiesProvider != null)
                     {
-                        connection.SetExpression(e.Property, expression);
-                        objectChanged = connection;
-                    }
-                    else if (e.ObjectID == ((Package)container).ID)
-                    {
-                        package.SetExpression(e.Property, expression);
-                        objectChanged = package;
+                        // TaskHost, Sequence, ForLoop, ForEachLoop and ConnectionManager
+                        propertiesProvider.SetExpression(e.Property, expression);
+                        objectChanged = propertiesProvider;
                     }
 
                     expressionListWindow_RefreshExpressions(null, null);
-                    System.Windows.Forms.Application.DoEvents(); //finish displaying expressions list before you mark the package as dirty (which runs the expression highlighter)
 
-                    try
-                    {
-                        if (!string.IsNullOrEmpty(expression))
-                        {
-                            bShouldSkipExpressionHighlighting = true; //this flag is used by the expression highlighter to skip re-highlighting if all that's changed is the string of an existing expression... if one has been removed, then re-highlight
-                        }
+                    // Finish displaying expressions list before you mark the package 
+                    // as dirty (which runs the expression highlighter)
+                    System.Windows.Forms.Application.DoEvents(); 
 
-                        PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(objectChanged);
-                        System.ComponentModel.PropertyDescriptor myProperty = properties.Find("Expressions", false);
-
-                        // Mark package object as dirty
-                        IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
-                        if (objectChanged == null)
-                        {
-                            changesvc.OnComponentChanging(container, null);
-                            changesvc.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
-                        }
-                        else
-                        {
-                            changesvc.OnComponentChanging(objectChanged, myProperty);
-                            changesvc.OnComponentChanged(objectChanged, myProperty, null, null); //marks the package designer as dirty
-                        }
-                    }
-                    finally
-                    {
-                        bShouldSkipExpressionHighlighting = false;
-                    }
+                    SetPackageAsDirty(package, expression, objectChanged);
                 }
             }
             catch (Exception ex)
@@ -273,7 +223,38 @@ namespace BIDSHelper
             }
         }
 
-        void expressionListWindow_RefreshExpressions(object sender, EventArgs e)
+        private void SetPackageAsDirty(IDTSSequence container, string expression, object objectChanged)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(expression))
+                {
+                    shouldSkipExpressionHighlighting = true; //this flag is used by the expression highlighter to skip re-highlighting if all that's changed is the string of an existing expression... if one has been removed, then re-highlight
+                }
+
+                PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(objectChanged);
+                System.ComponentModel.PropertyDescriptor expressionsProperty = properties.Find("Expressions", false);
+
+                // Mark package object as dirty
+                IComponentChangeService changeService = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
+                if (objectChanged == null)
+                {
+                    changeService.OnComponentChanging(container, null);
+                    changeService.OnComponentChanged(container, null, null, null); //marks the package designer as dirty
+                }
+                else
+                {
+                    changeService.OnComponentChanging(objectChanged, expressionsProperty);
+                    changeService.OnComponentChanged(objectChanged, expressionsProperty, null, null); //marks the package designer as dirty
+                }
+            }
+            finally
+            {
+                shouldSkipExpressionHighlighting = false;
+            }
+        }
+
+        private void expressionListWindow_RefreshExpressions(object sender, EventArgs e)
         {
             expressionListWindow.ClearResults();
 
@@ -284,52 +265,58 @@ namespace BIDSHelper
 
             try
             {
-                Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-
-                // Get the package, but may have to walk up the object hierarchy.
-                // We need to start at the top with the Package in the worker thread, 
-                // otherwise string path functions fail and stuff gets missed.
-                DtsContainer container = null;
-
-                if (win.SelectedIndex == 0) //Control Flow
-                {
-                    // Parent of Control Flow diagram is the Package
-                    DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                    container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
-                }
-                else if (win.SelectedIndex == 1) // Data flow
-                {
-                    // Parent of Data Flow diagram is a Task
-                    DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                    TaskHost taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
-                    container = (DtsContainer)taskHost.Parent; // container is Package
-                }
-                else if (win.SelectedIndex == 2) //Event Handlers
-                {
-                    // Parent of Event Handlers diagram is a DtsEventHandler
-                    DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
-                    container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
-                }
-                else
+                Package package = GetCurrentPackage();
+                if (package == null)
                 {
                     return;
                 }
 
-                // Get the root container, i.e the Package
-                while (container.Parent != null)
-                {
-                    container = container.Parent;
-                }
-
                 expressionListWindow.StartProgressBar();
 
-                IDTSSequence sequence = (IDTSSequence)container;
+                IDTSSequence sequence = (IDTSSequence)package;
                 processPackage.RunWorkerAsync(sequence);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private Package GetCurrentPackage()
+        {
+            Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
+
+            // Get the package, but may have to walk up the object hierarchy.
+            // We need to start at the top with the Package in the worker thread, 
+            // otherwise string path functions fail and stuff gets missed.
+            DtsContainer container = null;
+
+            if (win.SelectedIndex == 0) //Control Flow
+            {
+                // Parent of Control Flow diagram is the Package
+                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
+                container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
+            }
+            else if (win.SelectedIndex == 1) // Data flow
+            {
+                // Parent of Data Flow diagram is a Task
+                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
+                TaskHost taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
+                container = (DtsContainer)taskHost.Parent; // container is Package
+            }
+            else if (win.SelectedIndex == 2) //Event Handlers
+            {
+                // Parent of Event Handlers diagram is a DtsEventHandler
+                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
+                container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
+            }
+            else
+            {
+                return null;
+            }
+
+            // Get the root container, i.e the Package
+            return GetPackageFromContainer(container);
         }
 
         #region Window Events
@@ -388,130 +375,87 @@ namespace BIDSHelper
 
         #region BackgroundWorker Events
 
-        void processPackage_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        private void processPackage_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             expressionListWindow.StopProgressBar();
         }
 
-        void processPackage_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        private void processPackage_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             ExpressionInfo info = (ExpressionInfo)e.UserState;
 
             if (info.HasExpression)
             {
-                expressionListWindow.AddExpression(info.ObjectID, info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Expression);
+                expressionListWindow.AddExpression(info.Type, info.ContainerID, info.ObjectID, info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Expression);
             }
         }
 
-        void processPackage_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private void processPackage_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             System.ComponentModel.BackgroundWorker worker = (System.ComponentModel.BackgroundWorker)sender;
 
-            DtsContainer sequence = (DtsContainer)e.Argument;
-
-            IterateContainer(sequence, worker, string.Empty);
+            DtsContainer container = (DtsContainer)e.Argument;
+            ProcessObject(container, worker, string.Empty);
         }
 
         #endregion
 
         #region Package Scanning
 
-        private void IterateContainer(DtsContainer container, System.ComponentModel.BackgroundWorker worker, string path)
+        private void ProcessObject(object component, System.ComponentModel.BackgroundWorker worker, string path)
         {
-            if (worker.CancellationPending) return;
-
-            if (container is Package)
+            if (worker.CancellationPending)
             {
-                path = "Package.";
-                CheckConnectionManagers((Package)container, worker, path);
+                return;
             }
 
-            if (container is IDTSPropertiesProvider)
+            DtsContainer container = component as DtsContainer;
+
+            Package package = component as Package;
+            if (package != null)
             {
-                CheckProperties((IDTSPropertiesProvider)container, worker, path);
+                path = "Package";
+                CheckConnectionManagers(package, worker, path);
+            }
+            else if (!(component is DtsEventHandler))
+            {
+                path = path + "\\" + container.Name;
             }
 
-            //JCW 2008/10/13
-            //New Section to scan EventHandlers - in response to issue #18816
-            if (container is EventsProvider)
+            IDTSPropertiesProvider propertiesProvider = component as IDTSPropertiesProvider;
+            if (propertiesProvider != null)
             {
-                EventsProvider ep = (EventsProvider)container;
+                CheckProperties(propertiesProvider, worker, path);
+            }
 
-                foreach (DtsEventHandler eh in ep.EventHandlers)
+            EventsProvider eventsProvider = component as EventsProvider;
+            if (eventsProvider != null)
+            {
+                foreach (DtsEventHandler eventhandler in eventsProvider.EventHandlers)
                 {
-                    IterateContainer((DtsContainer)eh, worker, path + ".EventHandler["+ eh.Name + "].");
+                    ProcessObject(eventhandler, worker, path + ".EventHandlers[" + eventhandler.Name + "]");
                 }
             }
-            //End new section
 
-            IDTSSequence sequence = (IDTSSequence)container;
-
-            foreach (Executable exec in sequence.Executables)
-            {
-                string sNewPath = path;
-                if (!(container is Package)) sNewPath = path.Substring(0, path.Length - 1) + "\\" + container.Name + ".";
-                if (exec is IDTSSequence)
-                {
-                    IterateContainer((DtsContainer)exec, worker, sNewPath);
-                }
-                else if (exec is IDTSPropertiesProvider)
-                {
-                    CheckProperties((IDTSPropertiesProvider)exec, worker, sNewPath);
-                }
+            IDTSSequence sequence = component as IDTSSequence;
+            if (sequence != null)
+            {                
+                ProcessSequence(container, sequence, worker, path);
+                ScanPrecedenceConstraints(worker, path, container.ID, sequence.PrecedenceConstraints);
             }
         }
-        public static DtsContainer FindExecutable(IDTSSequence parentExecutable, string taskId)
+
+        private void ProcessSequence(DtsContainer container, IDTSSequence sequence, System.ComponentModel.BackgroundWorker worker, string path)
         {
-
-            //TODO: Determine what to do when name is used in mutiple containers, think it just finds the first one now
-
-            DtsContainer matchingExecutable = null;
-            DtsContainer parent = (DtsContainer)parentExecutable;
-
-            if (parent.ID == taskId || parent.Name == taskId)
+            if (worker.CancellationPending)
             {
-                return parent;
-            }
-            else
-            {
-                if (parent is EventsProvider)
-                {
-                    EventsProvider ep = (EventsProvider)parent;
-
-                    foreach (DtsEventHandler eh in ep.EventHandlers)
-                    {
-                        matchingExecutable = FindExecutable((IDTSSequence)eh, taskId);
-                        if (matchingExecutable != null) return matchingExecutable;
-                    }
-                }
-
-                if (parentExecutable.Executables.Contains(taskId))
-                {
-                    return (TaskHost)parentExecutable.Executables[taskId];
-                }
-                else
-                {
-                    foreach (Executable e in parentExecutable.Executables)
-                    {
-                        if (e is IDTSSequence)
-                        {
-                            matchingExecutable = FindExecutable((IDTSSequence)e, taskId);
-                            if (matchingExecutable != null) return matchingExecutable;
-                        }
-                    }
-                }
+                return;
             }
 
-            return matchingExecutable;
-        }
-
-        private Package GetPackageFromContainer(DtsContainer container)
-        {
-            while (!(container is Package))
+            foreach (Executable executable in sequence.Executables)
             {
-                container = container.Parent;
-            }
-            return (Package)container;
+                ProcessObject(executable, worker, path);
+            }           
         }
 
         private void CheckConnectionManagers(Package package, BackgroundWorker worker, string path)
@@ -521,7 +465,7 @@ namespace BIDSHelper
             foreach (ConnectionManager cm in package.Connections)
             {
                 DtsContainer container = (DtsContainer)package;
-                ScanProperties(worker, path + "Connections[" + cm.Name + "].", cm.GetType().ToString(), cm.ID, cm.Name, (IDTSPropertiesProvider)cm);
+                ScanProperties(worker, path + ".Connections[" + cm.Name + "].", typeof(ConnectionManager), cm.GetType().Name, package.ID, cm.ID, cm.Name, (IDTSPropertiesProvider)cm);
             }
         }
 
@@ -532,72 +476,138 @@ namespace BIDSHelper
             if (propProvider is DtsContainer)
             {
                 DtsContainer container = (DtsContainer)propProvider;
-                string sNewPath = path;
-                if (!(container is Package)) sNewPath = path.Substring(0, path.Length - 1) + "\\" + container.Name + ".";
+                
                 if (container is TaskHost)
                 {
-                    string sType = ((TaskHost)container).InnerObject.GetType().ToString();
+                    string sType = ((TaskHost)container).InnerObject.GetType().Name;
                     if (((TaskHost)container).InnerObject is MainPipe)
-                        sType = typeof(MainPipe).ToString(); //prevents it from saying COM Object
-                    ScanProperties(worker, sNewPath, sType, container.ID, container.Name, propProvider);
+                    {
+                        sType = typeof(MainPipe).Name; // Prevents it from saying COM Object
+                    }
+
+                    ScanProperties(worker, path, typeof(TaskHost), sType, container.ID, container.ID, container.Name, propProvider);
                 }
                 else if (container is ForEachLoop)
                 {
-                    ScanProperties(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, propProvider);
-                    ScanProperties(worker, sNewPath + ".ForEachEnumerator", container.GetType().ToString(), container.ID, container.Name, ((ForEachLoop)container).ForEachEnumerator);
+                    ForEachLoop loop = container as ForEachLoop;
+                    ScanProperties(worker, path, typeof(ForEachLoop), container.GetType().Name, container.ID, container.ID, container.Name, propProvider);
+                    ScanProperties(worker, path + "\\ForEachEnumerator.", typeof(ForEachEnumerator), container.GetType().Name, container.ID, loop.ForEachEnumerator.ID, container.Name, loop.ForEachEnumerator);
                 }
                 else
                 {
-                    ScanProperties(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, propProvider);
+                    ScanProperties(worker, path, container.GetType(), container.GetType().Name, container.ID, container.ID, container.Name, propProvider);
                 }
-                ScanVariables(worker, sNewPath, container.GetType().ToString(), container.ID, container.Name, container.Variables);
+
+                ScanVariables(worker, path, container.GetType().Name, container.ID, container.Variables);
             }
         }
 
-        private void ScanVariables(BackgroundWorker worker, string objectPath, string objectType, string objectID, string objectName, Variables variables)
+        private void ScanPrecedenceConstraints(BackgroundWorker worker, string objectPath, string containerID, PrecedenceConstraints constraints)
         {
-            if (worker.CancellationPending) return;
+            if (worker.CancellationPending)
+            {
+                return;
+            }
 
-            foreach (Variable v in variables)
+            foreach (PrecedenceConstraint constraint in constraints)
+            {
+                if (constraint.EvalOp == DTSPrecedenceEvalOp.Constraint)
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(constraint.Expression))
+                {
+                    continue;
+                }
+
+                ExpressionInfo info = new ExpressionInfo();
+                info.ContainerID = containerID;
+                info.ObjectID = constraint.ID;
+                info.ObjectName = ((DtsContainer)constraint.PrecedenceExecutable).Name;
+                info.ObjectPath = objectPath + ".PrecedenceConstraints[" + constraint.Name + "]";
+                info.Type = typeof(PrecedenceConstraint);
+                info.ObjectType = constraint.GetType().Name;
+                info.PropertyName = constraint.Name;
+                info.Expression = constraint.Expression;
+                info.HasExpression = true;
+                worker.ReportProgress(0, info);
+            }
+        }
+
+        private void ScanVariables(BackgroundWorker worker, string objectPath, string objectName, string containerID, Variables variables)
+        {
+            if (worker.CancellationPending)
+            {
+                return;
+            }
+
+            foreach (Variable variable in variables)
             {
                 try
                 {
-                    if (!v.EvaluateAsExpression) continue;
-                    if (!v.GetPackagePath().StartsWith("\\" + objectPath + "Variables[")) continue;
+                    if (!variable.EvaluateAsExpression)
+                    {
+                        continue;
+                    }
+
+                    // Check path to ensure variable is parented by current scope 
+                    // only, not by child containers that inherit the variable
+                    if (!variable.GetPackagePath().StartsWith("\\" + objectPath + ".Variables["))
+                    {
+                        continue;
+                    }
+
                     ExpressionInfo info = new ExpressionInfo();
-                    info.ObjectID = objectID;
+                    info.ContainerID = containerID;
+                    info.ObjectID = variable.ID;
                     info.ObjectName = objectName;
+                    info.Type = typeof(Variable);
                     info.ObjectPath = objectPath;
-                    info.ObjectType = v.GetType().ToString();
-                    info.PropertyName = v.QualifiedName;
-                    info.Expression = v.Expression;
-                    info.HasExpression = v.EvaluateAsExpression;
+                    info.ObjectType = variable.GetType().Name;
+                    info.PropertyName = variable.QualifiedName;
+                    info.Expression = variable.Expression;
+                    info.HasExpression = variable.EvaluateAsExpression;
                     worker.ReportProgress(0, info);
                 }
                 catch { }
             }
         }
 
-        private void ScanProperties(System.ComponentModel.BackgroundWorker worker, string objectPath, string objectType, string objectID, string objectName, IDTSPropertiesProvider provider)
+        private void ScanProperties(BackgroundWorker worker, string objectPath, Type objectType, string objectTypeName, string containerID, string objectID, string objectName, IDTSPropertiesProvider provider)
         {
-            if (worker.CancellationPending) return;
+            if (worker.CancellationPending)
+            {
+                return;
+            }
 
-            foreach (DtsProperty p in provider.Properties)
+            foreach (DtsProperty property in provider.Properties)
             {
                 try
                 {
-                    string expression = provider.GetExpression(p.Name);
+                    string expression = provider.GetExpression(property.Name);
                     if (expression == null)
                     {
                         continue;
                     }
 
                     ExpressionInfo info = new ExpressionInfo();
+                    info.ContainerID = containerID;
                     info.ObjectID = objectID;
+                    info.Type = objectType;
                     info.ObjectName = objectName;
-                    info.ObjectPath = objectPath + "Properties[" + p.Name + "]";
-                    info.ObjectType = objectType;
-                    info.PropertyName = p.Name;
+
+                    if (property.Name.StartsWith("["))
+                    {
+                        info.ObjectPath = objectPath + ".Properties" + property.Name + "";
+                    }
+                    else
+                    {
+                        info.ObjectPath = objectPath + ".Properties[" + property.Name + "]";
+                    }
+
+                    info.ObjectType = objectTypeName;
+                    info.PropertyName = property.Name;
                     info.Expression = expression;
                     info.HasExpression = (info.Expression != null);
                     worker.ReportProgress(0, info);
@@ -606,83 +616,96 @@ namespace BIDSHelper
             }
         }
 
-        TaskHost FindTaskHost(IDTSSequence parentExecutable, string sObjectGuid)
+        private DtsContainer FindContainer(DtsContainer component, string objectId)
         {
-            TaskHost matchingExecutable = null;
+            //DtsContainer container = component as DtsContainer;
 
-            if (parentExecutable.Executables.Contains(sObjectGuid))
+            if (component == null)
             {
-                matchingExecutable = parentExecutable.Executables[sObjectGuid] as TaskHost;
+                return null;
             }
-            else
+            else if (component.ID == objectId)
             {
-                foreach (Executable e in parentExecutable.Executables)
+                return component;
+            }
+
+            EventsProvider eventsProvider = component as EventsProvider;
+            if (eventsProvider != null)
+            {
+                foreach (DtsEventHandler eventhandler in eventsProvider.EventHandlers)
                 {
-                    if (e is IDTSSequence)
+                    DtsContainer container = FindContainer(eventhandler, objectId);
+                    if (container != null)
                     {
-                        matchingExecutable = FindTaskHost((IDTSSequence)e, sObjectGuid);
-                        if (matchingExecutable != null) return matchingExecutable;
+                        return container;
                     }
                 }
             }
-            return matchingExecutable;
-        }
 
-        DtsContainer FindContainer(IDTSSequence parentExecutable, string sObjectGuid)
-        {
-            DtsContainer matchingExecutable = null;
-
-            if (parentExecutable.Executables.Contains(sObjectGuid))
+            IDTSSequence sequence = component as IDTSSequence;
+            if (sequence != null)
             {
-                matchingExecutable = parentExecutable.Executables[sObjectGuid] as DtsContainer;
-            }
-            else
-            {
-                foreach (Executable e in parentExecutable.Executables)
+                foreach (Executable executable in sequence.Executables)
                 {
-                    if (e is IDTSSequence)
+                    DtsContainer container = FindContainer((DtsContainer)executable, objectId);
+                    if (container != null)
                     {
-                        matchingExecutable = FindContainer((IDTSSequence)e, sObjectGuid);
-                        if (matchingExecutable != null) return matchingExecutable;
+                        return container;
                     }
-                }
+                }   
             }
-            return matchingExecutable;
-        }
 
-        Variable FindVariable(Package package, TaskHost taskHost, DtsContainer container, string variableName)
-        {
-            if (taskHost == null && container == null)
-            {
-                if (package.Variables.Contains(variableName))
-                {
-                    return package.Variables[variableName];
-                }
-            }
-            else if (taskHost != null)
-            {
-                if (taskHost.Variables.Contains(variableName))
-                {
-                    return taskHost.Variables[variableName];
-                }
-            }
-            else if (container != null)
-            {
-                if (container.Variables.Contains(variableName))
-                {
-                    return container.Variables[variableName];
-                }
-            }
             return null;
         }
 
-        ConnectionManager FindConnectionManager(Package container, string sObjectGuid)
+        private Variable FindVariable(DtsContainer container, string objectID)
         {
-            if (container.Connections.Contains(sObjectGuid))
+            if (container != null)
             {
-                return (ConnectionManager)container.Connections[sObjectGuid];
+                if (container.Variables.Contains(objectID))
+                {
+                    return container.Variables[objectID];
+                }
             }
+
             return null;
+        }
+
+        private ConnectionManager FindConnectionManager(Package package, string objectID)
+        {
+            if (package.Connections.Contains(objectID))
+            {
+                return package.Connections[objectID];
+            }
+
+            return null;
+        }
+
+        private PrecedenceConstraint FindConstraint(DtsContainer container, string objectID)
+        {
+            IDTSSequence sequence = container as IDTSSequence;
+
+            if (sequence == null)
+            {
+                System.Diagnostics.Debug.Assert(false, "sequence cannot be found");
+                return null;
+            }
+
+            if (sequence.PrecedenceConstraints.Contains(objectID))
+            {
+                return sequence.PrecedenceConstraints[objectID];
+            }
+
+            return null;
+        }
+
+        private Package GetPackageFromContainer(DtsContainer container)
+        {
+            while (!(container is Package))
+            {
+                container = container.Parent;
+            }
+            return (Package)container;
         }
 
         #endregion
@@ -793,8 +816,10 @@ namespace BIDSHelper
 
         private struct ExpressionInfo
         {
+            public Type Type;
             public string ObjectType;
             public string ObjectName;
+            public string ContainerID;
             public string ObjectID;
             public string ObjectPath;
             public string PropertyName;

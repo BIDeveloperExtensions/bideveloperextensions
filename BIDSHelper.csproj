@@ -57,13 +57,12 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="ExpressionEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\SQL2005\ExpressionEditor.dll</HintPath>
+    </Reference>
     <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="Konesans.Dts.CommonLibrary, Version=2.9.0.11, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
@@ -148,6 +147,9 @@
     <Compile Include="Core\BIDSHelperPreferencesPage.Designer.cs">
       <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Core\CustomClass.cs" />
+    <Compile Include="Core\CustomProperty.cs" />
+    <Compile Include="Core\CustomPropertyDescriptor.cs" />
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -270,7 +272,6 @@
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
-    <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
@@ -718,6 +719,7 @@
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

@@ -1,32 +1,25 @@
-using Extensibility;
-using EnvDTE;
-using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
-using System.Windows.Forms;
-using Microsoft.AnalysisServices;
-using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
-using System;
-using Microsoft.Win32;
-using Microsoft.DataWarehouse.Interfaces;
-using Microsoft.DataTransformationServices.Design;
-using Microsoft.SqlServer.Dts.Runtime;
-using Microsoft.SqlServer.Dts.Design;
-using System.Collections.Generic;
-using Microsoft.SqlServer.Management.UI.Grid;
-using System.ComponentModel;
-
-#if KATMAI
-using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
-#else
-using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
-#endif
-
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
+    using EnvDTE;
+    using EnvDTE80;
+    using System.Windows.Forms;
+    using System.ComponentModel.Design;
+    using Microsoft.DataWarehouse.Design;
+    using System;
+    using Microsoft.DataWarehouse.Interfaces;
+    using Microsoft.DataTransformationServices.Design;
+    using Microsoft.SqlServer.Dts.Runtime;
+    using Microsoft.SqlServer.Dts.Design;
+    using System.Collections.Generic;
+    using Microsoft.SqlServer.Management.UI.Grid;
+    using System.ComponentModel;
+
+    #if KATMAI
+    using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
+    #else
+    using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
+    #endif
+    
     public class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -34,7 +27,6 @@ namespace BIDSHelper
         private ToolBarButton moveCopyButton;
         private ToolBarButton editExpressionButton;
         private static DlgGridControl grid;
-        //private static GridControl grid;
         private static UserControl variablesToolWindowControl;
         private static IComponentChangeService changesvc;
         private static IDesignerHost serviceProvider;
@@ -131,7 +123,7 @@ namespace BIDSHelper
                     this.moveCopyButton.Style = ToolBarButtonStyle.PushButton;
                     this.moveCopyButton.ToolTipText = "Move/Copy Variables to New Scope (BIDS Helper)";
                     toolbar.Buttons.Add(this.moveCopyButton);
-                    toolbar.ImageList.Images.Add(Properties.Resources.Copy);
+                    toolbar.ImageList.Images.Add(BIDSHelper.Properties.Resources.Copy);
                     this.moveCopyButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
                     //Edit Variable Expression button
@@ -139,7 +131,7 @@ namespace BIDSHelper
                     this.editExpressionButton.Style = ToolBarButtonStyle.PushButton;
                     this.editExpressionButton.ToolTipText = "Edit Variable Expression (BIDS Helper)";
                     toolbar.Buttons.Add(this.editExpressionButton);
-                    toolbar.ImageList.Images.Add(Properties.Resources.EditVariable);
+                    toolbar.ImageList.Images.Add(BIDSHelper.Properties.Resources.EditVariable);
                     this.editExpressionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
@@ -292,6 +284,7 @@ namespace BIDSHelper
             {
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
                 if (packageDesigner == null) return;
+
                 Package package = packageDesigner.Component as Package;
                 if (package == null) return;
 
@@ -304,22 +297,18 @@ namespace BIDSHelper
                 Variable variable = GetVariableForRow(selectedRow);
 
                 if (variable == null) return;
-                PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(variable);
-                PropertyDescriptor property = properties.Find("Value", false);
-                Type propertyType = System.Type.GetType("System." + variable.DataType.ToString());
+
                 DtsContainer sourceContainer = FindObjectForVariablePackagePath(package, variable.GetPackagePath());
                 Variables variables = sourceContainer.Variables;
                 VariableDispenser variableDispenser = sourceContainer.VariableDispenser;
 
-                System.Reflection.BindingFlags getpropflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance;
-
-                Form editor = BIDSHelper.SSIS.Konesans.CreateKonesansExpressionEditorForm(variables, variableDispenser, propertyType, property, variable.Expression);
+                Konesans.Dts.ExpressionEditor.ExpressionEditorPublic editor = new Konesans.Dts.ExpressionEditor.ExpressionEditorPublic(variables, variableDispenser, variable);
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
-                    string sExpression = (string)editor.GetType().InvokeMember("Expression", getpropflags, null, editor, null);
-                    if (string.IsNullOrEmpty(sExpression) || string.IsNullOrEmpty(sExpression.Trim()))
+                    string expression = editor.Expression;
+                    if (string.IsNullOrEmpty(expression) || string.IsNullOrEmpty(expression.Trim()))
                     {
-                        sExpression = null;
+                        expression = null;
                         variable.EvaluateAsExpression = false;
                     }
                     else
@@ -327,14 +316,14 @@ namespace BIDSHelper
                         variable.EvaluateAsExpression = true;
                     }
 
-                    variable.Expression = sExpression;
+                    variable.Expression = expression;
                     changesvc.OnComponentChanging(sourceContainer, null);
                     changesvc.OnComponentChanged(sourceContainer, null, null, null); //marks the package designer as dirty
 
                     TypeDescriptor.Refresh(variable);
                     System.Windows.Forms.Application.DoEvents();
 
-                    //refresh the grid
+                    // Refresh the grid
                     variablesToolWindowControl.GetType().InvokeMember("FillGrid", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { });
                     SetButtonEnabled();
                     RefreshHighlights();

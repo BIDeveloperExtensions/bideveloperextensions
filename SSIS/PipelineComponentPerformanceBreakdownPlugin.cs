@@ -1,24 +1,24 @@
-using Extensibility;
-using EnvDTE;
-using EnvDTE80;
-using System.Text;
-using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
-using System;
-using Microsoft.SqlServer.Dts.Runtime;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.DataTransformationServices.Project;
-using System.Runtime.InteropServices;
-using Microsoft.DataTransformationServices.Project.DebugEngine;
-using System.Windows.Forms;
-using Microsoft.DataWarehouse.Controls;
-using System.Collections.Generic;
-using BIDSHelper.SSIS.PerformanceVisualization;
-using MSDDS;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
+    using Extensibility;
+    using EnvDTE;
+    using EnvDTE80;
+    using System.Text;
+    using System.ComponentModel.Design;
+    using Microsoft.DataWarehouse.Design;
+    using System;
+    using Microsoft.SqlServer.Dts.Runtime;
+    using Microsoft.VisualStudio.Shell.Interop;
+    using Microsoft.DataTransformationServices.Project;
+    using System.Runtime.InteropServices;
+    using Microsoft.DataTransformationServices.Project.DebugEngine;
+    using System.Windows.Forms;
+    using Microsoft.DataWarehouse.Controls;
+    using System.Collections.Generic;
+    using BIDSHelper.SSIS.PerformanceVisualization;
+    using MSDDS;
+    using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+    
     public class PipelineComponentPerformanceBreakdownPlugin : BIDSHelperPluginBase
     {
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -40,7 +40,7 @@ namespace BIDSHelper
 
         public override System.Drawing.Icon CustomMenuIcon
         {
-            get { return Properties.Resources.Performance; }
+            get { return BIDSHelper.Properties.Resources.Performance; }
         }
 
         public override string ButtonText

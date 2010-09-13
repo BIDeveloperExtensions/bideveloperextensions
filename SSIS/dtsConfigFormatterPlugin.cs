@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Extensibility;
-using EnvDTE;
-using EnvDTE80;
-using System.Windows.Forms;
-
 namespace BIDSHelper.SSIS
 {
+    using System;
+    using System.Windows.Forms;
+    using EnvDTE;
+    using EnvDTE80;
+    
     public class dtsConfigFormatterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         //private WindowEvents windowEvents;

@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-//using System.Linq;
-using System.Text;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-using Microsoft.SqlServer.Dts.Runtime;
-
-namespace BIDSHelper.SSIS
+﻿namespace BIDSHelper.SSIS
 {
-    class PackageHelper
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+    using Microsoft.SqlServer.Dts.Runtime;
+
+    internal class PackageHelper
     {
-        //Magic number - All managed components in the data flow share the same wrapper, identified by this GUID.
-        //The specific type of managed component is identified by the UserComponentTypeName custom property of the component.
+        /// <summary>
+        /// All managed components in the data flow share the same wrapper, identified by this GUID.
+        /// The specific type of managed component is identified by the UserComponentTypeName 
+        /// custom property of the component.
+        /// </summary>
         public const string ManagedComponentWrapper = "{bf01d463-7089-41ee-8f05-0a6dc17ce633}";
 
-        private static ComponentInfos _componentInfos = new ComponentInfos();
+        private static ComponentInfos componentInfos = new ComponentInfos();
 
         public static List<TaskHost> GetControlFlowObjects<T>(DtsContainer container)
         {
@@ -49,12 +50,11 @@ namespace BIDSHelper.SSIS
             return returnItems;
         }
 
-
         public static ComponentInfos ComponentInfos
         {
             get
             {
-                if (_componentInfos.Count == 0)
+                if (componentInfos.Count == 0)
                 {
                     Application application = new Application();
                     PipelineComponentInfos pipelineComponentInfos = application.PipelineComponentInfos;
@@ -63,18 +63,70 @@ namespace BIDSHelper.SSIS
                     {
                         if (pipelineComponentInfo.ID == ManagedComponentWrapper)
                         {
-                            _componentInfos.Add(pipelineComponentInfo.CreationName, new ComponentInfo(pipelineComponentInfo));
+                            componentInfos.Add(pipelineComponentInfo.CreationName, new ComponentInfo(pipelineComponentInfo));
                         }
                         else
                         {
-                            _componentInfos.Add(pipelineComponentInfo.ID, new ComponentInfo(pipelineComponentInfo));
+                            componentInfos.Add(pipelineComponentInfo.ID, new ComponentInfo(pipelineComponentInfo));
                         }
                     }
                 }
-                return _componentInfos;
+                return componentInfos;
             }
         }
 
+        /// <summary>
+        /// Get a Type from a TypeCode
+        /// </summary>
+        /// <remarks>
+        /// SSIS does not support the type UInt16 for variables, since this is actually used to store Char types.
+        /// </remarks>
+        /// <param name="typeCode">TypeCode to lookup Type</param>
+        /// <returns>Type matching TypeCode supplied.</returns>
+        public static Type GetTypeFromTypeCode(TypeCode typeCode)
+        {
+            switch (typeCode)
+            {
+                case TypeCode.Boolean:
+                    return typeof(bool);
+                case TypeCode.Byte:
+                    return typeof(byte);
+                case TypeCode.Char:
+                    return typeof(byte);
+                case TypeCode.DateTime:
+                    return typeof(DateTime);
+                case TypeCode.DBNull:
+                    return typeof(DBNull);
+                case TypeCode.Decimal:
+                    return typeof(decimal);
+                case TypeCode.Double:
+                    return typeof(double);
+                case TypeCode.Empty:
+                    return null;
+                case TypeCode.Int16:
+                    return typeof(short);
+                case TypeCode.Int32:
+                    return typeof(int);
+                case TypeCode.Int64:
+                    return typeof(long);
+                case TypeCode.Object:
+                    return typeof(object);
+                case TypeCode.SByte:
+                    return typeof(sbyte);
+                case TypeCode.Single:
+                    return typeof(float);
+                case TypeCode.String:
+                    return typeof(string);
+                case TypeCode.UInt16:
+                    return typeof(char); // Assign a char, get a UInt16 with SSIS variables
+                case TypeCode.UInt32:
+                    return typeof(uint);
+                case TypeCode.UInt64:
+                    return typeof(ulong);
+                default:
+                    return null;
+            }
+        }
 
 #if KATMAI
         public static string GetComponentKey(IDTSComponentMetaData100 component)
@@ -107,10 +159,8 @@ namespace BIDSHelper.SSIS
             return null;
 
         }
-
 #endif
     }
-
 
     public enum SourceAccessMode : int
     {
@@ -119,7 +169,6 @@ namespace BIDSHelper.SSIS
         AM_SQLCOMMAND = 2,
         AM_SQLCOMMAND_VARIABLE = 3
     }
-
 
     public class ComponentInfos : Dictionary<string, ComponentInfo>
     { }
@@ -135,6 +184,7 @@ namespace BIDSHelper.SSIS
         }
 
         private DTSPipelineComponentType _ComponentType;
+
         public DTSPipelineComponentType ComponentType
         {
             get { return _ComponentType; }
@@ -142,6 +192,7 @@ namespace BIDSHelper.SSIS
         }
 
         private string _ID;
+        
         public string ID
         {
             get { return _ID; }
@@ -162,8 +213,4 @@ namespace BIDSHelper.SSIS
             set { _CreationName = value; }
         }
     }
-
-
-
-
 }

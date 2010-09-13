@@ -3,11 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQL2008_BIDSHelper", "SQL2008_BIDSHelper.csproj", "{D0A64DAC-84C6-4F6A-A406-A08355738A45}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{31F496C4-6AFF-41B1-BE07-142400DD43A7}"
-	ProjectSection(SolutionItems) = preProject
-		CustomDictionary.xml = CustomDictionary.xml
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 2

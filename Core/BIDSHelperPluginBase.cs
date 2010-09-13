@@ -1,14 +1,14 @@
-using System;
-using System.Globalization;
-using System.Windows.Forms;
-using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
-using Microsoft.Win32;
-
 namespace BIDSHelper
 {
-    public abstract class BIDSHelperPluginBase: IDisposable
+    using System;
+    using System.Globalization;
+    using System.Windows.Forms;
+    using EnvDTE;
+    using EnvDTE80;
+    using Microsoft.VisualStudio.CommandBars;
+    using Microsoft.Win32;
+
+    public abstract class BIDSHelperPluginBase : IDisposable
     {
         /// <summary>
         /// Defines the base Url for the plug-in help page. See <see cref="HelpUrl"/> property.
@@ -127,11 +127,15 @@ namespace BIDSHelper
         {
             try
             {
-                if (this.MenuName == "") return;
+                if (string.IsNullOrEmpty(this.MenuName))
+                {
+                    // No menu required
+                    return;
+                }
 
                 Command cmdTmp;
-                CommandBars cmdBars;
-                cmdBars = (CommandBars)appObj.CommandBars;
+                CommandBars cmdBars = (CommandBars)appObj.CommandBars;
+
                 // Check any old versions of the command are not still hanging around
                 try
                 {

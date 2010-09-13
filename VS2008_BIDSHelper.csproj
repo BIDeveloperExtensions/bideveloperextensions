@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D0A64DAC-84C6-4F6A-A406-A08355738A45}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -32,8 +32,9 @@
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>1591</NoWarn>
-    <DefineConstants>DEBUG</DefineConstants>
+    <DefineConstants>DEBUG;YUKON</DefineConstants>
     <DebugType>full</DebugType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -63,13 +64,12 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="ExpressionEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\SQL2005\ExpressionEditor.dll</HintPath>
+    </Reference>
     <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>True</SpecificVersion>
-    </Reference>
-    <Reference Include="Konesans.Dts.CommonLibrary, Version=2.9.0.11, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
-      <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
@@ -312,7 +312,6 @@
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
-    <Compile Include="SSIS\Konesans.cs" />
     <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
@@ -537,6 +536,7 @@
     <Content Include="Build\Readme.txt" />
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
+    <None Include="DLLs\SQL2005\ExpressionEditor.dll" />
     <Content Include="SetupScript\SQL2005CurrentReleaseVersion.xml" />
     <Content Include="Resources\Edit.ico" />
     <Content Include="Resources\EditVariable.ico" />
@@ -586,8 +586,6 @@
     <Content Include="Resources\DeployMdxScript.ico" />
     <Content Include="SetupScript\BIDSHelper.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
-    <Content Include="DLLs\SQL2005\ExpressionEditor.xml" />
-    <Content Include="DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll" />
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
@@ -760,6 +758,7 @@
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /R /Y "$(ProjectDir)DLLs\SQL2005\Konesans.Dts.CommonLibrary.dll" "$(ProjectDir)SSIS"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

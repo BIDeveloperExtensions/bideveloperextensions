@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-//using System.Linq;
-using System.Text;
-using Microsoft.SqlServer.Dts.Runtime;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-
-namespace BIDSHelper.SSIS.DesignPracticeScanner
+﻿namespace BIDSHelper.SSIS.DesignPracticeScanner
 {
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+    using Microsoft.SqlServer.Dts.Runtime;
 
     //TODO: Update this to work with 2005
 #if KATMAI
@@ -158,7 +155,6 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
 
         private void ProcessDataFlow(MainPipe mainPipe, TaskHost taskHost)
         {
-            int sortCount = 0;
             foreach (IDTSComponentMetaData100 comp in mainPipe.ComponentMetaDataCollection)
             {
                 string key = PackageHelper.GetComponentKey(comp);

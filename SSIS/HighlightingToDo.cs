@@ -1,16 +1,13 @@
-using EnvDTE;
-using System.Text;
-using System.Windows.Forms;
-using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Controls;
-using System;
-using MSDDS;
-using Microsoft.SqlServer.Dts.Runtime;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.Design;
+    using System.Windows.Forms;
+    using EnvDTE;
+    using Microsoft.DataWarehouse.Controls;
+    using Microsoft.SqlServer.Dts.Runtime;
+
     public abstract class HighlightingToDo
     {
         protected class CachedHighlightStatus

@@ -1,27 +1,25 @@
-using EnvDTE;
-using EnvDTE80;
-using System.Text;
-using System.Windows.Forms;
-using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
-using System;
-using MSDDS;
-using Microsoft.SqlServer.Dts.Runtime;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-using System.Collections.Generic;
-using System.Threading;
-using Microsoft.Win32;
+namespace BIDSHelper.SSIS
+{
+    using EnvDTE;
+    using EnvDTE80;
+    using System.Windows.Forms;
+    using System.ComponentModel.Design;
+    using Microsoft.DataWarehouse.Design;
+    using Microsoft.DataWarehouse.Controls;
+    using System;
+    using MSDDS;
+    using Microsoft.SqlServer.Dts.Runtime;
+    using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+    using System.Collections.Generic;
+    using System.Threading;
+    using Microsoft.Win32;
 
 #if KATMAI
-using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
+    using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 #else
-using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
+    using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
 #endif
-
-
-namespace BIDSHelper
-{
+    
     public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -177,7 +175,7 @@ namespace BIDSHelper
                 DateTime dtToDoBuildingStartTime = DateTime.Now;
                 DateTime dtSynchronousHighlightingCutoff = DateTime.Now.AddSeconds(MAX_SYNCHRONOUS_HIGHLIGHTING_TIME_SECONDS);
                 if (!this.Enabled) return;
-                if (ExpressionListPlugin.bShouldSkipExpressionHighlighting) return;
+                if (ExpressionListPlugin.shouldSkipExpressionHighlighting) return;
 
                 DtsContainer oIncrementalContainer = oIncrementalObject as DtsContainer;
                 ConnectionManager oIncrementalConnectionManager = oIncrementalObject as ConnectionManager;
@@ -307,7 +305,7 @@ namespace BIDSHelper
                     if (mostRecentDDSRefresh[win] < mostRecentComponentEvent)
                     {
                         mostRecentDDSRefresh[win] = DateTime.Now;
-                        ExpressionListPlugin.bShouldSkipExpressionHighlighting = true; //don't come into this design time properties code until the prior one finished
+                        ExpressionListPlugin.shouldSkipExpressionHighlighting = true; //don't come into this design time properties code until the prior one finished
 
                         //refresh DDS objects as all their properties aren't updated until you save the DTSX file
                         //this code is to workaround a problem such that a newly copied/pasted TaskHost isn't linked in via the DDS objects correctly until this refresh
@@ -320,7 +318,7 @@ namespace BIDSHelper
                 }
                 finally
                 {
-                    ExpressionListPlugin.bShouldSkipExpressionHighlighting = false;
+                    ExpressionListPlugin.shouldSkipExpressionHighlighting = false;
                 }
 
                 if (win.Tag == null)
@@ -1040,7 +1038,7 @@ namespace BIDSHelper
         /// Gets the name of the friendly name of the plug-in.
         /// </summary>
         /// <value>The friendly name.</value>
-        /// <remarks>Used for <see cref="HelpUrl"/> as <see cref="ButtonText"/> does not match Wiki page.</remarks>
+        /// <remarks>Used for the HelpUrl as the ButtonText not match Wiki page.</remarks>
         public override string FriendlyName
         {
             get { return "Expression and Configuration Highlighter"; }

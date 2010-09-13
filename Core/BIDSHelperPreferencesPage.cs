@@ -1,14 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using EnvDTE;
-
 namespace BIDSHelper.Core
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Drawing;
+    using System.Data;
+    using System.Text;
+    using System.Windows.Forms;
+    using EnvDTE;
+    using BIDSHelper.SSIS;
+    
     public partial class BIDSHelperPreferencesPage : UserControl, EnvDTE.IDTToolsOptionsPage
     {
         public BIDSHelperPreferencesPage()
