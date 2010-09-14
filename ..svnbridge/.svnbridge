@@ -4,4 +4,9 @@ obj
 obj
 StyleCop.Cache
 *.crdata
+</Value></Property><Property><Name>svn:ignore</Name><Value>*.crdata
+*.suo
+StyleCop.Cache
+bin
+obj
 </Value></Property></Properties></ItemProperties>

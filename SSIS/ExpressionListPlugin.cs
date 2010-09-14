@@ -10,6 +10,7 @@ using Microsoft.DataWarehouse.Design;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.Win32;
+using System.Drawing;
 
 namespace BIDSHelper.SSIS
 {
@@ -201,12 +202,22 @@ namespace BIDSHelper.SSIS
                     object objectChanged = null;
                     if (variable != null)
                     {
+                        if (expression == null)
+                        {
+                            variable.EvaluateAsExpression = false;
+                        }
+
                         variable.Expression = expression;
                         objectChanged = variable;
                     }
                     else if (constraint != null)
                     {
-                        constraint.Expression = expression;
+                        if (expression == null)
+                        {
+                            constraint.EvalOp = DTSPrecedenceEvalOp.Constraint;
+                        }
+
+                        constraint.Expression = expression;                        
                         objectChanged = constraint;
                     }
                     else if (propertiesProvider != null)
@@ -394,7 +405,7 @@ namespace BIDSHelper.SSIS
 
             if (info.HasExpression)
             {
-                expressionListWindow.AddExpression(info.Type, info.ContainerID, info.ObjectID, info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Expression);
+                expressionListWindow.AddExpression(info.Type, info.ContainerID, info.ObjectID, info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Expression, info.Icon);
             }
         }
 
@@ -473,7 +484,8 @@ namespace BIDSHelper.SSIS
             foreach (ConnectionManager cm in package.Connections)
             {
                 DtsContainer container = (DtsContainer)package;
-                ScanProperties(worker, path + ".Connections[" + cm.Name + "].", typeof(ConnectionManager), cm.GetType().Name, package.ID, cm.ID, cm.Name, (IDTSPropertiesProvider)cm);
+                // TODO; Fix - Cheat and hard code creation name as icon routines cannot get the correct connection icon
+                ScanProperties(worker, path + ".Connections[" + cm.Name + "].", typeof(ConnectionManager), cm.GetType().Name, package.ID, cm.ID, cm.Name, (IDTSPropertiesProvider)cm, PackageHelper.ConnectionCreationName);
             }
         }
 
@@ -484,29 +496,34 @@ namespace BIDSHelper.SSIS
             if (propProvider is DtsContainer)
             {
                 DtsContainer container = (DtsContainer)propProvider;
-                
+                string containerKey = PackageHelper.GetContainerKey(container);
+                string objectTypeName = container.GetType().Name;
+
                 if (container is TaskHost)
                 {
-                    string sType = ((TaskHost)container).InnerObject.GetType().Name;
                     if (((TaskHost)container).InnerObject is MainPipe)
                     {
-                        sType = typeof(MainPipe).Name; // Prevents it from saying COM Object
+                        objectTypeName = typeof(MainPipe).Name; // Prevents it from saying COM Object
+                    }
+                    else
+                    {
+                        objectTypeName = ((TaskHost)container).InnerObject.GetType().Name;
                     }
 
-                    ScanProperties(worker, path, typeof(TaskHost), sType, container.ID, container.ID, container.Name, propProvider);
+                    ScanProperties(worker, path, typeof(TaskHost), objectTypeName, container.ID, container.ID, container.Name, propProvider, containerKey);
                 }
                 else if (container is ForEachLoop)
                 {
                     ForEachLoop loop = container as ForEachLoop;
-                    ScanProperties(worker, path, typeof(ForEachLoop), container.GetType().Name, container.ID, container.ID, container.Name, propProvider);
-                    ScanProperties(worker, path + "\\ForEachEnumerator.", typeof(ForEachEnumerator), container.GetType().Name, container.ID, loop.ForEachEnumerator.ID, container.Name, loop.ForEachEnumerator);
+                    ScanProperties(worker, path, typeof(ForEachLoop), objectTypeName, container.ID, container.ID, container.Name, propProvider, containerKey);
+                    ScanProperties(worker, path + "\\ForEachEnumerator.", typeof(ForEachEnumerator), objectTypeName, container.ID, loop.ForEachEnumerator.ID, container.Name, loop.ForEachEnumerator, containerKey);
                 }
                 else
                 {
-                    ScanProperties(worker, path, container.GetType(), container.GetType().Name, container.ID, container.ID, container.Name, propProvider);
+                    ScanProperties(worker, path, container.GetType(), objectTypeName, container.ID, container.ID, container.Name, propProvider, containerKey);
                 }
 
-                ScanVariables(worker, path, container.GetType().Name, container.ID, container.Variables);
+                ScanVariables(worker, path, objectTypeName, container.ID, container.Variables);
             }
         }
 
@@ -539,6 +556,7 @@ namespace BIDSHelper.SSIS
                 info.PropertyName = constraint.Name;
                 info.Expression = constraint.Expression;
                 info.HasExpression = true;
+                info.Icon = BIDSHelper.Properties.Resources.Path;
                 worker.ReportProgress(0, info);
             }
         }
@@ -566,6 +584,8 @@ namespace BIDSHelper.SSIS
                         continue;
                     }
 
+                    objectPath = objectPath + ".Variables[" + variable.QualifiedName + "]";
+
                     ExpressionInfo info = new ExpressionInfo();
                     info.ContainerID = containerID;
                     info.ObjectID = variable.ID;
@@ -576,13 +596,14 @@ namespace BIDSHelper.SSIS
                     info.PropertyName = variable.QualifiedName;
                     info.Expression = variable.Expression;
                     info.HasExpression = variable.EvaluateAsExpression;
+                    info.Icon = BIDSHelper.Properties.Resources.Variable;
                     worker.ReportProgress(0, info);
                 }
                 catch { }
             }
         }
 
-        private void ScanProperties(BackgroundWorker worker, string objectPath, Type objectType, string objectTypeName, string containerID, string objectID, string objectName, IDTSPropertiesProvider provider)
+        private void ScanProperties(BackgroundWorker worker, string objectPath, Type objectType, string objectTypeName, string containerID, string objectID, string objectName, IDTSPropertiesProvider provider, string containerKey)
         {
             if (worker.CancellationPending)
             {
@@ -598,6 +619,8 @@ namespace BIDSHelper.SSIS
                     {
                         continue;
                     }
+
+                    System.Diagnostics.Debug.Assert(PackageHelper.ControlFlowInfos.ContainsKey(containerKey));
 
                     ExpressionInfo info = new ExpressionInfo();
                     info.ContainerID = containerID;
@@ -618,6 +641,7 @@ namespace BIDSHelper.SSIS
                     info.PropertyName = property.Name;
                     info.Expression = expression;
                     info.HasExpression = (info.Expression != null);
+                    info.Icon = PackageHelper.ControlFlowInfos[containerKey].Icon;
                     worker.ReportProgress(0, info);
                 }
                 catch { }
@@ -833,6 +857,7 @@ namespace BIDSHelper.SSIS
             public string PropertyName;
             public string Expression;
             public bool HasExpression;
+            public Icon Icon;
         }
 
     }

@@ -28,22 +28,25 @@ namespace BIDSHelper.SSIS
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExpressionListControl));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExpressionListControl));
             this.expressionGrid = new System.Windows.Forms.DataGridView();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.btnRefresh = new System.Windows.Forms.ToolStripButton();
-            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.ContainerID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.objectID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ObjectID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Property = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Expression = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.EditorBtn = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.EditorColumn = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.toolStrip = new System.Windows.Forms.ToolStrip();
+            this.btnRefresh = new System.Windows.Forms.ToolStripButton();
+            this.toolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.expressionGrid)).BeginInit();
-            this.toolStrip1.SuspendLayout();
+            this.toolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // expressionGrid
@@ -53,51 +56,49 @@ namespace BIDSHelper.SSIS
             this.expressionGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.expressionGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.expressionGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.expressionGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ContainerID,
-            this.objectID,
+            this.ObjectID,
             this.ObjectType,
             this.ObjectPath,
             this.ObjectName,
             this.Property,
             this.Expression,
-            this.EditorBtn});
+            this.EditorColumn});
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.expressionGrid.DefaultCellStyle = dataGridViewCellStyle3;
             this.expressionGrid.Location = new System.Drawing.Point(3, 28);
             this.expressionGrid.MultiSelect = false;
             this.expressionGrid.Name = "expressionGrid";
             this.expressionGrid.ReadOnly = true;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.expressionGrid.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            this.expressionGrid.RowHeadersVisible = false;
+            this.expressionGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.expressionGrid.Size = new System.Drawing.Size(601, 298);
             this.expressionGrid.TabIndex = 0;
-            // 
-            // toolStrip1
-            // 
-            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btnRefresh,
-            this.toolStripProgressBar1});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(607, 25);
-            this.toolStrip1.TabIndex = 1;
-            this.toolStrip1.Text = "expressionTools";
-            // 
-            // btnRefresh
-            // 
-            this.btnRefresh.Image = ((System.Drawing.Image)(resources.GetObject("btnRefresh.Image")));
-            this.btnRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new System.Drawing.Size(65, 22);
-            this.btnRefresh.Text = "Refresh";
-            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
-            // 
-            // toolStripProgressBar1
-            // 
-            this.toolStripProgressBar1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 22);
-            this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.toolStripProgressBar1.Visible = false;
+            this.expressionGrid.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.expressionGrid_CellPainting);
             // 
             // ContainerID
             // 
@@ -106,12 +107,12 @@ namespace BIDSHelper.SSIS
             this.ContainerID.Name = "ContainerID";
             this.ContainerID.ReadOnly = true;
             // 
-            // objectID
+            // ObjectID
             // 
-            this.objectID.Frozen = true;
-            this.objectID.HeaderText = "Object ID";
-            this.objectID.Name = "objectID";
-            this.objectID.ReadOnly = true;
+            this.ObjectID.Frozen = true;
+            this.ObjectID.HeaderText = "Object ID";
+            this.ObjectID.Name = "ObjectID";
+            this.ObjectID.ReadOnly = true;
             // 
             // ObjectType
             // 
@@ -152,35 +153,64 @@ namespace BIDSHelper.SSIS
             this.Expression.ReadOnly = true;
             this.Expression.Width = 200;
             // 
-            // EditorBtn
+            // EditorColumn
             // 
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.ButtonFace;
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.Format = "...";
-            dataGridViewCellStyle1.NullValue = "...";
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.ButtonFace;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.ControlText;
-            this.EditorBtn.DefaultCellStyle = dataGridViewCellStyle1;
-            this.EditorBtn.HeaderText = "";
-            this.EditorBtn.Name = "EditorBtn";
-            this.EditorBtn.ReadOnly = true;
-            this.EditorBtn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.EditorBtn.Text = "...";
-            this.EditorBtn.ToolTipText = "Edit Expression";
-            this.EditorBtn.Width = 20;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.ButtonFace;
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.Format = "...";
+            dataGridViewCellStyle2.NullValue = "...";
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.ButtonFace;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.ControlText;
+            this.EditorColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            this.EditorColumn.HeaderText = "";
+            this.EditorColumn.Name = "EditorColumn";
+            this.EditorColumn.ReadOnly = true;
+            this.EditorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.EditorColumn.Text = "...";
+            this.EditorColumn.ToolTipText = "Edit Expression";
+            this.EditorColumn.Width = 20;
+            // 
+            // toolStrip
+            // 
+            this.toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnRefresh,
+            this.toolStripProgressBar});
+            this.toolStrip.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip.Name = "toolStrip";
+            this.toolStrip.Size = new System.Drawing.Size(607, 25);
+            this.toolStrip.TabIndex = 1;
+            this.toolStrip.Text = "expressionTools";
+            // 
+            // btnRefresh
+            // 
+            this.btnRefresh.Image = ((System.Drawing.Image)(resources.GetObject("btnRefresh.Image")));
+            this.btnRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(64, 22);
+            this.btnRefresh.Text = "Refresh";
+            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
+            // 
+            // toolStripProgressBar
+            // 
+            this.toolStripProgressBar.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripProgressBar.Name = "toolStripProgressBar";
+            this.toolStripProgressBar.Size = new System.Drawing.Size(100, 22);
+            this.toolStripProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.toolStripProgressBar.Visible = false;
             // 
             // ExpressionListControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.expressionGrid);
             this.Name = "ExpressionListControl";
             this.Size = new System.Drawing.Size(607, 329);
             ((System.ComponentModel.ISupportInitialize)(this.expressionGrid)).EndInit();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
+            this.toolStrip.ResumeLayout(false);
+            this.toolStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -189,16 +219,16 @@ namespace BIDSHelper.SSIS
         #endregion
 
         private System.Windows.Forms.DataGridView expressionGrid;
-        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStrip toolStrip;
         private System.Windows.Forms.ToolStripButton btnRefresh;
-        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar;
+        private System.Windows.Forms.DataGridViewButtonColumn EditorColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ContainerID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn objectID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectType;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectPath;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectName;
         private System.Windows.Forms.DataGridViewTextBoxColumn Property;
         private System.Windows.Forms.DataGridViewTextBoxColumn Expression;
-        private System.Windows.Forms.DataGridViewButtonColumn EditorBtn;
     }
 }

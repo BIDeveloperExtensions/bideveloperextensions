@@ -97,6 +97,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon Connection {
+            get {
+                object obj = ResourceManager.GetObject("Connection", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon Copy {
             get {
                 object obj = ResourceManager.GetObject("Copy", resourceCulture);
@@ -208,9 +215,37 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon Event {
+            get {
+                object obj = ResourceManager.GetObject("Event", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon ExpressionListIcon {
             get {
                 object obj = ResourceManager.GetObject("ExpressionListIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon ForEachLoop {
+            get {
+                object obj = ResourceManager.GetObject("ForEachLoop", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon ForLoop {
+            get {
+                object obj = ResourceManager.GetObject("ForLoop", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon Function {
+            get {
+                object obj = ResourceManager.GetObject("Function", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -299,6 +334,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon Sequence {
+            get {
+                object obj = ResourceManager.GetObject("Sequence", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon SmallBlueDiamond {
             get {
                 object obj = ResourceManager.GetObject("SmallBlueDiamond", resourceCulture);
@@ -382,6 +424,13 @@ namespace BIDSHelper.Properties {
         internal static System.Drawing.Icon TreeViewTab {
             get {
                 object obj = ResourceManager.GetObject("TreeViewTab", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon Variable {
+            get {
+                object obj = ResourceManager.GetObject("Variable", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

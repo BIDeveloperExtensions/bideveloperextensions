@@ -37,6 +37,7 @@
     <DefineConstants>DEBUG;KATMAI</DefineConstants>
     <DebugType>full</DebugType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -95,6 +96,8 @@
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.Data.Schema, Version=9.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Microsoft.Data.Schema.UnitTesting, Version=9.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.DataTransformationServices.Controls, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>.\Microsoft.DataTransformationServices.Controls.DLL</HintPath>
@@ -145,6 +148,7 @@
     <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="msddsp, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2008\msddsp.dll</HintPath>
@@ -152,6 +156,7 @@
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -312,6 +317,8 @@
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\ComponentInfo.cs">
+    </Compile>
     <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.cs">
       <SubType>UserControl</SubType>
@@ -324,7 +331,8 @@
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
-    <Compile Include="SSIS\PackageHelper.cs" />
+    <Compile Include="SSIS\PackageHelper.cs">
+    </Compile>
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
@@ -549,14 +557,23 @@
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
-    <None Include="DLLs\SQL2008\ExpressionEditor.dll" />
+    <None Include="DLLs\SQL2008\ExpressionEditor.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\Variable.ico" />
+    <None Include="Resources\Connection.ico" />
+    <None Include="Resources\ForLoop.ico" />
+    <None Include="Resources\Function.ico" />
+    <None Include="Resources\Sequence.ico" />
+    <None Include="Resources\ForEachLoop.ico" />
+    <None Include="Resources\Event.ico" />
     <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
-    <Content Include="Resources\Edit.ico" />
-    <Content Include="Resources\EditVariable.ico" />
+    <None Include="Resources\Edit.ico" />
+    <None Include="Resources\EditVariable.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />
     <None Include="Resources\process progress1704108.bmp" />
     <None Include="Resources\Process Progress464342.gif" />
-    <Content Include="Resources\RefreshExpressions.ico" />
+    <None Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
     <None Include="Resources\SmallBlueDiamond.ico" />
@@ -596,7 +613,7 @@
       <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\BIDSHelper.ico" />
-    <Content Include="Resources\DeployMdxScript.ico" />
+    <None Include="Resources\DeployMdxScript.ico" />
     <Content Include="SetupScript\BIDSHelper2008.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
     <None Include="Resources\stop.ico" />
@@ -650,7 +667,7 @@
     <EmbeddedResource Include="SSAS\AggManager\Properties\Resources.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
+    <None Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
     <EmbeddedResource Include="SSAS\M2MMatrixCompressionForm.resx">
@@ -769,6 +786,7 @@
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
     <None Include="SetupScript\BIDSHelperSetup2008.nsi" />
     <None Include="SetupScript\License.rtf" />
+    <None Include="SSIS\app.config" />
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>

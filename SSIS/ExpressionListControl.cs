@@ -56,16 +56,12 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        public void AddExpression(Type type, string containerID, string objectID, string objectType, string objectPath, string objectName, string propertyName, string expression)
+        public void AddExpression(Type type, string containerID, string objectID, string objectType, string objectPath, string objectName, string propertyName, string expression, Icon icon)
         {
-            int lastPart = objectType.LastIndexOf(".") + 1;
-
-            //string objectTypeAdjusted = objectType.Substring(lastPart, objectType.Length - lastPart) //TODO: Adjust Length
-                //+ " [" + objectType.Substring(0, objectType.LastIndexOf(".")) + "]";
             string[] newRow = { containerID, objectID, objectType, objectPath, objectName, propertyName, expression };
-
             int index = expressionGrid.Rows.Add(newRow);
             expressionGrid.Rows[index].Tag = type;
+            expressionGrid.Rows[index].Cells["ObjectType"].Tag = icon;
         }
 
         public void ClearResults()
@@ -77,14 +73,14 @@ namespace BIDSHelper.SSIS
         {
             try
             {
-                if (expressionGrid.Columns[e.ColumnIndex].Name == "EditorBtn")
+                if (expressionGrid.Columns[e.ColumnIndex] == this.EditorColumn)
                 {
                     DataGridViewRow row = expressionGrid.Rows[e.RowIndex];
 
                     OnRaiseEditExpressionSelected(
                         new EditExpressionSelectedEventArgs(row.Tag as Type,
                             row.Cells[expressionGrid.Columns["ObjectPath"].Index].Value.ToString(),
-                            row.Cells[expressionGrid.Columns["Expression"].Index].Value.ToString(),
+                            row.Cells[expressionGrid.Columns["Expression"].Index].Value as string,
                             row.Cells[expressionGrid.Columns["Property"].Index].Value.ToString(),
                             row.Cells[expressionGrid.Columns["ContainerID"].Index].Value.ToString(),
                             row.Cells[expressionGrid.Columns["ObjectID"].Index].Value.ToString(),
@@ -104,16 +100,80 @@ namespace BIDSHelper.SSIS
 
         public void StartProgressBar()
         {
-            toolStripProgressBar1.Enabled = true;
-            toolStripProgressBar1.Visible = true;
-            toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+            toolStripProgressBar.Enabled = true;
+            toolStripProgressBar.Visible = true;
+            toolStripProgressBar.Style = ProgressBarStyle.Marquee;
         }
 
         public void StopProgressBar()
         {
-            toolStripProgressBar1.Enabled = false;
-            toolStripProgressBar1.Visible = false;
-            toolStripProgressBar1.Style = ProgressBarStyle.Blocks;
+            toolStripProgressBar.Enabled = false;
+            toolStripProgressBar.Visible = false;
+            toolStripProgressBar.Style = ProgressBarStyle.Blocks;
+        }
+
+        /// <summary>
+        /// Handles the CellPainting event of the expressionGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.Forms.DataGridViewCellPaintingEventArgs"/> instance containing the event data.</param>
+        private void expressionGrid_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            // Skip headers
+            if (e.ColumnIndex < 0 || e.RowIndex < 0)
+            {
+                return;
+            }
+
+            // Check for an icon associated with cell, and if 
+            // found draw the image as well as the text.
+            Icon icon = this.expressionGrid[e.ColumnIndex, e.RowIndex].Tag as Icon;
+            if (icon != null) 
+            {
+                // Check if cell is selected, so we can paint the backrgound and text correctly
+                bool paintSelected = this.expressionGrid.SelectedRows.Contains(this.expressionGrid.Rows[e.RowIndex]);
+                e.PaintBackground(e.CellBounds, paintSelected);
+
+                int padding = e.CellStyle.Padding.Left;
+                if (padding < 2)
+                {
+                    padding = 2;
+                }
+
+                e.Graphics.DrawIcon(icon, e.CellBounds.X + padding, e.CellBounds.Y + GetCenterOffset(e.CellBounds.Height, icon.Height));
+
+                if (e.Value != null)
+                {
+                    // Get text color, checking for selected state
+                    Color textColor = e.CellStyle.ForeColor;
+                    if (paintSelected)
+                    {
+                        textColor = e.CellStyle.SelectionForeColor;
+                    }
+
+                    using (Brush brush = new SolidBrush(textColor))
+                    {
+                        // HACK: We assume the cell style alignment is always Middle Left
+                        StringFormat format = new StringFormat();
+                        format.LineAlignment = StringAlignment.Center;
+                        e.Graphics.DrawString(e.Value.ToString(), e.CellStyle.Font, brush, e.CellBounds.X + padding + icon.Width, e.CellBounds.Y + (e.CellBounds.Height / 2), format);
+                    }
+                }
+
+                e.Handled = true;
+            }             
+        }
+
+        private static int GetCenterOffset(int bound, int dimension)
+        {
+            if (bound > dimension)
+            {
+                return (bound - dimension) / 2;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
     }

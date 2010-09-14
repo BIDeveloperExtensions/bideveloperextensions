@@ -14,7 +14,22 @@
         /// </summary>
         public const string ManagedComponentWrapper = "{bf01d463-7089-41ee-8f05-0a6dc17ce633}";
 
+        public const string PackageCreationName = "Package";
+        public const string EventHandlerCreationName = "EventHandler";
+        public const string ConnectionCreationName = "Connection";
+        public const string SequenceCreationName = "Sequence";
+        public const string ForLoopCreationName = "ForLoop";
+        public const string ForEachLoopCreationName = "ForEachLoop";
+
+        /// <summary>
+        /// Private field for ComponentInfos property
+        /// </summary>
         private static ComponentInfos componentInfos = new ComponentInfos();
+
+        /// <summary>
+        /// Private field for ComponentInfos property
+        /// </summary>
+        private static ComponentInfos controlInfos = new ComponentInfos();
 
         public static List<TaskHost> GetControlFlowObjects<T>(DtsContainer container)
         {
@@ -50,6 +65,10 @@
             return returnItems;
         }
 
+        /// <summary>
+        /// Gets the cached collection of Pipeline ComponentInfo objects.
+        /// </summary>
+        /// <value>The ComponentInfos collection.</value>
         public static ComponentInfos ComponentInfos
         {
             get
@@ -71,7 +90,53 @@
                         }
                     }
                 }
+
                 return componentInfos;
+            }
+        }
+
+        /// <summary>
+        /// Gets the cached collection of Control Flow ComponentInfo objects.
+        /// </summary>
+        /// <value>The ComponentInfos collection.</value>
+        public static ComponentInfos ControlFlowInfos
+        {
+            get
+            {
+                if (controlInfos.Count == 0)
+                {
+                    Application application = new Application();
+                    TaskInfos taskInfos = application.TaskInfos;
+
+                    foreach (TaskInfo taskInfo in taskInfos)
+                    {
+                        ComponentInfo info = new ComponentInfo(taskInfo);
+
+                        controlInfos.Add(taskInfo.CreationName, info);
+
+                        // Tasks can be created using the creation name or 
+                        // ID, so need both when they differ
+                        if (taskInfo.CreationName != taskInfo.ID)
+                        {
+                            controlInfos.Add(taskInfo.ID, info);                            
+                        }
+                    }
+
+                    // Special containers, see GetCreationName usage
+                    controlInfos.Add(PackageCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Package));
+                    controlInfos.Add(EventHandlerCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Event));
+                    controlInfos.Add(SequenceCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Sequence));
+                    controlInfos.Add(ForLoopCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.ForLoop));
+                    controlInfos.Add(ForEachLoopCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.ForEachLoop));
+
+                    // Connections - Cannot get them as with components - Attribute pattern is broken, only used by third
+                    // parties. The Connection toolbox doesn't use it so MS haven't attributed their connections. 
+                    // We will use a default local resource icon for all connections. 
+                    // TODO: Investigate getting proper icon i.e. Microsoft.DataTransformationServices.Graphics.SMTP_connection.ico 
+                    controlInfos.Add(ConnectionCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Connection));
+                }
+
+                return controlInfos;
             }
         }
 
@@ -128,6 +193,39 @@
             }
         }
 
+        /// <summary>
+        /// Gets the unique container key, based on the creation name.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>The container key</returns>
+        public static string GetContainerKey(DtsContainer container)
+        {
+            string containerKey = container.CreationName;
+
+            if (container is Package)
+            {
+                containerKey = PackageHelper.PackageCreationName;
+            }
+            else if (container is DtsEventHandler)
+            {
+                containerKey = PackageHelper.EventHandlerCreationName;
+            }
+            else if (container is Sequence)
+            {
+                containerKey = PackageHelper.SequenceCreationName;
+            }
+            else if (container is ForLoop)
+            {
+                containerKey = PackageHelper.ForLoopCreationName;
+            }
+            else if (container is ForEachLoop)
+            {
+                containerKey = PackageHelper.ForEachLoopCreationName;
+            }
+
+            return containerKey;
+        }
+
 #if KATMAI
         public static string GetComponentKey(IDTSComponentMetaData100 component)
         {
@@ -172,45 +270,4 @@
 
     public class ComponentInfos : Dictionary<string, ComponentInfo>
     { }
-
-    public class ComponentInfo
-    {
-        public ComponentInfo(PipelineComponentInfo componentInfo)
-        {
-            ComponentType = componentInfo.ComponentType;
-            ID = componentInfo.ID;
-            Name = componentInfo.Name;
-            CreationName = componentInfo.CreationName;
-        }
-
-        private DTSPipelineComponentType _ComponentType;
-
-        public DTSPipelineComponentType ComponentType
-        {
-            get { return _ComponentType; }
-            set { _ComponentType = value; }
-        }
-
-        private string _ID;
-        
-        public string ID
-        {
-            get { return _ID; }
-            set { _ID = value; }
-        }
-
-        private string _Name;
-        public string Name
-        {
-            get { return _Name; }
-            set { _Name = value; }
-        }
-
-        private string _CreationName;
-        public string CreationName
-        {
-            get { return _CreationName; }
-            set { _CreationName = value; }
-        }
-    }
 }

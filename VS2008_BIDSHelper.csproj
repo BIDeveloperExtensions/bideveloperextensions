@@ -35,6 +35,7 @@
     <DefineConstants>DEBUG;YUKON</DefineConstants>
     <DebugType>full</DebugType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -300,6 +301,7 @@
       <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\ComponentInfo.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DataFlowPerformancePractices.cs" />
@@ -536,14 +538,23 @@
     <Content Include="Build\Readme.txt" />
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
-    <None Include="DLLs\SQL2005\ExpressionEditor.dll" />
+    <None Include="DLLs\SQL2005\ExpressionEditor.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\Event.ico" />
+    <None Include="Resources\ForEachLoop.ico" />
+    <None Include="Resources\ForLoop.ico" />
+    <None Include="Resources\Function.ico" />
+    <None Include="Resources\Sequence.ico" />
+    <None Include="Resources\Variable.ico" />
+    <None Include="Resources\Connection.ico" />
     <Content Include="SetupScript\SQL2005CurrentReleaseVersion.xml" />
-    <Content Include="Resources\Edit.ico" />
-    <Content Include="Resources\EditVariable.ico" />
+    <None Include="Resources\Edit.ico" />
+    <None Include="Resources\EditVariable.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />
     <None Include="Resources\process progress1704108.bmp" />
     <None Include="Resources\Process Progress464342.gif" />
-    <Content Include="Resources\RefreshExpressions.ico" />
+    <None Include="Resources\RefreshExpressions.ico" />
     <None Include="Resources\SmartDiffDtsx.xslt" />
     <None Include="Resources\SmartDiffSSAS.xslt" />
     <None Include="Resources\SmallBlueDiamond.ico" />
@@ -583,7 +594,7 @@
       <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\BIDSHelper.ico" />
-    <Content Include="Resources\DeployMdxScript.ico" />
+    <None Include="Resources\DeployMdxScript.ico" />
     <Content Include="SetupScript\BIDSHelper.bmp" />
     <Content Include="SetupScript\BIDSHelperHeader.bmp" />
     <None Include="Resources\stop.ico" />
@@ -638,7 +649,7 @@
     <EmbeddedResource Include="SSAS\AggManager\Properties\Resources.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\DeployMdxScript.xslt" />
+    <None Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
     <EmbeddedResource Include="SSAS\M2MMatrixCompressionForm.resx">

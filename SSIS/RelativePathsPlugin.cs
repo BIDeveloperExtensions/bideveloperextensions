@@ -174,7 +174,7 @@ namespace BIDSHelper
         /// Gets the name of the friendly name of the plug-in.
         /// </summary>
         /// <value>The friendly name.</value>
-        /// <remarks>Used for <see cref="HelpUrl"/> as <see cref="ButtonText"/> does not match Wiki page.</remarks>
+        /// <remarks>Used for HelpUrl as ButtonText does not match Wiki page.</remarks>
         public override string FriendlyName
         {
             get { return "Fix Relative Paths"; }

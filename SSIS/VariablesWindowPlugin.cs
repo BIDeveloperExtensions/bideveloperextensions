@@ -1,18 +1,18 @@
 namespace BIDSHelper.SSIS
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.ComponentModel.Design;
+    using System.Windows.Forms;
     using EnvDTE;
     using EnvDTE80;
-    using System.Windows.Forms;
-    using System.ComponentModel.Design;
-    using Microsoft.DataWarehouse.Design;
-    using System;
-    using Microsoft.DataWarehouse.Interfaces;
     using Microsoft.DataTransformationServices.Design;
+    using Microsoft.DataWarehouse.Design;
+    using Microsoft.DataWarehouse.Interfaces;
     using Microsoft.SqlServer.Dts.Runtime;
     using Microsoft.SqlServer.Dts.Design;
-    using System.Collections.Generic;
     using Microsoft.SqlServer.Management.UI.Grid;
-    using System.ComponentModel;
 
     #if KATMAI
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
@@ -33,18 +33,13 @@ namespace BIDSHelper.SSIS
         private static ComponentDesigner packageDesigner;
         private static bool bSkipHighlighting = false;
 
-
-        public VariablesWindowPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public VariablesWindowPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
         {
         }
 
         public override bool ShouldHookWindowCreated
         {
-            get
-            {
-                return true;
-            }
+            get { return true; }
         }
 
         public override void OnWindowActivated(Window GotFocus, Window LostFocus)
@@ -197,7 +192,7 @@ namespace BIDSHelper.SSIS
                         System.Drawing.Bitmap icon = (System.Drawing.Bitmap)cell.CellData;
                         if (!bHasExpression && !bHasConfiguration && icon.Tag != null)
                         {
-                            //reset the icon because this one doesn't have an expression anymore
+                            // Reset the icon because this one doesn't have an expression anymore
                             cell.CellData = icon.Tag;
                             icon.Tag = null;
 
@@ -240,7 +235,6 @@ namespace BIDSHelper.SSIS
 
                             System.Diagnostics.Debug.WriteLine("highlighted variable");
                         }
-
                     }
                 }
             }
@@ -347,15 +341,15 @@ namespace BIDSHelper.SSIS
                     Package package = packageDesigner.Component as Package;
 
                     DtsContainer oCurrentScope = FindObjectForVariablePackagePath(package, variables[0].GetPackagePath());
-                    BIDSHelper.SSIS.VariablesMove form = new BIDSHelper.SSIS.VariablesMove(package, oCurrentScope.ID);
+                    BIDSHelper.SSIS.VariablesMove form = new BIDSHelper.SSIS.VariablesMove(package, oCurrentScope.ID, variables.Count);
                     DialogResult result = form.ShowDialog();
                     if (result == DialogResult.OK)
                     {
-                        DtsContainer MoveToContainer = (DtsContainer)form.treeView1.SelectedNode.Tag;
-                        bool move = form.radMove.Checked;
+                        DtsContainer targetContainer = form.TargetContainer;
+                        bool move = form.IsMove;
                         try
                         {
-                            CopyVariables(variables, move, MoveToContainer, package, variableDesigners);
+                            CopyVariables(variables, move, targetContainer, package, variableDesigners);
                         }
                         finally
                         {
@@ -368,16 +362,16 @@ namespace BIDSHelper.SSIS
                 }
                 else
                 {
-                    MessageBox.Show("Highlight one or more variables before clicking this button.", "BIDS Helper - Variable Scope Change");
+                    MessageBox.Show("Highlight one or more variables before clicking this button.", "BIDS Helper - Variable Scope Change", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (VariableCopyException ex)
             {
-                MessageBox.Show(ex.Message, "BIDS Helper - Variable Scope Change Problem");
+                MessageBox.Show(ex.Message, "BIDS Helper", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
+                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, "BIDS Helper", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -492,7 +486,7 @@ namespace BIDSHelper.SSIS
             {
                 if (targetContainer is IDTSPackagePath && sourceVar.GetPackagePath().StartsWith(((IDTSPackagePath)targetContainer).GetPackagePath() + ".Variables["))
                 {
-                    throw new VariableCopyException("You are attempting to copy " + sourceVar.QualifiedName + " to the same scope it is already in.", null);
+                    throw new VariableCopyException("You are attempting to copy the variable '" + sourceVar.QualifiedName + "' to the same scope it is already in.", null);
                 }
                 else if (sourceVar.SystemVariable)
                 {
@@ -750,7 +744,7 @@ namespace BIDSHelper.SSIS
         /// Gets the name of the friendly name of the plug-in.
         /// </summary>
         /// <value>The friendly name.</value>
-        /// <remarks>Used for <see cref="HelpUrl"/> as <see cref="ButtonText"/> does not match Wiki page.</remarks>
+        /// <remarks>Used for HelpUrl as ButtonText does not match Wiki page.</remarks>
         public override string FriendlyName
         {
             get { return "Variables Window Extensions"; }
