@@ -11,7 +11,7 @@ namespace BIDSHelper
     public abstract class BIDSHelperPluginBase : IDisposable
     {
         /// <summary>
-        /// Defines the base Url for the plug-in help page. See <see cref="HelpUrl"/> property.
+        /// Defines the base Url for the plug-in help page. See the HelpUrl property.
         /// </summary>
         private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
 
@@ -389,7 +389,7 @@ namespace BIDSHelper
         /// <value>The friendly name.</value>
         /// <remarks>
         ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
-        ///     The FriendlyName is the default page title used for by the <see cref="HelpUrl"/>.
+        ///     The FriendlyName is the default page title used for by the HelpUrl.
         /// </remarks>
         public virtual string FriendlyName
         {
@@ -441,7 +441,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="wikiTitle">The wiki page title.</param>
         /// <returns>The full help page URL.</returns>
-        /// <remarks>Used by default implementation of <see cref="HelpUrl"/>, as well as being 
+        /// <remarks>Used by default implementation of HelpUrl, as well as being 
         /// available for derived classes that need to override that property.</remarks>
         protected string GetCodePlexHelpUrl(string wikiTitle)
         {
