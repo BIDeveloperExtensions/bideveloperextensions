@@ -207,6 +207,7 @@
     <Compile Include="Core\CustomClass.cs" />
     <Compile Include="Core\CustomProperty.cs" />
     <Compile Include="Core\CustomPropertyDescriptor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -434,9 +435,6 @@
     </Compile>
     <Compile Include="SSAS\AggManager\ValidateAggs.cs" />
     <Compile Include="SSAS\AggregationManagerPlugin.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\BIDSHelperPluginBase.cs">
@@ -786,7 +784,6 @@
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
     <None Include="SetupScript\BIDSHelperSetup2008.nsi" />
     <None Include="SetupScript\License.rtf" />
-    <None Include="SSIS\app.config" />
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>
