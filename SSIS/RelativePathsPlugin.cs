@@ -82,7 +82,10 @@ namespace BIDSHelper
 
                         if (DesignUtils.ShowDialog((Form)form, (IWin32Window)diagram.DDS, (IServiceProvider)package.Site) == DialogResult.OK)
                         {
+                            #if DENALI
+                            #else
                             DesignUtils.MarkPackageDirty(package);
+                            #endif
                         }
                     }
 
@@ -113,6 +116,10 @@ namespace BIDSHelper
             }
             else
             {
+                #if DENALI
+                Cud.Transaction trans = Cud.BeginTransaction(this.packageForFixButton);
+                #endif
+
                 bool bChanged = false;
                 foreach (Microsoft.SqlServer.Dts.Runtime.Configuration config in this.packageForFixButton.Configurations)
                 {
@@ -123,6 +130,10 @@ namespace BIDSHelper
                             config.ConfigurationString = System.IO.Path.GetFileName(config.ConfigurationString);
                             sb.Append("Configuration ").Append(config.Name).AppendLine(" changed to relative path");
                             bChanged = true;
+
+                            #if DENALI
+                            trans.ChangeProperty(config, "ConfigurationString");
+                            #endif
                         }
                     }
                 }
@@ -137,6 +148,10 @@ namespace BIDSHelper
                     Form form = (Form)btn.Parent;
                     Control packageConfigurationsGridControl1 = form.Controls["packageConfigurationsGridControl1"];
                     packageConfigurationsGridControl1.GetType().InvokeMember("RefreshConfigurations", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod, null, packageConfigurationsGridControl1, new object[] { });
+
+                    #if DENALI
+                    trans.Commit();
+                    #endif
                 }
                 MessageBox.Show(sb.ToString(), "BIDS Helper - Fix Relative Paths");
             }
@@ -211,7 +226,7 @@ namespace BIDSHelper
             if (((System.Array)solExplorer.SelectedItems).Length == 1)
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project proj = hierItem.Object as Project;
+                EnvDTE.Project proj = hierItem.Object as EnvDTE.Project;
                 if (proj != null)
                 {
                     return (proj.Kind == BIDSProjectKinds.SSIS);
@@ -232,7 +247,7 @@ namespace BIDSHelper
 
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project proj = (Project)hierItem.Object;
+                EnvDTE.Project proj = (EnvDTE.Project)hierItem.Object;
 
                 Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                 DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
@@ -289,6 +304,10 @@ namespace BIDSHelper
 
                     outputWindow.ReportStatusMessage("Package " + item.Name);
 
+                    #if DENALI
+                    Cud.Transaction trans = Cud.BeginTransaction(package);
+                    #endif
+
                     bool bChanged = false;
                     foreach (Microsoft.SqlServer.Dts.Runtime.Configuration config in package.Configurations)
                     {
@@ -299,6 +318,10 @@ namespace BIDSHelper
                                 config.ConfigurationString = System.IO.Path.GetFileName(config.ConfigurationString);
                                 outputWindow.ReportStatusMessage("  Configuration " + config.Name + " changed to relative path");
                                 bChanged = true;
+
+                                #if DENALI
+                                trans.ChangeProperty(config, "ConfigurationString");
+                                #endif
                             }
                         }
                     }
@@ -309,11 +332,18 @@ namespace BIDSHelper
                             conn.ConnectionString = System.IO.Path.GetFileName(conn.ConnectionString);
                             outputWindow.ReportStatusMessage("  Connection " + conn.Name + " changed to relative path");
                             bChanged = true;
+
+                            #if DENALI
+                            trans.ChangeProperty(conn, "ConnectionString");
+                            #endif
                         }
                     }
                     if (bChanged)
                     {
+                        #if DENALI
+                        #else
                         DesignUtils.MarkPackageDirty(package);
+                        #endif
                     }
                     else
                     {

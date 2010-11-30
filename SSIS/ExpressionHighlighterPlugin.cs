@@ -19,7 +19,11 @@ namespace BIDSHelper.SSIS
 #else
     using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
 #endif
-    
+
+#if DENALI
+    using Microsoft.SqlServer.IntegrationServices.Designer.Model;
+#endif
+
     public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -254,8 +258,13 @@ namespace BIDSHelper.SSIS
                                 if (diagram == null) continue;
                                 if (diagram.ComponentDiagram == null) continue;
                                 ComponentDiagram oDtrControlFlowDiagram = diagram.ComponentDiagram;
+
+                                #if DENALI
+                                IClipboardService clipService = diagram.Site.GetService(typeof(IClipboardService)) as IClipboardService;
+                                #else
                                 Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipboardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)typeof(ComponentDiagram).InvokeMember("clipboardCommands", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
                                 Microsoft.SqlServer.Dts.Design.IDtsClipboardService clipService = (Microsoft.SqlServer.Dts.Design.IDtsClipboardService)clipboardCommandHelper.GetType().BaseType.InvokeMember("dtsClipboardService", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, clipboardCommandHelper, null);
+                                #endif
 
                                 bool bPasteInProgress = clipService.IsPasteActive;
                                 if (bPasteInProgress)

@@ -816,7 +816,7 @@ namespace BIDSHelper.SSIS
             {
                 if (toolWindow.Visible) return true;
                 if (this.ApplicationObject.Solution == null) return false;
-                foreach (Project p in this.ApplicationObject.Solution.Projects)
+                foreach (EnvDTE.Project p in this.ApplicationObject.Solution.Projects)
                 {
                     if (p.Kind == BIDSProjectKinds.SSIS) return true;
                 }

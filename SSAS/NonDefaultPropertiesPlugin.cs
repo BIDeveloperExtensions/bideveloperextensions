@@ -119,16 +119,16 @@ namespace BIDSHelper
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
-                if (hierItem.Object is Project)
+                if (hierItem.Object is EnvDTE.Project)
                 {
-                    Project p = (Project)hierItem.Object;
+                    EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
                     if (!(p.Object is Database)) return false;
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
                     return (projExt.Kind == BIDSProjectKinds.SSAS || projExt.Kind == BIDSProjectKinds.SSIS);
                 }
                 else if (solution != null)
                 {
-                    foreach (Project p in solution.Projects)
+                    foreach (EnvDTE.Project p in solution.Projects)
                     {
                         if (p.Kind != BIDSProjectKinds.SSIS) return false;
                     }
@@ -156,9 +156,9 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
 
-                if (hierItem.Object is Project)
+                if (hierItem.Object is EnvDTE.Project)
                 {
-                    Project p = (Project)hierItem.Object;
+                    EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
                     if (projExt.Kind == BIDSProjectKinds.SSAS)
                     {
@@ -217,7 +217,7 @@ namespace BIDSHelper
                         using (WaitCursor cursor1 = new WaitCursor())
                         {
                             ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
-                            foreach (Project p in solution.Projects)
+                            foreach (EnvDTE.Project p in solution.Projects)
                             {
                                 Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
                                 if (projExt.Kind == BIDSProjectKinds.SSIS)
