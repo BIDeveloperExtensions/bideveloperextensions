@@ -11,7 +11,10 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Collections;
 using System.Runtime.InteropServices;
-
+using Microsoft.DataWarehouse.Design;
+using System.ComponentModel.Design;
+using EnvDTE;
+using EnvDTE80;
 
 namespace BIDSHelper.SSAS
 {
@@ -51,6 +54,29 @@ namespace BIDSHelper.SSAS
                 currentDb = value;
                 rtbOutput.AppendText("The variable $CurrentDB has been added to the session\nwith a reference to the database for this project (" + CurrentDB.Name + ")\n");
             }
+        }
+
+        private EditorWindow win;
+        public EditorWindow EditWindow
+        {
+            set { win = value; }
+            get { return win; }
+        }
+
+        private Windows2 wins;
+        public Windows2 ToolWindows
+        {
+            set { wins = value;
+            foreach (Window w in wins)
+            {
+                IDesignerHost designer = w.Object as IDesignerHost;
+                if (designer == null) continue;
+                EditorWindow win = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator)) as EditorWindow;
+                if (win != null)
+                { this.EditWindow = win; }
+            }
+            }
+            get { return wins; }
         }
 
         private void tsbRun_Click(object sender, EventArgs e)
@@ -94,8 +120,14 @@ namespace BIDSHelper.SSAS
 
             try
                 {
-                    System.Collections.ObjectModel.Collection<PSObject> output = psPipeline.Invoke();
-                    foreach (PSObject pso in output)
+
+
+
+                    System.Collections.ObjectModel.Collection<PSObject> output = RunPowerShell(psPipeline);
+                    //System.Collections.ObjectModel.Collection<PSObject> output = psPipeline.Invoke();
+                 
+                
+                foreach (PSObject pso in output)
                     {
                         if (isCancelled) break;
                         rtbOutput.AppendText(pso.ToString());
@@ -112,6 +144,25 @@ namespace BIDSHelper.SSAS
                 }
         }
 
+
+
+        public  System.Collections.ObjectModel.Collection<PSObject> RunPowerShell(Pipeline p)
+        {
+            System.Collections.ObjectModel.Collection<PSObject> output = null;
+            //IDesignerHost designer = this as IDesignerHost;
+            //EditorWindow editorWin = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+            if (this.EditWindow.InvokeRequired)
+            {
+                IAsyncResult r = EditWindow.BeginInvoke(new MethodInvoker(delegate() {output = p.Invoke(); }));
+                r.AsyncWaitHandle.WaitOne();
+            }
+            else
+            {
+                //do the real work here
+                output = p.Invoke();
+            }
+            return output;
+        }
 
 
         public void ScrollToBottom()

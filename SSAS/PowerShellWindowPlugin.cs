@@ -50,7 +50,8 @@ namespace BIDSHelper
         public override void Exec()
         {
             //System.Reflection.Assembly ass = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("System.Management.Automation"));
-            System.Reflection.Assembly ass = System.Reflection.Assembly.LoadWithPartialName("System.Management.Automation");
+            System.Reflection.Assembly ass = System.Reflection.Assembly.Load("System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+            //System.Reflection.Assembly ass = System.Reflection.Assembly.LoadWithPartialName("System.Management.Automation");
             if (ass == null)
             {
                 MessageBox.Show("PowerShell has not been detected. You need to download and install PowerShell from the Microsoft website in order to use this feature."
@@ -80,6 +81,7 @@ namespace BIDSHelper
 
                 BIDSHelper.SSAS.PowerShellControl ctrl = (SSAS.PowerShellControl)objTemp;
                 ctrl.CurrentDB = currentDB;
+                ctrl.ToolWindows = toolWins;
                 EnvDTE.Properties prop = this.ApplicationObject.get_Properties("FontsAndColors", "TextEditor");
                 ctrl.SetFont((string)prop.Item("FontFamily").Value, (float)Convert.ToDouble(prop.Item("FontSize").Value));
 
@@ -137,6 +139,11 @@ namespace BIDSHelper
             {
                 return "Item,Project";
             }
+        }
+
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }
