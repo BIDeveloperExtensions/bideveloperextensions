@@ -253,4 +253,16 @@
   <data name="Sequence" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Sequence.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Biml" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Biml.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="BimlFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BimlFile.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Question" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\question.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CheckBiml" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CheckBiml.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
