@@ -110,6 +110,11 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
+            if (!BimlUtility.CheckRequiredFrameworkVersion())
+            {
+                return;
+            }
+
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             foreach (object selected in ((System.Array)solExplorer.SelectedItems))
             {

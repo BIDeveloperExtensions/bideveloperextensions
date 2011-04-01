@@ -22,5 +22,10 @@ namespace BIDSHelper.SSIS.Biml
             listViewValidationItems.Columns[1].Width = -1;
             listViewValidationItems.Columns[2].Width = -1;
         }
+
+        private void helpButton_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://www.varigence.com/documentation/biml");
+        }
     }
 }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BimlValidationListForm));
             this.listViewValidationItems = new System.Windows.Forms.ListView();
             this.columnHeaderSeverity = new System.Windows.Forms.ColumnHeader();
             this.columnHeaderDescription = new System.Windows.Forms.ColumnHeader();
@@ -35,6 +36,7 @@
             this.columnHeaderLine = new System.Windows.Forms.ColumnHeader();
             this.columnHeaderColumn = new System.Windows.Forms.ColumnHeader();
             this.buttonClose = new System.Windows.Forms.Button();
+            this.helpButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // listViewValidationItems
@@ -86,14 +88,30 @@
             this.buttonClose.Text = "Close";
             this.buttonClose.UseVisualStyleBackColor = true;
             // 
+            // helpButton
+            // 
+            this.helpButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.helpButton.Location = new System.Drawing.Point(13, 272);
+            this.helpButton.Name = "helpButton";
+            this.helpButton.Size = new System.Drawing.Size(75, 23);
+            this.helpButton.TabIndex = 3;
+            this.helpButton.Text = "Help";
+            this.helpButton.UseVisualStyleBackColor = true;
+            this.helpButton.Click += new System.EventHandler(this.helpButton_Click);
+            // 
             // BimlValidationListForm
             // 
+            this.AcceptButton = this.buttonClose;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.buttonClose;
             this.ClientSize = new System.Drawing.Size(653, 306);
+            this.Controls.Add(this.helpButton);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.listViewValidationItems);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "BimlValidationListForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Biml Validation Items";
             this.ResumeLayout(false);
 
@@ -108,5 +126,6 @@
         private System.Windows.Forms.ColumnHeader columnHeaderLine;
         private System.Windows.Forms.ColumnHeader columnHeaderColumn;
         private System.Windows.Forms.Button buttonClose;
+        private System.Windows.Forms.Button helpButton;
     }
 }

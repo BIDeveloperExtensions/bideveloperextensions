@@ -27,6 +27,7 @@ using Varigence.Languages.Biml;
 using Varigence.Languages.Biml.Platform;
 using Varigence.Utility.TextTemplating.Engine;
 using Varigence.Utility.TextTemplating.Hosts;
+using System.Collections.Generic;
 
 namespace BIDSHelper.SSIS.Biml
 {
@@ -110,6 +111,11 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
+            if (!BimlUtility.CheckRequiredFrameworkVersion())
+            {
+                return;
+            }
+
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             foreach (object selected in ((System.Array)solExplorer.SelectedItems))
             {
@@ -157,11 +163,44 @@ namespace BIDSHelper.SSIS.Biml
                 }
                 else
                 {
-                    foreach (var tempFileName in Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories))
+                    string[] newPackageFiles = Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories);
+                    var safePackageFilePaths = new List<string>();
+                    var conflictingPackageFilePaths = new List<string>();
+                    foreach (var tempFilePath in newPackageFiles)
                     {
-                        string projectItemFileName = Path.Combine(projectDirectory, Path.GetFileName(tempFileName));
-                        File.Copy(tempFileName, projectItemFileName, true);
-                        project.ProjectItems.AddFromFile(projectItemFileName);
+                        string tempFileName = Path.GetFileName(tempFilePath);
+                        string projectItemFileName = Path.Combine(projectDirectory, tempFileName);
+                        if (File.Exists(projectItemFileName))
+                        {
+                            conflictingPackageFilePaths.Add(tempFilePath);
+                        }
+                        else
+                        {
+                            safePackageFilePaths.Add(tempFilePath);
+                        }
+                    }
+
+                    if (conflictingPackageFilePaths.Count > 0)
+                    {
+                        var dialog = new MultipleSelectionConfirmationDialog(conflictingPackageFilePaths, projectDirectory, safePackageFilePaths.Count);
+                        if (dialog.ShowDialog() == DialogResult.OK)
+                        {
+                            foreach (var filePath in dialog.SelectedFilePaths)
+                            {
+                                safePackageFilePaths.Add(filePath);
+                            }
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    foreach (var tempFilePath in safePackageFilePaths)
+                    {
+                        string projectItemFilePath= Path.Combine(projectDirectory, Path.GetFileName(tempFilePath));
+                        File.Copy(tempFilePath, projectItemFilePath, true);
+                        project.ProjectItems.AddFromFile(projectItemFilePath);
                     }
                 }
             }
