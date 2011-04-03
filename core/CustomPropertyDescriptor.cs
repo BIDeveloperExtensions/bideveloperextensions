@@ -17,7 +17,7 @@
         /// Initializes a new instance of the <see cref="CustomPropertyDescriptor"/> class.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="attrs">The attributes.</param>
+        /// <param name="attributes">The attributes.</param>
         public CustomPropertyDescriptor(ref CustomProperty property, Attribute[] attributes)
             : base(property.Name, attributes)
         {

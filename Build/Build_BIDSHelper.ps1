@@ -27,7 +27,7 @@ $nsisPath = "$env:ProgramFiles (x86)\NSIS\makensis.exe"
 $zip = "$env:ProgramFiles\7-zip\7z.exe"
 
 #version files
-$versionFiles = @("$base_dir\assemblyinfo.cs", "ascii"),
+$versionFiles = @("$base_dir\Properties\AssemblyInfo.cs", "ascii"),
         @("$base_dir\setupScript\BIDSHelperSetup.nsi", "ascii"),
         @("$base_dir\setupScript\BIDSHelperSetup2008.nsi", "ascii"),
         @("$base_dir\setupScript\SQL2005CurrentReleaseVersion.xml", "UTF8"),
