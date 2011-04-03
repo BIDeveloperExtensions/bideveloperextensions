@@ -139,10 +139,6 @@
     <Reference Include="Microsoft.ReportViewer.WinForms, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.DlgGrid, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>True</SpecificVersion>
-      <HintPath>.\Microsoft.SqlServer.DlgGrid.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.SqlServer.DTSPipelineWrap, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
@@ -197,6 +193,10 @@
     <Reference Include="Microsoft.SqlServer.GridControl, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.SqlServer.DlgGrid, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>.\Microsoft.SqlServer.DlgGrid.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
@@ -226,12 +226,6 @@
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
-    <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
-      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Core\VersionCheckNotificationForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -328,6 +322,12 @@
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSIS\Biml\BimlUtility.cs" />
     <Compile Include="SSIS\Biml\BimlValidationListForm.cs">
       <SubType>Form</SubType>
@@ -347,8 +347,7 @@
     <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.Designer.cs">
       <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="SSIS\ComponentInfo.cs">
-    </Compile>
+    <Compile Include="SSIS\ComponentInfo.cs" />
     <Compile Include="SSIS\Biml\BimlCheckForErrorsPlugin.cs" />
     <Compile Include="SSIS\Biml\HelpWithBimlPlugin.cs" />
     <Compile Include="SSIS\Biml\BimlExpandPlugin.cs" />
@@ -365,8 +364,7 @@
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
-    <Compile Include="SSIS\PackageHelper.cs">
-    </Compile>
+    <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
@@ -598,14 +596,12 @@
     <None Include="Resources\Sequence.ico" />
     <None Include="Resources\ForEachLoop.ico" />
     <None Include="Resources\Event.ico" />
-    <None Include="DLLs\Biml\Antlr3.Runtime.dll">
-    </None>
     <None Include="Resources\Biml.ico" />
-    <EmbeddedResource Include="Resources\BimlFile.ico" />
+    <None Include="Resources\BimlFile.ico" />
     <None Include="Resources\Question.ico" />
-    <None Include="DLLs\Biml\BimlEngine.dll">
-    </None>
     <None Include="Resources\CheckBiml.ico" />
+    <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
+    <None Include="DLLs\Biml\BimlEngine.dll" />
     <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
     <None Include="Resources\EditVariable.ico" />

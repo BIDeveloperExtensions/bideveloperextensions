@@ -52,7 +52,7 @@
             this.columnHeaderColumn});
             this.listViewValidationItems.Location = new System.Drawing.Point(12, 12);
             this.listViewValidationItems.Name = "listViewValidationItems";
-            this.listViewValidationItems.Size = new System.Drawing.Size(629, 253);
+            this.listViewValidationItems.Size = new System.Drawing.Size(635, 253);
             this.listViewValidationItems.TabIndex = 1;
             this.listViewValidationItems.UseCompatibleStateImageBehavior = false;
             this.listViewValidationItems.View = System.Windows.Forms.View.Details;
@@ -81,7 +81,7 @@
             // 
             this.buttonClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonClose.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonClose.Location = new System.Drawing.Point(566, 271);
+            this.buttonClose.Location = new System.Drawing.Point(572, 271);
             this.buttonClose.Name = "buttonClose";
             this.buttonClose.Size = new System.Drawing.Size(75, 23);
             this.buttonClose.TabIndex = 2;
@@ -105,7 +105,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonClose;
-            this.ClientSize = new System.Drawing.Size(653, 306);
+            this.ClientSize = new System.Drawing.Size(659, 306);
             this.Controls.Add(this.helpButton);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.listViewValidationItems);
@@ -113,6 +113,7 @@
             this.Name = "BimlValidationListForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Biml Validation Items";
+            this.Load += new System.EventHandler(this.BimlValidationListForm_Load);
             this.ResumeLayout(false);
 
         }

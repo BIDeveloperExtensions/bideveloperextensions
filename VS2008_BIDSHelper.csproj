@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D0A64DAC-84C6-4F6A-A406-A08355738A45}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -65,6 +65,15 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.1.3.42154, Culture=neutral, PublicKeyToken=3a9cab8f8d22bfb7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="BimlEngine, Version=1.5.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
+    </Reference>
     <Reference Include="ExpressionEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2005\ExpressionEditor.dll</HintPath>
@@ -164,7 +173,6 @@
     </Reference>
     <Reference Include="Microsoft.SqlServer.GridControl, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>True</SpecificVersion>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.DlgGrid, Version=9.0.242.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>True</SpecificVersion>
@@ -191,6 +199,7 @@
     <Compile Include="Core\CustomClass.cs" />
     <Compile Include="Core\CustomProperty.cs" />
     <Compile Include="Core\CustomPropertyDescriptor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -294,26 +303,49 @@
     <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizer.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
     <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
       <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlUtility.cs" />
+    <Compile Include="SSIS\Biml\BimlValidationListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\BimlValidationListForm.Designer.cs">
+      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.Designer.cs">
+      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.Designer.cs">
+      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSIS\ComponentInfo.cs" />
-    <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
+    <Compile Include="SSIS\Biml\BimlCheckForErrorsPlugin.cs" />
+    <Compile Include="SSIS\Biml\HelpWithBimlPlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlExpandPlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlAddNewFilePlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
-    <Compile Include="SSIS\DesignPracticeScanner\DataFlowPerformancePractices.cs" />
-    <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
-    <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.Designer.cs">
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DataFlowPerformancePractices.cs" />
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
     <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
@@ -416,9 +448,6 @@
     </Compile>
     <Compile Include="SSAS\AggManager\ValidateAggs.cs" />
     <Compile Include="SSAS\AggregationManagerPlugin.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\BIDSHelperPluginBase.cs">
@@ -538,16 +567,23 @@
     <Content Include="Build\Readme.txt" />
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
+    <CodeAnalysisDictionary Include="CustomDictionary.xml" />
     <None Include="DLLs\SQL2005\ExpressionEditor.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\Event.ico" />
-    <None Include="Resources\ForEachLoop.ico" />
+    <None Include="Resources\Variable.ico" />
+    <None Include="Resources\Connection.ico" />
     <None Include="Resources\ForLoop.ico" />
     <None Include="Resources\Function.ico" />
     <None Include="Resources\Sequence.ico" />
-    <None Include="Resources\Variable.ico" />
-    <None Include="Resources\Connection.ico" />
+    <None Include="Resources\ForEachLoop.ico" />
+    <None Include="Resources\Event.ico" />
+    <None Include="Resources\Biml.ico" />
+    <None Include="Resources\BimlFile.ico" />
+    <None Include="Resources\Question.ico" />
+    <None Include="Resources\CheckBiml.ico" />
+    <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
+    <None Include="DLLs\Biml\BimlEngine.dll" />
     <Content Include="SetupScript\SQL2005CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
     <None Include="Resources\EditVariable.ico" />
@@ -582,12 +618,12 @@
       <SubType>Designer</SubType>
       <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Core\BIDSHelperPreferencesPage.resx">
-      <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Core\BIDSHelperOptionsVersionCheckPage.resx">
       <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\BIDSHelperPreferencesPage.resx">
+      <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Core\VersionCheckNotificationForm.resx">
@@ -607,7 +643,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\AggManager\frmExportTable.resx">
       <DependentUpon>frmExportTable.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\AggManager\PrinterFriendlyAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\frmTraceTable.resx">
@@ -668,7 +703,6 @@
     <EmbeddedResource Include="SSAS\NonDefaultProperties.rdlc" />
     <EmbeddedResource Include="SSAS\NonDefaultPropertiesSelectionForm.resx">
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmASFlattener.resx">
       <DependentUpon>frmASFlattener.cs</DependentUpon>
@@ -714,8 +748,18 @@
     <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
       <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\BimlValidationListForm.resx">
+      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\FrameworkVersionAlertDialog.resx">
+      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\MultipleSelectionConfirmationDialog.resx">
+      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.resx">
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
@@ -741,6 +785,9 @@
     <None Include="BIDSHelper.snk" />
     <None Include="Build\default.ps1" />
     <None Include="Build\psake.ps1" />
+    <None Include="DLLs\Biml\Biml.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+AggregationPerformance.datasource" />
     <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+MissingAggregationPerformance.datasource" />
     <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />

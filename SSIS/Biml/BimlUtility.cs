@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.Win32;
 using System.Windows.Forms;
+using Varigence.Languages.Biml.Platform;
 
 namespace BIDSHelper.SSIS.Biml
 {
@@ -20,6 +20,21 @@ namespace BIDSHelper.SSIS.Biml
             }
 
             return true;
+        }
+
+        public static SsisVersion GetSsisVersion2008Variant()
+        {
+            RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Microsoft SQL Server\100\DTS\Setup");
+            if (rk != null)
+            {
+                var version = rk.GetValue("Version") as string;
+                if (version != null && version.StartsWith("10.5"))
+                {
+                    return SsisVersion.Ssis2008R2;
+                }
+            }
+
+            return SsisVersion.Ssis2008;
         }
     }
 }

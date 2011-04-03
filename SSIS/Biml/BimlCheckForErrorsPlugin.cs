@@ -151,9 +151,10 @@ namespace BIDSHelper.SSIS.Biml
                 // TODO: How to distinguish between SQL Server 2008 and 2008R2?  Check for 10.5 version in registry.
                 // TODO: DENALI support
                 #if KATMAI
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, string.Empty, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2008, SsasVersion.Ssas2008);
+                SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
+                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, projectDirectory, string.Empty, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008);
                 #else
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, string.Empty, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005);
+                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, projectDirectory, string.Empty, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005);
                 #endif
 
                 if (!validationReporter.HasErrors && !validationReporter.HasWarnings)
@@ -184,6 +185,5 @@ namespace BIDSHelper.SSIS.Biml
                 }
             }
         }
-
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Varigence.Flow.FlowFramework.Validation;
@@ -26,6 +25,19 @@ namespace BIDSHelper.SSIS.Biml
         private void helpButton_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start("http://www.varigence.com/documentation/biml");
+        }
+
+        private void BimlValidationListForm_Load(object sender, EventArgs e)
+        {
+            if (listViewValidationItems.Columns[1].Width > 225)
+            {
+                listViewValidationItems.Columns[1].Width = 225;
+            }
+
+            if (listViewValidationItems.Columns[2].Width > 225)
+            {
+                listViewValidationItems.Columns[2].Width = 225;
+            }
         }
     }
 }

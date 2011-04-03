@@ -151,9 +151,10 @@ namespace BIDSHelper.SSIS.Biml
 
                 // TODO: How to distinguish between SQL Server 2008 and 2008R2?
                 #if KATMAI
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, string.Empty, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2008, SsasVersion.Ssas2008);
+                SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
+                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, projectDirectory, string.Empty, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008);
                 #else
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, string.Empty, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005);
+                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, projectDirectory, string.Empty, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005);
                 #endif
 
                 if (validationReporter.HasErrors)
@@ -198,7 +199,7 @@ namespace BIDSHelper.SSIS.Biml
 
                     foreach (var tempFilePath in safePackageFilePaths)
                     {
-                        string projectItemFilePath= Path.Combine(projectDirectory, Path.GetFileName(tempFilePath));
+                        string projectItemFilePath = Path.Combine(projectDirectory, Path.GetFileName(tempFilePath));
                         File.Copy(tempFilePath, projectItemFilePath, true);
                         project.ProjectItems.AddFromFile(projectItemFilePath);
                     }
