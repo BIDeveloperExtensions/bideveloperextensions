@@ -92,6 +92,9 @@ $lastReleaseFile = "$base_dir\setupScript\SQL2005CurrentReleaseVersion.xml"
     write-Host "Starting Zip"
     $ver = $ReleaseVersion -replace "\.", "_"
     &($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2005_$ver.zip" "$base_dir\bin\BIDSHelper.dll"
+	&($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2005_$ver.zip" "$base_dir\bin\Antlr3.Runtime.dll"
+	&($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2005_$ver.zip" "$base_dir\bin\BimlEngine.dll"
+	&($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2005_$ver.zip" "$base_dir\bin\DLLs\Biml\Biml.xsd"
     &($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2005_$ver.zip" "$base_dir\BIDSHelper.Addin"
 
 #Compile2008 
@@ -108,6 +111,9 @@ write-Host "Path:  $msbuild"
     write-Host "Starting Zip"
     $ver = $ReleaseVersion -replace "\.", "_"
     &($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2008_$ver.zip" "$base_dir\bin\BIDSHelper.dll"
+	&($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2008_$ver.zip" "$base_dir\bin\Antlr3.Runtime.dll"
+	&($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2008_$ver.zip" "$base_dir\bin\BimlEngine.dll"
+	&($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2008_$ver.zip" "$base_dir\bin\DLLs\Biml\Biml.xsd"
     &($zip) a -tzip "$base_dir\SetupScript\BIDSHelper2008_$ver.zip" "$base_dir\BIDSHelper2008.Addin"
 
 # CheckinVersionFiles

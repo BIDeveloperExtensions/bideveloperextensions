@@ -29,8 +29,7 @@
     <DefineTrace>true</DefineTrace>
     <IncrementalBuild>true</IncrementalBuild>
     <OutputPath>bin\</OutputPath>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile></DocumentationFile>
     <NoWarn>1591</NoWarn>
     <DefineConstants>DEBUG;YUKON</DefineConstants>
     <DebugType>full</DebugType>
@@ -46,6 +45,9 @@
     <OutputPath>bin\</OutputPath>
     <DocumentationFile>BIDSHelper.xml</DocumentationFile>
     <NoWarn>1591</NoWarn>
+    <DefineConstants>YUKON</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
