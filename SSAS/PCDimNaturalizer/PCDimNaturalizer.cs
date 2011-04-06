@@ -351,9 +351,7 @@ namespace PCDimNaturalizer
                 }
 
             hierNew = dimNew.Hierarchies.Add(atParent.Name);
-            #if KATMAI
             hierNew.MemberKeysUnique = MemberKeysUnique.Unique;
-            #endif
             for (int i = 2; i <= MinimumLevelCount + 1; i++)
             {
                 Level lvlNew = new Level(GetNaturalizedLevelName(i));
