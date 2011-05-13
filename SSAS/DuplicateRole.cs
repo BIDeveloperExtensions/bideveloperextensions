@@ -55,7 +55,7 @@ namespace BIDSHelper.SSAS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Allows you to Duplicate a Role including all the related permissions."; }
         }

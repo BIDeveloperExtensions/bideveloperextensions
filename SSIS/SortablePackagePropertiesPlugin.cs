@@ -49,7 +49,7 @@ namespace BIDSHelper
             get { return "Sortable Package Properties Report..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Sortable Package Properties Report"; }
         }
@@ -82,7 +82,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Displays a report of all packages in a project or solution, with key properties such as Name, Id, Description and Version information."; }
         }

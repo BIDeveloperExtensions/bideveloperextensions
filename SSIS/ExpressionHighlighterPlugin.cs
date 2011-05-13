@@ -1048,7 +1048,7 @@ namespace BIDSHelper.SSIS
         /// </summary>
         /// <value>The friendly name.</value>
         /// <remarks>Used for the HelpUrl as the ButtonText not match Wiki page.</remarks>
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Expression and Configuration Highlighter"; }
         }
@@ -1066,7 +1066,7 @@ namespace BIDSHelper.SSIS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Highlight objects in your SSIS Packages that have configurations or expressions applied making them easy to identify."; }
         }

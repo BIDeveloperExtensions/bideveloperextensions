@@ -521,7 +521,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Extends the Calculations tab of the cube editor, including an enhanced Calculation Properties dialog."; }
         }

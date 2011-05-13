@@ -66,7 +66,7 @@ namespace BIDSHelper
             get { return "Non-Default Properties Report..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Non-Default Properties Report"; }
         }
@@ -99,7 +99,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Provides a report of properties which have been changed from their defaults. The report can be run for Analysis Services or for Integration Services."; }
         }

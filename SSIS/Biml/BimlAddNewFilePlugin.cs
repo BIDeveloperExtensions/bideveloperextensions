@@ -1,43 +1,19 @@
+using System;
+using System.IO;
+using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
-using System.Text;
-using Microsoft.DataWarehouse.Design;
-using System;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.DataTransformationServices.Project;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
-using System.Xml.Serialization;
-using Microsoft.DataWarehouse.VsIntegration.Shell.Project.Configuration;
-using Microsoft.DataWarehouse.Project;
-using Microsoft.DataWarehouse.VsIntegration.Shell;
-using System.Windows.Forms;
-using Microsoft.VisualStudio.CommandBars;
-using System.IO;
 
-using Varigence.Flow.FlowFramework;
-using Varigence.Flow.FlowFramework.Engine;
-using Varigence.Flow.FlowFramework.Engine.Binding;
-using Varigence.Flow.FlowFramework.Engine.IR;
-using Varigence.Flow.FlowFramework.Engine.Kernel;
-using Varigence.Flow.FlowFramework.Model;
-using Varigence.Flow.FlowFramework.Utility;
-using Varigence.Flow.FlowFramework.Validation;
-using Varigence.Languages.Biml;
-using Varigence.Languages.Biml.Platform;
-using Varigence.Utility.TextTemplating.Engine;
-using Varigence.Utility.TextTemplating.Hosts;
 
 namespace BIDSHelper.SSIS.Biml
 {
-    public class BimlAddNewFilePlugin : BIDSHelperPluginBase
+    public class BimlAddNewFilePlugin : BimlFeaturePluginBase
     {
         public BimlAddNewFilePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
         {
         }
 
-        #region Standard Property Overrides
         public override string ShortName
         {
             get { return "BimlAddNewFilePlugin"; }
@@ -60,37 +36,13 @@ namespace BIDSHelper.SSIS.Biml
 
         public override string ToolTip
         {
-            get { return string.Empty; }
+            get { return "Add a new Biml file to your project."; }
         }
 
         public override string MenuName
         {
             get { return "Project,Project Node"; }
         }
-
-        public override string FriendlyName
-        {
-            get { return "Add New Biml File"; }
-        }
-
-        /// <summary>
-        /// Gets the full description used for the features options dialog.
-        /// </summary>
-        /// <value>The description.</value>
-        public override string Description
-        {
-            get { return "Add a new Biml file to your project."; }
-        }
-
-        /// <summary>
-        /// Gets the feature category used to organise the plug-in in the enabled features list.
-        /// </summary>
-        /// <value>The feature category.</value>
-        public override BIDSFeatureCategories FeatureCategory
-        {
-            get { return BIDSFeatureCategories.SSIS; }
-        }
-        #endregion
 
         public override bool DisplayCommand(UIHierarchyItem item)
         {

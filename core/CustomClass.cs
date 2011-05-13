@@ -11,6 +11,24 @@
 	public class CustomClass : Collection<CustomProperty>, ICustomTypeDescriptor
 	{
         /// <summary>
+        /// Check if a property of the specified ame already exists in collection.
+        /// </summary>
+        /// <param name="name">The property name.</param>
+        /// <returns>Returns the matching property.</returns>
+        public CustomProperty Find(string name)
+        {
+            foreach (CustomProperty property in this)
+            {
+                if (property.Name.Equals(name, StringComparison.Ordinal))
+                {
+                    return property;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Returns the class name of this instance of a component.
         /// </summary>
         /// <returns>

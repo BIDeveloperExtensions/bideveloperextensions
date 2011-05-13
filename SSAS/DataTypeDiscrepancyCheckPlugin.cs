@@ -39,7 +39,7 @@ namespace BIDSHelper
             get { return "Data Type Discrepancy Check..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Dimension Data Type Discrepancy Check"; }
         }
@@ -72,7 +72,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Allows you check that DSV data types match the data types on the KeyColumns and NameColumn of dimension attributes. As well as displaying discrepancies it allows you to easily fix them too."; }
         }

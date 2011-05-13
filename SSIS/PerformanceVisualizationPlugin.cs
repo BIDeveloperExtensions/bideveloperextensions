@@ -78,7 +78,7 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "SSIS Performance Visualization"; }
         }
@@ -101,7 +101,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Adds a new Performance tab with a graphical Gantt chart view of the execution durations and dependencies for your package to help you visualize performance."; }
         }

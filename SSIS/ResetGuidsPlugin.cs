@@ -57,7 +57,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Reset the IDs for all tasks, connection managers, configurations, event handlers, variables, and the package ID itself. Ensures that all IDs in the current package are unique."; }
         }

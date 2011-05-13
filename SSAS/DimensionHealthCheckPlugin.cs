@@ -60,7 +60,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Allows you check various indications of dimension health, analyzing data and attributes to ensure they are valid."; }
         }

@@ -44,7 +44,7 @@ namespace BIDSHelper
             get { return "Create Fixed Width Columns..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Create Fixed Width Columns"; }
         }
@@ -77,7 +77,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Allows you to easily define Flat File Connections with fixed width columns, designed to allow you to easy copy and paste column name and with information from Excel or similar source."; }
         }

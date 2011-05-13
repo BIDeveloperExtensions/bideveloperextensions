@@ -1,6 +1,7 @@
 ﻿namespace BIDSHelper.Core
 {
     using System;
+    using System.Collections.ObjectModel;
 
     /// <summary>
     /// Custom dynamic property, for use with <see cref="BIDSHelper.Core.CustomClass"/>
@@ -14,6 +15,7 @@
         private bool visible = true;
         private object objValue = null;
         private Type type;
+        private Collection<CustomProperty> childern;
 
         internal BIDSHelperPluginBase Plugin;
 
@@ -24,13 +26,14 @@
         public CustomProperty(BIDSHelperPluginBase plugin)
         {
             this.Plugin = plugin;
-            this.name = plugin.FriendlyName;
-            this.description = plugin.Description;
+            this.name = plugin.FeatureName;
+            this.description = plugin.FeatureDescription;
             this.objValue = plugin.Enabled;
             this.type = typeof(bool);
             this.readOnly = false;
             this.visible = true;
             this.category = GetFeatureCategoryLabel(plugin.FeatureCategory);
+            this.childern = new Collection<CustomProperty>();
 
 #if DEBUG
             // Write out list of all plugins as we create the property collection, 
@@ -142,6 +145,28 @@
             set
             {
                 objValue = value;
+
+                // Cascade setting to children
+                foreach (CustomProperty child in this.childern)
+                {
+                    child.Value = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the children collection.
+        /// </summary>
+        /// <value>The children.</value>
+        public Collection<CustomProperty> Children
+        {
+            get
+            {
+                return this.childern;
+            }
+            set
+            {
+                this.childern = value;
             }
         }
     }

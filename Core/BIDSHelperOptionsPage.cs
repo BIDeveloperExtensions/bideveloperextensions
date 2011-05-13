@@ -1,6 +1,7 @@
 namespace BIDSHelper.Core
 {
     using System;
+    using System.Collections.ObjectModel;
     using System.Reflection;
     using System.Windows.Forms;
     using EnvDTE;
@@ -47,10 +48,20 @@ namespace BIDSHelper.Core
         void IDTToolsOptionsPage.OnAfterCreated(DTE DTEObject)
         {
             // Enumerate plug-ins and create a dynamic properties
+            // Must also check for unique features
             CustomClass featuresHost = new CustomClass();
             foreach (BIDSHelperPluginBase plugin in Connect.Plugins.Values)
             {
-                featuresHost.Add(new CustomProperty(plugin));
+                CustomProperty parent = featuresHost.Find(plugin.FeatureName);
+                if (parent == null)
+                {
+                    // New feature
+                    featuresHost.Add(new CustomProperty(plugin));
+                }
+                else
+                {
+                    parent.Children.Add(new CustomProperty(plugin));
+                }
             }
 
             // Assign our dynamic properties collection to the property grid
@@ -177,13 +188,30 @@ namespace BIDSHelper.Core
                 return;
             }
 
+            EnablePlugins(featuresHost);
+        }
+
+        /// <summary>
+        /// Enables or disables the plug-ins within a features.
+        /// </summary>
+        /// <param name="properties">The properties collection hosting the plug-ins.</param>
+        private static void EnablePlugins(Collection<CustomProperty> properties)
+        {
+            if (properties == null)
+            {
+                return;
+            }
+
             // Commit the changes, enable or disable plug-ins as required
-            foreach (CustomProperty featureProperty in featuresHost)
+            foreach (CustomProperty featureProperty in properties)
             {
                 if (featureProperty.Plugin.Enabled != (bool)featureProperty.Value)
                 {
                     featureProperty.Plugin.Enabled = (bool)featureProperty.Value;
                 }
+
+                // Enable any child plug-ins, as found when we have features that cover multiple plug-ins
+                EnablePlugins(featureProperty.Children);
             }
         }
 

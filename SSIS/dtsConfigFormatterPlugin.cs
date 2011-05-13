@@ -224,7 +224,7 @@ namespace BIDSHelper.SSIS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Automatically applies easy to read formatting to your dtsConfig files as they are opened."; }
         }

@@ -772,7 +772,7 @@ namespace BIDSHelper.SSIS
             get { return "Other Windows"; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Expression List"; }
         }
@@ -795,7 +795,7 @@ namespace BIDSHelper.SSIS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Provides a tool window listing expressions defined in a package, making it easy to review and manage expressions. Editing uses the integrated advanced expression editor."; }
         }

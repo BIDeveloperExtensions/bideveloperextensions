@@ -501,7 +501,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "An addition to the Perspectives tab of the cube designer, which highlights any measure groups or dimensions in which not all visible children are part of the perspective."; }
         }

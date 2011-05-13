@@ -231,7 +231,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Get notified when a new BIDS Helper version is released. A balloon and icon will appear in the system tray, which will link to the download page for the new release."; }
         }

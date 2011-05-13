@@ -35,7 +35,7 @@ namespace PCDimNaturalizer
             get { return "Naturalize Parent-Child Dimension..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Parent-Child Dimension Naturalizer"; }
         }
@@ -63,7 +63,7 @@ namespace PCDimNaturalizer
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Parent-Child Dimension Naturalizer which aids in converting parent-child dimensions into natural hierarchies."; }
         }

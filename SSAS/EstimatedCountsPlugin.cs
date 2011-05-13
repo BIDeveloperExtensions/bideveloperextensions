@@ -552,7 +552,7 @@ namespace BIDSHelper
         /// Gets the name of the friendly name of the plug-in.
         /// </summary>
         /// <value>The friendly name.</value>
-        public override string FriendlyName
+        public override string FeatureName
         {
             get
             {
@@ -573,7 +573,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Allows you to update the EstimatedCount property of every dimension attribute and partition with exact counts. Better counts help the Aggregation Design Wizard choose better aggregations."; }
         }

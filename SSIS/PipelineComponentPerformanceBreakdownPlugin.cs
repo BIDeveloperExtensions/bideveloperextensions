@@ -53,7 +53,7 @@ namespace BIDSHelper.SSIS
             get { return string.Empty; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Pipeline Component Performance Breakdown"; }
         }
@@ -89,7 +89,7 @@ namespace BIDSHelper.SSIS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Executes an individual Data Flow task and displays a performance breakdown for each component in the task, helping you to identify any bottlenecks you may have."; }
         }

@@ -63,7 +63,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Find and Replace for properties across multiple packages. Update property values using the /SET syntax."; }
         }

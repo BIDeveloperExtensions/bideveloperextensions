@@ -44,7 +44,7 @@ namespace BIDSHelper
             get { return true; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Unused Columns Report"; }
         }
@@ -71,7 +71,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "This report lists all columns in the DSV which are not used in dimensions, cubes, or mining structures."; }
         }
@@ -421,7 +421,7 @@ namespace BIDSHelper
             get { return "Used Columns Report..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Used Columns Report"; }
         }
@@ -430,7 +430,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "This report lists all columns in the DSV which are used in dimensions, cubes, or mining structures. This report can be used for proof reading the setup of your cube or for documentation."; }
         }

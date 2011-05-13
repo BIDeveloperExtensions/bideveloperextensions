@@ -745,7 +745,7 @@ namespace BIDSHelper.SSIS
         /// </summary>
         /// <value>The friendly name.</value>
         /// <remarks>Used for HelpUrl as ButtonText does not match Wiki page.</remarks>
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Variables Window Extensions"; }
         }
@@ -763,7 +763,7 @@ namespace BIDSHelper.SSIS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Extended features for the Variables window. Move or copy a variable between scopes in a package, expression and configuration highlighting of the variables and the advanced expression editor."; }
         }

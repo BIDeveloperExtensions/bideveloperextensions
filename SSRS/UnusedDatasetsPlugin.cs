@@ -51,7 +51,7 @@ namespace BIDSHelper.SSRS
         /// Gets the name of the friendly name of the plug-in.
         /// </summary>
         /// <value>The friendly name.</value>
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Unused Report Datasets"; }
         }
@@ -78,7 +78,7 @@ namespace BIDSHelper.SSRS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Provides a report of unused datasets. You can then delete the unused datasets, thus speeding report performance and scalability."; }
         }
@@ -259,7 +259,7 @@ namespace BIDSHelper.SSRS
         /// Gets the name of the friendly name of the plug-in.
         /// </summary>
         /// <value>The friendly name.</value>
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Used Report Datasets"; }
         }
@@ -268,7 +268,7 @@ namespace BIDSHelper.SSRS
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Provides a report of datasets in use. It also lists which parts of the report use each dataset."; }
         }

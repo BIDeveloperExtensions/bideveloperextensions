@@ -105,7 +105,7 @@ namespace BIDSHelper
 
                         toolbar.ImageList.Images.Add(Properties.Resources.M2MIcon);
                         newM2MButton = new ToolBarButton();
-                        newM2MButton.ToolTipText = this.FriendlyName + " (BIDS Helper)";
+                        newM2MButton.ToolTipText = this.FeatureName + " (BIDS Helper)";
                         newM2MButton.Name = this.FullName + ".M2M";
                         newM2MButton.Tag = newM2MButton.Name;
                         newM2MButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
@@ -187,7 +187,7 @@ namespace BIDSHelper
             get { return "M2M Matrix Compression..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "M2M Matrix Compression"; }
         }
@@ -229,7 +229,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Analyzes the data for each many to many relationship to determine whether it can be compressed, presenting the results in an easy to interpret format."; }
         }

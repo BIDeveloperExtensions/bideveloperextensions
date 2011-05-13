@@ -190,7 +190,7 @@ namespace BIDSHelper
         /// </summary>
         /// <value>The friendly name.</value>
         /// <remarks>Used for HelpUrl as ButtonText does not match Wiki page.</remarks>
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Fix Relative Paths"; }
         }
@@ -213,7 +213,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Allows you to change all configuration and connection file paths to be relative paths at the click of a button."; }
         }

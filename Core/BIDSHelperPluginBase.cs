@@ -299,6 +299,11 @@ namespace BIDSHelper
         #endregion
 
         # region "Public Properties"
+        /// <summary>
+        /// Gets the fully qualified name of the plug-in.
+        /// </summary>
+        /// <value>The full name.</value>
+        /// <remarks>The full name is built from the short name, and is used to unqiuely identify a plug-in, e.g. BIDSHelper.Connect.MyCleverPlugin.</remarks>
         public string FullName
         {
             get { return BASE_NAME + this.ShortName; }
@@ -318,11 +323,21 @@ namespace BIDSHelper
 
         #region "methods that must be overridden"
 
+        /// <summary>
+        /// Gets the short name, the unique internal plug-in name
+        /// </summary>
+        /// <value>The short name.</value>
+        /// <remarks>The short name uniquely identiofies the plug-in within BIDS Helper. It is used to derive the full name, which is unique within all Visual Studio commands.</remarks>
         public abstract string ShortName
         {
             get;
         }
 
+        /// <summary>
+        /// Gets the button or command text, as displayed on the menu button.
+        /// </summary>
+        /// <value>The button text.</value>
+        /// <remarks>This is the first level of friendly naming.</remarks>
         public abstract string ButtonText
         {
             get;
@@ -342,6 +357,7 @@ namespace BIDSHelper
         /// Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
         /// <value>The feature category.</value>
+        /// <remarks>The feature category is used to organise features into SSIS, SSAS, SSRS or Common.</remarks>
         public abstract BIDSFeatureCategories FeatureCategory
         {
             get;
@@ -384,14 +400,15 @@ namespace BIDSHelper
         }
 
         /// <summary>
-        /// Gets the name of the friendly name of the plug-in.
+        /// Gets the feature name as displayed in the enabled features list, previously known as the friendly name.
         /// </summary>
-        /// <value>The friendly name.</value>
+        /// <value>The feature name.</value>
         /// <remarks>
         ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
-        ///     The FriendlyName is the default page title used for by the HelpUrl.
+        ///     The feature name is the default page title used for by the HelpUrl.
+        ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
         /// </remarks>
-        public virtual string FriendlyName
+        public virtual string FeatureName
         {
             get { return this.ButtonText; }
         }
@@ -412,13 +429,13 @@ namespace BIDSHelper
         {
             get { return true; }
         }
-        
+
         /// <summary>
         /// Gets the full description used for the features options dialog.
         /// </summary>
-        /// <value>The description.</value>
-        /// <remarks>If not overridden then the <see cref="ToolTip"/> will be used instead.</remarks>
-        public virtual string Description
+        /// <value>The feature description.</value>
+        /// <remarks>If not overridden then the <see cref="ToolTip"/> will be used instead. Multiple plug-ins can form one feature. The description of teh last plug-in to be enumerated will take precedence, consider using a base class to tie a feature together e.g. <see cref="BIDSHelper.SSIS.Biml.BimlFeaturePluginBase"/>.</remarks>
+        public virtual string FeatureDescription
         {
             get { return this.ToolTip; }
         }
@@ -432,7 +449,7 @@ namespace BIDSHelper
         {
             // Default implementation of Help Url using FriendlyName. 
             // Override this property if you need a different value
-            get { return this.GetCodePlexHelpUrl(this.FriendlyName); }
+            get { return this.GetCodePlexHelpUrl(this.FeatureName); }
         }
         #endregion
 
@@ -456,7 +473,7 @@ namespace BIDSHelper
         /// </returns>
         public override string ToString()
         {
-            return this.FriendlyName;
+            return this.FeatureName;
         }
 
         /// <summary>

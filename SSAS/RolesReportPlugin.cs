@@ -37,7 +37,7 @@ namespace BIDSHelper
             get { return "Roles Report..."; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get { return "Roles Report"; }
         }
@@ -70,7 +70,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Report of roles and their membership, including validation and permissions."; }
         }

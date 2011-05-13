@@ -28,7 +28,7 @@ namespace BIDSHelper
             get { return "DeployMdxScript"; }
         }
 
-        public override string FriendlyName
+        public override string FeatureName
         {
             get
             {
@@ -73,7 +73,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Allows you to right click on a cube in an Analysis Services solution and deploy just the calculation script."; }
         }
