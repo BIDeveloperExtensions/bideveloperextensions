@@ -319,6 +319,7 @@
     <Compile Include="SSIS\Biml\BimlValidationListForm.Designer.cs">
       <DependentUpon>BimlValidationListForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSIS\Biml\BimlFeaturePluginBase.cs" />
     <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.cs">
       <SubType>Form</SubType>
     </Compile>
