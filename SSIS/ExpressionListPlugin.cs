@@ -429,11 +429,12 @@ namespace BIDSHelper.SSIS
             }
 
             DtsContainer container = component as DtsContainer;
-
+            
+            // Should only get package as we call GetPackage up front. Could make scope like, but need UI indicator that this is happening
             Package package = component as Package;
             if (package != null)
             {
-                path = "Package";
+                path = "\\Package";
                 CheckConnectionManagers(package, worker, path);
             }
             else if (!(component is DtsEventHandler))
@@ -579,19 +580,17 @@ namespace BIDSHelper.SSIS
 
                     // Check path to ensure variable is parented by current scope 
                     // only, not by child containers that inherit the variable
-                    if (!variable.GetPackagePath().StartsWith("\\" + objectPath + ".Variables["))
+                    if (!variable.GetPackagePath().StartsWith(objectPath + ".Variables["))
                     {
                         continue;
                     }
-
-                    objectPath = objectPath + ".Variables[" + variable.QualifiedName + "]";
 
                     ExpressionInfo info = new ExpressionInfo();
                     info.ContainerID = containerID;
                     info.ObjectID = variable.ID;
                     info.ObjectName = objectName;
                     info.Type = typeof(Variable);
-                    info.ObjectPath = objectPath;
+                    info.ObjectPath = objectPath + ".Variables[" + variable.QualifiedName + "]";
                     info.ObjectType = variable.GetType().Name;
                     info.PropertyName = variable.QualifiedName;
                     info.Expression = variable.Expression;
