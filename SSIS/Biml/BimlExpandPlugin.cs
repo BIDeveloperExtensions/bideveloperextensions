@@ -73,32 +73,44 @@ namespace BIDSHelper.SSIS.Biml
             }
 
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+            var emittableFilePaths = new List<string>();
+            Project containingProject = null;
+            string projectDirectory = null;
+            bool sameProject = false;
             foreach (object selected in ((System.Array)solExplorer.SelectedItems))
             {
                 UIHierarchyItem hierItem = (UIHierarchyItem)selected;
                 ProjectItem projectItem = hierItem.Object as ProjectItem;
-                if (projectItem != null && projectItem.Name.ToLower().EndsWith(".biml")) 
+                if (projectItem != null && projectItem.Name.ToLower().EndsWith(".biml"))
                 {
-                    string projectDirectory = Path.GetDirectoryName(projectItem.ContainingProject.FullName);
-                    try
+                    if (projectItem.Document != null && !projectItem.Document.Saved)
                     {
-                        string filePath = Path.Combine(projectDirectory, projectItem.Name);
-                        if (projectItem.Document != null && !projectItem.Document.Saved)
-                        {
-                            projectItem.Document.Save(null);
-                        }
+                        projectItem.Document.Save(null);
+                    }
 
-                        Expand(filePath, projectItem.ContainingProject, projectDirectory);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
+                    Project newContainingProject = projectItem.ContainingProject;
+                    sameProject = containingProject == null || containingProject == newContainingProject;
+                    containingProject = projectItem.ContainingProject;
+                    projectDirectory = Path.GetDirectoryName(containingProject.FullName);
+                    string filePath = Path.Combine(projectDirectory, projectItem.Name);
+                    emittableFilePaths.Add(filePath);
+                }
+            }
+
+            if (sameProject && containingProject != null && projectDirectory != null)
+            {
+                try
+                {
+                    Expand(emittableFilePaths, containingProject, projectDirectory);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
                 }
             }
         }
 
-        private void Expand(string bimlScriptPath, Project project, string projectDirectory)
+        private void Expand(List<string> bimlScriptPaths, Project project, string projectDirectory)
         {
             var tempTargetDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             try
@@ -108,9 +120,9 @@ namespace BIDSHelper.SSIS.Biml
                 // TODO: How to distinguish between SQL Server 2008 and 2008R2?
                 #if KATMAI
                 SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, projectDirectory, string.Empty, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008);
+                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008);
                 #else
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPath, tempTargetDirectory, projectDirectory, string.Empty, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005);
+                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005);
                 #endif
 
                 if (validationReporter.HasErrors)
