@@ -27,11 +27,6 @@ namespace BIDSHelper
             get { return "SortProjectFilesPlugin"; }
         }
 
-        public override string FriendlyName
-        {
-            get { return "Sort Project Files"; }
-        }
-
         public override int Bitmap
         {
             get { return 0; } //TODO add sort items icon
@@ -75,7 +70,7 @@ namespace BIDSHelper
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
-        public override string Description
+        public override string FeatureDescription
         {
             get { return "Adds a 'Sort by name' menu option to the SSIS Packages folder allowing you to easily re-order the packages. (Available in SQL Server 2005 Only)"; }
         }

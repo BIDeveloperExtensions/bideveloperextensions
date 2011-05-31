@@ -29,7 +29,8 @@
     <DefineTrace>true</DefineTrace>
     <IncrementalBuild>true</IncrementalBuild>
     <OutputPath>bin\</OutputPath>
-    <DocumentationFile></DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <NoWarn>1591</NoWarn>
     <DefineConstants>DEBUG;YUKON</DefineConstants>
     <DebugType>full</DebugType>
@@ -202,6 +203,7 @@
     <Compile Include="Core\CustomProperty.cs" />
     <Compile Include="Core\CustomPropertyDescriptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SSAS\DuplicateRole.cs" />
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>

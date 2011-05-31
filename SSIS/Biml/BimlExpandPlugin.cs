@@ -35,12 +35,12 @@ namespace BIDSHelper.SSIS.Biml
 
         public override string ButtonText
         {
-            get { return "Expand Biml File"; }
+            get { return "Generate SSIS Package"; }
         }
 
         public override string ToolTip
         {
-            get { return "Expand BimlScript file into your project"; }
+            get { return "Expand BimlScript file into an SSIS packagein your project"; }
         }
 
         public override string MenuName
