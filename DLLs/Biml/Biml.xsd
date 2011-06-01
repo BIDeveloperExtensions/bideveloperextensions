@@ -4714,6 +4714,11 @@
         <xs:documentation>This specifies a file path fragment to use for emitting output files for this table.  It is most commonly employed to ensure that the output files for multiple tables will be placed into the same output directory.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="FriendlyName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name to use in the SSAS data source view and downstream SSAS objects.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -5304,6 +5309,11 @@ Removing this property or setting the value to 0 will remove the IDENTITY specif
         <xs:documentation>This specifies a file path fragment to use for emitting output files for this table.  It is most commonly employed to ensure that the output files for multiple tables will be placed into the same output directory.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="FriendlyName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name to use in the SSAS data source view and downstream SSAS objects.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -5691,6 +5701,11 @@ Removing this property or setting the value to 0 will remove the IDENTITY specif
         <xs:documentation>This specifies a file path fragment to use for emitting output files for this table.  It is most commonly employed to ensure that the output files for multiple tables will be placed into the same output directory.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="FriendlyName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name to use in the SSAS data source view and downstream SSAS objects.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -5928,6 +5943,11 @@ Removing this property or setting the value to 0 will remove the IDENTITY specif
     <xs:attribute name="PackageSubpath" type="xs:string" use="optional">
       <xs:annotation>
         <xs:documentation>This specifies a file path fragment to use for emitting output files for this table.  It is most commonly employed to ensure that the output files for multiple tables will be placed into the same output directory.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="FriendlyName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name to use in the SSAS data source view and downstream SSAS objects.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -13135,7 +13155,7 @@ PackageSubpath will override the default package location behavior. Packages wil
         </xs:annotation>
       </xs:element>
     </xs:all>
-    <xs:attribute name="ConnectionName" type="xs:string" use="optional">
+    <xs:attribute name="ConnectionName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>This value specifies the ADO.NET connection to use when loading the data.</xs:documentation>
       </xs:annotation>
@@ -22086,7 +22106,7 @@ Optional. If it is not specified, the connection will default to the TargetConst
           <xs:documentation>This is a container for the measures that are associated with the measure group. Measures are defined in the underlying fact table and can be overridden in this collection with additional metadata values.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="CubeDimensionBindings" type="AstCubeDimensionBindingNode_AstCubeMeasureGroupNode_CubeDimensionBindings_List">
+      <xs:element minOccurs="0" maxOccurs="1" name="CubeDimensionBindings" type="AstCubeDimensionBindingBaseNode_AstCubeMeasureGroupNode_CubeDimensionBindings_List">
         <xs:annotation>
           <xs:documentation>This is a container for cube dimension bindings associated with the measure group.</xs:documentation>
         </xs:annotation>
@@ -22191,7 +22211,7 @@ Optional. If it is not specified, the connection will default to the TargetConst
       </xs:element>
     </xs:choice>
   </xs:complexType>
-  <xs:complexType name="AstCubeDimensionBindingNode_AstCubeMeasureGroupNode_CubeDimensionBindings_List">
+  <xs:complexType name="AstCubeDimensionBindingBaseNode_AstCubeMeasureGroupNode_CubeDimensionBindings_List">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
       <xs:element name="CubeDimensionBinding" type="Varigence.Languages.Biml.Cube.AstCubeDimensionBindingNode">
         <xs:annotation>
@@ -22208,6 +22228,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
           <xs:documentation>This is a container for cube dimension bindings associated with the measure group.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="CubeDimensionRegularBinding" type="Varigence.Languages.Biml.Cube.AstCubeDimensionRegularBindingNode">
+        <xs:annotation>
+          <xs:documentation>This is a container for cube dimension bindings associated with the measure group.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:choice>
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Cube.AstCubeDimensionBindingNode">
@@ -22218,14 +22243,14 @@ Optional. If it is not specified, the connection will default to the TargetConst
         </xs:annotation>
       </xs:element>
     </xs:all>
-    <xs:attribute name="CubeDimensionName" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>This value specifies a direct reference to the cube dimension that will be bound to the measure group.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="FactColumnName" type="xs:string" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies a direct reference to the column in the fact table that is referencing the key of the target cube dimension.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CubeDimensionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies a direct reference to the cube dimension that will be bound to the measure group.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -22257,11 +22282,6 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies a direct reference to the cube dimension that will be bound to the measure group.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="FactColumnName" type="xs:string" use="optional">
-      <xs:annotation>
-        <xs:documentation>This value specifies a direct reference to the column in the fact table that is referencing the key of the target cube dimension.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Cube.AstCubeDimensionManyToManyBindingNode">
     <xs:all minOccurs="1" maxOccurs="1">
@@ -22286,9 +22306,56 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies a direct reference to the cube dimension that will be bound to the measure group.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="FactColumnName" type="xs:string" use="optional">
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Cube.AstCubeDimensionRegularBindingNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="MeasureGroupColumns" type="AstDimensionBindingColumnReferenceNode_AstCubeDimensionRegularBindingNode_MeasureGroupColumns_List">
+        <xs:annotation>
+          <xs:documentation>Defines the collection of fact table column dindings for this dimension.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="GranularityAttributeName" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>This value specifies a direct reference to the column in the fact table that is referencing the key of the target cube dimension.</xs:documentation>
+        <xs:documentation>This property represents the selected granularity attribute from a dimension in the project.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CubeDimensionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies a direct reference to the cube dimension that will be bound to the measure group.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDimensionBindingColumnReferenceNode_AstCubeDimensionRegularBindingNode_MeasureGroupColumns_List">
+    <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="MeasureGroupColumn" type="Varigence.Languages.Biml.Cube.AstDimensionBindingColumnReferenceNode">
+        <xs:annotation>
+          <xs:documentation>Defines the collection of fact table column dindings for this dimension.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Cube.AstDimensionBindingColumnReferenceNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute default="Automatic" name="NullProcessing" type="Varigence.Languages.Biml.Cube.SsasNullProcessing" use="optional">
+      <xs:annotation>
+        <xs:documentation>Sets the NullProcessing mode for this column</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ColumnName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Defines the associated table column for this binding.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -25309,6 +25376,20 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>This value specifies the name of the parameter that will be mapped to the target value.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Cube.AstCubeDimensionBindingBaseNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="CubeDimensionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies a direct reference to the cube dimension that will be bound to the measure group.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>

@@ -51,10 +51,11 @@
             // 
             // confirmationTextLabel
             // 
-            this.confirmationTextLabel.AutoSize = true;
+            this.confirmationTextLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.confirmationTextLabel.Location = new System.Drawing.Point(12, 9);
             this.confirmationTextLabel.Name = "confirmationTextLabel";
-            this.confirmationTextLabel.Size = new System.Drawing.Size(86, 13);
+            this.confirmationTextLabel.Size = new System.Drawing.Size(625, 28);
             this.confirmationTextLabel.TabIndex = 1;
             this.confirmationTextLabel.Text = "ConfirmationText";
             // 
