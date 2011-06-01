@@ -15,7 +15,7 @@ namespace BIDSHelper.SSIS.Biml
         /// </summary>
         /// <value>The feature name.</value>
         /// <remarks>
-        ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
+        ///     If not overridden then the ButtonText will be used instead.
         ///     The feature name is the default page title used for by the HelpUrl.
         ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
         /// </remarks>

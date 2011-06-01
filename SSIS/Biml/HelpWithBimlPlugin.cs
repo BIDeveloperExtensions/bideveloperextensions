@@ -1,5 +1,6 @@
 using EnvDTE;
 using EnvDTE80;
+using BIDSHelper.Properties;
 
 namespace BIDSHelper.SSIS.Biml
 {
@@ -60,7 +61,7 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
-            System.Diagnostics.Process.Start("http://www.varigence.com/documentation/biml");
+            System.Diagnostics.Process.Start(Resources.BimlHelpUrl);
         }
     }
 }

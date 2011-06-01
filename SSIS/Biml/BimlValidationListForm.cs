@@ -19,7 +19,7 @@ namespace BIDSHelper.SSIS.Biml
 
         private void helpButton_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("http://www.varigence.com/documentation/biml");
+            System.Diagnostics.Process.Start(Properties.Resources.BimlValidationHelpUrl);
         }
 
         private void BimlValidationListForm_Load(object sender, EventArgs e)

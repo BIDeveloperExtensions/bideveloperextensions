@@ -265,4 +265,16 @@
   <data name="CheckBiml" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CheckBiml.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="BimlFrameworkVersionAlert" xml:space="preserve">
+    <value>http://www.varigence.com/documentation/bidshelper/frameworkversion</value>
+  </data>
+  <data name="BimlHelpUrl" xml:space="preserve">
+    <value>http://www.varigence.com/documentation/bidshelper</value>
+  </data>
+  <data name="BimlOverwriteConfirmationHelpUrl" xml:space="preserve">
+    <value>http://www.varigence.com/documentation/bidshelper/overwrite</value>
+  </data>
+  <data name="BimlValidationHelpUrl" xml:space="preserve">
+    <value>http://www.varigence.com/documentation/bidshelper/validation</value>
+  </data>
 </root>
