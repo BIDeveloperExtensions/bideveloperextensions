@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BIDS Helper 2008"
-!define PRODUCT_VERSION "1.4.3.0"
+!define PRODUCT_VERSION "1.5.0.0"
 !define PRODUCT_PUBLISHER "BIDS Helper"
 !define PRODUCT_WEB_SITE "http://www.codeplex.com/bidshelper"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -69,10 +69,12 @@ Section "MainSection" SEC01
   SetOverwrite ifnewer
   CreateDirectory "$INSTDIR"
 #  File "..\bin\BIDSHelper.dll"
+!define LIBRARY_IGNORE_VERSION
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BIDSHelper.dll" "$INSTDIR\BIDSHelper.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\Antlr3.Runtime.dll" "$INSTDIR\Antlr3.Runtime.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BimlEngine.dll" "$INSTDIR\BimlEngine.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\ExpressionEditor.dll" "$INSTDIR\ExpressionEditor.dll" $INSTDIR\Temp
+!undef LIBRARY_IGNORE_VERSION
   File "..\BIDSHelper2008.AddIn"
   ExpandEnvStrings $0 "%VS90COMNTOOLS%\..\..\Xml\Schemas\Biml.xsd"
   File "/oname=$0" "..\bin\DLLs\Biml\Biml.xsd"
