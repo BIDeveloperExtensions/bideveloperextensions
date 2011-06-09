@@ -16,6 +16,17 @@ namespace BIDSHelper
     public class RolesReportPlugin : BIDSHelperPluginBase
     {
         private string _deploymentTargetServer;
+        private string DeploymentTargetMachineName
+        {
+            get
+            {
+                if (_deploymentTargetServer.IndexOf(':') >= 0)
+                    return _deploymentTargetServer.Substring(0, _deploymentTargetServer.IndexOf(':'));
+                if (_deploymentTargetServer.IndexOf('\\') >= 0)
+                    return _deploymentTargetServer.Substring(0, _deploymentTargetServer.IndexOf('\\'));
+                return _deploymentTargetServer;
+            }
+        }
 
         public RolesReportPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -111,12 +122,8 @@ namespace BIDSHelper
                 Database db = projItem.ContainingProject.Object as Database;
                 DeploymentSettings _deploymentSettings = new DeploymentSettings(projItem);
 
-                //get the target server name
+                //get the target server
                 _deploymentTargetServer = _deploymentSettings.TargetServer;
-                if (_deploymentTargetServer.IndexOf(':') >= 0)
-                    _deploymentTargetServer = _deploymentTargetServer.Substring(0, _deploymentTargetServer.IndexOf(':') - 1);
-                if (_deploymentTargetServer.IndexOf('\\') >= 0)
-                    _deploymentTargetServer = _deploymentTargetServer.Substring(0, _deploymentTargetServer.IndexOf('\\') - 1);
 
                 List<RoleMemberInfo> listRoleMembers = new List<RoleMemberInfo>();
                 List<RoleDataSourceInfo> listRoleDataSources = new List<RoleDataSourceInfo>();
@@ -129,6 +136,7 @@ namespace BIDSHelper
                     if (r.Members.Count == 0)
                     {
                         RoleMemberInfo infoMember = new RoleMemberInfo();
+                        infoMember.TargetServerName = _deploymentTargetServer;
                         infoMember.database = db;
                         infoMember.role = r;
                         listRoleMembers.Add(infoMember);
@@ -321,17 +329,17 @@ namespace BIDSHelper
                 strDomain = MemberName.Substring(0, idx);
                 if (strDomain == "BUILTIN" || strDomain == "NT AUTHORITY")
                 {
-                    strDomain = _deploymentTargetServer; // Environment.MachineName; //improve this????? TODO
+                    strDomain = DeploymentTargetMachineName; // Environment.MachineName; //improve this????? TODO
                 }
                 strName = MemberName.Substring(idx + 1);
             }
             else
             {
-                strDomain = _deploymentTargetServer; //improve this????? TODO
+                strDomain = DeploymentTargetMachineName; //improve this????? TODO
                 strName = MemberName;
             }
 
-            if (string.Compare(strDomain, _deploymentTargetServer, true) != 0)
+            if (string.Compare(strDomain, DeploymentTargetMachineName, true) != 0)
             {
                 try
                 {
