@@ -278,30 +278,36 @@ namespace AggManager
 
         private void cmdAddAggregationDesignToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //Add new Aggregation Design
-            AggManager.InputForm form1 = new AggManager.InputForm();
+            try
+            {
+                //Add new Aggregation Design
+                AggManager.InputForm form1 = new AggManager.InputForm();
 
-            if (treeView1.SelectedNode.Text == TagNoAggdesign)
-                form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag);
-            else
-                form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Tag);
+                if (treeView1.SelectedNode.Text == TagNoAggdesign)
+                    form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag);
+                else
+                    form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Tag);
 
-            form1.ShowDialog(this);
-            
+                form1.ShowDialog(this);
 
-            //Refresh nodes tree
-            if (treeView1.SelectedNode.Text == TagNoAggdesign)
-                treeView1.SelectedNode = treeView1.SelectedNode.Parent.Parent;
-            else
-                treeView1.SelectedNode = treeView1.SelectedNode.Parent;
 
-            treeView1.SelectedNode.Nodes.RemoveAt(0);
-            CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
-            treeView1.SelectedNode.Nodes[0].Expand();
+                //Refresh nodes tree
+                if (treeView1.SelectedNode.Text == TagNoAggdesign)
+                    treeView1.SelectedNode = treeView1.SelectedNode.Parent.Parent;
+                else
+                    treeView1.SelectedNode = treeView1.SelectedNode.Parent;
 
-            if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
-                treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
- 
+                treeView1.SelectedNode.Nodes.RemoveAt(0);
+                CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
+                treeView1.SelectedNode.Nodes[0].Expand();
+
+                if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
+                    treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
 
@@ -338,18 +344,25 @@ namespace AggManager
 
         private void cmdEditAggDes_Click(object sender, EventArgs e)
         {
-            AggManager.EditAggs form1 = new AggManager.EditAggs();
-            TreeNode node;
-            node = treeView1.SelectedNode;
-            
-            FillCollections ((MeasureGroup) node.Parent.Parent.Tag);
+            try
+            {
+                AggManager.EditAggs form1 = new AggManager.EditAggs();
+                TreeNode node;
+                node = treeView1.SelectedNode;
 
-            form1.Init(node.Name, (MeasureGroup) node.Parent.Parent.Tag , dimAttributes, dimNames, dimIDs);
-            if (form1.ShowDialog(this) != DialogResult.OK) return;
+                FillCollections((MeasureGroup)node.Parent.Parent.Tag);
 
-            UpdateAggCountInListBox(treeView1.SelectedNode);
-            if (!treeView1.SelectedNode.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
-                treeView1.SelectedNode.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Text + MODIFIED_SUFFIX;
+                form1.Init(node.Name, (MeasureGroup)node.Parent.Parent.Tag, dimAttributes, dimNames, dimIDs);
+                if (form1.ShowDialog(this) != DialogResult.OK) return;
+
+                UpdateAggCountInListBox(treeView1.SelectedNode);
+                if (!treeView1.SelectedNode.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
+                    treeView1.SelectedNode.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Text + MODIFIED_SUFFIX;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void FillCollections( MeasureGroup mg1)
@@ -383,103 +396,124 @@ namespace AggManager
 
         private void cmdAddFromQueryLog_Click(object sender, EventArgs e)
         {
-
-            AggManager.QueryLogForm form1 = new AggManager.QueryLogForm();
-            TreeNode node;
-
-
-            if (treeView1.SelectedNode.Text == TagNoAggdesign)
-                node = treeView1.SelectedNode.Parent;
-            else
-                node = treeView1.SelectedNode;
-
-            FillCollections((MeasureGroup)node.Parent.Tag);
-            form1.Init( mProjItem, (MeasureGroup)node.Parent.Tag, dimAttributes, dimNames, dimIDs, true, null);
-
-            form1.ShowDialog(this);
+            try
+            {
+                AggManager.QueryLogForm form1 = new AggManager.QueryLogForm();
+                TreeNode node;
 
 
-            //Refresh the tree 
-            treeView1.SelectedNode = node.Parent;
-            treeView1.SelectedNode.Nodes.RemoveAt(0);
-            CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
+                if (treeView1.SelectedNode.Text == TagNoAggdesign)
+                    node = treeView1.SelectedNode.Parent;
+                else
+                    node = treeView1.SelectedNode;
 
-            treeView1.SelectedNode.Nodes[0].Expand();
-            if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
-                treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
+                FillCollections((MeasureGroup)node.Parent.Tag);
+                form1.Init(mProjItem, (MeasureGroup)node.Parent.Tag, dimAttributes, dimNames, dimIDs, true, null);
 
+                form1.ShowDialog(this);
+
+
+                //Refresh the tree 
+                treeView1.SelectedNode = node.Parent;
+                treeView1.SelectedNode.Nodes.RemoveAt(0);
+                CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
+
+                treeView1.SelectedNode.Nodes[0].Expand();
+                if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
+                    treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void cmdAddAggregationsFromQueryLogToExisting_Click(object sender, EventArgs e)
         {
-            AggManager.QueryLogForm form1 = new AggManager.QueryLogForm();
+            try
+            {
+                AggManager.QueryLogForm form1 = new AggManager.QueryLogForm();
 
 
-            FillCollections((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag);
-            form1.Init( mProjItem, (MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag, dimAttributes, dimNames, dimIDs, false, treeView1.SelectedNode.Text);
+                FillCollections((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag);
+                form1.Init(mProjItem, (MeasureGroup)treeView1.SelectedNode.Parent.Parent.Tag, dimAttributes, dimNames, dimIDs, false, treeView1.SelectedNode.Text);
 
-            form1.ShowDialog(this);
+                form1.ShowDialog(this);
 
-            UpdateAggCountInListBox(treeView1.SelectedNode);
-            if (!treeView1.SelectedNode.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
-                treeView1.SelectedNode.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Text + MODIFIED_SUFFIX;
-
+                UpdateAggCountInListBox(treeView1.SelectedNode);
+                if (!treeView1.SelectedNode.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
+                    treeView1.SelectedNode.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Text + MODIFIED_SUFFIX;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void cmdDeleteAggDes_Click(object sender, EventArgs e)
         {
-
-            TreeNode nd = treeView1.SelectedNode;
-
-            if (MessageBox.Show("Would you like to delete Aggregation design:" + nd.Text + "?", "Delete Aggregation design", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
-                return;
-
-            //Delete aggregation design from the measure group
-
-            MeasureGroup mg = (MeasureGroup)nd.Parent.Parent.Tag;
-
-            foreach (Partition pt in mg.Partitions)
+            try
             {
-                
-                if (pt.AggregationDesignID == nd.Text)
-                    pt.AggregationDesignID = null;
+                TreeNode nd = treeView1.SelectedNode;
+
+                if (MessageBox.Show("Would you like to delete Aggregation design:" + nd.Text + "?", "Delete Aggregation design", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                    return;
+
+                //Delete aggregation design from the measure group
+
+                MeasureGroup mg = (MeasureGroup)nd.Parent.Parent.Tag;
+
+                foreach (Partition pt in mg.Partitions)
+                {
+
+                    if (pt.AggregationDesignID == nd.Text)
+                        pt.AggregationDesignID = null;
+                }
+
+                mg.AggregationDesigns.Remove(nd.Text);
+
+                //Remove agg design from the tree
+                treeView1.SelectedNode = treeView1.SelectedNode.Parent.Parent;
+                treeView1.SelectedNode.Nodes.RemoveAt(0);
+                CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
+
+                treeView1.SelectedNode.Nodes[0].Expand();
+                if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
+                    treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
             }
-
-            mg.AggregationDesigns.Remove(nd.Text);
-
-            //Remove agg design from the tree
-            treeView1.SelectedNode = treeView1.SelectedNode.Parent.Parent;
-            treeView1.SelectedNode.Nodes.RemoveAt(0);
-            CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
-
-            treeView1.SelectedNode.Nodes[0].Expand();
-            if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
-                treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
-           
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
 
         private void addPartitionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            try
+            {
+                AggManager.AddPartitionsForm form1 = new AggManager.AddPartitionsForm();
+                TreeNode node;
 
-            AggManager.AddPartitionsForm form1 = new AggManager.AddPartitionsForm();
-            TreeNode node;
- 
-            node = treeView1.SelectedNode;
-            
-            form1.Init(node.Name, (MeasureGroup) node.Parent.Parent.Tag );
-            form1.ShowDialog(this);
+                node = treeView1.SelectedNode;
 
-            //Refresh the tree 
-            treeView1.SelectedNode = treeView1.SelectedNode.Parent.Parent;
-            treeView1.SelectedNode.Nodes.RemoveAt(0);
-            CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
+                form1.Init(node.Name, (MeasureGroup)node.Parent.Parent.Tag);
+                form1.ShowDialog(this);
 
-            treeView1.SelectedNode.Nodes[0].Expand();
+                //Refresh the tree 
+                treeView1.SelectedNode = treeView1.SelectedNode.Parent.Parent;
+                treeView1.SelectedNode.Nodes.RemoveAt(0);
+                CreateNode(treeView1.SelectedNode.Nodes, TagAggdesigns, TagAggdesigns, ImgListMetadataFolderIndex);
 
-            if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
-                treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
+                treeView1.SelectedNode.Nodes[0].Expand();
 
+                if (!treeView1.SelectedNode.Text.EndsWith(MODIFIED_SUFFIX))
+                    treeView1.SelectedNode.Text = treeView1.SelectedNode.Text + MODIFIED_SUFFIX;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
 
@@ -518,22 +552,35 @@ namespace AggManager
 
         private void aggregationSizesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AggManager.PartitionsAggsForm form1 = new AggManager.PartitionsAggsForm();
+            try
+            {
+                AggManager.PartitionsAggsForm form1 = new AggManager.PartitionsAggsForm();
 
-            form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Parent.Tag, treeView1.SelectedNode.Text, mProjItem);
+                form1.Init((MeasureGroup)treeView1.SelectedNode.Parent.Parent.Parent.Tag, treeView1.SelectedNode.Text, mProjItem);
 
-            form1.ShowDialog(this);
+                form1.ShowDialog(this);
 
-            if (!treeView1.SelectedNode.Parent.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
-                treeView1.SelectedNode.Parent.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Parent.Text + MODIFIED_SUFFIX;
-
+                if (!treeView1.SelectedNode.Parent.Parent.Parent.Text.EndsWith(MODIFIED_SUFFIX))
+                    treeView1.SelectedNode.Parent.Parent.Parent.Text = treeView1.SelectedNode.Parent.Parent.Parent.Text + MODIFIED_SUFFIX;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            saveModifiedMeasureGroups();
-            this.Close();
-            this.Dispose();
+            try
+            {
+                saveModifiedMeasureGroups();
+                this.Close();
+                this.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -599,7 +646,7 @@ namespace AggManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error during save: " + ex.Message);
+                MessageBox.Show("Error during save: " + ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
