@@ -561,6 +561,13 @@
     <None Include="Resources\Sequence.ico" />
     <None Include="Resources\ForEachLoop.ico" />
     <None Include="Resources\Event.ico" />
+    <None Include="Resources\Biml.ico" />
+    <None Include="Resources\BimlFile.ico" />
+    <None Include="Resources\Question.ico" />
+    <None Include="Resources\CheckBiml.ico" />
+    <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
+    <None Include="DLLs\Biml\BimlEngine.dll" />
+    <None Include="Resources\NoIcon.ico" />
     <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
     <None Include="Resources\EditVariable.ico" />

@@ -321,6 +321,13 @@ namespace BIDSHelper.Properties {
             }
         }
         
+        internal static System.Drawing.Icon NoIcon {
+            get {
+                object obj = ResourceManager.GetObject("NoIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon Package {
             get {
                 object obj = ResourceManager.GetObject("Package", resourceCulture);

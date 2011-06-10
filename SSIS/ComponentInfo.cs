@@ -1,11 +1,11 @@
 ﻿namespace BIDSHelper.SSIS
 {
-    using Microsoft.SqlServer.Dts.Runtime;
+    using System;
+    using System.Drawing;
     using System.IO;
     using System.Reflection;
-    using System.Drawing;
-using System;
-using System.Runtime.InteropServices;
+    using System.Runtime.InteropServices;
+    using Microsoft.SqlServer.Dts.Runtime;
 
     public class ComponentInfo
     {
@@ -50,6 +50,12 @@ using System.Runtime.InteropServices;
                 int index = 0;
                 Int32.TryParse(componentInfo.IconResource, out index);
                 this.icon = ExtractIcon(componentInfo.IconFile, index, false);
+            }
+
+            // Ensure we always have an icon
+            if (this.icon == null)
+            {
+                this.icon = BIDSHelper.Properties.Resources.NoIcon;
             }
         }
 
