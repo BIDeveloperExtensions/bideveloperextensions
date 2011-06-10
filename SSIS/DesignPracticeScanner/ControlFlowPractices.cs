@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-//using System.Linq;
-using System.Text;
-using EnvDTE;
-using Microsoft.SqlServer.Dts.Runtime;
-
-namespace BIDSHelper.SSIS.DesignPracticeScanner
+﻿namespace BIDSHelper.SSIS.DesignPracticeScanner
 {
+    using System;
+    using EnvDTE;
+    using Microsoft.SqlServer.Dts.Runtime;
+    using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+
     class ProtectionLevelPractice:DesignPractice
     {
         public ProtectionLevelPractice(string registryPath):base(registryPath)
@@ -30,5 +28,84 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
                 break;
             }
         }
+    }
+
+    class VariableEvaluateAsExpressionPractice : DesignPractice
+    {
+        public VariableEvaluateAsExpressionPractice(string registryPath) : base(registryPath)
+        {
+            this.Name = BIDSHelper.Properties.Resources.VariableEvaluateAsExpressionPracticeName;
+            this.Description = BIDSHelper.Properties.Resources.VariableEvaluateAsExpressionPracticeDescription;
+        }
+
+        public override void Check(Package package, ProjectItem projectItem)
+        {
+            ProcessObject(package, string.Empty);
+        }
+
+        #region Package Scanning
+
+        private void ProcessObject(object component, string path)
+        {
+            DtsContainer container = component as DtsContainer;
+
+            // Should only get package as we call GetPackage up front. Could make scope like, but need UI indicator that this is happening
+            Package package = component as Package;
+            if (package != null)
+            {
+                path = "\\Package";
+            }
+            else if (!(component is DtsEventHandler))
+            {
+                path = path + "\\" + container.Name;
+            }
+
+            if (container != null)
+            {
+                ScanVariables(path, container.Variables); 
+            }
+
+            EventsProvider eventsProvider = component as EventsProvider;
+            if (eventsProvider != null)
+            {
+                foreach (DtsEventHandler eventhandler in eventsProvider.EventHandlers)
+                {
+                    ProcessObject(eventhandler, path + ".EventHandlers[" + eventhandler.Name + "]");
+                }
+            }
+
+            IDTSSequence sequence = component as IDTSSequence;
+            if (sequence != null)
+            {
+                ProcessSequence(container, sequence, path);
+            }
+        }
+
+        private void ProcessSequence(DtsContainer container, IDTSSequence sequence, string path)
+        {
+            foreach (Executable executable in sequence.Executables)
+            {
+                ProcessObject(executable, path);
+            }
+        }
+
+        private void ScanVariables(string objectPath, Variables variables)
+        {
+            foreach (Variable variable in variables)
+            {
+                if (string.IsNullOrEmpty(variable.Expression))
+                {
+                    continue;
+                }
+
+                if (!variable.EvaluateAsExpression)
+                {
+                    this.Results.Add(new Result(false, string.Format(BIDSHelper.Properties.Resources.VariableEvaluateAsExpressionPracticeResultFormatString, variable.Name, objectPath), ResultSeverity.Normal));
+                }
+            }
+        }
+
+        #endregion
+
     }
 }

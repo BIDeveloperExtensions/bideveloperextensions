@@ -505,5 +505,32 @@ namespace BIDSHelper.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Validates that any variable which has an expression set also has the EvaluateAsExpression property set to true..
+        /// </summary>
+        internal static string VariableEvaluateAsExpressionPracticeDescription {
+            get {
+                return ResourceManager.GetString("VariableEvaluateAsExpressionPracticeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variable EvaluateAsExpression.
+        /// </summary>
+        internal static string VariableEvaluateAsExpressionPracticeName {
+            get {
+                return ResourceManager.GetString("VariableEvaluateAsExpressionPracticeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variable \&quot;{0}\&quot; has an Expression set, but the EvaluateAsExpression property is false. The variable value will be static and the expression will not be used. Consider removing the expression or setting EvaluateAsExpression to true. Path to variable {1}..
+        /// </summary>
+        internal static string VariableEvaluateAsExpressionPracticeResultFormatString {
+            get {
+                return ResourceManager.GetString("VariableEvaluateAsExpressionPracticeResultFormatString", resourceCulture);
+            }
+        }
     }
 }

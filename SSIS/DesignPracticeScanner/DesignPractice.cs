@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-//using System.Linq;
-using System.Text;
-using Microsoft.SqlServer.Dts.Runtime;
-using EnvDTE;
-using Microsoft.Win32;
-
-namespace BIDSHelper.SSIS.DesignPracticeScanner
+﻿namespace BIDSHelper.SSIS.DesignPracticeScanner
 {
+    using System.Collections.Generic;
+    using EnvDTE;
+    using Microsoft.SqlServer.Dts.Runtime;
+    using Microsoft.Win32;
+    
     public abstract class DesignPractice
     {
         private string _name;
@@ -124,7 +121,6 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
         {
             get { return _severity; }
         }
-
     }
 
     public enum ResultSeverity
@@ -133,5 +129,4 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
         Normal = 1,
         High = 2
     }
-
 }

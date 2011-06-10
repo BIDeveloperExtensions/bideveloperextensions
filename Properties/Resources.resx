@@ -280,4 +280,13 @@
   <data name="NoIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NoIcon.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="VariableEvaluateAsExpressionPracticeDescription" xml:space="preserve">
+    <value>Validates that any variable which has an expression set also has the EvaluateAsExpression property set to true.</value>
+  </data>
+  <data name="VariableEvaluateAsExpressionPracticeName" xml:space="preserve">
+    <value>Variable EvaluateAsExpression</value>
+  </data>
+  <data name="VariableEvaluateAsExpressionPracticeResultFormatString" xml:space="preserve">
+    <value>Variable \"{0}\" has an Expression set, but the EvaluateAsExpression property is false. The variable value will be static and the expression will not be used. Consider removing the expression or setting EvaluateAsExpression to true. Path to variable {1}.</value>
+  </data>
 </root>
