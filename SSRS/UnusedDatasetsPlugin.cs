@@ -98,10 +98,15 @@ namespace BIDSHelper.SSRS
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
-                if (hierItem.Object is Project)
+                Project project = hierItem.Object as Project;
+                if (project == null && hierItem.Object is ProjectItem)
                 {
-                    Project p = (Project)hierItem.Object;
-                    if (GetRdlFilesInProjectItems(p.ProjectItems, true).Length > 0)
+                    ProjectItem pi = hierItem.Object as ProjectItem;
+                    project = pi.SubProject;
+                }
+                if (project != null)
+                {
+                    if (GetRdlFilesInProjectItems(project.ProjectItems, true).Length > 0)
                         return true;
                 }
                 else if (solution != null)
@@ -127,7 +132,11 @@ namespace BIDSHelper.SSRS
             List<string> lst = new List<string>();
             foreach (ProjectItem pi in pis)
             {
-                if (pi.Name.ToLower().EndsWith(".rdl") || (bGetRDLC && pi.Name.ToLower().EndsWith(".rdlc")))
+                if (pi.SubProject != null)
+                {
+                    lst.AddRange(GetRdlFilesInProjectItems(pi.SubProject.ProjectItems, bGetRDLC));
+                }
+                else if (pi.Name.ToLower().EndsWith(".rdl") || (bGetRDLC && pi.Name.ToLower().EndsWith(".rdlc")))
                 {
                     lst.Add(pi.get_FileNames(1));
                 }
@@ -154,6 +163,12 @@ namespace BIDSHelper.SSRS
                 if (hierItem.Object is Project)
                 {
                     Project p = (Project)hierItem.Object;
+                    lstRdls.AddRange(GetRdlFilesInProjectItems(p.ProjectItems, true));
+                }
+                else if (hierItem.Object is ProjectItem)
+                {
+                    ProjectItem pi = hierItem.Object as ProjectItem;
+                    Project p = pi.SubProject;
                     lstRdls.AddRange(GetRdlFilesInProjectItems(p.ProjectItems, true));
                 }
                 else if (solution != null)
