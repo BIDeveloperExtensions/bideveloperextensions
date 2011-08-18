@@ -107,7 +107,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                         if (path.OutputTransformID == iTransformID)
                         {
                             tree.DateRanges.Add(new DateRange(e.StartTime));
-                            break;
+                            //break; //there could be multiple execution trees started by the same component?
                         }
                     }
                 }
@@ -126,11 +126,14 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     {
                         if (path.InputID == iInputID)
                         {
-                            DateRange lastDateRange = tree.DateRanges[tree.DateRanges.Count - 1];
-                            if (lastDateRange.EndDate == DateTime.MinValue)
+                            if (tree.DateRanges.Count > 0) //this is to avoid an error on issue 31275 where OnPipelinePrePrimeOutput wasn't ever called so we didn't start a date range
                             {
-                                lastDateRange.EndDate = e.EndTime;
-                                break;
+                                DateRange lastDateRange = tree.DateRanges[tree.DateRanges.Count - 1];
+                                if (lastDateRange.EndDate == DateTime.MinValue)
+                                {
+                                    lastDateRange.EndDate = e.EndTime;
+                                    break;
+                                }
                             }
                         }
                     }
