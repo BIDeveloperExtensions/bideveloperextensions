@@ -102,8 +102,9 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 int iTransformID = int.Parse(parts[1]);
                 foreach (ExecutionTree tree in pipePerf.ExecutionTrees)
                 {
-                    foreach (PipelinePath path in tree.Paths)
+                    if (tree.Paths.Count > 0)
                     {
+                        PipelinePath path = tree.Paths[0]; //only look for the component on the output of the first path
                         if (path.OutputTransformID == iTransformID)
                         {
                             tree.DateRanges.Add(new DateRange(e.StartTime));
@@ -297,16 +298,16 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
     public enum BidsHelperCapturedDtsLogEvent
     {
-        PackageStart, 
-        PackageEnd, 
-        OnPreExecute, 
-        OnPostExecute, 
-        OnError, 
-        OnPipelinePrePrimeOutput, 
-        OnPipelinePostEndOfRowset, 
-        BufferSizeTuning, 
-        OnPipelineRowsSent, 
-        PipelineExecutionTrees, 
+        PackageStart,
+        PackageEnd,
+        OnPreExecute,
+        OnPostExecute,
+        OnError,
+        OnPipelinePrePrimeOutput,
+        OnPipelinePostEndOfRowset,
+        BufferSizeTuning,
+        OnPipelineRowsSent,
+        PipelineExecutionTrees,
         PipelineExecutionPlan
     }
 }
