@@ -53,7 +53,7 @@
                 case BIDSFeatureCategories.General:
                     return "General";
                 case BIDSFeatureCategories.SSAS:
-                    return "SQL Server Analsysis Services (SSAS)";
+                    return "SQL Server Analysis Services (SSAS)";
                 case BIDSFeatureCategories.SSIS:
                     return "SQL Server Integration Services (SSIS)";
                 case BIDSFeatureCategories.SSRS:
