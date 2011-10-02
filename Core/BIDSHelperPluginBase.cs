@@ -29,6 +29,7 @@ namespace BIDSHelper
         private Connect addinCore;
         private bool isEnabled;
         private bool isEnabledCached = false;
+        private static System.Collections.Generic.Dictionary<string, CommandBar> _cachedCommandBars = new System.Collections.Generic.Dictionary<string, CommandBar>();
 
         #region "Constructors"
         public BIDSHelperPluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -159,13 +160,53 @@ namespace BIDSHelper
 
                 foreach (string sMenuName in this.MenuName.Split(','))
                 {
-                    CommandBar pluginCmdBar = cmdBars[sMenuName];
+                    CommandBar pluginCmdBar = null;
+
+                    if (_cachedCommandBars.ContainsKey(sMenuName))
+                    {
+                        pluginCmdBar = _cachedCommandBars[sMenuName];
+                    }
+                    else
+                    {
+#if DENALI
+                        //in VS2010, performance of cmdBars[sMenuName] is terrible: http://www.mztools.com/articles/2011/MZ2011005.aspx
+                        //plus looking up cmdBars["Other Windows"] failsof the ones we're looking for are there
+                        //performs better when you look at the root level of the CommandBars since most 
+                        foreach (CommandBar bar in cmdBars)
+                        {
+                            if (bar.Name == sMenuName)
+                            {
+                                pluginCmdBar = bar;
+                                break;
+                            }
+                        }
+
+                        //if not yet found, then recurse
+                        if (pluginCmdBar == null)
+                        {
+                            foreach (CommandBar bar in cmdBars)
+                            {
+                                pluginCmdBar = RecurseCommandBarToFindCommandBarByName(bar, sMenuName);
+                                if (pluginCmdBar != null) break;
+                            }
+                        }
+#else
+                        pluginCmdBar = cmdBars[sMenuName];
+#endif
+                    }
+
                     if (pluginCmdBar == null)
                     {
                         System.Windows.Forms.MessageBox.Show("Cannot get the " + this.MenuName + " menubar");
                     }
                     else
                     {
+                        if (!_cachedCommandBars.ContainsKey(sMenuName))
+                        {
+                            _cachedCommandBars.Add(sMenuName, pluginCmdBar);
+                        }
+
+
                         pluginCmd = cmdTmp;
 
                         CommandBarButton btn;
@@ -220,9 +261,46 @@ namespace BIDSHelper
             }
             catch (System.Exception e)
             {
-                MessageBox.Show("Problem registering " + this.FullName + " command: " + e.Message);
+                MessageBox.Show("Problem registering " + this.FullName + " command: " + e.Message + "\r\n" + e.StackTrace);
             }
 
+        }
+
+        private CommandBar RecurseCommandBarToFindCommandBarByName(CommandBar bar, string name)
+        {
+            //try
+            //{
+            //    CommandBarControl ctrl = bar.Controls[name]; //only works for US and international VS in VS2010
+            //    return ((CommandBarPopup)ctrl).CommandBar;
+            //}
+            //catch { }
+
+            //idea from http://www.mztools.com/articles/2007/MZ2007002.aspx
+            if (bar.Name == name)
+            {
+                return bar;
+            }
+            //foreach (CommandBarControl cmd in bar.Controls)
+            //{
+            //    if (cmd.Type == MsoControlType.msoControlPopup)
+            //    {
+            //        CommandBarPopup popup = (CommandBarPopup)cmd;
+            //        if (popup.CommandBar.Name == name)
+            //        {
+            //            return popup.CommandBar;
+            //        }
+            //    }
+            //}
+            foreach (CommandBarControl cmd in bar.Controls)
+            {
+                if (cmd.Type == MsoControlType.msoControlPopup)
+                {
+                    CommandBarPopup popup = (CommandBarPopup)cmd;
+                    CommandBar oReturnVal = RecurseCommandBarToFindCommandBarByName(popup.CommandBar, name);
+                    if (oReturnVal != null) return oReturnVal;
+                }
+            }
+            return null;
         }
 
         private void SetCustomIcon(CommandBarButton btn)
@@ -231,7 +309,11 @@ namespace BIDSHelper
             {
                 System.Drawing.Bitmap bmp = this.CustomMenuIcon.ToBitmap();
                 btn.Picture = (stdole.StdPicture)ImageToPictureDispConverter.GetIPictureDispFromImage(bmp);
+#if DENALI
+                //.Mask has been deprecated in VS2010: http://msmvps.com/blogs/carlosq/archive/2009/11/01/more-on-commandbarbutton-mask-property-deprecated-in-vs-2010.aspx
+#else
                 btn.Mask = (stdole.StdPicture)ImageToPictureDispConverter.GetMaskIPictureDispFromBitmap(bmp);
+#endif
                 bmp.Dispose();
             }
         }

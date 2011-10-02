@@ -1,4 +1,5 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -17,13 +18,28 @@
     <ApplicationIcon>BIDSHelper.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
-    <OldToolsVersion>2.0</OldToolsVersion>
+    <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>BIDSHelper.snk</AssemblyOriginatorKeyFile>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <TargetFrameworkSubset>Full</TargetFrameworkSubset>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,6 +54,7 @@
     <DebugType>full</DebugType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -50,6 +67,7 @@
     </DocumentationFile>
     <DefineConstants>KATMAI;DENALI</DefineConstants>
     <NoWarn>1591</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
@@ -66,6 +84,7 @@
     <NoWarn>1591</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
@@ -84,7 +103,7 @@
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
+      <HintPath>c:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Design, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -102,7 +121,7 @@
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.Design, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies\Microsoft.DataTransformationServices.Design.DLL</HintPath>
+      <HintPath>c:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.DataTransformationServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.VsIntegration, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -111,7 +130,7 @@
     </Reference>
     <Reference Include="Microsoft.DataWarehouse, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.DLL</HintPath>
+      <HintPath>c:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -119,11 +138,11 @@
     </Reference>
     <Reference Include="Microsoft.DataWarehouse.VsIntegration, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>c:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
+      <HintPath>c:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.Common, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.ReportViewer.WinForms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.ReportViewer.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.SqlServer.DlgGrid, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>.\Microsoft.SqlServer.DlgGrid.dll</HintPath>
@@ -143,10 +162,12 @@
     <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="msddsp, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="msddsp, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2008\msddsp.dll</HintPath>
+      <HintPath>DLLs\SQL2012\msddsp.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -546,7 +567,7 @@
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\DestComponent.ico" />
     <None Include="Resources\SmartDiffSSRS.xslt" />
-    <Content Include="BIDSHelper2011.AddIn" />
+    <Content Include="BIDSHelper2012.AddIn" />
     <Content Include="Build\Readme.txt" />
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
@@ -568,6 +589,7 @@
     <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
     <None Include="DLLs\Biml\BimlEngine.dll" />
     <None Include="Resources\NoIcon.ico" />
+    <Content Include="DLLs\SQL2012\msddsp.dll" />
     <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
     <None Include="Resources\EditVariable.ico" />
@@ -793,5 +815,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Build\examples\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
   </ItemGroup>
 </Project>
