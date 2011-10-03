@@ -16,6 +16,7 @@ namespace BIDSHelper
     {
         private Dimension oLastDimension;
         private IComponentChangeService changesvc;
+        private static EnvDTE.Window toolWin;
 
         public DimensionHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -126,10 +127,18 @@ namespace BIDSHelper
 
                 int iErrorCnt = 0;
                 EnvDTE80.Windows2 toolWins;
-                EnvDTE.Window toolWin;
                 object objTemp = null;
                 toolWins = (Windows2)ApplicationObject.Windows;
-                toolWin = toolWins.CreateToolWindow2(AddInInstance, typeof(WebBrowser).Assembly.Location, typeof(WebBrowser).FullName, d.Name + ": Dimension Health Check", "{" + typeof(WebBrowser).GUID.ToString() + "}", ref objTemp);
+                string sCaption = d.Name + ": Dimension Health Check";
+                if (toolWin == null)
+                {
+                    toolWin = toolWins.CreateToolWindow2(AddInInstance, typeof(WebBrowser).Assembly.Location, typeof(WebBrowser).FullName, sCaption, "{" + typeof(WebBrowser).GUID.ToString() + "}", ref objTemp);
+                }
+                else
+                {
+                    objTemp = toolWin.Object;
+                    toolWin.Caption = sCaption;
+                }
 
                 WebBrowser browser = (WebBrowser)objTemp;
                 browser.AllowNavigation = true;
@@ -138,6 +147,14 @@ namespace BIDSHelper
                 else
                     browser.Navigate("about:blank");
                 Application.DoEvents();
+
+#if DENALI
+                //this doesn't quite work, but it's better than it was before this code
+                //appear to be having some problems with .NET controls inside tool windows, even though this issue says fixed: http://connect.microsoft.com/VisualStudio/feedback/details/512181/vsip-vs-2010-beta2-width-of-add-in-toolwindow-not-changed-with-activex-hosted-control#tabs
+                browser.Dock = DockStyle.Fill;
+                browser.Width = toolWin.Width;
+                browser.Height = toolWin.Height;
+#endif
 
                 browser.Document.Write("<font style='font-family:Arial;font-size:10pt'>");
                 browser.Document.Write("<h3>" + d.Name + ": Dimension Health Check</h3>");
@@ -211,6 +228,7 @@ namespace BIDSHelper
                 toolWin.IsFloating = false;
                 toolWin.Linkable = false;
                 toolWin.Visible = true;
+
             }
             catch (System.Exception ex)
             {
