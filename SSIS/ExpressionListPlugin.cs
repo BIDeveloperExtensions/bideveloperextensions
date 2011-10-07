@@ -303,6 +303,10 @@ namespace BIDSHelper.SSIS
 
         private Package GetCurrentPackage()
         {
+            #if DENALI
+            // This seems to simple, but it appears to work (Green)
+            return (Package)win.PropertiesLinkComponent;
+            #else
             Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
 
             // Get the package, but may have to walk up the object hierarchy.
@@ -336,6 +340,7 @@ namespace BIDSHelper.SSIS
 
             // Get the root container, i.e the Package
             return GetPackageFromContainer(container);
+            #endif
         }
 
         #region Window Events

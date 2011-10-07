@@ -22,8 +22,12 @@ namespace BIDSHelper.SSIS
     
     public class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
+#if DENALI
+        private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{41C287E9-BCD9-4D20-8D38-B6FD9CFB73C9}";
+#else
+        private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
+#endif
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        private static string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
         private ToolBarButton moveCopyButton;
         private ToolBarButton editExpressionButton;
         private static DlgGridControl grid;
@@ -101,9 +105,17 @@ namespace BIDSHelper.SSIS
                     serviceProvider = designer;
                     changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
 
+                    // Get grid and toolbar
+#if DENALI
+                    // "tableLayoutPanelMain" - "tableLayoutPanelVariable" - "dlgGridControl1" | "toolBarVariable"
+                    grid = (DlgGridControl)variablesToolWindowControl.Controls[0].Controls[0].Controls[0];
+                    ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls[0].Controls[0].Controls[1];
+#else
                     grid = (DlgGridControl)variablesToolWindowControl.Controls["dlgGridControl1"];
-                    
                     ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls["toolBar1"];
+#endif
+
+                    // If buttons already added, no need to do it again so exit 
                     if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
 
                     grid.SelectionChanged += new SelectionChangedEventHandler(grid_SelectionChanged);
@@ -113,7 +125,7 @@ namespace BIDSHelper.SSIS
                     separator.Style = ToolBarButtonStyle.Separator;
                     toolbar.Buttons.Add(separator);
 
-                    //Move/Copy button
+                    // Move/Copy button
                     this.moveCopyButton = new ToolBarButton();
                     this.moveCopyButton.Style = ToolBarButtonStyle.PushButton;
                     this.moveCopyButton.ToolTipText = "Move/Copy Variables to New Scope (BIDS Helper)";

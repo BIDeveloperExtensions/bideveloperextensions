@@ -46,7 +46,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <IncrementalBuild>true</IncrementalBuild>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\..\..\Users\Darren Green\Documents\Visual Studio 2010\AddIns\</OutputPath>
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>1591</NoWarn>
@@ -88,9 +88,9 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="ExpressionEditor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
+    <Reference Include="ExpressionEditor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2008\ExpressionEditor.dll</HintPath>
+      <HintPath>DLLs\SQL2012\ExpressionEditor.dll</HintPath>
     </Reference>
     <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>True</SpecificVersion>
@@ -553,7 +553,7 @@
     <None Include="Resources\DeployAggDesigns.xslt" />
     <None Include="Resources\DeployAggDesigns.ico" />
     <None Include="Resources\ExpressionListIcon.ico" />
-    <None Include="DLLs\SQL2008\msddsp.dll" />
+    <None Include="DLLs\SQL2012\msddsp.dll" />
     <None Include="Resources\performance.ico" />
     <None Include="Resources\arrowDown.bmp" />
     <None Include="Resources\arrowFlat.bmp" />
@@ -572,7 +572,7 @@
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
-    <None Include="DLLs\SQL2008\ExpressionEditor.dll">
+    <None Include="DLLs\SQL2012\ExpressionEditor.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Resources\Variable.ico" />
@@ -590,7 +590,7 @@
     <None Include="DLLs\Biml\BimlEngine.dll" />
     <None Include="Resources\NoIcon.ico" />
     <Content Include="DLLs\SQL2012\msddsp.dll" />
-    <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
+    <Content Include="SetupScript\SQL2012CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
     <None Include="Resources\EditVariable.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />
@@ -806,7 +806,7 @@
     <None Include="Properties\DataSources\UnusedColumnsPlugin.UsedColumn.datasource" />
     <None Include="Properties\DataSources\VisualizeAttributeLatticeImageForReport.datasource" />
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
-    <None Include="SetupScript\BIDSHelperSetup2008.nsi" />
+    <None Include="SetupScript\BIDSHelperSetup2012.nsi" />
     <None Include="SetupScript\License.rtf" />
   </ItemGroup>
   <PropertyGroup>
