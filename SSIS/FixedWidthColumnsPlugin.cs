@@ -122,15 +122,35 @@ namespace BIDSHelper
         private ConnectionManager GetSelectedConnectionManager(IDesignerHost designer, out Package package)
         {
             package = null;
-            IDTSSequence container = null;
-            TaskHost taskHost = null;
 
             System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
             Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-            DdsDiagramHostControl diagram = null;
             ListView lvwConnMgrs = null;
 
+#if DENALI
+            package = (Package)win.PropertiesLinkComponent;
+
+            if (win.SelectedIndex == 0) //Control Flow
+            {
+                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+            }
+            else if (win.SelectedIndex == 1) //Data Flow
+            {
+                lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
+            }
+            else if (win.SelectedIndex == 2) //Event Handlers
+            {
+                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+            }
+            else
+            {
+                return null;
+            }
+#else
+            IDTSSequence container = null;
+            TaskHost taskHost = null;
+            DdsDiagramHostControl diagram = null;
             if (win.SelectedIndex == 0) //Control Flow
             {
                 diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
@@ -156,9 +176,11 @@ namespace BIDSHelper
             }
 
             if (lvwConnMgrs.SelectedItems.Count != 1) return null;
+            package = GetPackageFromContainer((DtsContainer)container);
+#endif
+
             ListViewItem lviConn = lvwConnMgrs.SelectedItems[0];
 
-            package = GetPackageFromContainer((DtsContainer)container);
             ConnectionManager conn = FindConnectionManager(package, lviConn.Text);
             return conn;
         }
