@@ -15,7 +15,7 @@ namespace BIDSHelper.SSIS
         public FixedWidthColumnsForm()
         {
             InitializeComponent();
-            this.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+            this.Icon = BIDSHelper.Resources.Common.BIDSHelper;
             this.cboRaggedRightDelimiter.SelectedItem = "[None]";
         }
 

@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
 using Microsoft.AnalysisServices;
-using Properties = BIDSHelper.Properties;
 
 namespace PCDimNaturalizer
 {
@@ -132,7 +131,7 @@ namespace PCDimNaturalizer
             // pictureBox1
             // 
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pictureBox1.Image = Properties.Resources.ProcessProgress;
+            this.pictureBox1.Image = BIDSHelper.Resources.Common.ProcessProgress;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(25, 28);
@@ -213,7 +212,7 @@ namespace PCDimNaturalizer
             try
             {
                 hdlCloseButton = btnClose.Handle; // for processing update messages to change the close button's text from the async callback of the naturalization function
-                waitImage = Properties.Resources.ProcessProgress as Bitmap;
+                waitImage = BIDSHelper.Resources.Common.ProcessProgress as Bitmap;
                 ImageAnimator.Animate(waitImage, new EventHandler(OnFrameChanged));
                 pictureBox1.BackColor = this.BackColor;
                 txtStatus.Text = "Starting...";
@@ -273,7 +272,7 @@ namespace PCDimNaturalizer
             {
                 pictureBox1.Paint -= pictureBox1_Paint;
                 ImageAnimator.StopAnimate(waitImage, OnFrameChanged);
-                pictureBox1.Image = Properties.Resources.ProcessError;
+                pictureBox1.Image = BIDSHelper.Resources.Common.ProcessError;
                 pictureBox1.Refresh();
                 pictureBox1.Invalidate();
                 txtStatus.Text = "Error initializing naturalizer:  " + exc.ToString();

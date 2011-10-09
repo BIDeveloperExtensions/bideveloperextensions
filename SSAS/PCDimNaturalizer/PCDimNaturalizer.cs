@@ -11,7 +11,6 @@ using System.Drawing;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.IO;
-using Properties = BIDSHelper.Properties;
 
 namespace PCDimNaturalizer
 {
@@ -97,7 +96,7 @@ namespace PCDimNaturalizer
             }
             catch (Exception e)
             {
-                UpdateStatus(Properties.Resources.ProcessError);
+                UpdateStatus(BIDSHelper.Resources.Common.ProcessError);
                 UpdateStatus("Error initializing naturalizer:\r\n" + e.ToString());
                 throw e;
             }
@@ -195,14 +194,14 @@ namespace PCDimNaturalizer
                 UpdateStatus("Creating naturalized view for dimension...");
                 CreateNaturalizedView();
                 UpdateStatus("Operation complete.");
-                UpdateStatus(Properties.Resources.ProgressComplete);
+                UpdateStatus(BIDSHelper.Resources.Common.ProgressComplete);
             }
             catch (Exception e)
             {
                 if (SourceWindowHandle != null && SourceWindowHandle.ToInt32() != 0)
                 {
                     UpdateStatus("Error during: [" + Program.Progress.txtStatus.Text + "]\r\n" + e.ToString());
-                    UpdateStatus(Properties.Resources.ProcessError);
+                    UpdateStatus(BIDSHelper.Resources.Common.ProcessError);
                 }
                 else
                 {
@@ -243,7 +242,7 @@ namespace PCDimNaturalizer
             }
             catch (Exception e)
             {
-                UpdateStatus(Properties.Resources.ProcessError);
+                UpdateStatus(BIDSHelper.Resources.Common.ProcessError);
                 UpdateStatus("Error initializing naturalizer:\r\n" + e.ToString());
                 throw e;
             }
@@ -268,7 +267,7 @@ namespace PCDimNaturalizer
             }
             catch (Exception e)
             {
-                UpdateStatus(Properties.Resources.ProcessError);
+                UpdateStatus(BIDSHelper.Resources.Common.ProcessError);
                 UpdateStatus("Error initializing naturalizer:\r\n" + e.ToString());
                 throw e;
             }
@@ -1136,14 +1135,14 @@ namespace PCDimNaturalizer
                     }
                 }
                 UpdateStatus("Operation complete.");
-                UpdateStatus(Properties.Resources.ProgressComplete);
+                UpdateStatus(BIDSHelper.Resources.Common.ProgressComplete);
             }
             catch (Exception e)
             {
                 if (SourceWindowHandle != null && SourceWindowHandle.ToInt32() != 0)
                 {
                     UpdateStatus("Error during: [" + Program.Progress.txtStatus.Text + "]\r\n" + e.ToString());
-                    UpdateStatus(Properties.Resources.ProcessError);
+                    UpdateStatus(BIDSHelper.Resources.Common.ProcessError);
                 }
                 else
                 {

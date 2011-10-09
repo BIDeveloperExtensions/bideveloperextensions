@@ -13,7 +13,7 @@ namespace BIDSHelper.SSAS
         public DataTypeDiscrepancyCheckForm()
         {
             InitializeComponent();
-            this.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+            this.Icon = BIDSHelper.Resources.Common.BIDSHelper;
         }
 
         private void DataTypeDiscrepancyCheckForm_Load(object sender, EventArgs e)

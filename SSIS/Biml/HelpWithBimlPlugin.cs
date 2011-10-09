@@ -1,6 +1,5 @@
 using EnvDTE;
 using EnvDTE80;
-using BIDSHelper.Properties;
 
 namespace BIDSHelper.SSIS.Biml
 {
@@ -24,7 +23,7 @@ namespace BIDSHelper.SSIS.Biml
 
         public override System.Drawing.Icon CustomMenuIcon
         {
-            get { return Properties.Resources.Question; }
+            get { return BIDSHelper.Resources.Common.Question; }
         }
 
         public override string ButtonText
@@ -61,7 +60,7 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
-            System.Diagnostics.Process.Start(Resources.BimlHelpUrl);
+            System.Diagnostics.Process.Start(BIDSHelper.Resources.Common.BimlHelpUrl);
         }
     }
 }

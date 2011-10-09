@@ -19,7 +19,7 @@
             // Expand root node, the package
             this.treeView.Nodes[0].Expand();
 
-            this.Icon = BIDSHelper.Properties.Resources.Copy;
+            this.Icon = BIDSHelper.Resources.Common.Copy;
 
             // Change caption based on count of selected variables,
             // makes form less clutered and easier to read.

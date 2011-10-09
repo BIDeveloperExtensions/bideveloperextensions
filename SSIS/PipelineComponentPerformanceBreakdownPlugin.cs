@@ -40,7 +40,7 @@ namespace BIDSHelper.SSIS
 
         public override System.Drawing.Icon CustomMenuIcon
         {
-            get { return BIDSHelper.Properties.Resources.Performance; }
+            get { return BIDSHelper.Resources.Common.Performance; }
         }
 
         public override string ButtonText

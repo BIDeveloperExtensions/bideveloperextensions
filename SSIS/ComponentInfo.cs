@@ -55,7 +55,7 @@
             // Ensure we always have an icon
             if (this.icon == null)
             {
-                this.icon = BIDSHelper.Properties.Resources.NoIcon;
+                this.icon = BIDSHelper.Resources.Common.NoIcon;
             }
         }
 

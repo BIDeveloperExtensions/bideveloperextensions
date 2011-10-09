@@ -103,7 +103,7 @@ namespace BIDSHelper
                         newSeparatorButton.Name = this.FullName + ".Separator";
                         newSeparatorButton.Style = ToolBarButtonStyle.Separator;
 
-                        toolbar.ImageList.Images.Add(Properties.Resources.M2MIcon);
+                        toolbar.ImageList.Images.Add(BIDSHelper.Resources.Common.M2MIcon);
                         newM2MButton = new ToolBarButton();
                         newM2MButton.ToolTipText = this.FeatureName + " (BIDS Helper)";
                         newM2MButton.Name = this.FullName + ".M2M";
@@ -114,7 +114,7 @@ namespace BIDSHelper
 
                         if (Connect.Plugins[DeployMDXScriptPlugin.BaseName + typeof(DeployMDXScriptPlugin).Name].Enabled)
                         {
-                            toolbar.ImageList.Images.Add(Properties.Resources.PrinterFriendlyDimensionUsageIcon);
+                            toolbar.ImageList.Images.Add(BIDSHelper.Resources.Common.PrinterFriendlyDimensionUsageIcon);
                             newPrintFriendlyButton = new ToolBarButton();
                             newPrintFriendlyButton.ToolTipText = "Printer Friendly Dimension Usage (BIDS Helper)";
                             newPrintFriendlyButton.Name = this.FullName + ".PrintFriendly";

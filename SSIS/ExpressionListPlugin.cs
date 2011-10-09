@@ -85,7 +85,7 @@ namespace BIDSHelper.SSIS
             // Set the picture displayed when the window is tab docked
             // Clean build required when switching between VS 2005 and VS 2008 
             // during testing, otherwise we get some strange behaviour with this
-            IntPtr icon = BIDSHelper.Properties.Resources.ExpressionListIcon.ToBitmap().GetHbitmap();
+            IntPtr icon = BIDSHelper.Resources.Common.ExpressionListIcon.ToBitmap().GetHbitmap();
 
 #if KATMAI
             toolWindow.SetTabPicture(icon.ToInt32()); 
@@ -562,7 +562,7 @@ namespace BIDSHelper.SSIS
                 info.PropertyName = constraint.Name;
                 info.Expression = constraint.Expression;
                 info.HasExpression = true;
-                info.Icon = BIDSHelper.Properties.Resources.Path;
+                info.Icon = BIDSHelper.Resources.Common.Path;
                 worker.ReportProgress(0, info);
             }
         }
@@ -600,7 +600,7 @@ namespace BIDSHelper.SSIS
                     info.PropertyName = variable.QualifiedName;
                     info.Expression = variable.Expression;
                     info.HasExpression = variable.EvaluateAsExpression;
-                    info.Icon = BIDSHelper.Properties.Resources.Variable;
+                    info.Icon = BIDSHelper.Resources.Versioned.Variable;
                     worker.ReportProgress(0, info);
                 }
                 catch { }

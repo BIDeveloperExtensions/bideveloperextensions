@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.DataWarehouse.Design;
-using System.Windows.Forms;
-using System.Drawing;
 using System.ComponentModel;
-using EnvDTE;
-using Microsoft.SqlServer.Dts.Runtime;
-using System.Runtime.InteropServices;
+using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
+using EnvDTE;
+using Microsoft.DataWarehouse.Design;
+using Microsoft.SqlServer.Dts.Runtime;
 
 namespace BIDSHelper.SSIS.PerformanceVisualization
 {
@@ -56,12 +55,17 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         //pipeline component performance breakdown
         private DtsPipelineTestDirector pipelineBreakdownTestDirector = null;
 
-#if KATMAI
+#if DENALI
+        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
+        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.3";
+#else
+    #if KATMAI
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\100\SSIS\Setup\DTSPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.2";
-#else
+    #else
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\MSDTS\Setup\DtsPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.1";
+    #endif
 #endif
 
 
@@ -192,14 +196,14 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         {
             this.StartButton = new ToolBarButton();
             this.StartButton.Style = ToolBarButtonStyle.PushButton;
-            pageViewToolBar.ImageList.Images.Add(Properties.Resources.Run);
+            pageViewToolBar.ImageList.Images.Add(BIDSHelper.Resources.Common.Run);
             this.StartButton.ImageIndex = pageViewToolBar.ImageList.Images.Count - 1;
             this.StartButton.ToolTipText = "Execute package";
             pageViewToolBar.Buttons.Add(this.StartButton);
 
             this.StopButton = new ToolBarButton();
             this.StopButton.Style = ToolBarButtonStyle.PushButton;
-            pageViewToolBar.ImageList.Images.Add(Properties.Resources.End);
+            pageViewToolBar.ImageList.Images.Add(BIDSHelper.Resources.Common.End);
             this.StopButton.ImageIndex = pageViewToolBar.ImageList.Images.Count - 1;
             this.StopButton.ToolTipText = "Stop execution of package";
             pageViewToolBar.Buttons.Add(this.StopButton);
@@ -210,7 +214,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
             this.ViewDropDownButton = new ToolBarButton();
             this.ViewDropDownButton.Style = ToolBarButtonStyle.DropDownButton;
-            pageViewToolBar.ImageList.Images.Add(Properties.Resources.TreeViewTab);
+            pageViewToolBar.ImageList.Images.Add(BIDSHelper.Resources.Common.TreeViewTab);
             this.ViewDropDownButton.ImageIndex = pageViewToolBar.ImageList.Images.Count - 1;
             this.ViewDropDownButton.ToolTipText = "Switch to alternate view";
             this.ViewDropDownButton.DropDownMenu = this.CreateViewDropDownMenu();
@@ -218,7 +222,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
             this.CopyButton = new ToolBarButton();
             this.CopyButton.Style = ToolBarButtonStyle.PushButton;
-            pageViewToolBar.ImageList.Images.Add(Properties.Resources.Copy);
+            pageViewToolBar.ImageList.Images.Add(BIDSHelper.Resources.Common.Copy);
             this.CopyButton.ImageIndex = pageViewToolBar.ImageList.Images.Count - 1;
             this.CopyButton.ToolTipText = "Copy the grid to clipboard";
             this.CopyButton.Enabled = false;

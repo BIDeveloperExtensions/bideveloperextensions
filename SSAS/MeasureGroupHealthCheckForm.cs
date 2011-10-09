@@ -13,7 +13,7 @@ namespace BIDSHelper.SSAS
         public MeasureGroupHealthCheckForm()
         {
             InitializeComponent();
-            this.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+            this.Icon = BIDSHelper.Resources.Common.BIDSHelper;
         }
 
         private void MeasureGroupHealthCheckForm_Load(object sender, EventArgs e)
@@ -66,7 +66,7 @@ namespace BIDSHelper.SSAS
         private void helpButton_Click(object sender, EventArgs e)
         {
             Form legend = new Form();
-            legend.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+            legend.Icon = BIDSHelper.Resources.Common.BIDSHelper;
             legend.Text = "Measure Group Health Check: Legend";
             legend.MaximizeBox = false;
             legend.MinimizeBox = false;

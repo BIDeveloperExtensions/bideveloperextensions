@@ -19,7 +19,7 @@ namespace BIDSHelper.SSAS
         public M2MMatrixCompressionForm()
         {
             InitializeComponent();
-            this.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+            this.Icon = BIDSHelper.Resources.Common.BIDSHelper;
         }
 
         private void M2mMatrixCompressionForm_Load(object sender, EventArgs e)

@@ -73,7 +73,7 @@ namespace BIDSHelper
                         separator.Style = ToolBarButtonStyle.Separator;
                         toolbar.Buttons.Add(separator);
 
-                        toolbar.ImageList.Images.Add(SET_ESTIMATED_COUNTS_ICON_KEY, Properties.Resources.EstimatedCounts);
+                        toolbar.ImageList.Images.Add(SET_ESTIMATED_COUNTS_ICON_KEY, BIDSHelper.Resources.Common.EstimatedCounts);
                         ToolBarButton oSetAllEstimatedCountsButton = new ToolBarButton();
                         oSetAllEstimatedCountsButton.ToolTipText = "Update All Estimated Counts (BIDS Helper)";
                         oSetAllEstimatedCountsButton.Name = this.FullName + "." + SET_ESTIMATED_COUNTS_BUTTON;
@@ -83,7 +83,7 @@ namespace BIDSHelper
                         oSetAllEstimatedCountsButton.Style = ToolBarButtonStyle.PushButton;
                         toolbar.Buttons.Add(oSetAllEstimatedCountsButton);
 
-                        toolbar.ImageList.Images.Add(EDIT_AGGREGATIONS_ICON_KEY, Properties.Resources.EditAggregations);
+                        toolbar.ImageList.Images.Add(EDIT_AGGREGATIONS_ICON_KEY, BIDSHelper.Resources.Common.EditAggregations);
                         ToolBarButton oEditAggregationsButton = new ToolBarButton();
                         oEditAggregationsButton.ToolTipText = "Edit Aggregations (BIDS Helper)";
                         oEditAggregationsButton.Name = this.FullName + "." + EDIT_AGGREGATIONS_BUTTON_SUFFIX;
@@ -95,7 +95,7 @@ namespace BIDSHelper
 
                         if (pi.Name.ToLower().EndsWith(".cube")) //checking the file extension is adequate because this feature is not needed for in online mode (when live connected to the server)
                         {
-                            toolbar.ImageList.Images.Add(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY, Properties.Resources.DeployAggDesignsIcon);
+                            toolbar.ImageList.Images.Add(DEPLOY_AGGREGATION_DESIGNS_ICON_KEY, BIDSHelper.Resources.Common.DeployAggDesignsIcon);
                             ToolBarButton oDeployAggDesignsButton = new ToolBarButton();
                             oDeployAggDesignsButton.ToolTipText = "Deploy Aggregation Designs (BIDS Helper)";
                             oDeployAggDesignsButton.Name = this.FullName + "." + DEPLOY_AGGREGATION_DESIGNS_BUTTON;
@@ -106,7 +106,7 @@ namespace BIDSHelper
                             toolbar.Buttons.Add(oDeployAggDesignsButton);
                         }
 
-                        toolbar.ImageList.Images.Add(STOP_ICON_KEY, Properties.Resources.Stop);
+                        toolbar.ImageList.Images.Add(STOP_ICON_KEY, BIDSHelper.Resources.Common.Stop);
 
                         //catch the button clicks of the new buttons we just added
                         toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);

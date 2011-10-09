@@ -18,7 +18,7 @@ namespace BIDSHelper.SSIS
         public SmartDiff()
         {
             InitializeComponent();
-            this.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+            this.Icon = BIDSHelper.Resources.Common.BIDSHelper;
         }
 
         private void SmartDiff_Load(object sender, EventArgs e)
@@ -66,7 +66,7 @@ namespace BIDSHelper.SSIS
             try
             {
                 Form versionForm = new Form();
-                versionForm.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+                versionForm.Icon = BIDSHelper.Resources.Common.BIDSHelper;
                 versionForm.Text = "Choose Version...";
                 versionForm.MaximizeBox = false;
                 versionForm.MinimizeBox = false;

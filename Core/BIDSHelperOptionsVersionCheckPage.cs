@@ -3,6 +3,8 @@ namespace BIDSHelper.Core
     using System;
     using System.Windows.Forms;
     using EnvDTE;
+    using System.Reflection;
+    using System.Globalization;
 
     /// <summary>
     /// Version Check dialog for BIDS Helper, as seen under the Visual Studio menu Tools -> Options.
@@ -54,18 +56,16 @@ namespace BIDSHelper.Core
         {
             // Nothing required
         }
-
         #endregion
 
         private void BIDSHelperOptionsVersionCheckPage_Load(object sender, EventArgs e)
         {
             try
             {
-                #if KATMAI
-                lblTitle.Text = "BIDS Helper for SQL 2008";
-                #else
-                lblTitle.Text = "BIDS Helper for SQL 2005";
-                #endif
+                // Get title from assembly info, e.g. "BIDS Helper for SQL 2008"
+                Assembly assembly = this.GetType().Assembly;
+                AssemblyTitleAttribute attribute = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(assembly, typeof(AssemblyTitleAttribute));
+                this.lblTitle.Text = attribute.Title;
 
                 // First check we have a valid instance, the add-in may be disabled.
                 if (VersionCheckPlugin.VersionCheckPluginInstance == null)
@@ -78,7 +78,10 @@ namespace BIDSHelper.Core
                 }
 
                 // Set current version
-                lblLocalVersion.Text = VersionCheckPlugin.VersionCheckPluginInstance.LocalVersion;
+                this.lblLocalVersion.Text = VersionCheckPlugin.VersionCheckPluginInstance.LocalVersion;
+#if DEBUG
+                this.lblLocalVersion.Text += string.Format(CultureInfo.InvariantCulture, " (Debug {0})", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+#endif
 
                 try
                 {

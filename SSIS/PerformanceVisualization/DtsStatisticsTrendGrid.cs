@@ -136,11 +136,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                             if (iDataTotalSeconds == null || iMainTotalSeconds == null)
                                 break;
                             else if (iMainTotalSeconds > iDataTotalSeconds)
-                                bmp = Properties.Resources.arrowUp;
+                                bmp = BIDSHelper.Resources.Common.arrowUp;
                             else if (iMainTotalSeconds < iDataTotalSeconds)
-                                bmp = Properties.Resources.arrowDown;
+                                bmp = BIDSHelper.Resources.Common.arrowDown;
                             else
-                                bmp = Properties.Resources.arrowFlat;
+                                bmp = BIDSHelper.Resources.Common.arrowFlat;
                             break;
                         }
                     }

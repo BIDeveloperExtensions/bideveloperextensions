@@ -18,7 +18,7 @@ namespace BIDSHelper.Core
         {
             _versionCheckPlugin = versionCheckPlugin;
             InitializeComponent();
-            notifyIcon1.Icon = Properties.Resources.BIDSHelper;
+            notifyIcon1.Icon = BIDSHelper.Resources.Common.BIDSHelper;
             _events = versionCheckPlugin.ApplicationObject.Events.DTEEvents;
             _events.OnBeginShutdown += new EnvDTE._dispDTEEvents_OnBeginShutdownEventHandler(DTEEvents_OnBeginShutdown);
         }

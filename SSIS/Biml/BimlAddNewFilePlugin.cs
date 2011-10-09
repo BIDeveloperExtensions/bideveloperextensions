@@ -26,7 +26,7 @@ namespace BIDSHelper.SSIS.Biml
 
         public override System.Drawing.Icon CustomMenuIcon
         {
-            get { return Properties.Resources.BimlFile; }
+            get { return BIDSHelper.Resources.Common.BimlFile; }
         }
 
         public override string ButtonText

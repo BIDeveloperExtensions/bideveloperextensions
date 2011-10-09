@@ -144,7 +144,7 @@ namespace BIDSHelper
                                     newCalcPropButton.Enabled = true;
                                     newCalcPropButton.Style = ToolBarButtonStyle.PushButton;
 
-                                    toolbar.ImageList.Images.Add(Properties.Resources.DeployMdxScriptIcon);
+                                    toolbar.ImageList.Images.Add(BIDSHelper.Resources.Common.DeployMdxScriptIcon);
 
                                     if (pi.Name.ToLower().EndsWith(".cube")) //only show feature if we're in offline mode
                                     {
@@ -412,7 +412,7 @@ namespace BIDSHelper
                     }
 
                     Form descForm = new Form();
-                    descForm.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+                    descForm.Icon = BIDSHelper.Resources.Common.BIDSHelper;
                     descForm.Text = "BIDS Helper Description Editor";
                     descForm.MaximizeBox = true;
                     descForm.MinimizeBox = false;

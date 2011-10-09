@@ -18,7 +18,7 @@ namespace BIDSHelper.SSIS
             this.expressionGrid.Columns[4].Visible = false;
 
             StopProgressBar();
-            btnRefresh.Image = (Image) BIDSHelper.Properties.Resources.RefreshExpressions.ToBitmap();
+            btnRefresh.Image = (Image)BIDSHelper.Resources.Common.RefreshExpressions.ToBitmap();
 
             expressionGrid.CellContentClick += new DataGridViewCellEventHandler(expressionGrid_CellContentClick);
         }

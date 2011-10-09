@@ -224,6 +224,16 @@
     <Compile Include="Core\CustomProperty.cs" />
     <Compile Include="Core\CustomPropertyDescriptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\2012\Versioned.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Versioned.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\Common.Designer.cs">
+      <DependentUpon>Common.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -385,11 +395,6 @@
     <Compile Include="SSIS\SortProjectFilesPlugin.cs" />
     <Compile Include="SSIS\PerformanceVisualizationPlugin.cs" />
     <Compile Include="SSIS\PackageConfigurationLoader.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="SSAS\AggManager\frmTraceTable.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -558,14 +563,12 @@
     <None Include="Resources\arrowDown.bmp" />
     <None Include="Resources\arrowFlat.bmp" />
     <None Include="Resources\arrowUp.bmp" />
-    <None Include="Resources\DataFlow.ico" />
     <None Include="Resources\MinusSign.ico" />
     <None Include="Resources\Package.ico" />
     <None Include="Resources\Path.ico" />
     <None Include="Resources\PlusSign.ico" />
     <None Include="Resources\End.ico" />
     <None Include="Resources\Copy.ico" />
-    <None Include="Resources\DestComponent.ico" />
     <None Include="Resources\SmartDiffSSRS.xslt" />
     <Content Include="BIDSHelper2012.AddIn" />
     <Content Include="Build\Readme.txt" />
@@ -575,13 +578,8 @@
     <None Include="DLLs\SQL2012\ExpressionEditor.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\Variable.ico" />
     <None Include="Resources\Connection.ico" />
-    <None Include="Resources\ForLoop.ico" />
     <None Include="Resources\Function.ico" />
-    <None Include="Resources\Sequence.ico" />
-    <None Include="Resources\ForEachLoop.ico" />
-    <None Include="Resources\Event.ico" />
     <None Include="Resources\Biml.ico" />
     <None Include="Resources\BimlFile.ico" />
     <None Include="Resources\Question.ico" />
@@ -590,9 +588,18 @@
     <None Include="DLLs\Biml\BimlEngine.dll" />
     <None Include="Resources\NoIcon.ico" />
     <Content Include="DLLs\SQL2012\msddsp.dll" />
+    <None Include="Resources\Icon1.ico" />
+    <Content Include="Resources\2012\DataFlow.ico" />
+    <Content Include="Resources\2012\DestinationComponent.ico" />
+    <Content Include="Resources\2012\EditVariable.ico" />
+    <Content Include="Resources\2012\Event.ico" />
+    <Content Include="Resources\2012\ForEachLoop.ico" />
+    <Content Include="Resources\2012\ForLoop.ico" />
+    <Content Include="Resources\2012\Sequence.ico" />
+    <Content Include="Resources\2012\SourceComponent.ico" />
+    <Content Include="Resources\2012\Variable.ico" />
     <Content Include="SetupScript\SQL2012CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
-    <None Include="Resources\EditVariable.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />
     <None Include="Resources\process progress1704108.bmp" />
     <None Include="Resources\Process Progress464342.gif" />
@@ -603,7 +610,6 @@
     <None Include="Resources\TaskSmall.ico" />
     <None Include="Resources\TreeViewTab.ico" />
     <None Include="Resources\Run.ico" />
-    <None Include="Resources\SourceComponent.ico" />
     <Content Include="SetupScript\ReleaseChecklist.txt" />
     <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
     <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />
@@ -634,6 +640,12 @@
     <EmbeddedResource Include="Core\VersionCheckNotificationForm.resx">
       <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\2012\Versioned.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <CustomToolNamespace>BIDSHelper.Resources</CustomToolNamespace>
+      <LastGenOutput>Versioned.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\BIDSHelper.ico" />
     <None Include="Resources\DeployMdxScript.ico" />
     <Content Include="SetupScript\BIDSHelper2008.bmp" />
@@ -641,6 +653,11 @@
     <None Include="Resources\stop.ico" />
     <None Include="Resources\EstimatedCounts.ico" />
     <None Include="Resources\EditAggregations.ico" />
+    <EmbeddedResource Include="Resources\Common.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Common.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\AggManager\AggregationPerformance.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\AggregationPerformanceProgress.resx">
       <DependentUpon>AggregationPerformanceProgress.cs</DependentUpon>
@@ -740,11 +757,6 @@
     <EmbeddedResource Include="Core\ReportViewerForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>ReportViewerForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <SubType>Designer</SubType>
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\VisualizeAttributeLatticeForm.resx">
       <SubType>Designer</SubType>

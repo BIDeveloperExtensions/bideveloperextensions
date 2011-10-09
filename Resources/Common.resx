@@ -166,9 +166,6 @@
   <data name="arrowUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\arrowUp.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="DataFlow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DataFlow.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="MinusSign" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MinusSign.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -202,17 +199,8 @@
   <data name="Copy" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Copy.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="DestComponent" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DestComponent.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="SourceComponent" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SourceComponent.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Edit.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="EditVariable" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\EditVariable.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ProcessError" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Process Progress1052856.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -232,26 +220,11 @@
   <data name="PrinterFriendlyDimensionUsageIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PrinterFriendlyDimensionUsageIcon.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Variable" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Variable.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Connection" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Connection.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Event" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Event.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ForEachLoop" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ForEachLoop.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ForLoop" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ForLoop.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Function" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Function.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Sequence" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Sequence.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Biml" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Biml.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

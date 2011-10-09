@@ -112,7 +112,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                         {
                             int x = (int)(PIXELS_PER_SECOND * tsLeft.TotalSeconds);
                             if (x > 0)
-                                x -= Properties.Resources.SmallBlueDiamond.Width / 2;
+                                x -= BIDSHelper.Resources.Common.SmallBlueDiamond.Width / 2;
                             else
                                 x -= 4;
 
@@ -124,13 +124,13 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                                 {
                                     string s = (iOverlappingDiamonds > 9 ? "+" : iOverlappingDiamonds.ToString());
                                     gBitmap.DrawString(s, FONT_DIAMOND_SUPERSCRIPT, Brushes.DarkBlue, new PointF(x + 7F, -1F));
-                                    gBitmap.DrawIcon(Properties.Resources.SmallBlueDiamond, x, (int)3);
+                                    gBitmap.DrawIcon(BIDSHelper.Resources.Common.SmallBlueDiamond, x, (int)3);
                                 }
                             }
                             else
                             {
                                 iOverlappingDiamonds = 1;
-                                gBitmap.DrawIcon(Properties.Resources.SmallBlueDiamond, x, (int)3);
+                                gBitmap.DrawIcon(BIDSHelper.Resources.Common.SmallBlueDiamond, x, (int)3);
                             }
                         }
                         else

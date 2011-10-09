@@ -145,7 +145,7 @@ namespace BIDSHelper
                 XmlReader xrdr;
 
                 // read xslt from embedded resource
-                xsltRdr = XmlReader.Create(new StringReader(Properties.Resources.DeployAggDesigns));
+                xsltRdr = XmlReader.Create(new StringReader(BIDSHelper.Resources.Common.DeployAggDesigns));
                 using ((xsltRdr))
                 {
                     // read content from .partitions file

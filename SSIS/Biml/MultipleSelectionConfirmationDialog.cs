@@ -75,7 +75,7 @@ namespace BIDSHelper.SSIS.Biml
 
         private void helpButton_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start(Properties.Resources.BimlOverwriteConfirmationHelpUrl);
+            System.Diagnostics.Process.Start(BIDSHelper.Resources.Common.BimlOverwriteConfirmationHelpUrl);
         }
     }
 }

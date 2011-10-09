@@ -130,7 +130,7 @@ namespace BIDSHelper.SSIS
                     this.moveCopyButton.Style = ToolBarButtonStyle.PushButton;
                     this.moveCopyButton.ToolTipText = "Move/Copy Variables to New Scope (BIDS Helper)";
                     toolbar.Buttons.Add(this.moveCopyButton);
-                    toolbar.ImageList.Images.Add(BIDSHelper.Properties.Resources.Copy);
+                    toolbar.ImageList.Images.Add(BIDSHelper.Resources.Common.Copy);
                     this.moveCopyButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
                     //Edit Variable Expression button
@@ -138,7 +138,7 @@ namespace BIDSHelper.SSIS
                     this.editExpressionButton.Style = ToolBarButtonStyle.PushButton;
                     this.editExpressionButton.ToolTipText = "Edit Variable Expression (BIDS Helper)";
                     toolbar.Buttons.Add(this.editExpressionButton);
-                    toolbar.ImageList.Images.Add(BIDSHelper.Properties.Resources.EditVariable);
+                    toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
                     this.editExpressionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
@@ -168,8 +168,14 @@ namespace BIDSHelper.SSIS
             {
                 if (bSkipHighlighting) return;
                 if (variablesToolWindowControl == null) return;
+
+#if DENALI
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+#else
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+#endif
                 if (packageDesigner == null) return;
+
                 Package package = packageDesigner.Component as Package;
                 if (package == null) return;
 
@@ -189,7 +195,15 @@ namespace BIDSHelper.SSIS
                     {
                         System.Diagnostics.Debug.WriteLine(cell.CellData.GetType().FullName);
                         Variable variable = GetVariableForRow(iRow);
+
+#if DENALI
+                        // Denali doesn't need variable highlighting, it is built in. This is a quick fix to disable the highlighting
+                        // for Denali only. The other code stays the same for backward compatability when compiled as 2005 or 2008 projects.
+                        // We will retain the configuration highlighting though.
+                        bool bHasExpression = false;
+#else
                         bool bHasExpression = variable.EvaluateAsExpression && !string.IsNullOrEmpty(variable.Expression);
+#endif
                         bool bHasConfiguration = false;
                         string sVariablePath = variable.GetPackagePath();
                         foreach (string configPath in listConfigPaths)
@@ -288,7 +302,12 @@ namespace BIDSHelper.SSIS
         {
             try
             {
+#if DENALI
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+#else
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+#endif
+
                 if (packageDesigner == null) return;
 
                 Package package = packageDesigner.Component as Package;
@@ -349,7 +368,11 @@ namespace BIDSHelper.SSIS
                 if (variables.Count > 0)
                 {
                     System.Collections.ArrayList variableDesigners = GetSelectedVariableDesigners();
+#if DENALI
+                    packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+#else
                     packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+#endif
                     Package package = packageDesigner.Component as Package;
 
                     DtsContainer oCurrentScope = FindObjectForVariablePackagePath(package, variables[0].GetPackagePath());
@@ -823,9 +846,5 @@ namespace BIDSHelper.SSIS
             {
             }
         }
-
-
-
-
     }
 }

@@ -337,7 +337,7 @@ namespace BIDSHelper
                     ((AnnotationCollection)value).CopyTo(oldAnnotations);
 
                     form = new Form();
-                    form.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+                    form.Icon = BIDSHelper.Resources.Common.BIDSHelper;
                     form.Text = "BIDS Helper Attributes Editor";
                     form.MaximizeBox = true;
                     form.MinimizeBox = false;

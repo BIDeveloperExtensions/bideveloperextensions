@@ -65,7 +65,7 @@ namespace BIDSHelper
 
         public override System.Drawing.Icon CustomMenuIcon
         {
-            get { return Properties.Resources.Performance; }
+            get { return BIDSHelper.Resources.Common.Performance; }
         }
 
         public override string ButtonText
@@ -184,7 +184,7 @@ namespace BIDSHelper
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
 
                     PerformanceTabControlDelegateContainer delegateContainer = new PerformanceTabControlDelegateContainer();
-                    view = new EditorWindow.EditorView(new EditorViewLoadDelegate(delegateContainer.CreatePerformanceTabControl), "Performance", "Visualize SSIS package execution performance (BIDS Helper)", 0, Properties.Resources.Performance);
+                    view = new EditorWindow.EditorView(new EditorViewLoadDelegate(delegateContainer.CreatePerformanceTabControl), "Performance", "Visualize SSIS package execution performance (BIDS Helper)", 0, BIDSHelper.Resources.Common.Performance);
                     delegateContainer.win = win;
                     delegateContainer.view = view;
                     delegateContainer.projectItem = pi;

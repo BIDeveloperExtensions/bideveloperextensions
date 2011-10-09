@@ -159,40 +159,40 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 e.Graphics.SetClip(rectangle2);
                 if (ganttRowData.HasChildren)
                 {
-                    Icon iconPlusMinus = this.GetIsExpanded(e.RowIndex) ? Properties.Resources.MinusSign : Properties.Resources.PlusSign;
+                    Icon iconPlusMinus = this.GetIsExpanded(e.RowIndex) ? BIDSHelper.Resources.Common.MinusSign : BIDSHelper.Resources.Common.PlusSign;
                     int y = Math.Max(0, (rectangle2.Y + (rectangle2.Height / 2)) - (iconPlusMinus.Height / 2) - 1);
                     e.Graphics.DrawIcon(iconPlusMinus, (rectangle2.X + (ganttRowData.Indent * INDENTATION_WIDTH)) - num4, y);
                 }
                 Icon icon = null;
                 if (ganttRowData.Type == typeof(Microsoft.SqlServer.Dts.Runtime.Package))
                 {
-                    icon = Properties.Resources.Package;
+                    icon = BIDSHelper.Resources.Common.Package;
                 }
                 else if (ganttRowData.Type == typeof(DtsPipelinePerformance))
                 {
-                    icon = Properties.Resources.DataFlow;
+                    icon = BIDSHelper.Resources.Versioned.DataFlow;
                 }
                 else if (ganttRowData.Type == typeof(ExecutionTree))
                 {
-                    icon = Properties.Resources.TreeViewTab;
+                    icon = BIDSHelper.Resources.Common.TreeViewTab;
                 }
                 else if (ganttRowData.Type == typeof(PipelinePath))
                 {
-                    icon = Properties.Resources.Path;
+                    icon = BIDSHelper.Resources.Common.Path;
                 }
                 else if (ganttRowData.Type == typeof(DtsPipelineTestDirector.DtsPipelineComponentTest))
                 {
                     DtsPipelineTestDirector.DtsPipelineComponentTest test = (DtsPipelineTestDirector.DtsPipelineComponentTest)ganttRowData;
                     if (test.TestType == DtsPipelineTestDirector.DtsPipelineComponentTestType.SourceOnly)
-                        icon = Properties.Resources.SourceComponent;
+                        icon = BIDSHelper.Resources.Versioned.SourceComponent;
                     else if (test.TestType == DtsPipelineTestDirector.DtsPipelineComponentTestType.DestinationOnly)
-                        icon = Properties.Resources.DestComponent;
+                        icon = BIDSHelper.Resources.Versioned.DestinationComponent;
                     else
-                        icon = Properties.Resources.TaskSmall;
+                        icon = BIDSHelper.Resources.Common.TaskSmall;
                 }
                 else
                 {
-                    icon = Properties.Resources.TaskSmall;
+                    icon = BIDSHelper.Resources.Common.TaskSmall;
                 }
                 if (icon != null)
                 {
@@ -220,7 +220,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     if (ganttRowData != null && ganttRowData.HasChildren)
                     {
                         base.EndEdit();
-                        if ((e.X >= ((cell.Style.Padding.Left - Properties.Resources.Package.Width) - INDENTATION_WIDTH)) && (e.X < (cell.Style.Padding.Left - Properties.Resources.Package.Width)))
+                        if ((e.X >= ((cell.Style.Padding.Left - BIDSHelper.Resources.Common.Package.Width) - INDENTATION_WIDTH)) && (e.X < (cell.Style.Padding.Left - BIDSHelper.Resources.Common.Package.Width)))
                         {
                             this.SetIsExpanded(e.RowIndex, !this.GetIsExpanded(e.RowIndex));
                             //this.InvokePaint(this, new PaintEventArgs(this.CreateGraphics(), this.GetColumnDisplayRectangle(1, false))); //don't think this is necessary

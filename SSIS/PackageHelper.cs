@@ -123,17 +123,17 @@
                     }
 
                     // Special containers, see GetCreationName usage
-                    controlInfos.Add(PackageCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Package));
-                    controlInfos.Add(EventHandlerCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Event));
-                    controlInfos.Add(SequenceCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Sequence));
-                    controlInfos.Add(ForLoopCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.ForLoop));
-                    controlInfos.Add(ForEachLoopCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.ForEachLoop));
+                    controlInfos.Add(PackageCreationName, new ComponentInfo(BIDSHelper.Resources.Common.Package));
+                    controlInfos.Add(EventHandlerCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.Event));
+                    controlInfos.Add(SequenceCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.Sequence));
+                    controlInfos.Add(ForLoopCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.ForLoop));
+                    controlInfos.Add(ForEachLoopCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.ForEachLoop));
 
                     // Connections - Cannot get them as with components - Attribute pattern is broken, only used by third
                     // parties. The Connection toolbox doesn't use it so MS haven't attributed their connections. 
                     // We will use a default local resource icon for all connections. 
                     // TODO: Investigate getting proper icon i.e. Microsoft.DataTransformationServices.Graphics.SMTP_connection.ico 
-                    controlInfos.Add(ConnectionCreationName, new ComponentInfo(BIDSHelper.Properties.Resources.Connection));
+                    controlInfos.Add(ConnectionCreationName, new ComponentInfo(BIDSHelper.Resources.Common.Connection));
                 }
 
                 return controlInfos;

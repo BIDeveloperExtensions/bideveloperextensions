@@ -197,7 +197,7 @@ namespace BIDSHelper
                 {
                     if (sProjectItemFileName.EndsWith(extension))
                     {
-                        sXslt = BIDSHelper.Properties.Resources.SmartDiffDtsx;
+                        sXslt = BIDSHelper.Resources.Common.SmartDiffDtsx;
                         break;
                     }
                 }
@@ -205,7 +205,7 @@ namespace BIDSHelper
                 {
                     if (sProjectItemFileName.EndsWith(extension))
                     {
-                        sXslt = BIDSHelper.Properties.Resources.SmartDiffSSAS;
+                        sXslt = BIDSHelper.Resources.Common.SmartDiffSSAS;
                         break;
                     }
                 }
@@ -213,7 +213,7 @@ namespace BIDSHelper
                 {
                     if (sProjectItemFileName.EndsWith(extension))
                     {
-                        sXslt = BIDSHelper.Properties.Resources.SmartDiffSSRS;
+                        sXslt = BIDSHelper.Resources.Common.SmartDiffSSRS;
                         bNewLineOnAttributes = false;
                         break;
                     }
@@ -419,7 +419,7 @@ namespace BIDSHelper
                     catch { }
 
                     Form passwordForm = new Form();
-                    passwordForm.Icon = BIDSHelper.Properties.Resources.BIDSHelper;
+                    passwordForm.Icon = BIDSHelper.Resources.Common.BIDSHelper;
                     passwordForm.Text = "SourceSafe Login";
                     passwordForm.MaximizeBox = false;
                     passwordForm.MinimizeBox = false;

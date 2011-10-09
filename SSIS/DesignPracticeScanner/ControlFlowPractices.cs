@@ -34,8 +34,8 @@
     {
         public VariableEvaluateAsExpressionPractice(string registryPath) : base(registryPath)
         {
-            this.Name = BIDSHelper.Properties.Resources.VariableEvaluateAsExpressionPracticeName;
-            this.Description = BIDSHelper.Properties.Resources.VariableEvaluateAsExpressionPracticeDescription;
+            this.Name = BIDSHelper.Resources.Common.VariableEvaluateAsExpressionPracticeName;
+            this.Description = BIDSHelper.Resources.Common.VariableEvaluateAsExpressionPracticeDescription;
         }
 
         public override void Check(Package package, ProjectItem projectItem)
@@ -100,7 +100,7 @@
 
                 if (!variable.EvaluateAsExpression)
                 {
-                    this.Results.Add(new Result(false, string.Format(BIDSHelper.Properties.Resources.VariableEvaluateAsExpressionPracticeResultFormatString, variable.Name, objectPath), ResultSeverity.Normal));
+                    this.Results.Add(new Result(false, string.Format(BIDSHelper.Resources.Common.VariableEvaluateAsExpressionPracticeResultFormatString, variable.Name, objectPath), ResultSeverity.Normal));
                 }
             }
         }

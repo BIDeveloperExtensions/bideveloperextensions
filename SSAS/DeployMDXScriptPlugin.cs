@@ -174,7 +174,7 @@ namespace BIDSHelper
                 XmlReader xrdr;
 
                 // read xslt from embedded resource
-                xsltRdr = XmlReader.Create(new StringReader(Properties.Resources.DeployMdxScript));
+                xsltRdr = XmlReader.Create(new StringReader(BIDSHelper.Resources.Common.DeployMdxScript));
                 using ((xsltRdr))
                 {
                     // read content from .cube file
