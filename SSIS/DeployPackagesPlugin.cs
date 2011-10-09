@@ -89,20 +89,21 @@ namespace BIDSHelper
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
-                    return (proj.Kind == BIDSProjectKinds.SSIS);
+                    return (proj.Kind == BIDSProjectKinds.SSIS && IsLegacyDeploymentMode(proj));
                 }
                 else if (solution != null)
                 {
                     foreach (Project p in solution.Projects)
                     {
-                        if (p.Kind != BIDSProjectKinds.SSIS) return false;
+                        if (p.Kind != BIDSProjectKinds.SSIS || !IsLegacyDeploymentMode(proj)) return false;
                     }
                     return (solution.Projects.Count > 0);
                 }
                 else
                 {
+                    proj = ((ProjectItem)hierItem.Object).ContainingProject;
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                    return (sFileName.EndsWith(".dtsx"));
+                    return (sFileName.EndsWith(".dtsx") && IsLegacyDeploymentMode(proj));
                 }
             }
             else
@@ -110,8 +111,9 @@ namespace BIDSHelper
                 foreach (object selected in ((System.Array)solExplorer.SelectedItems))
                 {
                     UIHierarchyItem hierItem = (UIHierarchyItem)selected;
+                    Project proj = ((ProjectItem)hierItem.Object).ContainingProject;
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                    if (!sFileName.EndsWith(".dtsx")) return false;
+                    if (!sFileName.EndsWith(".dtsx") || !IsLegacyDeploymentMode(proj)) return false;
                 }
                 return (((System.Array)solExplorer.SelectedItems).Length > 0);
             }
@@ -410,9 +412,9 @@ namespace BIDSHelper
                 string sGuid = "";
                 this.ApplicationObject.Commands.CommandInfo(cmd, out sGuid, out iID);
                 Command cmd2 = this.ApplicationObject.Commands.Item(sGuid, iID);
-                if (cmd2.Name == "ClassViewContextMenus.ClassViewProject.Properties" 
-                    || cmd2.Name == "ClassViewContextMenus.ClassViewMultiselectProjectreferencesItems.Properties" 
-                    || cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties 
+                if (cmd2.Name == "ClassViewContextMenus.ClassViewProject.Properties"
+                    || cmd2.Name == "ClassViewContextMenus.ClassViewMultiselectProjectreferencesItems.Properties"
+                    || cmd.Id == (int)BIDSToolbarButtonID.ProjectProperties
                     || cmd.Id == (int)BIDSToolbarButtonID.ProjectPropertiesAlternate)
                 {
                     cmdButtonProperties = cmd as CommandBarButton; //must save to a member variable of the class or the event won't fire later
@@ -493,10 +495,19 @@ namespace BIDSHelper
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = hierItem.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
                     if (proj == null || proj.Kind != BIDSProjectKinds.SSIS) return;
 
-                    CancelDefault = true; //don't let the Microsoft code fire as I'm going to pop up the dialog myself
-
                     Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                     projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
+
+                    if (!IsLegacyDeploymentMode(projectManager))
+                    {
+                        //new project deployment mode
+                        CancelDefault = false; //let the Microsoft code fire
+                        return;
+                    }
+                    else
+                    {
+                        CancelDefault = true; //don't let the Microsoft code fire as I'm going to pop up the dialog myself
+                    }
 
                     string sFileName = projectManager.GetSelectedProjectNode().FullPath + ".bidsHelper.user";
                     System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
@@ -523,14 +534,45 @@ namespace BIDSHelper
                     if (hr < 0)
                     {
                         frame.ReportError(hr);
-                        MessageBox.Show("Could not open properties window");
+                        MessageBox.Show("Could not open BIDS Helper properties window customizations.");
                     }
                 }
                 catch (Exception ex)
                 {
                     System.Windows.Forms.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    CancelDefault = false; //let the Microsoft code fire
                 }
             }
+
+        }
+
+        public static bool IsLegacyDeploymentMode(Project project)
+        {
+#if DENALI
+            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
+            return IsLegacyDeploymentMode(projectManager);
+#else
+            return true;
+#endif
+        }
+
+        public static bool IsLegacyDeploymentMode(DataWarehouseProjectManager projectManager)
+        {
+#if DENALI
+            Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager manager = projectManager as Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager;
+            if ((manager != null) && (manager.ObjectModelProject != null))
+            {
+                //new project deployment mode
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+#else
+            return true;
+#endif
         }
 
         private void LoadFromBidsHelperConfiguration(System.Xml.XmlDocument doc, string sConfigurationName, DtsProjectExtendedConfigurationOptions newOptions)
@@ -612,30 +654,44 @@ namespace BIDSHelper
         /// This class will only be temporarily added to the configuration manager so that the project properties dialog can show it's properties.
         /// Immediately after closing the project properties dialog, it must be removed as it cannot be serialized with Microsoft's serialization code without causing problems.
         /// </summary>
-        [DisplayableByPropertyPage(new Type[] { typeof(DataTransformationsBuildPropertyPage), typeof(DataTransformationsDeploymentUtilityPropertyPage), typeof(DebugPropertyPage), typeof(DtsProjectExtendedDeployPropertyPage) })]
+        [DisplayableByPropertyPage(new Type[] { 
+            typeof(DataTransformationsBuildPropertyPage), 
+            typeof(DataTransformationsDeploymentUtilityPropertyPage), 
+            typeof(DebugPropertyPage), 
+            typeof(DtsProjectExtendedDeployPropertyPage) })]
         public class DtsProjectExtendedConfigurationOptions : DataTransformationsProjectConfigurationOptions
+#if DENALI
+            , ICustomTypeDescriptor
+#endif
         {
             private DataTransformationsProjectConfigurationOptions oldConfig;
             public DtsProjectExtendedConfigurationOptions() : base() { }
 
             public DtsProjectExtendedConfigurationOptions(DataTransformationsProjectConfigurationOptions old)
             {
-                oldConfig = old;
-                Type type = old.GetType();
-                foreach (System.Reflection.PropertyInfo info in type.GetProperties())
+                try
                 {
-                    if (info.GetSetMethod() != null)
+                    oldConfig = old;
+                    Type type = old.GetType();
+                    foreach (System.Reflection.PropertyInfo info in type.GetProperties())
                     {
-                        object obj3 = info.GetValue(old, null);
-                        if (obj3 is ICloneable)
+                        if (info.GetSetMethod() != null)
                         {
-                            obj3 = ((ICloneable)obj3).Clone();
+                            object obj3 = info.GetValue(old, null);
+                            if (obj3 is ICloneable)
+                            {
+                                obj3 = ((ICloneable)obj3).Clone();
+                            }
+                            this.GetType().InvokeMember(info.Name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, this, new object[] { info.GetGetMethod().Invoke(old, null) });
                         }
-                        this.GetType().InvokeMember(info.Name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, this, new object[] { info.GetGetMethod().Invoke(old, null) });
                     }
-                }
 
-                this.Disposed += new EventHandler(DtsProjectExtendedConfigurationOptions_Disposed);
+                    this.Disposed += new EventHandler(DtsProjectExtendedConfigurationOptions_Disposed);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Problem opening configurations properties dialog.\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                }
             }
 
             void DtsProjectExtendedConfigurationOptions_Disposed(object sender, EventArgs e)
@@ -761,6 +817,93 @@ namespace BIDSHelper
                     _DestinationFolder = value;
                 }
             }
+
+
+
+
+#if DENALI //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
+
+#pragma warning disable //disable warning that I'm hiding the GetAttributes method in the base class
+            public AttributeCollection GetAttributes()
+            {
+                try
+                {
+                    if (!DeployPackagesPlugin.IsLegacyDeploymentMode(this.Manager))
+                    {
+                        //new project deployment mode
+                        throw new Exception("Should not be opening this BIDS Helper custom project properties dialog in a new project deployment mode project.");
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Problem opening configurations properties dialog.\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                    throw ex;
+                }
+            }
+
+            public string GetClassName()
+            {
+                return TypeDescriptor.GetClassName(this, true);
+            }
+
+            public string GetComponentName()
+            {
+                return TypeDescriptor.GetComponentName(this, true);
+            }
+
+            public TypeConverter GetConverter()
+            {
+                return TypeDescriptor.GetConverter(this, true);
+            }
+
+            public EventDescriptor GetDefaultEvent()
+            {
+                return TypeDescriptor.GetDefaultEvent(this, true);
+            }
+
+            public PropertyDescriptor GetDefaultProperty()
+            {
+                return TypeDescriptor.GetDefaultProperty(this, true);
+            }
+
+            public object GetEditor(Type editorBaseType)
+            {
+                return TypeDescriptor.GetEditor(this, editorBaseType, true);
+            }
+
+            public EventDescriptorCollection GetEvents()
+            {
+                return TypeDescriptor.GetEvents(this, true);
+            }
+
+            public EventDescriptorCollection GetEvents(Attribute[] attributes)
+            {
+                return TypeDescriptor.GetEvents(this, attributes, true);
+            }
+
+            public PropertyDescriptorCollection GetProperties()
+            {
+                return TypeDescriptor.GetProperties(this, true);
+            }
+
+            public PropertyDescriptorCollection GetProperties(Attribute[] attributes)
+            {
+                return TypeDescriptor.GetProperties(this, attributes, true);
+            }
+
+            public object GetPropertyOwner(PropertyDescriptor pd)
+            {
+                return this;
+            }
+#pragma warning restore
+#endif
+
+
+
         }
         #endregion
 
