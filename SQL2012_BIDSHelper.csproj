@@ -46,7 +46,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <IncrementalBuild>true</IncrementalBuild>
-    <OutputPath>..\..\..\Users\Darren Green\Documents\Visual Studio 2010\AddIns\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>1591</NoWarn>
@@ -154,7 +154,10 @@
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.IntegrationServices.Graph, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.SqlServer.IntegrationServices.Graph, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.SQLServer.ManagedDTS, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
@@ -234,6 +237,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="SSAS\DuplicateRole.cs" />
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -575,9 +579,7 @@
     <None Include="Resources\M2MIcon.ico" />
     <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
-    <None Include="DLLs\SQL2012\ExpressionEditor.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="DLLs\SQL2012\ExpressionEditor.dll" />
     <None Include="Resources\Connection.ico" />
     <None Include="Resources\Function.ico" />
     <None Include="Resources\Biml.ico" />
@@ -587,7 +589,6 @@
     <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
     <None Include="DLLs\Biml\BimlEngine.dll" />
     <None Include="Resources\NoIcon.ico" />
-    <Content Include="DLLs\SQL2012\msddsp.dll" />
     <None Include="Resources\Icon1.ico" />
     <Content Include="Resources\2012\DataFlow.ico" />
     <Content Include="Resources\2012\DestinationComponent.ico" />
