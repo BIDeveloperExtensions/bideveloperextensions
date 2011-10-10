@@ -246,11 +246,7 @@ namespace BIDSHelper.SSIS
 
         void FormatActiveDocument(ProjectItem pi)
         {
-            try
-            {
-                pi.DTE.ExecuteCommand("Edit.FormatDocument", "");
-            }
-            catch { }
+            pi.DTE.ExecuteCommand("Edit.FormatDocument", "");
         }
     }
 }
