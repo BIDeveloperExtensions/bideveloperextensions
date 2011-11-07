@@ -50,6 +50,10 @@ namespace BIDSHelper
         SSAS,
         SSIS,
         SSRS
-        
+    }
+
+    public static class SsasCharacters
+    {
+        public const string Invalid_Name_Characters = ".,;'`:/\\*|?\"&%$!+=()[]{}<>";
     }
 }

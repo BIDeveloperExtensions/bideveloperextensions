@@ -101,6 +101,9 @@
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.BackEnd">
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>c:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
@@ -111,8 +114,16 @@
       <HintPath>c:\Program Files\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE\Microsoft.AnalysisServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.MPFProjectBase, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.AnalysisServices.Project, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.VSHost, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.VSHost.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.Controls, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -246,6 +257,15 @@
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularActionsEditorForm.Designer.cs">
+      <DependentUpon>TabularActionsEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularHelpers.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsEditorPlugin.cs" />
     <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -559,6 +579,8 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <None Include="Properties\DataSources\Microsoft.AnalysisServices.ReportParameter.datasource" />
+    <None Include="Properties\DataSources\TabularActionsEditorPlugin.DrillthroughColumn.datasource" />
     <None Include="Resources\DeployAggDesigns.xslt" />
     <None Include="Resources\DeployAggDesigns.ico" />
     <None Include="Resources\ExpressionListIcon.ico" />
@@ -745,6 +767,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.resx">
       <DependentUpon>frmSQLFlattenerOptions.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\Tabular\TabularActionsEditorForm.resx">
+      <DependentUpon>TabularActionsEditorForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />

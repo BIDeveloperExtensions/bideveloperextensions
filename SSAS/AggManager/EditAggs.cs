@@ -230,7 +230,7 @@ namespace AggManager
             DataView myDataView = (DataView)dataGrid1.DataSource;
             string strAggName;
             List<string> aggNames = new List<string>();
-            string sInvalidChars = ".,;'`:/\\*|?\"&%$!+=()[]{}<>";
+            string sInvalidChars = BIDSHelper.SsasCharacters.Invalid_Name_Characters;
 
             foreach (DataRow dRow in myDataView.Table.Rows)
             {
