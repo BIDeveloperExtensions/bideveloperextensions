@@ -460,17 +460,17 @@ namespace AggManager
                     return;
 
                 //Delete aggregation design from the measure group
-
                 MeasureGroup mg = (MeasureGroup)nd.Parent.Parent.Tag;
+                AggregationDesign aggD = mg.AggregationDesigns.GetByName(nd.Text);
 
                 foreach (Partition pt in mg.Partitions)
                 {
 
-                    if (pt.AggregationDesignID == nd.Text)
+                    if (pt.AggregationDesignID == aggD.ID)
                         pt.AggregationDesignID = null;
                 }
 
-                mg.AggregationDesigns.Remove(nd.Text);
+                mg.AggregationDesigns.Remove(aggD.ID);
 
                 //Remove agg design from the tree
                 treeView1.SelectedNode = treeView1.SelectedNode.Parent.Parent;

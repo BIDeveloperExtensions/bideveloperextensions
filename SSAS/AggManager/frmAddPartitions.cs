@@ -81,12 +81,14 @@ namespace AggManager
         {
             int i = 0;
 
+            AggregationDesign aggD = mg1.AggregationDesigns.GetByName(strAggDes);
+
             foreach (Partition part in mg1.Partitions)
             {
                 if (listBox1.SelectedIndices.Contains(i))
-                    mg1.Partitions[i].AggregationDesignID = strAggDes;
+                    mg1.Partitions[i].AggregationDesignID = aggD.ID;
                 else
-                    if (mg1.Partitions[i].AggregationDesignID == strAggDes)
+                    if (mg1.Partitions[i].AggregationDesignID == aggD.ID)
                         mg1.Partitions[i].AggregationDesignID = null;
                 i++;
 
@@ -94,7 +96,7 @@ namespace AggManager
 
             foreach (int index in listBox1.SelectedIndices)
             {
-                mg1.Partitions[index].AggregationDesignID = strAggDes;
+                mg1.Partitions[index].AggregationDesignID = aggD.ID;
                 i++;
             }
             this.Close();
