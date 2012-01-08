@@ -14,7 +14,7 @@ namespace BIDSHelper.SSIS
     using System.Threading;
     using Microsoft.Win32;
 
-#if KATMAI
+#if KATMAI || DENALI
     using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 #else
     using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;

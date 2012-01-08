@@ -87,7 +87,7 @@ namespace BIDSHelper.SSIS
             // during testing, otherwise we get some strange behaviour with this
             IntPtr icon = BIDSHelper.Resources.Common.ExpressionListIcon.ToBitmap().GetHbitmap();
 
-#if KATMAI
+#if KATMAI || DENALI
             toolWindow.SetTabPicture(icon.ToInt32()); 
 #else
             toolWindow.SetTabPicture(icon); 

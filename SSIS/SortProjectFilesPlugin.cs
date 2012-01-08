@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using System.Data;
 
-#if KATMAI
+#if KATMAI || DENALI
 //Katmai implemented this feature
 #else
 namespace BIDSHelper

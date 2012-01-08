@@ -226,7 +226,7 @@
             return containerKey;
         }
 
-#if KATMAI
+#if KATMAI || DENALI
         public static string GetComponentKey(IDTSComponentMetaData100 component)
         {
             string key = component.ComponentClassID;

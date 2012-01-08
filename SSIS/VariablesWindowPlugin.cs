@@ -14,7 +14,7 @@ namespace BIDSHelper.SSIS
     using Microsoft.SqlServer.Dts.Design;
     using Microsoft.SqlServer.Management.UI.Grid;
 
-    #if KATMAI
+    #if KATMAI || DENALI
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
     #else
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
@@ -628,7 +628,7 @@ namespace BIDSHelper.SSIS
                             Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass eval = new Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass();
                             eval.Expression = v.Expression;
                             eval.Events = events;
-#if KATMAI
+#if KATMAI || DENALI
                             eval.Evaluate(DtsConvert.GetExtendedInterface(o.VariableDispenser), out val, false);
 #else
                             eval.Evaluate(DtsConvert.ToVariableDispenser90(o.VariableDispenser), out val, false);

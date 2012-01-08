@@ -233,7 +233,7 @@ namespace BIDSHelper
 
                 if (dialogResult == DialogResult.OK)
                 {
-#if KATMAI
+#if KATMAI || DENALI
                     wrap.IDTSConnectionManagerFlatFile100 ff = conn.InnerObject as wrap.IDTSConnectionManagerFlatFile100;
                     DtsConvert.GetExtendedInterface(conn);
 #else
@@ -260,7 +260,7 @@ namespace BIDSHelper
                         }
                         listUsedNames.Add(sName);
 
-#if KATMAI
+#if KATMAI || DENALI
                         wrap.IDTSConnectionManagerFlatFileColumn100 col = ff.Columns.Add();
                         wrap.IDTSName100 name = col as wrap.IDTSName100;
 #else

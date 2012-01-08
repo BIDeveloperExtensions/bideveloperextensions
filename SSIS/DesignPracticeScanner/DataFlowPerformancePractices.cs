@@ -6,7 +6,7 @@
     using Microsoft.SqlServer.Dts.Runtime;
 
     //TODO: Update this to work with 2005
-#if KATMAI
+#if KATMAI || DENALI
     class DataFlowAsynchPathsPractice : DesignPractice
     {
         //private ComponentInfos _componentInfos;
@@ -78,7 +78,7 @@
 
     }
 
-#if KATMAI
+#if KATMAI || DENALI
     class DataFlowSortPractice : DesignPractice
     {
         public DataFlowSortPractice(string registryPath)
@@ -132,7 +132,7 @@
     }
 #endif
 
-#if KATMAI
+#if KATMAI || DENALI
     class AccessModePractice : DesignPractice
     {
         public AccessModePractice(string registryPath)

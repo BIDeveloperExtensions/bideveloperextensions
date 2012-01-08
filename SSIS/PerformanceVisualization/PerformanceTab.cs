@@ -58,14 +58,12 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 #if DENALI
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.3";
-#else
-    #if KATMAI
+#elif KATMAI
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\100\SSIS\Setup\DTSPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.2";
-    #else
+#else
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\MSDTS\Setup\DtsPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.1";
-    #endif
 #endif
 
 

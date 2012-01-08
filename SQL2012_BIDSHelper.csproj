@@ -50,7 +50,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>1591</NoWarn>
-    <DefineConstants>DEBUG;KATMAI;DENALI</DefineConstants>
+    <DefineConstants>DEBUG;DENALI</DefineConstants>
     <DebugType>full</DebugType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

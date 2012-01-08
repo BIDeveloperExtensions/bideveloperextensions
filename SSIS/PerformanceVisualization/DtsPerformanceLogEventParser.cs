@@ -20,7 +20,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private Regex regexExecutionTreeOutput = new Regex(@"output \"".+?\"" \((\d+)\)");
         private Regex regexCreateBuffer = new Regex(@"CreatePrimeBuffer of type (\d+) for output ID (\d+)");
 
-#if KATMAI
+#if KATMAI || DENALI
         private const string EXECUTION_TREE_START_PHRASE = "Begin Path ";
         private const string EXECUTION_TREE_END_PHRASE = "End Path ";
 #else

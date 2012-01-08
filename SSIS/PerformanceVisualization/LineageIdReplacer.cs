@@ -5,7 +5,7 @@ using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using System.Text.RegularExpressions;
 
 #region Conditional compile for Yukon vs Katmai
-#if KATMAI
+#if KATMAI || DENALI
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
 using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;

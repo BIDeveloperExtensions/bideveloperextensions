@@ -19,12 +19,10 @@ using System.Runtime.InteropServices;
 
 #if DENALI
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2012")]
-#else
-#if KATMAI
+#elif KATMAI
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2008")]
 #else
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2005")]
-#endif
 #endif
 
 #if DEBUG
