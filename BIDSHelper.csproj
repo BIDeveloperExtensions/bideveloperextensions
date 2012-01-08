@@ -29,6 +29,7 @@
     <NoWarn>1591</NoWarn>
     <DefineConstants>DEBUG</DefineConstants>
     <DebugType>full</DebugType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -260,6 +261,7 @@
       <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\ComponentInfo.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DataFlowPerformancePractices.cs" />
@@ -275,6 +277,7 @@
     <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
+    <Compile Include="SSIS\SSISHelpers.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -376,7 +379,7 @@
     <Compile Include="SSAS\AggregationManagerPlugin.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AssemblyInfo.cs">
+    <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\BIDSHelperPluginBase.cs">

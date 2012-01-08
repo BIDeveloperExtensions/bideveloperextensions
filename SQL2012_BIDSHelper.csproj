@@ -103,6 +103,7 @@
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.BackEnd">
       <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
@@ -386,6 +387,7 @@
     </Compile>
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
+    <Compile Include="SSIS\SSISHelpers.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>
     </Compile>

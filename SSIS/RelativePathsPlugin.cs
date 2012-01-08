@@ -66,8 +66,16 @@ namespace BIDSHelper
                         EditorWindow.EditorView view = win.SelectedView;
                         System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
                         Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
+                        
+                        IWin32Window parentWin;
+                        #if DENALI
+                        parentWin = viewControl;
+                        #else
                         DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
                         if (diagram == null || diagram.DDS == null) return;
+                        parentWin = diagram.DDS;
+                        #endif
+                        
                         Button editSelectedButton = (Button)form.Controls["editSelectedConfiguration"];
                         Control packageConfigurationsGridControl1 = form.Controls["packageConfigurationsGridControl1"];
                         Button btnRelativePaths = new Button();
@@ -80,12 +88,9 @@ namespace BIDSHelper
                         btnRelativePaths.Click += new EventHandler(btnRelativePaths_Click);
                         form.Controls.Add(btnRelativePaths);
 
-                        if (DesignUtils.ShowDialog((Form)form, (IWin32Window)diagram.DDS, (IServiceProvider)package.Site) == DialogResult.OK)
+                        if (DesignUtils.ShowDialog((Form)form, parentWin, (IServiceProvider)package.Site) == DialogResult.OK)
                         {
-                            #if DENALI
-                            #else
-                            DesignUtils.MarkPackageDirty(package);
-                            #endif
+                            SSISHelpers.MarkPackageDirty(package);
                         }
                     }
 
@@ -340,10 +345,7 @@ namespace BIDSHelper
                     }
                     if (bChanged)
                     {
-                        #if DENALI
-                        #else
-                        DesignUtils.MarkPackageDirty(package);
-                        #endif
+                        SSISHelpers.MarkPackageDirty(package);
                     }
                     else
                     {
