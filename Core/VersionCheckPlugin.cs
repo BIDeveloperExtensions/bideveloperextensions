@@ -11,7 +11,11 @@ namespace BIDSHelper
     public class VersionCheckPlugin : BIDSHelperPluginBase
     {
 
-#if KATMAI
+#if DENALI
+        private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2012CurrentReleaseVersion.xml";
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2012";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2012";
+#elif KATMAI
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2008CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2008";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2008";
@@ -143,6 +147,9 @@ namespace BIDSHelper
                 }
 
                 System.Net.WebClient http = new System.Net.WebClient();
+                //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
+                http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
+
                 MemoryStream ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
                 XmlReader reader = XmlReader.Create(ms);
                 XmlDocument doc = new XmlDocument();
