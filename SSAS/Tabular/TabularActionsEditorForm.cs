@@ -21,6 +21,7 @@ namespace BIDSHelper.SSAS
         private bool _skipEvents = false;
         public const string ACTION_ANNOTATION = "BIDS_Helper_Tabular_Actions_Backups";
         private TabularActionsAnnotation annotation;
+        private Control[] arrEnabledControls;
 
         public Microsoft.AnalysisServices.Action[] Actions()
         {
@@ -121,6 +122,7 @@ namespace BIDSHelper.SSAS
             this.Icon = BIDSHelper.Resources.Common.BIDSHelper;
             this.cube = cube;
             this.conn = conn;
+            arrEnabledControls = new Control[] { this.btnDelete, this.btnAdd, this.cmbAction, this.okButton, this.cancelButton, this.linkHelp };
 
             _listDrillthroughColumns = new List<TabularActionsEditorPlugin.DrillthroughColumn>();
             this.drillthroughColumnBindingSource.DataSource = _listDrillthroughColumns;
@@ -239,7 +241,20 @@ namespace BIDSHelper.SSAS
             cmbAction.ResumeLayout();
             if (_listActionClones.Count > 0)
                 cmbAction.SelectedIndex = 0;
+            else
+                DisableControls(true, arrEnabledControls);
 
+        }
+
+        private void DisableControls(bool bDisable, Control[] arrExceptControls)
+        {
+            cmbActionType.SelectedItem = ActionType.Url.ToString();
+            List<Control> listExceptControls = new List<Control>(arrExceptControls);
+            foreach (Control c in this.Controls)
+            {
+                if (!listExceptControls.Contains(c))
+                    c.Enabled = !bDisable;
+            }
         }
 
         private void MeasureGroupHealthCheckForm_Load(object sender, EventArgs e)
@@ -333,6 +348,7 @@ namespace BIDSHelper.SSAS
                 lPerspectives.Add(p.Name);
             }
             _dictActionPerspectives.Add(action.ID, lPerspectives.ToArray());
+            DisableControls(false, arrEnabledControls);
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -342,6 +358,8 @@ namespace BIDSHelper.SSAS
             cmbAction.Items.RemoveAt(cmbAction.SelectedIndex);
             if (_listActionClones.Count > 0)
                 cmbAction.SelectedIndex = 0;
+            else
+                DisableControls(true, arrEnabledControls);
         }
 
         private void cmbAction_SelectedIndexChanged(object sender, EventArgs e)
@@ -353,7 +371,7 @@ namespace BIDSHelper.SSAS
 
         private void SaveAction()
         {
-            if (_currentAction == null) return;
+            if (_currentAction == null || cmbAction.SelectedIndex == -1) return;
             if (cmbActionType.SelectedIndex >= 0)
                 _currentAction.Type = (ActionType)Enum.Parse(typeof(ActionType), cmbActionType.Text);
 
@@ -438,7 +456,10 @@ namespace BIDSHelper.SSAS
                 dataGridViewReportParameters.EndEdit();
                 foreach (ReportParameter rp in _listReportParameters)
                 {
-                    action.ReportParameters.Add(rp);
+                    if (!string.IsNullOrEmpty(rp.Name) && !string.IsNullOrEmpty(rp.Value))
+                    {
+                        action.ReportParameters.Add(rp);
+                    }
                 }
 
                 action.ReportServer = txtReportServer.Text;
@@ -772,6 +793,67 @@ namespace BIDSHelper.SSAS
         {
             SaveAction();
         }
+
+        private void contextMenuStripDrillColumns_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            try
+            {
+                if (e.ClickedItem == contextMenuDelete)
+                {
+                    if (this.dataGridViewDrillthroughColumns.Visible)
+                    {
+                        this.dataGridViewDrillthroughColumns.Rows.Remove(this.dataGridViewDrillthroughColumns.CurrentRow);
+                    }
+                    else if (this.dataGridViewReportParameters.Visible)
+                    {
+                        this.dataGridViewReportParameters.Rows.Remove(this.dataGridViewReportParameters.CurrentRow);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void dataGridViewReportParameters_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            try
+            {
+                if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+                {
+                    dataGridViewReportParameters.CurrentCell = dataGridViewReportParameters.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void dataGridViewDrillthroughColumns_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            try
+            {
+                if (e.Button == MouseButtons.Left && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+                {
+                    dataGridViewDrillthroughColumns.CurrentCell = dataGridViewDrillthroughColumns.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                    dataGridViewDrillthroughColumns.BeginEdit(true);
+                    DataGridViewComboBoxEditingControl combo = dataGridViewDrillthroughColumns.EditingControl as DataGridViewComboBoxEditingControl;
+                    if (combo != null)
+                        combo.DroppedDown = true;
+                }
+                else if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+                {
+                    dataGridViewDrillthroughColumns.CurrentCell = dataGridViewDrillthroughColumns.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
 
     }
 }
