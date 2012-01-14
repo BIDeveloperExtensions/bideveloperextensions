@@ -602,7 +602,6 @@ namespace BIDSHelper.SSAS
             this.contextMenuDelete});
             this.contextMenuStripDrillColumns.Name = "contextMenuStripDrillColumns";
             this.contextMenuStripDrillColumns.Size = new System.Drawing.Size(153, 48);
-            this.contextMenuStripDrillColumns.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStripDrillColumns_Opening);
             this.contextMenuStripDrillColumns.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripDrillColumns_ItemClicked);
             // 
             // contextMenuDelete
