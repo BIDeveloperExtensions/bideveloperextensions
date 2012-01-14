@@ -552,12 +552,24 @@ namespace BIDSHelper.SSIS
                 if (move)
                 {
                     DtsContainer sourceContainer = FindObjectForVariablePackagePath(package, sourceVar.GetPackagePath());
-
-                    variablesToolWindowControl.GetType().InvokeMember("DeleteVariables", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { sourceVariableDesigners });
-
                     changesvc.OnComponentChanging(sourceContainer, null);
                     changesvc.OnComponentChanged(sourceContainer, null, null, null); //marks the package designer as dirty
                 }
+            }
+
+            if (move)
+            {
+#if DENALI
+                //terrible workaround to get the exact right parameter type for the DeleteVariables method in Denali. Guess calling InvokeMember against a function with a parameter of a generic type is tricky
+                System.Collections.IList listParam = ((System.Collections.IList)System.Type.GetType("System.Collections.Generic.List`1[[" + ExpressionHighlighterPlugin.GetPrivateType(variablesToolWindowControl.GetType(), "Microsoft.DataTransformationServices.Design.VariableDesigner").AssemblyQualifiedName + "]]").GetConstructor(new Type[] { }).Invoke(new object[] { }));
+                foreach (object o in sourceVariableDesigners)
+                {
+                    listParam.Add(o);
+                }
+                variablesToolWindowControl.GetType().GetMethod("DeleteVariables", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).Invoke(variablesToolWindowControl, new object[] { listParam });
+#else
+                variablesToolWindowControl.GetType().InvokeMember("DeleteVariables", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { sourceVariableDesigners });
+#endif
             }
 
             changesvc.OnComponentChanging(targetContainer, null);
