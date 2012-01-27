@@ -92,9 +92,9 @@ namespace BIDSHelper
                         {
                             SSISHelpers.MarkPackageDirty(package);
                         }
-                    }
 
-                    CancelDefault = true;
+                        CancelDefault = true;
+                    }
                 }
                 catch (Exception ex)
                 {
