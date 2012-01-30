@@ -22,6 +22,7 @@ namespace BIDSHelper.SSIS
 
 #if DENALI
     using Microsoft.SqlServer.IntegrationServices.Designer.Model;
+    using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
 #endif
 
     public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
@@ -124,10 +125,15 @@ namespace BIDSHelper.SSIS
                 if (ClosingWindow == null) return;
                 IDesignerHost designer = ClosingWindow.Object as IDesignerHost;
                 if (designer == null) return;
+#if !DENALI //apparently ProjectItem is null in Denali
                 ProjectItem pi = ClosingWindow.ProjectItem;
-                if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
-                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-                Package package = (Package)win.PropertiesLinkComponent;
+                if (pi == null || !(pi.Name.ToLower().EndsWith(".dtsx"))) return;
+#endif
+
+                EditorWindow win = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator)) as EditorWindow;
+                if (win == null) return;
+                Package package = win.PropertiesLinkComponent as Package;
+                if (package == null) return;
 
                 //clear cache
                 HighlightingToDo.ClearCache(package);
@@ -207,8 +213,14 @@ namespace BIDSHelper.SSIS
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
                 //NEW REQUEUE CODE DESIGNED TO POSTPONE WORK DONE DURING A PASTE OPERATION UNTIL AFTER IS HAS COMPLETED
                 bool bRequeue = false;
+
                 try
                 {
+#if DENALI
+                    IClipboardService clipboardService = (IClipboardService)package.Site.GetService(typeof(IClipboardService));
+                    if (clipboardService.IsPasteActive)
+                        bRequeue = true;
+#else
                     for (int iViewIndex = 0; iViewIndex < 3; iViewIndex++)
                     {
                         if (bRequeue) break;
@@ -218,6 +230,10 @@ namespace BIDSHelper.SSIS
 
                         if (iViewIndex == 0) //Control Flow
                         {
+                            //((Microsoft.DataTransformationServices.Design.DtsBasePackageDesigner)(((Microsoft.DataTransformationServices.Design.DtsPackageView)(win)).packageDesigner)).ClipboardService.IsPasteActive
+                            //(((Microsoft.DataTransformationServices.Design.SurfaceCommandHelper)(((Microsoft.DataTransformationServices.Design.ControlFlowControl)(viewControl)).m_surfaceCommands))).ClipboardService.IsPasteActive
+                            //((Microsoft.DataTransformationServices.Design.DtsBasePackageDesigner)(((Microsoft.DataTransformationServices.Design.ControlFlowControl)(viewControl)).PackageDesigner)).ClipboardService
+                            //Microsoft.DataTransformationServices.Design.Control
                             DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
                             if (diagram == null) continue;
                             if (diagram.ComponentDiagram == null) continue;
@@ -259,12 +275,12 @@ namespace BIDSHelper.SSIS
                                 if (diagram.ComponentDiagram == null) continue;
                                 ComponentDiagram oDtrControlFlowDiagram = diagram.ComponentDiagram;
 
-                                #if DENALI
-                                IClipboardService clipService = diagram.Site.GetService(typeof(IClipboardService)) as IClipboardService;
-                                #else
+                                //#if DENALI
+                                //IClipboardService clipService = diagram.Site.GetService(typeof(IClipboardService)) as IClipboardService;
+                                //#else
                                 Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipboardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)typeof(ComponentDiagram).InvokeMember("clipboardCommands", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
                                 Microsoft.SqlServer.Dts.Design.IDtsClipboardService clipService = (Microsoft.SqlServer.Dts.Design.IDtsClipboardService)clipboardCommandHelper.GetType().BaseType.InvokeMember("dtsClipboardService", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, clipboardCommandHelper, null);
-                                #endif
+                                //#endif
 
                                 bool bPasteInProgress = clipService.IsPasteActive;
                                 if (bPasteInProgress)
@@ -276,6 +292,7 @@ namespace BIDSHelper.SSIS
                             }
                         }
                     }
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -305,6 +322,7 @@ namespace BIDSHelper.SSIS
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+#if !DENALI
                 try
                 {
                     if (!mostRecentDDSRefresh.ContainsKey(win))
@@ -329,6 +347,7 @@ namespace BIDSHelper.SSIS
                 {
                     ExpressionListPlugin.shouldSkipExpressionHighlighting = false;
                 }
+#endif
 
                 if (win.Tag == null)
                 {
@@ -340,17 +359,61 @@ namespace BIDSHelper.SSIS
                     bRescan = true;
                 }
 
-                for (int iViewIndex = 0; iViewIndex < 3; iViewIndex++)
+                for (int iViewIndex = 0; iViewIndex <= (int)SSISHelpers.SsisDesignerTabIndex.EventHandlers; iViewIndex++)
                 {
                     EditorWindow.EditorView view = win.Views[iViewIndex];
                     Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
                     if (viewControl == null) continue;
 
-                    if (iViewIndex == 0) //Control Flow
+                    if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.ControlFlow)
                     {
+#if DENALI
+                        //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
+                        Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+                        if (lvwConnMgrs != null)
+                        {
+                            BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
+                        }
+#else
                         ListView lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
+#endif
 
+#if DENALI
+                        Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)viewControl.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, viewControl, null);
+                        foreach (Microsoft.SqlServer.Graph.Model.ModelElement task in ctlFlowModel)
+                        {
+                            Executable executable = null;
+                            Microsoft.SqlServer.Graph.Extended.IModelElementEx taskModelEl = task as Microsoft.SqlServer.Graph.Extended.IModelElementEx;
+                            if (taskModelEl != null)
+                            {
+                                executable = taskModelEl.LogicalObject as Executable;
+
+                                bool bRescanThisTask = bRescan;
+                                if (oIncrementalContainer == executable)
+                                {
+                                    bRescanThisTask = true;
+                                }
+                                if (executable != null)
+                                {
+                                    TaskHighlightingToDo todo;
+                                    lock (highlightingToDos)
+                                    {
+                                        if (highlightingToDos.ContainsKey(executable))
+                                            todo = (TaskHighlightingToDo)highlightingToDos[executable];
+                                        else
+                                            highlightingToDos.Add(executable, todo = new TaskHighlightingToDo());
+                                        todo.package = package;
+                                        todo.executable = executable;
+                                        todo.controlFlowDesigner = designer;
+                                        todo.controlFlowTaskModelElement = task;
+                                        todo.BackgroundOnly = !(!todo.BackgroundOnly || (view.Selected && viewControl.Visible));
+                                        todo.Rescan = bRescanThisTask;
+                                    }
+                                }
+                            }
+                        }
+#else
                         DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
                         if (diagram == null) continue;
 
@@ -393,8 +456,9 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
+#endif
                     }
-                    else if (iViewIndex == 2) //Event Handlers
+                    else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.EventHandlers)
                     {
                         Microsoft.DataTransformationServices.Design.Controls.EventHandlersComboBox eventHandlersCombo = ((Microsoft.DataTransformationServices.Design.Controls.EventHandlersComboBox)(viewControl.Controls["panel1"].Controls["panel2"].Controls["comboBoxEventHandler"]));
                         if (eventHandlersCombo.Tag == null)
@@ -404,9 +468,57 @@ namespace BIDSHelper.SSIS
                             //don't need to monitor the Base Control (leftmost) combo box because changing it will trigger a change to the event handler combo: ((Microsoft.DataWarehouse.Controls.BaseControlComboBox)(viewControl.Controls["panel1"].Controls["panel2"].Controls["Custom ComboBox"]))
                         }
 
+#if DENALI
+                        //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
+                        Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+                        if (lvwConnMgrs != null)
+                        {
+                            BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
+                        }
+#else
                         ListView lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
-                        
+#endif                        
+
+#if DENALI 
+                        foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
+                        {
+                            if (!(c is Microsoft.DataTransformationServices.Design.EventHandlerElementHost)) continue;
+                            Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)c.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, c, null);
+                            foreach (Microsoft.SqlServer.Graph.Model.ModelElement task in ctlFlowModel)
+                            {
+                                Executable executable = null;
+                                Microsoft.SqlServer.Graph.Extended.IModelElementEx taskModelEl = task as Microsoft.SqlServer.Graph.Extended.IModelElementEx;
+                                if (taskModelEl != null)
+                                {
+                                    executable = taskModelEl.LogicalObject as Executable;
+
+                                    bool bRescanThisTask = bRescan;
+                                    if (oIncrementalContainer == executable)
+                                    {
+                                        bRescanThisTask = true;
+                                    }
+                                    if (executable != null)
+                                    {
+                                        TaskHighlightingToDo todo;
+                                        lock (highlightingToDos)
+                                        {
+                                            if (highlightingToDos.ContainsKey(executable))
+                                                todo = (TaskHighlightingToDo)highlightingToDos[executable];
+                                            else
+                                                highlightingToDos.Add(executable, todo = new TaskHighlightingToDo());
+                                            todo.package = package;
+                                            todo.executable = executable;
+                                            todo.controlFlowDesigner = designer;
+                                            todo.controlFlowTaskModelElement = task;
+                                            todo.BackgroundOnly = !(!todo.BackgroundOnly || (view.Selected && c.Visible));
+                                            todo.Rescan = bRescanThisTask;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+#else
                         foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
                         {
                             DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
@@ -452,12 +564,94 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
+#endif
                     }
-                    else if (iViewIndex == 1) //Data Flow
+                    else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.DataFlow)
                     {
+#if DENALI
+                        //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
+                        Control lvwConnMgrs = (Control)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
+                        if (lvwConnMgrs != null)
+                        {
+                            BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
+                        }
+#else
                         ListView lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                         BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
+#endif
 
+#if DENALI
+                        Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox pipelineComboBox = (Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox)(viewControl.Controls["panel1"].Controls["tableLayoutPanel"].Controls["pipelineComboBox"]);
+                        if (pipelineComboBox.Tag == null)
+                        {
+                            pipelineComboBox.SelectedIndexChanged += new EventHandler(comboBox_SelectedIndexChanged);
+                            pipelineComboBox.Tag = true;
+                        }
+
+                        foreach (Control c in viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls)
+                        {
+                            if (c.GetType().FullName != "Microsoft.DataTransformationServices.Design.PipelineTaskView") continue;
+                            object pipelineDesigner = c.GetType().InvokeMember("PipelineTaskDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, c, null);
+                            if (pipelineDesigner == null) continue;
+                            Microsoft.SqlServer.IntegrationServices.Designer.Model.DataFlowGraphModelElement dataFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.DataFlowGraphModelElement)pipelineDesigner.GetType().InvokeMember("DataFlowGraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, pipelineDesigner, null);
+                            List<string> transforms = new List<string>();
+
+                            Executable executable = null;
+                            foreach (Microsoft.SqlServer.Graph.Model.ModelElement transform in dataFlowModel)
+                            {
+                                Microsoft.SqlServer.Graph.Extended.IModelElementEx transformModelEl = transform as Microsoft.SqlServer.Graph.Extended.IModelElementEx;
+                                if (transformModelEl != null)
+                                {
+                                    Microsoft.DataTransformationServices.PipelineComponentMetadata metadata = transformModelEl.LogicalObject as Microsoft.DataTransformationServices.PipelineComponentMetadata;
+                                    if (metadata == null) continue;
+                                    executable = metadata.PipelineTask as Executable;
+
+                                    int id = metadata.ID;
+                                    string sName = metadata.Name;
+                                    string sObjectGuid = pi.Name + "/" + metadata.PipelineTask.ID + "/components/" + id; //this is the todo key... (trying to use the IDTSComponentMetaDataXX as the key caused problems with COM object references and threading)
+                                    transforms.Add(sObjectGuid);
+
+                                    TransformHighlightingToDo transformTodo;
+                                    lock (highlightingToDos)
+                                    {
+                                        if (highlightingToDos.ContainsKey(sObjectGuid))
+                                            transformTodo = (TransformHighlightingToDo)highlightingToDos[sObjectGuid];
+                                        else
+                                            highlightingToDos.Add(sObjectGuid, transformTodo = new TransformHighlightingToDo());
+                                        transformTodo.package = package;
+                                        transformTodo.dataFlowTransformModelElement = transform;
+                                        transformTodo.taskHost = dataFlowModel.PipelineTask;
+                                        transformTodo.transformName = sName;
+                                        transformTodo.transformUniqueID = sObjectGuid;
+                                        transformTodo.BackgroundOnly = !(!transformTodo.BackgroundOnly || (view.Selected && c.Visible));
+                                    }
+                                }
+                            }
+
+                            TaskHighlightingToDo todo;
+                            lock (highlightingToDos)
+                            {
+                                if (highlightingToDos.ContainsKey(executable))
+                                    todo = (TaskHighlightingToDo)highlightingToDos[executable];
+                                else
+                                    highlightingToDos.Add(executable, todo = new TaskHighlightingToDo());
+                                todo.package = package;
+                                todo.executable = executable;
+                                todo.BackgroundOnly = !(!todo.BackgroundOnly || (view.Selected && c.Visible));
+                                if (todo.transforms == null)
+                                {
+                                    todo.transforms = transforms;
+                                }
+                                else
+                                {
+                                    lock (todo.transforms)
+                                    {
+                                        todo.transforms = transforms;
+                                    }
+                                }
+                            }
+                        }
+#else
                         Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox pipelineComboBox = (Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox)(viewControl.Controls["panel1"].Controls["pipelineComboBox"]);
                         if (pipelineComboBox.Tag == null)
                         {
@@ -532,9 +726,12 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
+#endif
                     }
                 }
 
+
+                //if taking a long time, offer to disable for this package
                 if (dtToDoBuildingStartTime.AddSeconds(MAX_SECONDS_BUILDING_TO_DOS_BEFORE_OFFER_DISABLE) < DateTime.Now && !disableHighlighting.ContainsKey(win))
                 {
                     //it took more than 10 seconds to build the to do's list... offer that we disable highlighting for this package
@@ -543,6 +740,11 @@ namespace BIDSHelper.SSIS
                     if (result == DialogResult.Yes) return;
                 }
 
+
+                //only scan configurations if...
+                //1. it's a full load (not incremental)
+                //2. it's a full rescan
+                //even in project deployment model in Denali you can continue using configurations, so go ahead and run this code as it won't be expensive unless there are configurations
                 if (!bIncremental && bRescan)
                     HighlightingToDo.CachePackageConfigurations(package, pi);
 
@@ -555,6 +757,35 @@ namespace BIDSHelper.SSIS
             }
         }
 
+#if DENALI
+        private void BuildConnectionManagerToDos(Package package, Control lvwConnMgrs, bool bIncremental, bool bRescan, ConnectionManager oIncrementalConnectionManager)
+        {
+            ConnectionManagerUserControl cmControl = (ConnectionManagerUserControl)lvwConnMgrs.GetType().InvokeMember("m_connectionManagerUserControl", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, lvwConnMgrs, null);
+            ConnectionManagersModelElement conns = (ConnectionManagersModelElement)lvwConnMgrs.GetType().InvokeMember("m_connectionsElement", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, lvwConnMgrs, null);
+
+            if (cmControl != null && conns != null)
+            {
+                foreach (ConnectionManagerModelElement lviConn in conns)
+                {
+                    ConnectionManager conn = lviConn.ConnectionManager;
+                    if (conn == null) continue;
+                    ConnectionManagerHighlightingToDo todo;
+                    lock (highlightingToDos)
+                    {
+                        if (highlightingToDos.ContainsKey(conn))
+                            todo = (ConnectionManagerHighlightingToDo)highlightingToDos[conn];
+                        else
+                            highlightingToDos.Add(conn, todo = new ConnectionManagerHighlightingToDo());
+                        todo.package = package;
+                        todo.connection = conn;
+                        todo.listConnectionLVIs.Add((System.Windows.FrameworkElement)cmControl.GetViewFromViewModel(lviConn));
+                        todo.BackgroundOnly = false;
+                        todo.Rescan = (conn == oIncrementalConnectionManager) || bRescan;
+                    }
+                }
+            }
+        }
+#else
         private void BuildConnectionManagerToDos(Package package, ListView lvwConnMgrs, bool bIncremental, bool bRescan, ConnectionManager oIncrementalConnectionManager)
         {
             foreach (ListViewItem lviConn in lvwConnMgrs.Items)
@@ -582,6 +813,7 @@ namespace BIDSHelper.SSIS
                 lvwConnMgrs.Tag = true;
             }
         }
+#endif
         #endregion
 
         #region Worker Thread
@@ -752,6 +984,7 @@ namespace BIDSHelper.SSIS
         #endregion
 
         #region Event Handlers For Incremental Highlighting
+#if !DENALI
         private void lvwConnMgrs_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             try
@@ -765,6 +998,7 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("problem in lvwConnMgrs_DrawItem: " + ex.Message + " " + ex.StackTrace);
             }
         }
+#endif
 
         void comboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -785,32 +1019,24 @@ namespace BIDSHelper.SSIS
                 if (e.Component is DtsContainer)
                 {
                     IDesignerHost designer = (IDesignerHost)sender;
-                    foreach (Window win in this.ApplicationObject.Windows)
-                    {
-                        if (win.Object == designer)
-                        {
-                            HighlightingToDo.ClearCache((Executable)e.Component);
-                            BuildToDos(win, (DtsContainer)e.Component);
-                            return;
-                        }
-                    }
+                    Window win = FindWindowForDesigner(designer);
+                    if (win == null) return;
+                    HighlightingToDo.ClearCache((Executable)e.Component);
+                    BuildToDos(win, (DtsContainer)e.Component);
+                    return;
                 }
                 else if (e.Component is Microsoft.DataTransformationServices.PipelineDesignTimeObject)
                 {
                     Microsoft.DataTransformationServices.PipelineDesignTimeObject pipelineMetadata = e.Component as Microsoft.DataTransformationServices.PipelineDesignTimeObject;
                     System.Diagnostics.Debug.WriteLine("added transform: " + pipelineMetadata.Name);
                     IDesignerHost designer = (IDesignerHost)sender;
-                    foreach (Window win in this.ApplicationObject.Windows)
-                    {
-                        if (win.Object == designer)
-                        {
-                            string sUniqueID = win.ProjectItem.Name + "/" + pipelineMetadata.PipelineTask.ID + "/components/" + pipelineMetadata.ID;
-                            System.Diagnostics.Debug.WriteLine("clearing cache for: " + sUniqueID);
-                            HighlightingToDo.ClearCache(sUniqueID);
-                            BuildToDos(win, pipelineMetadata.PipelineTask, pipelineMetadata.ID);
-                            return;
-                        }
-                    }
+                    Window win = FindWindowForDesigner(designer);
+                    if (win == null) return;
+                    string sUniqueID = win.ProjectItem.Name + "/" + pipelineMetadata.PipelineTask.ID + "/components/" + pipelineMetadata.ID;
+                    System.Diagnostics.Debug.WriteLine("clearing cache for: " + sUniqueID);
+                    HighlightingToDo.ClearCache(sUniqueID);
+                    BuildToDos(win, pipelineMetadata.PipelineTask, pipelineMetadata.ID);
+                    return;
                 }
             }
             catch { }
@@ -834,16 +1060,12 @@ namespace BIDSHelper.SSIS
                     if (e.Member == null) //capture when the package configuration editor window is closed
                     {
                         IDesignerHost designer = (IDesignerHost)sender;
-                        foreach (Window win in this.ApplicationObject.Windows)
-                        {
-                            if (win.Object == designer)
-                            {
-                                HighlightingToDo.ClearCache((Package)e.Component);
-                                BuildToDos(win, (DtsContainer)e.Component);
-                                bHighlightCalled = true;
-                                return;
-                            }
-                        }
+                        Window win = FindWindowForDesigner(designer);
+                        if (win == null) return;
+                        HighlightingToDo.ClearCache((Package)e.Component);
+                        BuildToDos(win, (DtsContainer)e.Component);
+                        bHighlightCalled = true;
+                        return;
                     }
                 }
                 else if (e.Component is DtsObject && e.Member != null)
@@ -851,19 +1073,15 @@ namespace BIDSHelper.SSIS
                     if (e.Member.Name == "Expressions" || e.Member.Name == "Name")
                     {
                         IDesignerHost designer = (IDesignerHost)sender;
-                        foreach (Window win in this.ApplicationObject.Windows)
-                        {
-                            if (win.Object == designer)
-                            {
-                                if (e.Component is Executable)
-                                    HighlightingToDo.ClearCache((Executable)e.Component);
-                                else if (e.Component is ConnectionManager)
-                                    HighlightingToDo.ClearCache((ConnectionManager)e.Component);
-                                BuildToDos(win, (DtsObject)(e.Component));
-                                bHighlightCalled = true;
-                                return;
-                            }
-                        }
+                        Window win = FindWindowForDesigner(designer);
+                        if (win == null) return;
+                        if (e.Component is Executable)
+                            HighlightingToDo.ClearCache((Executable)e.Component);
+                        else if (e.Component is ConnectionManager)
+                            HighlightingToDo.ClearCache((ConnectionManager)e.Component);
+                        BuildToDos(win, (DtsObject)(e.Component));
+                        bHighlightCalled = true;
+                        return;
                     }
                 }
                 else if (e.Component is Microsoft.DataTransformationServices.PipelineDesignTimeObject)
@@ -871,18 +1089,14 @@ namespace BIDSHelper.SSIS
                     Microsoft.DataTransformationServices.PipelineDesignTimeObject pipelineMetadata = e.Component as Microsoft.DataTransformationServices.PipelineDesignTimeObject;
                     System.Diagnostics.Debug.WriteLine("edited transform: " + pipelineMetadata.Name);
                     IDesignerHost designer = (IDesignerHost)sender;
-                    foreach (Window win in this.ApplicationObject.Windows)
-                    {
-                        if (win.Object == designer)
-                        {
-                            string sUniqueID = win.ProjectItem.Name + "/" + pipelineMetadata.PipelineTask.ID + "/components/" + pipelineMetadata.ID;
-                            System.Diagnostics.Debug.WriteLine("clearing cache for: " + sUniqueID);
-                            HighlightingToDo.ClearCache(sUniqueID);
-                            BuildToDos(win, pipelineMetadata.PipelineTask, pipelineMetadata.ID);
-                            bHighlightCalled = true;
-                            return;
-                        }
-                    }
+                    Window win = FindWindowForDesigner(designer);
+                    if (win == null) return;
+                    string sUniqueID = win.ProjectItem.Name + "/" + pipelineMetadata.PipelineTask.ID + "/components/" + pipelineMetadata.ID;
+                    System.Diagnostics.Debug.WriteLine("clearing cache for: " + sUniqueID);
+                    HighlightingToDo.ClearCache(sUniqueID);
+                    BuildToDos(win, pipelineMetadata.PipelineTask, pipelineMetadata.ID);
+                    bHighlightCalled = true;
+                    return;
                 }
                 //TODO:
                 //don't think this is necessary anymore
@@ -918,6 +1132,20 @@ namespace BIDSHelper.SSIS
                 }
                 catch { }
             }
+        }
+
+        private Window FindWindowForDesigner(IDesignerHost designer)
+        {
+            if (this.ApplicationObject.ActiveWindow.Object == designer) return this.ApplicationObject.ActiveWindow;
+
+            foreach (Window win in this.ApplicationObject.Windows)
+            {
+                if (win.Object == designer)
+                {
+                    return win;
+                }
+            }
+            return null;
         }
 
         void win_ActiveViewChanged(object sender, EventArgs e)

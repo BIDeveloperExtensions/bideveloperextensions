@@ -166,6 +166,15 @@
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.SqlServer.Graph, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.Graph.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.IntegrationServices.Design, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.IntegrationServices.Design.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.SqlServer.IntegrationServices.Graph, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
@@ -184,6 +193,8 @@
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2012\msddsp.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -205,6 +216,7 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
@@ -222,6 +234,7 @@
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -267,6 +280,7 @@
     </Compile>
     <Compile Include="SSAS\Tabular\TabularHelpers.cs" />
     <Compile Include="SSAS\Tabular\TabularActionsEditorPlugin.cs" />
+    <Compile Include="SSIS\Adorners\BIDSHelperConfigurationAdorner.cs" />
     <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
       <SubType>Form</SubType>
     </Compile>

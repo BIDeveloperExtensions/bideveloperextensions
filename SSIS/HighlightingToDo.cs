@@ -8,6 +8,10 @@ namespace BIDSHelper.SSIS
     using Microsoft.DataWarehouse.Controls;
     using Microsoft.SqlServer.Dts.Runtime;
 
+#if DENALI
+    using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
+#endif
+
     public abstract class HighlightingToDo
     {
         protected class CachedHighlightStatus
@@ -292,6 +296,50 @@ namespace BIDSHelper.SSIS
             }
         }
 
+#if DENALI
+        private static Dictionary<string, System.Windows.Media.Imaging.BitmapSource> _cacheBitmapSource = new Dictionary<string, System.Windows.Media.Imaging.BitmapSource>();
+        public static System.Windows.Media.Imaging.BitmapSource GetBitmapSource(System.Drawing.Color color)
+        {
+            return GetBitmapSource(color, color);
+        }
+        public static System.Windows.Media.Imaging.BitmapSource GetBitmapSource(System.Drawing.Color color1, System.Drawing.Color color2)
+        {
+            string sColorKey = color1.ToArgb().ToString() + "_" + color2.ToArgb().ToString();
+            if (_cacheBitmapSource.ContainsKey(sColorKey))
+            {
+                return _cacheBitmapSource[sColorKey];
+            }
+
+            int width = 32;
+            int height = 32;
+            int stride=width*4 + (width %4);
+            byte[] bits=new byte[height*stride];
+
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = height - 1 - i; j > -1; j--)
+                {
+                    if (i <= j)
+                        setpixel(ref bits, i, j, stride, color1);
+                    else
+                        setpixel(ref bits, i, j, stride, color2);
+                }
+            }
+
+            System.Windows.Media.Imaging.BitmapSource bs = System.Windows.Media.Imaging.BitmapSource.Create(  width, height,  300,  300,  System.Windows.Media.PixelFormats.Pbgra32,  null,  bits,  stride);
+            _cacheBitmapSource.Add(sColorKey, bs);
+            return bs;
+        }
+
+        private static void setpixel(ref byte[] bits, int x, int y, int stride, System.Drawing.Color c)
+        {
+            bits[x * 4 + y * stride] = c.B;
+            bits[x * 4 + y * stride + 1] = c.G;
+            bits[x * 4 + y * stride + 2] = c.R;
+            bits[x * 4 + y * stride + 3] = c.A;
+        }
+#endif
+
         protected void HighlightDdsDiagramObjectIcon(DdsDiagramHostControl diagram, object managedShape, bool bHasExpression, bool bHasConfiguration)
         {
             try
@@ -343,6 +391,10 @@ namespace BIDSHelper.SSIS
     {
         public Executable executable = null;
         public IDesignerHost controlFlowDesigner = null;
+
+#if DENALI
+        public Microsoft.SqlServer.Graph.Model.ModelElement controlFlowTaskModelElement;
+#else
         public DdsDiagramHostControl controlFlowDiagram = null;
 
         private object taskManagedShape = null;
@@ -353,6 +405,8 @@ namespace BIDSHelper.SSIS
                 taskManagedShape = TYPE_MANAGED_BASE_SHAPE.InvokeMember("GetManagedShape", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, null, new object[] { value });
             }
         }
+#endif
+
         public List<string> transforms = null;
         public override void Highlight()
         {
@@ -398,7 +452,22 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("highlighting task from cache");
             }
 
+#if DENALI
+            this.controlFlowTaskModelElement.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
+                (System.Windows.Threading.DispatcherPriority.Normal,
+                (Action)(() =>
+                {
+                    System.Windows.FrameworkElement fe = (System.Windows.FrameworkElement)this.controlFlowTaskModelElement.View;
+                    if (fe != null) //the sequence container for the Package object itself has a null view. TODO is how to add a configuration highlight to the background of the package itself... this seems to do the trick but there's more formatting work to do: fe = (System.Windows.FrameworkElement)(((Microsoft.SqlServer.IntegrationServices.Designer.Model.SequenceModelElement)(controlFlowTaskModelElement)).GraphModelElement).GraphControl
+                    {
+                        Adorners.BIDSHelperConfigurationAdorner adorner = new Adorners.BIDSHelperConfigurationAdorner(fe, typeof(Microsoft.SqlServer.Graph.Model.ModelElement));
+                        adorner.UpdateAdorner(false, status.bHasConfiguration); //only highlight configurations
+                    }
+                }
+                ));
+#else
             HighlightDdsDiagramObjectIcon(controlFlowDiagram, taskManagedShape, status.bHasExpression, status.bHasConfiguration);
+#endif
 
             if (cacheTasks.ContainsKey(executable))
                 cacheTasks[executable] = status;
@@ -428,6 +497,7 @@ namespace BIDSHelper.SSIS
             bool returnValue = false;
             HasConfiguration = false;
 
+#if !DENALI //has built-in expression highlighting
             foreach (DtsProperty p in task.Properties)
             {
                 try
@@ -440,6 +510,7 @@ namespace BIDSHelper.SSIS
                 }
                 catch { }
             }
+#endif
 
             //check for package configurations separately so you can break out of the expensive expressions search as soon as you find one
             foreach (DtsProperty p in task.Properties)
@@ -456,6 +527,7 @@ namespace BIDSHelper.SSIS
             {
                 ForEachEnumeratorHost forEachEnumerator = ((ForEachLoop)executable).ForEachEnumerator;
 
+#if !DENALI //has built-in expression highlighting
                 if (!returnValue)
                 {
                     foreach (DtsProperty p in forEachEnumerator.Properties)
@@ -471,6 +543,7 @@ namespace BIDSHelper.SSIS
                         catch { }
                     }
                 }
+#endif
 
                 if (!HasConfiguration)
                 {
@@ -499,12 +572,15 @@ namespace BIDSHelper.SSIS
     /// </summary>
     public class TransformHighlightingToDo : HighlightingToDo
     {
-        public IDesignerHost dataFlowDesigner = null;
-        public DdsDiagramHostControl dataFlowDiagram = null;
         public TaskHost taskHost = null;
         public string transformName = null;
         public string transformUniqueID = null;
 
+#if DENALI
+        public Microsoft.SqlServer.Graph.Model.ModelElement dataFlowTransformModelElement;
+#else
+        public IDesignerHost dataFlowDesigner = null;
+        public DdsDiagramHostControl dataFlowDiagram = null;
         private object transformManagedShape = null;
         public MSDDS.IDdsDiagramObject dataFlowDiagramTask
         {
@@ -513,6 +589,7 @@ namespace BIDSHelper.SSIS
                 transformManagedShape = TYPE_MANAGED_BASE_SHAPE.InvokeMember("GetManagedShape", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, null, new object[] { value });
             }
         }
+#endif
 
         public override void Highlight()
         {
@@ -537,8 +614,23 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("highlighting from cache for: " + transformUniqueID);
             }
 
+#if DENALI
+            this.dataFlowTransformModelElement.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
+                (System.Windows.Threading.DispatcherPriority.Normal,
+                (Action)(() =>
+                {
+                    System.Windows.FrameworkElement fe = (System.Windows.FrameworkElement)this.dataFlowTransformModelElement.View;
+                    if (fe != null) //the sequence container for the Package object itself has a null view. TODO is how to add a configuration highlight to the background of the package itself
+                    {
+                        Adorners.BIDSHelperConfigurationAdorner adorner = new Adorners.BIDSHelperConfigurationAdorner(fe, typeof(Microsoft.SqlServer.Graph.Model.ModelElement));
+                        adorner.UpdateAdorner(status.bHasExpression, status.bHasConfiguration);
+                    }
+                }
+                ));
+#else
             HighlightDdsDiagramObjectIcon(dataFlowDiagram, transformManagedShape, status.bHasExpression, status.bHasConfiguration);
-            
+#endif
+
             if (cacheTransforms.ContainsKey(transformUniqueID))
                 cacheTransforms[transformUniqueID] = status;
             else
@@ -594,8 +686,11 @@ namespace BIDSHelper.SSIS
     public class ConnectionManagerHighlightingToDo : HighlightingToDo
     {
         public ConnectionManager connection = null;
+#if DENALI
+        public List<System.Windows.FrameworkElement> listConnectionLVIs = new List<System.Windows.FrameworkElement>();
+#else
         public List<ListViewItem> listConnectionLVIs = new List<ListViewItem>();
-
+#endif
         public override void Highlight()
         {
             List<string> listConfigPaths;
@@ -609,23 +704,16 @@ namespace BIDSHelper.SSIS
 
             bool bHasConfiguration = false;
             bool bHasExpression = false;
-            if (Rescan || !cacheConnectionManagers.ContainsKey(connection))
+            if (Rescan || !cacheConnectionManagers.ContainsKey(connection)) //note this is not allowing highlighting of connections on event handlers tab since the event handlers tab is not loaded when you first load the package... TODO... consider changing the cacheConnectionManagers object to track which tabs have been highlighted before
             {
                 System.Diagnostics.Debug.WriteLine("scanning connection manager for expressions & configurations");
-                bHasExpression = HasExpression(connection, listConfigPaths, out bHasConfiguration);
+                bHasExpression = HasExpression(connection, listConfigPaths, out bHasConfiguration); //also figures out whether it has configurations
                 if (cacheConnectionManagers.ContainsKey(connection))
                     cacheConnectionManagers[connection] = new CachedHighlightStatus(this.package, bHasExpression, bHasConfiguration);
                 else
                 {
                     lock (cacheConnectionManagers)
                         cacheConnectionManagers.Add(connection, new CachedHighlightStatus(this.package, bHasExpression, bHasConfiguration));
-                }
-                lock (listConnectionLVIs)
-                {
-                    foreach (ListViewItem lvi in listConnectionLVIs)
-                    {
-                        HighlightConnectionManagerLVI(lvi, bHasExpression, bHasConfiguration, true); //ensure the connection manager is invalidated... this only helps the connection manager repaint in a few situations, but it's necessary
-                    }
                 }
             }
             else
@@ -636,14 +724,37 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("scanning connection manager for expressions & configurations from cache");
             }
 
+            lock (listConnectionLVIs)
+            {
+#if DENALI
+                foreach (System.Windows.FrameworkElement fe in listConnectionLVIs)
+                {
+                    fe.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
+                        (System.Windows.Threading.DispatcherPriority.Normal,
+                        (Action)(() =>
+                        {
+                            Adorners.BIDSHelperConfigurationAdorner adorner = new Adorners.BIDSHelperConfigurationAdorner(fe, typeof(ConnectionManagerModelElement));
+                            adorner.UpdateAdorner(false, bHasConfiguration); //only highlight configurations
+                        }
+                        ));
+                }
+#else
+                foreach (ListViewItem lvi in listConnectionLVIs)
+                {
+                    HighlightConnectionManagerLVI(lvi, bHasExpression, bHasConfiguration, true); //ensure the connection manager is invalidated... this only helps the connection manager repaint in a few situations, but it's necessary
+                }
+#endif
+            }
+
             //the lvwConnMgrs_DrawItem event will take care of painting the connection managers 90% of the time
             //unfortunately we had to use the lvwConnMgrs_DrawItem to catch all the appropriate times we needed to refix the icon
         }
 
+
+#if !DENALI
         public static void HighlightConnectionManagerLVI(ListViewItem lviConn)
         {
             ConnectionManager connection = (ConnectionManager)lviConn.GetType().InvokeMember("Component", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, lviConn, null);
-
             Package package = null;
             List<string> listConfigPaths = new List<string>();
             lock (cacheConfigPaths)
@@ -738,6 +849,7 @@ namespace BIDSHelper.SSIS
                 }
             }
         }
+#endif
 
         private static bool HasExpression(ConnectionManager connectionManager, List<string> listConfigPaths, out bool HasConfiguration)
         {
@@ -745,6 +857,7 @@ namespace BIDSHelper.SSIS
             bool returnValue = false;
             HasConfiguration = false;
 
+#if !DENALI //connection managers already have built-in expression highlighting in Denali, so don't run this code in Denali
             foreach (DtsProperty p in dtsObject.Properties)
             {
                 try
@@ -757,6 +870,7 @@ namespace BIDSHelper.SSIS
                 }
                 catch { }
             }
+#endif
 
             //check for package configurations separately so you can break out of the expensive expressions search as soon as you find one
             foreach (DtsProperty p in dtsObject.Properties)
