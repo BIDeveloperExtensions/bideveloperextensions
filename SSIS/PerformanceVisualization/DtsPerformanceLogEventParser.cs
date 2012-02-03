@@ -17,8 +17,13 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private Dictionary<string, DtsObjectPerformance> listComponentsPerformanceLookup = new Dictionary<string, DtsObjectPerformance>(StringComparer.CurrentCultureIgnoreCase);
 
         private Regex regexBufferSizeTuning = new Regex(@"buffer type (\d+) .+ (\d+) rows in buffers of this type", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private Regex regexExecutionTreeOutput = new Regex(@"output \"".+?\"" \((\d+)\)");
         private Regex regexCreateBuffer = new Regex(@"CreatePrimeBuffer of type (\d+) for output ID (\d+)");
+
+#if DENALI
+        private Regex regexExecutionTreeOutput = new Regex(@"\s+(.+?)\.Outputs\[(.+?)\]\;");
+#else
+        private Regex regexExecutionTreeOutput = new Regex(@"output \"".+?\"" \((\d+)\)");
+#endif
 
 #if KATMAI || DENALI
         private const string EXECUTION_TREE_START_PHRASE = "Begin Path ";
@@ -80,6 +85,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             if (e.Event == BidsHelperCapturedDtsLogEvent.OnPipelineRowsSent)
             {
                 //<ignore> : <ignore> : PathID : PathName : TransformID : TransformName : InputID : InputName : RowsSent
+                //Denali includes the following at the end... DestinationTransformName : Paths[SourceName.SourceOutputName] : DestinationTransformName.Inputs[InputName]
                 DtsPipelinePerformance pipePerf = (DtsPipelinePerformance)perf;
                 string[] parts = e.Message.Split(new string[] { " : " }, StringSplitOptions.None);
                 int iPathID = int.Parse(parts[2]);
@@ -188,12 +194,28 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     else
                     {
                         Match match = regexExecutionTreeOutput.Match(line);
+
+#if DENALI
+                        if (match.Groups.Count == 3)
+                        {
+                            string sComponent = match.Groups[1].Value;
+                            string sOutput = match.Groups[2].Value;
+                            foreach (PipelinePath path in pipePerf.InputOutputLookup.Values)
+                            {
+                                if (path.OutputName == sOutput && path.OutputTransformName == sComponent && !tree.Paths.Contains(path))
+                                {
+                                    tree.Paths.Add(path);
+                                }
+                            }
+                        }
+#else
                         if (match.Groups.Count == 2)
                         {
                             int iOutputID = int.Parse(match.Groups[1].Value);
                             if (pipePerf.InputOutputLookup.ContainsKey(iOutputID) && !tree.Paths.Contains(pipePerf.InputOutputLookup[iOutputID]))
                                 tree.Paths.Add(pipePerf.InputOutputLookup[iOutputID]);
                         }
+#endif
                     }
                 }
             }
@@ -252,6 +274,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         #region IDTSLogging Members
         //this code is currently not in use as SSIS logging goes to a text file
         //but this code is left in here in case we need to execute a package in process and handle log events in the future
+        //we don't want to run the package in process since we want to have the ability to run as 64-bit
         //these methods allow capturing events through custom SSIS logging handler class
         //the log events are then passed to the rest of the class for being parsed
 

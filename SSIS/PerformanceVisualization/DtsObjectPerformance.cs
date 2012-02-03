@@ -166,10 +166,12 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 p.OutputID = path.StartPoint.ID;
                 p.OutputName = path.StartPoint.Name;
                 p.OutputTransformID = path.StartPoint.Component.ID;
+                p.OutputTransformName = path.StartPoint.Component.Name;
                 p.OutputTransformType = path.StartPoint.Component.ObjectType;
                 p.InputID = path.EndPoint.ID;
                 p.InputName = path.EndPoint.Name;
                 p.InputTransformID = path.EndPoint.Component.ID;
+                p.InputTransformName = path.EndPoint.Component.Name;
                 p.InputTransformType = path.EndPoint.Component.ObjectType;
                 p.Indent = this.Indent + 2; //TODO: indent the paths recursively? probably good enough for now
                 InputOutputLookup.Add(p.InputID, p);
@@ -233,6 +235,13 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 case DataType.DT_TEXT:
                 case DataType.DT_NTEXT:
                     return 24; //don't know length based on metadata so we guess... SSIS buffer tuning may use the same guess???
+#if DENALI || KATMAI
+                case DataType.DT_DBTIME2:
+                case DataType.DT_DBTIMESTAMP2:
+                    return 8;
+                case DataType.DT_DBTIMESTAMPOFFSET:
+                    return 10;
+#endif
                 default:
                     return 4;
             }
@@ -555,9 +564,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         public int OutputID;
         public string OutputName;
         public int OutputTransformID;
+        public string OutputTransformName;
         public int InputID;
         public string InputName;
         public int InputTransformID;
+        public string InputTransformName;
         public PipelinePath PreviousPath;
         public DTSObjectType OutputTransformType;
         public DTSObjectType InputTransformType;

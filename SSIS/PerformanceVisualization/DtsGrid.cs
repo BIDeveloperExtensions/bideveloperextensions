@@ -196,8 +196,27 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 }
                 if (icon != null)
                 {
-                    int y = Math.Max(0, (rectangle2.Y + (rectangle2.Height / 2)) - (icon.Height / 2) - 1);
-                    e.Graphics.DrawIcon(icon, (rectangle2.X + (ganttRowData.Indent * INDENTATION_WIDTH)) - num4 + icon.Width, y);
+                    if (icon.Height > 16 || icon.Width > 16)
+                    {
+                        try
+                        {
+                            icon = new Icon(icon, new Size(16, 16));
+                        }
+                        catch { }
+                    }
+                    if (icon.Height > 16 || icon.Width > 16)
+                    {
+                        //properly deal with 32x32 data flow icon we can't get a 16x16 version with code above
+                        int x = (rectangle2.X + (ganttRowData.Indent * INDENTATION_WIDTH)) - num4 + 16;
+                        int y = Math.Max(0, (rectangle2.Y + (rectangle2.Height / 2)) - (16 / 2) - 1);
+                        e.Graphics.DrawIcon(icon, new Rectangle(x, y, 16, 16));
+                    }
+                    else
+                    {
+                        int x = (rectangle2.X + (ganttRowData.Indent * INDENTATION_WIDTH)) - num4 + icon.Width;
+                        int y = Math.Max(0, (rectangle2.Y + (rectangle2.Height / 2)) - (icon.Height / 2) - 1);
+                        e.Graphics.DrawIcon(icon, x, y);
+                    }
                 }
                 e.Graphics.ResetClip();
                 Rows[e.RowIndex].Cells[0].Style.ForeColor = (ganttRowData.IsError ? Color.Red : Color.Black);
