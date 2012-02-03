@@ -93,7 +93,8 @@ namespace BIDSHelper.SSIS
             toolWindow.SetTabPicture(icon); 
 #endif
 
-            toolWindow.Visible = true;
+            if (windowIsVisible)
+                toolWindow.Visible = true;
         }
 
         void expressionListWindow_EditExpressionSelected(object sender, EditExpressionSelectedEventArgs e)
