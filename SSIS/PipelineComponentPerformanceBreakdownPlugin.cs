@@ -116,11 +116,23 @@ namespace BIDSHelper.SSIS
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 Package package = (Package)win.PropertiesLinkComponent;
 
-                if (win.SelectedIndex == 0)
+                if (win.SelectedIndex == (int)SSISHelpers.SsisDesignerTabIndex.ControlFlow)
                 {
                     //control flow
                     EditorWindow.EditorView view = win.SelectedView;
                     Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
+
+#if DENALI
+                    Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)viewControl.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, viewControl, null);
+                    if (ctlFlowModel == null) return false;
+                    Microsoft.SqlServer.IntegrationServices.Designer.Model.TaskModelElement taskModelEl = ctlFlowModel.SelectedItems[0] as Microsoft.SqlServer.IntegrationServices.Designer.Model.TaskModelElement;
+                    if (taskModelEl == null) return false;
+                    TaskHost task = taskModelEl.TaskHost;
+                    if (task == null) return false;
+                    if (!(task.InnerObject is MainPipe)) return false;
+                    DataFlowGUID = taskModelEl.LogicalID;
+                    return true;
+#else
                     DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
                     if (diagram == null || diagram.DDS == null) return false;
                     if (diagram.DDS.Selection.Count != 1) return false;
@@ -135,8 +147,9 @@ namespace BIDSHelper.SSIS
                     if (!(task.InnerObject is MainPipe)) return false;
                     DataFlowGUID = task.ID;
                     return true;
+#endif
                 }
-                else if (win.SelectedIndex == 1)
+                else if (win.SelectedIndex == (int)SSISHelpers.SsisDesignerTabIndex.DataFlow)
                 {
                     //data flow
                     EditorWindow.EditorView view = win.SelectedView;
@@ -145,11 +158,22 @@ namespace BIDSHelper.SSIS
                     foreach (Control c in viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls)
                     {
                         if (!c.Visible) continue;
+
+#if DENALI
+                        if (c.GetType().FullName != "Microsoft.DataTransformationServices.Design.PipelineTaskView") continue;
+                        object pipelineDesigner = c.GetType().InvokeMember("PipelineTaskDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, c, null);
+                        if (pipelineDesigner == null) continue;
+                        Microsoft.SqlServer.IntegrationServices.Designer.Model.DataFlowGraphModelElement dataFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.DataFlowGraphModelElement)pipelineDesigner.GetType().InvokeMember("DataFlowGraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, pipelineDesigner, null);
+                        if (dataFlowModel == null) continue;
+                        DataFlowGUID = dataFlowModel.PipelineTask.ID;
+#else
                         DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
                         if (diagram == null || diagram.DDS == null) return false;
                         if (diagram.DDS.Selection.Count != 0) return false;
                         TaskHost task = (TaskHost)diagram.ComponentDiagram.RootComponent;
                         DataFlowGUID = task.ID;
+#endif
+
                         return true;
                     }
                 }
