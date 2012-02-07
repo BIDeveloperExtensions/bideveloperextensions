@@ -74,7 +74,7 @@ namespace BIDSHelper
         }
 
         private string[] DTS_FILE_EXTENSIONS = { ".dtsx" };
-        private string[] SSAS_FILE_EXTENSIONS = { ".dim", ".cube", ".dmm", ".dsv" };
+        private string[] SSAS_FILE_EXTENSIONS = { ".dim", ".cube", ".dmm", ".dsv", ".bim" };
         private string[] SSRS_FILE_EXTENSIONS = { ".rdl", ".rdlc" };
 
         /// <summary>
