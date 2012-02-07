@@ -241,7 +241,11 @@ namespace BIDSHelper.SSRS
             {
                 string sError = string.Empty;
                 if (!string.IsNullOrEmpty(sCurrentFile)) sError += "Error while scanning report: " + sCurrentFile + "\r\n";
-                sError += ex.Message + "\r\n" + ex.StackTrace;
+                while (ex != null)
+                {
+                    sError += ex.Message + "\r\n" + ex.StackTrace + "\r\n\r\n";
+                    ex = ex.InnerException;
+                }
                 MessageBox.Show(sError);
             }
         }
@@ -307,6 +311,40 @@ namespace BIDSHelper.SSRS
 
         public UsedRsDataSets(string RdlPath)
         {
+            //all this code is just to call VBExpressionParser.ParseExpression which is a private class
+            //that method required all sorts of other objects, not many of which we know what in the world they are for
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.Load("Microsoft.ReportingServices.ProcessingCore");
+            Type type = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.RdlExpressions.VBExpressionParser");
+            System.Reflection.ConstructorInfo constructor = type.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)[0];
+
+            //create PublishingErrorContext
+            Type typeErrorContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportProcessing.PublishingErrorContext");
+            System.Reflection.ConstructorInfo constructorErrorContext = typeErrorContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)[0];
+            object oErrorContext = constructorErrorContext.Invoke(new object[] { });
+
+            //get ExpressionContext type and constructor
+            Type typeExpressionContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.RdlExpressions.ExpressionParser+ExpressionContext");
+            System.Reflection.ConstructorInfo constructorExpressionContext = typeExpressionContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)[0];
+
+            //get InternalPublishingContext constructor
+            Type typeInternalPublishingContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportPublishing.InternalPublishingContext");
+            System.Reflection.ConstructorInfo constructorInternalPublishingContext = null;
+            foreach (System.Reflection.ConstructorInfo c in typeInternalPublishingContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+            {
+                if (c.GetParameters().Length == 8)
+                {
+                    constructorInternalPublishingContext = c;
+                    break;
+                }
+            }
+            if (constructorInternalPublishingContext == null) throw new Exception("Couldn't find InternalPublishingContext constructor");
+
+            //get PreviewItemContext
+            System.Reflection.Assembly assemblyReportPreview = System.Reflection.Assembly.Load("Microsoft.ReportingServices.ReportPreview");
+            Type typeItemContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assemblyReportPreview.GetTypes()[0], "Microsoft.Reporting.PreviewItemContext");
+
+            ////////////////////////////////////////
+            //now run the main code to parse the RDL
             XmlDocument doc = new XmlDocument();
             doc.Load(RdlPath);
 
@@ -337,15 +375,47 @@ namespace BIDSHelper.SSRS
             //loop through all expressions and parse them
             foreach (XmlNode nodeExpression in doc.SelectNodes("//*[starts-with(text(),'=')]", nsmgr))
             {
-                //see if the surrounding table, for example, has already said it uses a particular DataSet. If so, we won't report it again
-                string sDataSetUsedByParent = string.Empty;
-                XmlNode parentNode = nodeExpression.SelectSingleNode("ancestor-or-self::*/rs:DataSetName", nsmgr);
-                if (parentNode != null) sDataSetUsedByParent = parentNode.InnerText;
+                try
+                {
+                    //see if the surrounding table, for example, has already said it uses a particular DataSet. If so, we won't report it again
+                    string sDataSetUsedByParent = string.Empty;
+                    XmlNode parentNode = nodeExpression.SelectSingleNode("ancestor-or-self::*/rs:DataSetName", nsmgr);
+                    if (parentNode != null) sDataSetUsedByParent = parentNode.InnerText;
 
-                //parse the expression
-                VBExpressionParser parser = new VBExpressionParser();
-                ExpressionInfo info = parser.ParseExpression(nodeExpression.InnerText, new ExpressionParser.ExpressionContext(ExpressionParser.ExpressionType.General, ExpressionParser.ConstantType.String, ExpressionParser.LocationFlags.None, ExpressionParser.ObjectType.Field, string.Empty, "Text", "DSN", true));
-                RecurseExpressionInfo(info, nodeExpression, sDataSetUsedByParent);
+                    //create VBExpressionParser
+                    object vbparser = constructor.Invoke(new object[] { oErrorContext });
+
+                    //create PreviewItemContext
+                    object itemContext = typeItemContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)[0].Invoke(null);
+
+                    //signature of this function call is: public InternalPublishingContext(ICatalogItemContext catalogContext, Microsoft.ReportingServices.ReportProcessing.ReportProcessing.CheckSharedDataSource checkDataSourceCallback, Microsoft.ReportingServices.ReportProcessing.ReportProcessing.ResolveTemporaryDataSource resolveTemporaryDataSourceCallback, DataSourceInfoCollection originalDataSources, IConfiguration configuration, IDataProtection dataProtection, bool traceAtomicScopes, bool isPackagedReportArchive)
+                    object oInternalPublishingContext = constructorInternalPublishingContext.Invoke(new object[] { itemContext, null, null, null, null, null, false, false });
+
+                    //create ExpressionContext
+                    //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, DataType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, int maxExpressionLength, InternalPublishingContext publishingContext);
+                    object expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0x12, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN", int.MaxValue, oInternalPublishingContext });
+
+                    //find and invoke ParseExpression method
+                    System.Reflection.MethodInfo methodParseExpression = null;
+                    foreach (System.Reflection.MethodInfo method in type.GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                    {
+                        if (method.Name == "ParseExpression" && method.GetParameters().Length == 3)
+                        {
+                            methodParseExpression = method;
+                            break;
+                        }
+                    }
+                    if (methodParseExpression == null) throw new Exception("Couldn't find VBExpressionParser.ParseExpression method");
+                    object expressionInfo = methodParseExpression.Invoke(vbparser, new object[] { nodeExpression.InnerText, expressionContext, 0 });
+
+                    //create a wrapper for the SSRS object then examine it recursively
+                    ExpressionInfo info = new ExpressionInfo(expressionInfo);
+                    RecurseExpressionInfo(info, nodeExpression, sDataSetUsedByParent);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error while scanning...\r\nReport: " + RdlPath + "\r\nExpression: " + nodeExpression.InnerText, ex);
+                }
             }
         }
 
@@ -372,6 +442,17 @@ namespace BIDSHelper.SSRS
                 }
             }
             RecurseAggregates(info, nodeExpression, sDataSetUsedByParent);
+
+            if (info.DataSetsFromLookups != null)
+            {
+                foreach (string sRefDataSet in info.DataSetsFromLookups)
+                {
+                    if (_dataSets.ContainsKey(sRefDataSet) && string.Compare(sDataSetUsedByParent, sRefDataSet, true) != 0)
+                    {
+                        _dataSets[sRefDataSet].Usages.Add(GetPathForXmlNode(nodeExpression));
+                    }
+                }
+            }
         }
 
         private void RecurseAggregates(ExpressionInfo info, XmlNode nodeExpression, string sDataSetUsedByParent)
