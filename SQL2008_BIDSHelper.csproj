@@ -30,7 +30,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <IncrementalBuild>true</IncrementalBuild>
-    <OutputPath>..\..\..\Users\Darren Green\Documents\Visual Studio 2008\AddIns\</OutputPath>
+    <OutputPath>bin\Debug</OutputPath>
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>1591</NoWarn>
@@ -539,7 +539,6 @@
     <Compile Include="SSRS\DeleteDatasetCachePlugin.cs" />
     <Compile Include="SSRS\ExpressionInfo.cs" />
     <Compile Include="SSRS\UnusedDatasetsPlugin.cs" />
-    <Compile Include="SSRS\VBExpressionParser.cs" />
     <COMReference Include="EnvDTE">
       <Lcid>0</Lcid>
       <VersionMinor>0</VersionMinor>
