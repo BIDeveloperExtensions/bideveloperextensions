@@ -49,6 +49,9 @@
 	<!--remove the compiled binary of a script component-->
 	<xsl:template match="//DTS:ObjectData/pipeline/components/component/properties/property[@name='BinaryCode']"/>
 
+	<!--remove the SSIS 2012 layout info-->
+	<xsl:template match="//DTS:Executable/DTS:DesignTimeProperties"/>
+
 </xsl:stylesheet>
 
 
