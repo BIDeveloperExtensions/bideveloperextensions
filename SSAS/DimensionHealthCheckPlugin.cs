@@ -16,7 +16,10 @@ namespace BIDSHelper
     {
         private Dimension oLastDimension;
         private IComponentChangeService changesvc;
+
+#if YUKON || KATMAI
         private static EnvDTE.Window toolWin;
+#endif
 
         public DimensionHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -126,10 +129,12 @@ namespace BIDSHelper
                 this.changesvc = (IComponentChangeService)d.Site.GetService(typeof(IComponentChangeService));
 
                 int iErrorCnt = 0;
+                string sCaption = d.Name + ": Dimension Health Check";
+
+#if YUKON || KATMAI
                 EnvDTE80.Windows2 toolWins;
                 object objTemp = null;
                 toolWins = (Windows2)ApplicationObject.Windows;
-                string sCaption = d.Name + ": Dimension Health Check";
                 if (toolWin == null)
                 {
                     toolWin = toolWins.CreateToolWindow2(AddInInstance, typeof(WebBrowser).Assembly.Location, typeof(WebBrowser).FullName, sCaption, "{" + typeof(WebBrowser).GUID.ToString() + "}", ref objTemp);
@@ -141,20 +146,18 @@ namespace BIDSHelper
                 }
 
                 WebBrowser browser = (WebBrowser)objTemp;
+#else
+                //appear to be having some problems with .NET controls inside tool windows, even though this issue says fixed: http://connect.microsoft.com/VisualStudio/feedback/details/512181/vsip-vs-2010-beta2-width-of-add-in-toolwindow-not-changed-with-activex-hosted-control#tabs
+                //so just create this inside a regular WinForm
+                WebBrowser browser = new WebBrowser();
+#endif
+
                 browser.AllowNavigation = true;
                 if (browser.Document != null) //idea from http://geekswithblogs.net/paulwhitblog/archive/2005/12/12/62961.aspx
                     browser.Document.OpenNew(true);
                 else
                     browser.Navigate("about:blank");
                 Application.DoEvents();
-
-#if DENALI
-                //this doesn't quite work, but it's better than it was before this code
-                //appear to be having some problems with .NET controls inside tool windows, even though this issue says fixed: http://connect.microsoft.com/VisualStudio/feedback/details/512181/vsip-vs-2010-beta2-width-of-add-in-toolwindow-not-changed-with-activex-hosted-control#tabs
-                browser.Dock = DockStyle.Fill;
-                browser.Width = toolWin.Width;
-                browser.Height = toolWin.Height;
-#endif
 
                 browser.Document.Write("<font style='font-family:Arial;font-size:10pt'>");
                 browser.Document.Write("<h3>" + d.Name + ": Dimension Health Check</h3>");
@@ -224,11 +227,31 @@ namespace BIDSHelper
                     catch { }
                 }
 
+#if YUKON || KATMAI
                 //setting IsFloating and Linkable to false makes this window tabbed
                 toolWin.IsFloating = false;
                 toolWin.Linkable = false;
                 toolWin.Visible = true;
+#else
+                Form descForm = new Form();
+                descForm.Icon = BIDSHelper.Resources.Common.BIDSHelper;
+                descForm.Text = "BIDS Helper - " + sCaption;
+                descForm.MaximizeBox = true;
+                descForm.MinimizeBox = false;
+                descForm.Width = 600;
+                descForm.Height = 500;
+                descForm.SizeGripStyle = SizeGripStyle.Show;
+                descForm.MinimumSize = new System.Drawing.Size(descForm.Width/2, descForm.Height/2);
 
+                browser.Top = 10;
+                browser.Left = 10;
+                browser.Width = descForm.Width - 30;
+                browser.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top | AnchorStyles.Bottom;
+                browser.Dock = DockStyle.Fill;
+                browser.Height = descForm.Height - 60;
+                descForm.Controls.Add(browser);
+                descForm.Show();
+#endif
             }
             catch (System.Exception ex)
             {
