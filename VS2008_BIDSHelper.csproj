@@ -525,7 +525,6 @@
     <Compile Include="SSRS\DeleteDatasetCachePlugin.cs" />
     <Compile Include="SSRS\ExpressionInfo.cs" />
     <Compile Include="SSRS\UnusedDatasetsPlugin.cs" />
-    <Compile Include="SSRS\VBExpressionParser.cs" />
     <COMReference Include="EnvDTE">
       <Lcid>0</Lcid>
       <VersionMinor>0</VersionMinor>

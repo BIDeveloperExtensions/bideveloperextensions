@@ -45,6 +45,15 @@
             }
         }
 
+#if YUKON
+        internal ArrayList ReferencedDataSets
+        {
+            get
+            {
+                return (ArrayList)m_SSRSExpressionInfo.GetType().InvokeMember("m_referencedDataSets", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.NonPublic, null, m_SSRSExpressionInfo, null);
+            }
+        }
+#else
         internal List<string> ReferencedDataSets
         {
             get
@@ -52,6 +61,7 @@
                 return (List<string>)m_SSRSExpressionInfo.GetType().InvokeMember("m_referencedDataSets", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.NonPublic, null, m_SSRSExpressionInfo, null);
             }
         }
+#endif
 
         internal RunningValueInfoList RunningValues
         {
@@ -72,6 +82,7 @@
         {
             get
             {
+#if !YUKON
                 IList arr = (IList)m_SSRSExpressionInfo.GetType().InvokeMember("Lookups", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.NonPublic, null, m_SSRSExpressionInfo, null);
                 if (arr == null) return null;
 
@@ -83,6 +94,9 @@
                     listDataSets.Add(agg.Scope);
                 }
                 return listDataSets.ToArray();
+#else
+                return null;
+#endif
             }
         }
 

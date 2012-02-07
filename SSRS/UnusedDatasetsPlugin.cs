@@ -314,7 +314,11 @@ namespace BIDSHelper.SSRS
             //all this code is just to call VBExpressionParser.ParseExpression which is a private class
             //that method required all sorts of other objects, not many of which we know what in the world they are for
             System.Reflection.Assembly assembly = System.Reflection.Assembly.Load("Microsoft.ReportingServices.ProcessingCore");
+#if !YUKON
             Type type = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.RdlExpressions.VBExpressionParser");
+#else
+            Type type = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportProcessing.VBExpressionParser");
+#endif
             System.Reflection.ConstructorInfo constructor = type.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)[0];
 
             //create PublishingErrorContext
@@ -323,7 +327,11 @@ namespace BIDSHelper.SSRS
             object oErrorContext = constructorErrorContext.Invoke(new object[] { });
 
             //get ExpressionContext type and constructor
+#if !YUKON
             Type typeExpressionContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.RdlExpressions.ExpressionParser+ExpressionContext");
+#else
+            Type typeExpressionContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportProcessing.ExpressionParser+ExpressionContext");
+#endif
             System.Reflection.ConstructorInfo constructorExpressionContext = typeExpressionContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)[0];
 
 #if DENALI
@@ -397,24 +405,35 @@ namespace BIDSHelper.SSRS
                     //create ExpressionContext
                     //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, DataType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, int maxExpressionLength, InternalPublishingContext publishingContext);
                     object expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0x12, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN", int.MaxValue, oInternalPublishingContext });
-#else
+#elif KATMAI
                     //create ExpressionContext
                     //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, DataType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, int maxExpressionLength);
                     object expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0x12, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN", int.MaxValue });
+#elif YUKON
+                    //create ExpressionContext
+                    //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, ExpressionParser.ConstantType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, bool parseExtended)
+                    object expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN", false });
 #endif
 
                     //find and invoke ParseExpression method
+#if !YUKON
+                    int iParseExpressionParamCount = 3;
+                    object[] arrParseExpressionParams = new object[] { nodeExpression.InnerText, expressionContext, 0 };
+#else
+                    int iParseExpressionParamCount = 2;
+                    object[] arrParseExpressionParams = new object[] { nodeExpression.InnerText, expressionContext};
+#endif
                     System.Reflection.MethodInfo methodParseExpression = null;
                     foreach (System.Reflection.MethodInfo method in type.GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
                     {
-                        if (method.Name == "ParseExpression" && method.GetParameters().Length == 3)
+                        if (method.Name == "ParseExpression" && method.GetParameters().Length == iParseExpressionParamCount)
                         {
                             methodParseExpression = method;
                             break;
                         }
                     }
                     if (methodParseExpression == null) throw new Exception("Couldn't find VBExpressionParser.ParseExpression method");
-                    object expressionInfo = methodParseExpression.Invoke(vbparser, new object[] { nodeExpression.InnerText, expressionContext, 0 });
+                    object expressionInfo = methodParseExpression.Invoke(vbparser, arrParseExpressionParams);
 
                     //create a wrapper for the SSRS object then examine it recursively
                     ExpressionInfo info = new ExpressionInfo(expressionInfo);
