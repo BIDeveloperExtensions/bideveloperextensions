@@ -83,6 +83,17 @@
             get
             {
 #if !YUKON
+                bool bHasLookupsProperty = false;
+                foreach (System.Reflection.PropertyInfo propInfo in m_SSRSExpressionInfo.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.NonPublic))
+                {
+                    if (propInfo.Name == "Lookups")
+                    {
+                        bHasLookupsProperty = true;
+                        break;
+                    }
+                }
+                if (!bHasLookupsProperty) return null;
+
                 IList arr = (IList)m_SSRSExpressionInfo.GetType().InvokeMember("Lookups", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.NonPublic, null, m_SSRSExpressionInfo, null);
                 if (arr == null) return null;
 
