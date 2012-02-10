@@ -388,15 +388,11 @@ namespace BIDSHelper.Resources {
         
         /// <summary>
         ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-        ///&lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:dwd=&quot;http://schemas.microsoft.com/DataWarehouse/Designer/1.0&quot; xmlns:SSAS=&quot;http://schemas.microsoft.com/analysisservices/2003/engine&quot; xmlns:msprop=&quot;urn:schemas-microsoft-com:xml-msprop&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///&lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:dwd=&quot;http://schemas.microsoft.com/DataWarehouse/Designer/1.0&quot; xmlns:SSAS=&quot;http://schemas.microsoft.com/analysisservices/2003/engine&quot; xmlns:msprop=&quot;urn:schemas-microsoft-com:xml-msprop&quot; xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:ddl200=&quot;http://schemas.microsoft.com/analysisservices/2010/engine/200&quot;&gt;
         ///
         ///	&lt;xsl:output cdata-section-elements=&quot;SSAS:Text&quot;/&gt;
         ///
-        ///	&lt;xsl:template match=&quot;node()&quot;&gt;
-        ///		&lt;xsl:copy&gt;
-        ///			
-        ///			&lt;!-- sort attributes by name --&gt;
-        ///			&lt;xsl:apply [rest of string was truncated]&quot;;.
+        ///	&lt;xsl:template match=&quot;no [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SmartDiffSSAS {
             get {
