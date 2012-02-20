@@ -105,6 +105,10 @@
       <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Common.FrontEnd">
+      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.Common.FrontEnd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>c:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
@@ -271,6 +275,8 @@
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
+    <Compile Include="SSAS\Tabular\ERDiagramActionBase.cs" />
+    <Compile Include="SSAS\Tabular\TabularHideMemberIfPlugin.cs" />
     <Compile Include="SSAS\Tabular\TabularActionsAnnotation.cs" />
     <Compile Include="SSAS\Tabular\TabularActionsEditorForm.cs">
       <SubType>Form</SubType>

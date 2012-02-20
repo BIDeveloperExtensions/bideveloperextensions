@@ -119,6 +119,7 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
                 sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                if (sandbox == null) throw new Exception("Can't get Sandbox!");
                 cube = sandbox.Cube;
 
                 SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, sandbox.AdomdConnection);

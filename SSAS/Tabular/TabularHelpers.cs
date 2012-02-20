@@ -13,9 +13,10 @@ namespace BIDSHelper
 {
     public class TabularHelpers
     {
-        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
+        private static Microsoft.AnalysisServices.VSHost.VSHostManager GetVSHostManager(UIHierarchyItem hierItem, bool openIfNotOpen)
         {
-            Microsoft.VisualStudio.Project.Automation.OAFileItem project = (Microsoft.VisualStudio.Project.Automation.OAFileItem)hierItem.Object;
+            Microsoft.VisualStudio.Project.Automation.OAFileItem project = hierItem.Object as Microsoft.VisualStudio.Project.Automation.OAFileItem;
+            if (project == null) return null;
             if (openIfNotOpen && !project.get_IsOpen(EnvDTE.Constants.vsViewKindPrimary))
             {
                 Window win = project.Open(EnvDTE.Constants.vsViewKindPrimary);
@@ -25,7 +26,21 @@ namespace BIDSHelper
 
             Microsoft.AnalysisServices.VSHost.Integration.BISMFileNode bim = (Microsoft.AnalysisServices.VSHost.Integration.BISMFileNode)project.Object;
             Microsoft.AnalysisServices.VSHost.VSHostManager host = (Microsoft.AnalysisServices.VSHost.VSHostManager)bim.GetType().InvokeMember("VSHostManager", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, bim, null); //bim.VSHostManager;
+            return host;
+        }
+
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
+        {
+            Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
+            if (host == null) return null;
             return host.Sandbox;
+        }
+
+        public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
+        {
+            Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
+            if (host == null) return null;
+            return host.Editor;
         }
 
         public static void SaveXmlAnnotation(MajorObject obj, string annotationName, object annotationValue)
