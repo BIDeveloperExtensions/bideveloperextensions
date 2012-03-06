@@ -14,8 +14,9 @@ using System.Linq.Expressions;
 
 namespace BIDSHelper
 {
-    public class TabularHideMemberIfPlugin : BIDSHelperWindowActivatedPluginBase
+    public class TabularHideMemberIfPlugin : BIDSHelperWindowActivatedPluginBase, ITabularOnPreBuildAnnotationCheck
     {
+        public const string HIDEMEMBERIF_ANNOTATION = "BIDS_Helper_Tabular_HideMemberIf_Backups";
 
         #region Standard Plugin Overrides
         public TabularHideMemberIfPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -204,21 +205,18 @@ namespace BIDSHelper
             throw new Exception("Couldn't find HideMemberIf value.");
         }
 
-        internal void SetHideMemberIf(IEnumerable<Tuple<string, string, string>> hierarchyLevels, HideIfValue newValue)
+        internal void SetHideMemberIf(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox, IEnumerable<Tuple<string, string, string>> hierarchyLevels, List<HideIfValue> newValues)
         {
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false);
-                if (sandbox == null) throw new Exception("Can't get Sandbox!");
-
                 Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
                     {
                         Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties properties = new Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties();
                         properties.RecalcBehavior = Microsoft.AnalysisServices.BackEnd.TransactionRecalcBehavior.AlwaysRecalc;
                         using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction(properties))
                         {
+                            SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandbox);
+
                             List<Dimension> dims = new List<Dimension>();
                             foreach (Tuple<string, string, string> tuple in hierarchyLevels)
                             {
@@ -226,8 +224,14 @@ namespace BIDSHelper
                                 if (!dims.Contains(d)) dims.Add(d);
                                 Hierarchy h = d.Hierarchies.GetByName(tuple.Item2);
                                 Level l = h.Levels.GetByName(tuple.Item3);
-                                l.HideMemberIf = newValue;
+                                l.HideMemberIf = newValues[0];
+                                newValues.RemoveAt(0);
+
+                                annotation.Set(l);
                             }
+
+                            TabularHelpers.SaveXmlAnnotation(sandbox.Database, HIDEMEMBERIF_ANNOTATION, annotation);
+                            
                             sandbox.Database.Update(UpdateOptions.ExpandFull);
 
                             //bug in RC0 requires ProcessFull to successfully switch from HideMemberIf=Never to NoName
@@ -248,9 +252,78 @@ namespace BIDSHelper
 
         }
 
+        private SSAS.TabularHideMemberIfAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            if (sandbox.Database.Annotations.Contains(HIDEMEMBERIF_ANNOTATION))
+            {
+                string xml = sandbox.Database.Annotations[HIDEMEMBERIF_ANNOTATION].Value.OuterXml;
+                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(BIDSHelper.SSAS.TabularHideMemberIfAnnotation));
+                return (SSAS.TabularHideMemberIfAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
+            }
+            else
+            {
+                return new SSAS.TabularHideMemberIfAnnotation();
+            }
+        }
+
         public override void Exec()
         {
         }
+
+        #region ITabularOnPreBuildAnnotationCheck
+        public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            string sLevelsWithProblems = string.Empty;
+            foreach (Level l in GetProblemLevels(sandbox))
+            {
+                if (sLevelsWithProblems.Length > 0) sLevelsWithProblems += ", ";
+                sLevelsWithProblems += "[" + l.ParentDimension.Name + "].[" + l.Parent.Name + "].[" + l.Name + "]";
+            }
+            if (sLevelsWithProblems.Length == 0)
+                return null;
+            else
+                return "Click OK for BIDS Helper to restore the HideMemberIf settings on the following levels: " + sLevelsWithProblems;
+        }
+
+        public void FixPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandbox);
+            List<Tuple<string, string, string>> levels = new List<Tuple<string, string, string>>();
+            List<HideIfValue> values = new List<HideIfValue>();
+            foreach (Level l in GetProblemLevels(sandbox))
+            {
+                SSAS.TabularLevelHideMemberIf levelAnnotation = annotation.Find(l);
+                levels.Add(new Tuple<string, string, string>(l.ParentDimension.Name, l.Parent.Name, l.Name));
+                values.Add(levelAnnotation.HideMemberIf);
+            }
+            SetHideMemberIf(sandbox, levels, values);
+        }
+
+
+        private Level[] GetProblemLevels(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            List<Level> levels = new List<Level>();
+            SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandbox);
+            foreach (Dimension d in sandbox.Database.Dimensions)
+            {
+                foreach (Hierarchy h in d.Hierarchies)
+                {
+                    foreach (Level l in h.Levels)
+                    {
+                        SSAS.TabularLevelHideMemberIf levelAnnotation = annotation.Find(l);
+                        if (levelAnnotation != null)
+                        {
+                            if (levelAnnotation.HideMemberIf != l.HideMemberIf)
+                            {
+                                levels.Add(l);
+                            }
+                        }
+                    }
+                }
+            }
+            return levels.ToArray();
+        }
+        #endregion
 
         internal class ERDiagramActionHideMemberIf : SSAS.Tabular.ERDiagramActionBase, IDiagramActionBasic, IDiagramAction, IDiagramObject, System.ComponentModel.INotifyPropertyChanged, INotifyCollectionPropertyChanged
         {
@@ -281,6 +354,22 @@ namespace BIDSHelper
                 try
                 {
                     IEnumerable<Tuple<string, string, string>> hierarchyLevels = this.SortHierarchyLevels(actionInstance.Targets.OfType<IDiagramNode>());
+
+                    UIHierarchy solExplorer = _plugin.ApplicationObject.ToolWindows.SolutionExplorer;
+                    UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false);
+                    if (sandbox == null) throw new Exception("Can't get Sandbox!");
+
+                    string sWarning = _plugin.GetPreBuildWarning(sandbox);
+                    if (sWarning != null)
+                    {
+                        if (MessageBox.Show(sWarning, "BIDS Helper Tabular HideMemberIf", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                        {
+                            _plugin.FixPreBuildWarning(sandbox);
+                        }
+                    }
+
+
                     Microsoft.AnalysisServices.HideIfValue currentValue = _plugin.GetHideMemberIf(hierarchyLevels);
 
                     form = new Form();
@@ -320,7 +409,7 @@ namespace BIDSHelper
                     labelAnnotation.Anchor = AnchorStyles.Left | AnchorStyles.Top;
                     labelAnnotation.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                     form.Controls.Add(labelAnnotation);
-                    
+
                     Button okButton = new Button();
                     okButton.Text = "OK";
                     okButton.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
@@ -341,7 +430,16 @@ namespace BIDSHelper
                     DialogResult result = form.ShowDialog();
                     if (result == DialogResult.OK)
                     {
-                        _plugin.SetHideMemberIf(hierarchyLevels, (HideIfValue)Enum.Parse(typeof(HideIfValue), combo.SelectedItem.ToString()));
+                        //build a list of HideIfValue enums the same length as the list of levels
+                        HideIfValue val = (HideIfValue)Enum.Parse(typeof(HideIfValue), combo.SelectedItem.ToString());
+                        List<HideIfValue> vals = new List<HideIfValue>();
+                        foreach (Tuple<string, string, string> level in hierarchyLevels)
+                        {
+                            vals.Add(val);
+                        }
+
+                        //set the value
+                        _plugin.SetHideMemberIf(sandbox, hierarchyLevels, vals);
                     }
                 }
                 catch (System.Exception ex)

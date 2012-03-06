@@ -8,21 +8,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
-//using System.Reflection;
-//using Microsoft.Win32;
-//using System.ComponentModel.Design;
-//using System.ComponentModel;
-//using Microsoft.DataWarehouse.Design;
-//using Microsoft.SqlServer.Dts.Runtime;
-//using System.Runtime.InteropServices.ComTypes;
-//using System.Runtime.InteropServices;
-//using Microsoft.DataWarehouse.Controls;
-//using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-
 
 namespace BIDSHelper
 {
-    public class TabularActionsEditorPlugin : BIDSHelperPluginBase
+    public class TabularActionsEditorPlugin : BIDSHelperPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         private Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox;
         private Cube cube;
@@ -161,7 +150,57 @@ namespace BIDSHelper
             }
         }
 
+        private SSAS.TabularActionsAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            SSAS.TabularActionsAnnotation annotation = new SSAS.TabularActionsAnnotation();
+            if (sandbox.Cube.Annotations.Contains(SSAS.TabularActionsEditorForm.ACTION_ANNOTATION))
+            {
+                string xml = sandbox.Cube.Annotations[SSAS.TabularActionsEditorForm.ACTION_ANNOTATION].Value.OuterXml;
+                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SSAS.TabularActionsAnnotation));
+                annotation = (SSAS.TabularActionsAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
+            }
+            return annotation;
+        }
 
+        #region ITabularOnPreBuildAnnotationCheck
+        public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            SSAS.TabularActionsAnnotation annotation = GetAnnotation(sandbox);
+            cube = sandbox.Cube;
+
+            bool bContainsPerspectiveListAnnotation = false;
+            foreach (Microsoft.AnalysisServices.Action action in cube.Actions)
+            {
+                SSAS.TabularAction actionAnnotation = annotation.Find(action.ID);
+                if (actionAnnotation == null) continue;
+
+                //see if this action is assigned to perspectives
+                if (actionAnnotation.Perspectives != null && actionAnnotation.Perspectives.Length > 0)
+                {
+                    bContainsPerspectiveListAnnotation = true;
+                }
+            }
+
+            long lngPerspectiveActionsCount = 0;
+            foreach (Perspective p in cube.Perspectives)
+            {
+                lngPerspectiveActionsCount += p.Actions.Count;
+            }
+
+            //note: this logic is also duplicated in the constructor of TabularActionsEditorForm since we will just rely on it to fix the actions
+            if (bContainsPerspectiveListAnnotation && lngPerspectiveActionsCount == 0 && cube.Perspectives.Count > 0)
+                return "Click OK for BIDS Helper to restore the assignments of actions to perspectives. The Tabular Actions Editor form will open. Then click Yes then OK.";
+            else
+                return null;
+        }
+
+        public void FixPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            //open the actions form and let it fix actions
+            Exec();
+        }
+        #endregion
+        
         public class DrillthroughColumn
         {
             public DrillthroughColumn()

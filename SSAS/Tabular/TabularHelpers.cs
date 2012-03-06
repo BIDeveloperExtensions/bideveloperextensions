@@ -51,8 +51,8 @@ namespace BIDSHelper
             serializer.Serialize(writer, annotationValue);
             System.Xml.XmlDocument xml = new XmlDocument();
             xml.LoadXml(sb.ToString());
-            if (obj.Annotations.Contains(SSAS.TabularActionsEditorForm.ACTION_ANNOTATION)) obj.Annotations.Remove(SSAS.TabularActionsEditorForm.ACTION_ANNOTATION);
-            Annotation annotation = new Annotation(SSAS.TabularActionsEditorForm.ACTION_ANNOTATION, xml.DocumentElement);
+            if (obj.Annotations.Contains(annotationName)) obj.Annotations.Remove(annotationName);
+            Annotation annotation = new Annotation(annotationName, xml.DocumentElement);
             obj.Annotations.Add(annotation);
         }
     }
