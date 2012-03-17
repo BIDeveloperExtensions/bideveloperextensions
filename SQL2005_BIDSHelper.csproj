@@ -90,9 +90,10 @@
       <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="BimlEngine, Version=1.5.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
+    <Reference Include="BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
       <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
+      <Private>True</Private>
     </Reference>
     <Reference Include="ExpressionEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
