@@ -658,6 +658,9 @@
     <None Include="Resources\End.ico" />
     <None Include="Resources\Copy.ico" />
     <None Include="Resources\SmartDiffSSRS.xslt" />
+    <None Include="BIDS Helper xcopy deploy readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="BIDSHelper2012.AddIn" />
     <Content Include="Build\Readme.txt" />
     <None Include="Resources\M2MIcon.ico" />
