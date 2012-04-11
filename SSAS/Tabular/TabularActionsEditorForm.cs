@@ -342,6 +342,21 @@ namespace BIDSHelper.SSAS
             _listActionClones.Add(action);
             cmbAction.Items.Add(action);
             cmbAction.SelectedItem = _listActionClones[_listActionClones.Count - 1];
+
+            string sNameError = string.Empty;
+            if (!IsValidActionName(action.Name, out sNameError))
+            {
+                for (int i = 2; i < 1000000; i++)
+                {
+                    if (IsValidActionName(action.Name + " " + i, out sNameError))
+                    {
+                        action.Name = action.Name + " " + i;
+                        txtName.Text = action.Name;
+                        break;
+                    }
+                }
+            }
+            
             List<string> lPerspectives = new List<string>();
             foreach (Perspective p in cube.Perspectives)
             {
@@ -626,11 +641,55 @@ namespace BIDSHelper.SSAS
 
         private void txtName_TextChanged(object sender, EventArgs e)
         {
-            if (cmbAction.SelectedIndex < 0) return;
-            _currentAction.Name = CleanNameOfInvalidChars(txtName.Text);
-            _skipEvents = true;
-            cmbAction.Items[cmbAction.SelectedIndex] = _currentAction;
-            _skipEvents = false;
+            try
+            {
+                if (cmbAction.SelectedIndex < 0) return;
+                string sNameErrorReason = string.Empty;
+                string sName = CleanNameOfInvalidChars(txtName.Text);
+                bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
+                if (bIsValidName) //change the name of the current action if the name is valid... if not, the Leave event will trap this
+                {
+                    _currentAction.Name = sName;
+                    _skipEvents = true;
+                    cmbAction.Items[cmbAction.SelectedIndex] = _currentAction;
+                    _skipEvents = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
+        }
+
+        private void txtName_Leave(object sender, EventArgs e)
+        {
+            string sNameErrorReason = string.Empty;
+            string sName = CleanNameOfInvalidChars(txtName.Text);
+            bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
+            if (!bIsValidName)
+            {
+                txtName.Focus();
+                MessageBox.Show("The action name \"" + txtName.Text + "\" is not valid for the following reason:\r\n\r\n" + sNameErrorReason);
+            }
+        }
+
+        private bool IsValidActionName(string sName, out string sError)
+        {
+            string sNameErrorReason = string.Empty;
+            Cube c = new Cube();
+            bool bIsValidName = c.Actions.IsValidName(sName, out sError);
+            if (!bIsValidName) return false;
+
+            foreach (object o in cmbAction.Items)
+            {
+                Microsoft.AnalysisServices.Action a = (Microsoft.AnalysisServices.Action)o;
+                if (a != _currentAction && string.Compare(a.Name, sName, true) == 0)
+                {
+                    sError = "There is already another action with the name " + sName;
+                    return false;
+                }
+            }
+            return true;
         }
 
         private string CleanNameOfInvalidChars(string s)
@@ -791,7 +850,24 @@ namespace BIDSHelper.SSAS
 
         private void okButton_Click(object sender, EventArgs e)
         {
-            SaveAction();
+            try
+            {
+                string sNameErrorReason = string.Empty;
+                string sName = CleanNameOfInvalidChars(txtName.Text);
+                bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
+                if (bIsValidName)
+                {
+                    SaveAction();
+                }
+                else
+                {
+                    txtName_Leave(null, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void contextMenuStripDrillColumns_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
@@ -851,6 +927,18 @@ namespace BIDSHelper.SSAS
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void TabularActionsEditorForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel) return;
+            string sNameErrorReason = string.Empty;
+            string sName = CleanNameOfInvalidChars(txtName.Text);
+            bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
+            if (!bIsValidName)
+            {
+                e.Cancel = true;
             }
         }
 

@@ -36,9 +36,8 @@ namespace BIDSHelper.SSAS
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridViewDrillthroughColumns = new System.Windows.Forms.DataGridView();
-            this.DrillthroughDataGridCubeDimension = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.DrillthroughDataGridAttribute = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.drillthroughColumnBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.contextMenuStripDrillColumns = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.contextMenuDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.cancelButton = new System.Windows.Forms.Button();
             this.okButton = new System.Windows.Forms.Button();
             this.cmbAction = new System.Windows.Forms.ComboBox();
@@ -76,15 +75,16 @@ namespace BIDSHelper.SSAS
             this.dataGridViewReportParameters = new System.Windows.Forms.DataGridView();
             this.nameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.valueDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.contextMenuStripDrillColumns = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.contextMenuDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.reportParameterBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.linkHelp = new System.Windows.Forms.LinkLabel();
+            this.DrillthroughDataGridCubeDimension = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.DrillthroughDataGridAttribute = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.drillthroughColumnBindingSource = new System.Windows.Forms.BindingSource(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDrillthroughColumns)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.drillthroughColumnBindingSource)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReportParameters)).BeginInit();
             this.contextMenuStripDrillColumns.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReportParameters)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.reportParameterBindingSource)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.drillthroughColumnBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // dataGridViewDrillthroughColumns
@@ -134,30 +134,19 @@ namespace BIDSHelper.SSAS
             this.dataGridViewDrillthroughColumns.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridViewDrillthroughColumns_CellMouseDown);
             this.dataGridViewDrillthroughColumns.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dataGridView1_EditingControlShowing);
             // 
-            // DrillthroughDataGridCubeDimension
+            // contextMenuStripDrillColumns
             // 
-            this.DrillthroughDataGridCubeDimension.DataPropertyName = "CubeDimension";
-            this.DrillthroughDataGridCubeDimension.HeaderText = "Table";
-            this.DrillthroughDataGridCubeDimension.MinimumWidth = 100;
-            this.DrillthroughDataGridCubeDimension.Name = "DrillthroughDataGridCubeDimension";
-            this.DrillthroughDataGridCubeDimension.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.DrillthroughDataGridCubeDimension.Sorted = true;
-            this.DrillthroughDataGridCubeDimension.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.DrillthroughDataGridCubeDimension.Width = 180;
+            this.contextMenuStripDrillColumns.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.contextMenuDelete});
+            this.contextMenuStripDrillColumns.Name = "contextMenuStripDrillColumns";
+            this.contextMenuStripDrillColumns.Size = new System.Drawing.Size(108, 26);
+            this.contextMenuStripDrillColumns.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripDrillColumns_ItemClicked);
             // 
-            // DrillthroughDataGridAttribute
+            // contextMenuDelete
             // 
-            this.DrillthroughDataGridAttribute.DataPropertyName = "Attribute";
-            this.DrillthroughDataGridAttribute.HeaderText = "Column";
-            this.DrillthroughDataGridAttribute.MinimumWidth = 100;
-            this.DrillthroughDataGridAttribute.Name = "DrillthroughDataGridAttribute";
-            this.DrillthroughDataGridAttribute.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.DrillthroughDataGridAttribute.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.DrillthroughDataGridAttribute.Width = 180;
-            // 
-            // drillthroughColumnBindingSource
-            // 
-            this.drillthroughColumnBindingSource.DataSource = typeof(BIDSHelper.TabularActionsEditorPlugin.DrillthroughColumn);
+            this.contextMenuDelete.Name = "contextMenuDelete";
+            this.contextMenuDelete.Size = new System.Drawing.Size(107, 22);
+            this.contextMenuDelete.Text = "Delete";
             // 
             // cancelButton
             // 
@@ -253,6 +242,7 @@ namespace BIDSHelper.SSAS
             this.txtName.Size = new System.Drawing.Size(457, 20);
             this.txtName.TabIndex = 1;
             this.txtName.TextChanged += new System.EventHandler(this.txtName_TextChanged);
+            this.txtName.Leave += new System.EventHandler(this.txtName_Leave);
             // 
             // txtDescription
             // 
@@ -596,20 +586,6 @@ namespace BIDSHelper.SSAS
             this.valueDataGridViewTextBoxColumn.Name = "valueDataGridViewTextBoxColumn";
             this.valueDataGridViewTextBoxColumn.Width = 270;
             // 
-            // contextMenuStripDrillColumns
-            // 
-            this.contextMenuStripDrillColumns.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.contextMenuDelete});
-            this.contextMenuStripDrillColumns.Name = "contextMenuStripDrillColumns";
-            this.contextMenuStripDrillColumns.Size = new System.Drawing.Size(153, 48);
-            this.contextMenuStripDrillColumns.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.contextMenuStripDrillColumns_ItemClicked);
-            // 
-            // contextMenuDelete
-            // 
-            this.contextMenuDelete.Name = "contextMenuDelete";
-            this.contextMenuDelete.Size = new System.Drawing.Size(152, 22);
-            this.contextMenuDelete.Text = "Delete";
-            // 
             // reportParameterBindingSource
             // 
             this.reportParameterBindingSource.DataSource = typeof(Microsoft.AnalysisServices.ReportParameter);
@@ -625,6 +601,31 @@ namespace BIDSHelper.SSAS
             this.linkHelp.TabStop = true;
             this.linkHelp.Text = "Help and Examples";
             this.linkHelp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkHelp_LinkClicked);
+            // 
+            // DrillthroughDataGridCubeDimension
+            // 
+            this.DrillthroughDataGridCubeDimension.DataPropertyName = "CubeDimension";
+            this.DrillthroughDataGridCubeDimension.HeaderText = "Table";
+            this.DrillthroughDataGridCubeDimension.MinimumWidth = 100;
+            this.DrillthroughDataGridCubeDimension.Name = "DrillthroughDataGridCubeDimension";
+            this.DrillthroughDataGridCubeDimension.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.DrillthroughDataGridCubeDimension.Sorted = true;
+            this.DrillthroughDataGridCubeDimension.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.DrillthroughDataGridCubeDimension.Width = 180;
+            // 
+            // DrillthroughDataGridAttribute
+            // 
+            this.DrillthroughDataGridAttribute.DataPropertyName = "Attribute";
+            this.DrillthroughDataGridAttribute.HeaderText = "Column";
+            this.DrillthroughDataGridAttribute.MinimumWidth = 100;
+            this.DrillthroughDataGridAttribute.Name = "DrillthroughDataGridAttribute";
+            this.DrillthroughDataGridAttribute.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.DrillthroughDataGridAttribute.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.DrillthroughDataGridAttribute.Width = 180;
+            // 
+            // drillthroughColumnBindingSource
+            // 
+            this.drillthroughColumnBindingSource.DataSource = typeof(BIDSHelper.TabularActionsEditorPlugin.DrillthroughColumn);
             // 
             // TabularActionsEditorForm
             // 
@@ -676,12 +677,13 @@ namespace BIDSHelper.SSAS
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "BIDS Helper Tabular Actions Editor";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TabularActionsEditorForm_FormClosing);
             this.Load += new System.EventHandler(this.MeasureGroupHealthCheckForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDrillthroughColumns)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.drillthroughColumnBindingSource)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReportParameters)).EndInit();
             this.contextMenuStripDrillColumns.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewReportParameters)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.reportParameterBindingSource)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.drillthroughColumnBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
