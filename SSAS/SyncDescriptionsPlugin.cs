@@ -226,9 +226,9 @@ namespace BIDSHelper
 
                         DescriptionPropertyName = form.cmbDescriptionProperty.GetItemText(form.cmbDescriptionProperty.SelectedItem);
                         List<string> listOtherProperties = new List<string>();
-                        for (int i = 0; i < form.listOtherProperties.SelectedItems.Count; i++)
+                        for (int i = 0; i < form.listOtherProperties.CheckedItems.Count; i++)
                         {
-                            listOtherProperties.Add(form.listOtherProperties.GetItemText(form.listOtherProperties.SelectedItems[i]));
+                            listOtherProperties.Add(form.listOtherProperties.GetItemText(form.listOtherProperties.CheckedItems[i]));
                         }
                         OtherPropertyNamesToInclude = listOtherProperties.ToArray();
                         OverwriteExistingDescriptions = form.chkOverwriteExistingDescriptions.Checked;
