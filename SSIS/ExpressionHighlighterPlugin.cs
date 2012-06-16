@@ -767,6 +767,8 @@ namespace BIDSHelper.SSIS
             {
                 foreach (ConnectionManagerModelElement lviConn in conns)
                 {
+                    System.Windows.FrameworkElement fe = (System.Windows.FrameworkElement)cmControl.GetViewFromViewModel(lviConn);
+                    if (fe == null) continue; //guess the framework element isn't loaded yet?
                     ConnectionManager conn = lviConn.ConnectionManager;
                     if (conn == null) continue;
                     ConnectionManagerHighlightingToDo todo;

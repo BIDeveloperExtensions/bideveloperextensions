@@ -729,14 +729,17 @@ namespace BIDSHelper.SSIS
 #if DENALI
                 foreach (System.Windows.FrameworkElement fe in listConnectionLVIs)
                 {
-                    fe.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
-                        (System.Windows.Threading.DispatcherPriority.Normal,
-                        (Action)(() =>
-                        {
-                            Adorners.BIDSHelperConfigurationAdorner adorner = new Adorners.BIDSHelperConfigurationAdorner(fe, typeof(ConnectionManagerModelElement));
-                            adorner.UpdateAdorner(false, bHasConfiguration); //only highlight configurations
-                        }
-                        ));
+                    if (fe != null)
+                    {
+                        fe.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
+                            (System.Windows.Threading.DispatcherPriority.Normal,
+                            (Action)(() =>
+                            {
+                                Adorners.BIDSHelperConfigurationAdorner adorner = new Adorners.BIDSHelperConfigurationAdorner(fe, typeof(ConnectionManagerModelElement));
+                                adorner.UpdateAdorner(false, bHasConfiguration); //only highlight configurations
+                            }
+                            ));
+                    }
                 }
 #else
                 foreach (ListViewItem lvi in listConnectionLVIs)
