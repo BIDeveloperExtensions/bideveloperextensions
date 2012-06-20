@@ -111,11 +111,11 @@
       <SpecificVersion>True</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.BackEnd">
-      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Common.FrontEnd">
-      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.Common.FrontEnd.dll</HintPath>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.Common.FrontEnd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -129,7 +129,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.MPFProjectBase, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
-      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Project, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -137,7 +137,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.VSHost, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.VSHost.dll</HintPath>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.VSHost.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.Controls, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -181,11 +181,11 @@
     </Reference>
     <Reference Include="Microsoft.SqlServer.Graph, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.Graph.dll</HintPath>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.Graph.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.IntegrationServices.Design, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.IntegrationServices.Design.dll</HintPath>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.IntegrationServices.Design.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.IntegrationServices.Graph, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
