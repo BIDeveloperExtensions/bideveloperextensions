@@ -452,7 +452,7 @@ namespace BIDSHelper.SSAS
                     if (!string.IsNullOrEmpty(col.CubeDimension) && !string.IsNullOrEmpty(col.Attribute))
                     {
                         CubeDimension cd = cube.Dimensions.GetByName(col.CubeDimension);
-                        action.Columns.Add(new CubeAttributeBinding(cube.ID, cd.ID, cd.Dimension.Attributes.GetByName(col.Attribute).ID, AttributeBindingType.Name));
+                        action.Columns.Add(new CubeAttributeBinding(cube.ID, cd.ID, cd.Dimension.Attributes.GetByName(col.Attribute).ID, AttributeBindingType.Key)); //6/20/2012 - using AttributeBindingType.Key so that numbers come back as numbers in drillthrough
                     }
                 }
 
