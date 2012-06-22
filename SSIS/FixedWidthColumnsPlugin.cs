@@ -126,28 +126,35 @@ namespace BIDSHelper
             System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
             Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-            ListView lvwConnMgrs = null;
 
 #if DENALI
+            Control lvwConnMgrs = null;
             package = (Package)win.PropertiesLinkComponent;
 
-            if (win.SelectedIndex == 0) //Control Flow
+            if (win.SelectedIndex == (int)SSISHelpers.SsisDesignerTabIndex.ControlFlow)
             {
-                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+                //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
+                lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
             }
-            else if (win.SelectedIndex == 1) //Data Flow
+            else if (win.SelectedIndex == (int)SSISHelpers.SsisDesignerTabIndex.DataFlow)
             {
-                lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
+                lvwConnMgrs = (Control)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
             }
-            else if (win.SelectedIndex == 2) //Event Handlers
+            else if (win.SelectedIndex == (int)SSISHelpers.SsisDesignerTabIndex.EventHandlers)
             {
-                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
+                lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
             }
             else
             {
                 return null;
             }
+
+            Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerUserControl cmControl = (Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerUserControl)lvwConnMgrs.GetType().InvokeMember("m_connectionManagerUserControl", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, lvwConnMgrs, null);
+            Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerModelElement connModelEl = cmControl.SelectedItem as Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerModelElement;
+            if (connModelEl == null) return null;
+            ConnectionManager conn = connModelEl.ConnectionManager;
 #else
+            ListView lvwConnMgrs = null;
             IDTSSequence container = null;
             TaskHost taskHost = null;
             DdsDiagramHostControl diagram = null;
@@ -177,11 +184,11 @@ namespace BIDSHelper
 
             if (lvwConnMgrs.SelectedItems.Count != 1) return null;
             package = GetPackageFromContainer((DtsContainer)container);
-#endif
 
             ListViewItem lviConn = lvwConnMgrs.SelectedItems[0];
-
             ConnectionManager conn = FindConnectionManager(package, lviConn.Text);
+#endif
+
             return conn;
         }
 
