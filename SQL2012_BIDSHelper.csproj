@@ -285,6 +285,12 @@
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFoldersAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolderPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolder.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml.cs">
+      <DependentUpon>TabularDisplayFolderWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SSAS\Tabular\TabularHideMemberIfAnnotation.cs" />
     <Compile Include="SSAS\Tabular\ITabularOnPreBuildAnnotationCheck.cs" />
     <Compile Include="SSAS\Tabular\TabularPreBuildPlugin.cs" />
@@ -945,5 +951,11 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 </Project>
