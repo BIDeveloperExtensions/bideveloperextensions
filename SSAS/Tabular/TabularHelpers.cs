@@ -55,6 +55,44 @@ namespace BIDSHelper
             Annotation annotation = new Annotation(annotationName, xml.DocumentElement);
             obj.Annotations.Add(annotation);
         }
+
+        //executes the commands that we have scripted using AMO previously
+        public static void ExecuteCaptureLog(Server server, bool parallel, bool useTransaction)
+        {
+            //execute XMLA
+            XmlaResultCollection oPrepResults = server.ExecuteCaptureLog(useTransaction, parallel);
+            server.CaptureLog.Clear();
+
+            string sErrors = string.Empty;
+            string sWarnings = string.Empty;
+
+            //Check for errors. If there are any, mark the processing as failed and capture errors.
+            foreach (XmlaResult oPrepResult in oPrepResults)
+            {
+                foreach (XmlaMessage oPrepMessage in oPrepResult.Messages)
+                {
+                    if (oPrepMessage is XmlaError)
+                    {
+                        XmlaError oError = (XmlaError)oPrepMessage;
+                        sErrors += "ERROR " + oError.ErrorCode + " - " + oPrepMessage.Description + Environment.NewLine;
+                    }
+                    else if (oPrepMessage is XmlaWarning)
+                    {
+                        XmlaWarning oWarning = (XmlaWarning)oPrepMessage;
+                        sWarnings += "WARNING " + oWarning.WarningCode + " - " + oPrepMessage.Description + Environment.NewLine;
+                    }
+                    else
+                    {
+                         sWarnings += "WARNING - " + oPrepMessage.Description + Environment.NewLine;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sErrors))
+            {
+                throw new Exception(sErrors + sWarnings);
+            }
+        }
     }
 }
 

@@ -212,12 +212,12 @@ namespace BIDSHelper
                 Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
                     {
                         Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties properties = new Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties();
-                        properties.RecalcBehavior = Microsoft.AnalysisServices.BackEnd.TransactionRecalcBehavior.AlwaysRecalc;
+                        properties.RecalcBehavior = Microsoft.AnalysisServices.BackEnd.TransactionRecalcBehavior.Default;
+                        List<Dimension> dims = new List<Dimension>();
                         using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction(properties))
                         {
                             SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandbox);
 
-                            List<Dimension> dims = new List<Dimension>();
                             foreach (Tuple<string, string, string> tuple in hierarchyLevels)
                             {
                                 Dimension d = sandbox.Database.Dimensions.GetByName(tuple.Item1);
@@ -232,16 +232,27 @@ namespace BIDSHelper
 
                             TabularHelpers.SaveXmlAnnotation(sandbox.Database, HIDEMEMBERIF_ANNOTATION, annotation);
                             
-                            sandbox.Database.Update(UpdateOptions.ExpandFull);
-
-                            //bug in RC0 requires ProcessFull to successfully switch from HideMemberIf=Never to NoName
+                            //sandbox.Database.Update(UpdateOptions.ExpandFull); //updating the database will wipe out data source credentials, so we have to do this the hard way and avoid updating the data source
+                            sandbox.AMOServer.CaptureXml = true;
                             foreach (Dimension d in dims)
                             {
-                                d.Process(ProcessType.ProcessFull);
+                                d.Update(UpdateOptions.ExpandFull);
                             }
+                            sandbox.Cube.Update(UpdateOptions.ExpandFull);
+                            sandbox.Database.Update(UpdateOptions.Default); //don't do ExpandFull or else this will wipe out the data source credentials... this updates the Annotation on the database
+                            sandbox.AMOServer.CaptureXml = false;
+
+                            TabularHelpers.ExecuteCaptureLog(sandbox.AMOServer, false, true);
 
                             tran.Commit();
                         }
+
+                        //bug in AS2012 (still not working in RTM CU1) requires ProcessFull to successfully switch from HideMemberIf=Never to NoName
+                        foreach (Dimension d in dims)
+                        {
+                            d.Process(ProcessType.ProcessFull);
+                        }
+                        sandbox.Database.Process(ProcessType.ProcessRecalc);
                     };
                 sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
             }
