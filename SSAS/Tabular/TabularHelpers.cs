@@ -83,7 +83,7 @@ namespace BIDSHelper
                     }
                     else
                     {
-                         sWarnings += "WARNING - " + oPrepMessage.Description + Environment.NewLine;
+                        sWarnings += "WARNING - " + oPrepMessage.Description + Environment.NewLine;
                     }
                 }
             }
@@ -92,6 +92,27 @@ namespace BIDSHelper
             {
                 throw new Exception(sErrors + sWarnings);
             }
+        }
+
+        /// <summary>
+        /// Will ensure that the SSDT has the credentials (SQL auth and impersonation info) so that when we alter the whole database object it won't wipe out the data source credentials
+        /// </summary>
+        /// <param name="sandbox"></param>
+        public static bool EnsureDataSourceCredentials(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            Database db = sandbox.Database;
+            foreach (DataSource ds in db.DataSources)
+            {
+                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))
+                {
+                    return false;
+                }
+                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPromptForImpersonation(null, sandbox, ds.ID, null))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

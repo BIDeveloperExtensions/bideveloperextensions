@@ -212,10 +212,17 @@ namespace BIDSHelper
                 Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
                     {
                         Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties properties = new Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties();
-                        properties.RecalcBehavior = Microsoft.AnalysisServices.BackEnd.TransactionRecalcBehavior.Default;
+                        properties.RecalcBehavior = Microsoft.AnalysisServices.BackEnd.TransactionRecalcBehavior.AlwaysRecalc;
                         List<Dimension> dims = new List<Dimension>();
                         using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction(properties))
                         {
+                            if (!TabularHelpers.EnsureDataSourceCredentials(sandbox))
+                            {
+                                MessageBox.Show("Cancelling apply of HideMemberIf because data source credentials were not entered.", "BIDS Helper Tabular HideMemberIf - Cancelled!");
+                                tran.RollbackAndContinue();
+                                return;
+                            }
+
                             SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandbox);
 
                             foreach (Tuple<string, string, string> tuple in hierarchyLevels)
@@ -231,28 +238,18 @@ namespace BIDSHelper
                             }
 
                             TabularHelpers.SaveXmlAnnotation(sandbox.Database, HIDEMEMBERIF_ANNOTATION, annotation);
-                            
-                            //sandbox.Database.Update(UpdateOptions.ExpandFull); //updating the database will wipe out data source credentials, so we have to do this the hard way and avoid updating the data source
-                            sandbox.AMOServer.CaptureXml = true;
+
+                            sandbox.Database.Update(UpdateOptions.ExpandFull);
+
+                            //bug in AS2012 (still not working in RTM CU1) requires ProcessFull to successfully switch from HideMemberIf=Never to NoName
                             foreach (Dimension d in dims)
                             {
-                                d.Update(UpdateOptions.ExpandFull);
+                                d.Process(ProcessType.ProcessFull);
                             }
-                            sandbox.Cube.Update(UpdateOptions.ExpandFull);
-                            sandbox.Database.Update(UpdateOptions.Default); //don't do ExpandFull or else this will wipe out the data source credentials... this updates the Annotation on the database
-                            sandbox.AMOServer.CaptureXml = false;
-
-                            TabularHelpers.ExecuteCaptureLog(sandbox.AMOServer, false, true);
 
                             tran.Commit();
                         }
 
-                        //bug in AS2012 (still not working in RTM CU1) requires ProcessFull to successfully switch from HideMemberIf=Never to NoName
-                        foreach (Dimension d in dims)
-                        {
-                            d.Process(ProcessType.ProcessFull);
-                        }
-                        sandbox.Database.Process(ProcessType.ProcessRecalc);
                     };
                 sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
             }

@@ -226,17 +226,8 @@ namespace BIDSHelper
                                     }
                                     TabularHelpers.SaveXmlAnnotation(cube.Parent, DISPLAY_FOLDER_ANNOTATION, annotation);
 
-                                    //cube.Parent.Update(UpdateOptions.ExpandFull); //updating the database will wipe out data source credentials, so we have to do this the hard way and avoid updating the data source
-                                    cube.ParentServer.CaptureXml = true;
-                                    foreach (Dimension d in cube.Parent.Dimensions)
-                                    {
-                                        d.Update(UpdateOptions.ExpandFull);
-                                    }
-                                    cube.Update(UpdateOptions.ExpandFull);
-                                    cube.Parent.Update(UpdateOptions.Default); //don't do ExpandFull or else this will wipe out the data source credentials... this updates the Annotation on the database
-                                    cube.ParentServer.CaptureXml = false;
-
-                                    TabularHelpers.ExecuteCaptureLog(cube.ParentServer, false, true);
+                                    TabularHelpers.EnsureDataSourceCredentials(sandbox);
+                                    cube.Parent.Update(UpdateOptions.ExpandFull);
 
                                     tran.Commit();
                                 }
