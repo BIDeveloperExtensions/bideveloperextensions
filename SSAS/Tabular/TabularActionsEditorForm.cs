@@ -280,7 +280,10 @@ namespace BIDSHelper.SSAS
                     list.Add(string.Empty);
                     foreach (Microsoft.AnalysisServices.DimensionAttribute a in cd.Dimension.Attributes)
                     {
-                        list.Add(a.Name);
+                        if (a.Type != AttributeType.RowNumber) //RowNumber was not supposed to return in drillthrough commands but was at RTM due to a bug
+                        {
+                            list.Add(a.Name);
+                        }
                     }
 
                     foreach (TabularActionsEditorPlugin.DrillthroughColumn otherItem in _listDrillthroughColumns)
