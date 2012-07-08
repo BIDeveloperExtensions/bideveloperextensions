@@ -160,13 +160,7 @@ namespace BIDSHelper.SSAS
 
             this.cmbInvocation.Items.AddRange(Enum.GetNames(typeof(ActionInvocation)));
 
-            TabularActionsAnnotation annotation = new TabularActionsAnnotation();
-            if (cube.Annotations.Contains(ACTION_ANNOTATION))
-            {
-                string xml = cube.Annotations[ACTION_ANNOTATION].Value.OuterXml;
-                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(TabularActionsAnnotation));
-                annotation = (TabularActionsAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
-            }
+            TabularActionsAnnotation annotation = BIDSHelper.TabularActionsEditorPlugin.GetAnnotation(cube);
 
             bool bContainsPerspectiveListAnnotation = false;
             _listActionClones = new List<Microsoft.AnalysisServices.Action>();
@@ -686,7 +680,7 @@ namespace BIDSHelper.SSAS
             foreach (object o in cmbAction.Items)
             {
                 Microsoft.AnalysisServices.Action a = (Microsoft.AnalysisServices.Action)o;
-                if (a != _currentAction && string.Compare(a.Name, sName, true) == 0)
+                if (a.ID != _currentAction.ID && string.Compare(a.Name, sName, true) == 0)
                 {
                     sError = "There is already another action with the name " + sName;
                     return false;
@@ -942,6 +936,7 @@ namespace BIDSHelper.SSAS
             if (!bIsValidName)
             {
                 e.Cancel = true;
+                MessageBox.Show(sNameErrorReason, "BIDS Helper Tabular Actions Editor");
             }
         }
 

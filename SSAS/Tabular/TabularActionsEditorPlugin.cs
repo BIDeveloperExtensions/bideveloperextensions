@@ -150,12 +150,12 @@ namespace BIDSHelper
             }
         }
 
-        private SSAS.TabularActionsAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        public static SSAS.TabularActionsAnnotation GetAnnotation(Cube cube)
         {
             SSAS.TabularActionsAnnotation annotation = new SSAS.TabularActionsAnnotation();
-            if (sandbox.Cube.Annotations.Contains(SSAS.TabularActionsEditorForm.ACTION_ANNOTATION))
+            if (cube.Annotations.Contains(SSAS.TabularActionsEditorForm.ACTION_ANNOTATION))
             {
-                string xml = sandbox.Cube.Annotations[SSAS.TabularActionsEditorForm.ACTION_ANNOTATION].Value.OuterXml;
+                string xml = cube.Annotations[SSAS.TabularActionsEditorForm.ACTION_ANNOTATION].Value.OuterXml;
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SSAS.TabularActionsAnnotation));
                 annotation = (SSAS.TabularActionsAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
             }
@@ -165,8 +165,8 @@ namespace BIDSHelper
         #region ITabularOnPreBuildAnnotationCheck
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
-            SSAS.TabularActionsAnnotation annotation = GetAnnotation(sandbox);
             cube = sandbox.Cube;
+            SSAS.TabularActionsAnnotation annotation = GetAnnotation(cube);
 
             bool bContainsPerspectiveListAnnotation = false;
             foreach (Microsoft.AnalysisServices.Action action in cube.Actions)
