@@ -112,6 +112,7 @@ namespace BIDSHelper
                 sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
                 cube = sandbox.Cube;
+                if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
                 bool bRestoreDisplayFolders = false;
                 SSAS.TabularDisplayFoldersAnnotation annotationSaved = GetAnnotation(sandbox);
@@ -128,6 +129,7 @@ namespace BIDSHelper
                 List<BIDSHelper.SSAS.TabularDisplayFolder> displayFolders = new List<BIDSHelper.SSAS.TabularDisplayFolder>();
 
                 Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
+                restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
                 DataSet datasetMeasures = sandbox.AdomdConnection.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
 
                 Database db = cube.Parent;
@@ -242,7 +244,7 @@ namespace BIDSHelper
             }
         }
 
-        private SSAS.TabularDisplayFoldersAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        public static SSAS.TabularDisplayFoldersAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             SSAS.TabularDisplayFoldersAnnotation annotation = new SSAS.TabularDisplayFoldersAnnotation();
             if (sandbox.Database.Annotations.Contains(DISPLAY_FOLDER_ANNOTATION))
@@ -255,6 +257,14 @@ namespace BIDSHelper
         }
 
         #region ITabularOnPreBuildAnnotationCheck
+        public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
+        {
+            get
+            {
+                return TabularOnPreBuildAnnotationCheckPriority.HighPriority;
+            }
+        }
+
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             string strWarning = "Click OK for BIDS Helper to restore display folders. The Tabular Display Folders form will open. Then click Yes then OK.";

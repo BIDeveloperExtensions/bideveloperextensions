@@ -28,6 +28,8 @@ public class DeploymentSettings
 	//// * can be overridden at the user's project level (set as a project option)
 	private string mTargetDatabase = "";
 
+    private string mTargetCubeName = null;
+
     public DeploymentSettings(EnvDTE.ProjectItem projectItm)
     {
         PopulateDeploymentSettings(projectItm.ContainingProject);
@@ -47,11 +49,30 @@ public class DeploymentSettings
         SetDefaultDatabaseName(project);
 
         System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance;
-        object oService = typeof(System.IServiceProvider).InvokeMember("GetService", flags, null, project, new object[] { typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings) });
-        string sTargetServer = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetServer" });
-        if (!String.IsNullOrEmpty(sTargetServer)) mTargetServer = sTargetServer;
-        string sTargetDatabase = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetDatabase" });
-        if (!String.IsNullOrEmpty(sTargetDatabase)) mTargetDatabase = sTargetDatabase;
+        object oService = null;
+        if (project is System.IServiceProvider) //Multidimensional
+        {
+            oService = typeof(System.IServiceProvider).InvokeMember("GetService", flags, null, project, new object[] { typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings) });
+            string sTargetServer = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetServer" });
+            if (!String.IsNullOrEmpty(sTargetServer)) mTargetServer = sTargetServer;
+            string sTargetDatabase = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetDatabase" });
+            if (!String.IsNullOrEmpty(sTargetDatabase)) mTargetDatabase = sTargetDatabase;
+        }
+        else if (project.Object is Microsoft.AnalysisServices.VSHost.Integration.ProjectNode) //Tabular
+        {
+            //during Visual Studio debug of BIDS Helper on my laptop, this throws an HRESULT: 0x80070057 (E_INVALIDARG) which I haven't been able to fix. But this works fine when not debugging BIDS Helper
+            Microsoft.AnalysisServices.VSHost.Integration.ProjectNode projectNode = ((Microsoft.AnalysisServices.VSHost.Integration.ProjectNode)project.Object);
+            string sTargetServer = projectNode.GetProjectProperty("DeploymentServerName");
+            if (!String.IsNullOrEmpty(sTargetServer)) mTargetServer = sTargetServer;
+            string sTargetDatabase = projectNode.GetProjectProperty("DeploymentServerDatabase");
+            if (!String.IsNullOrEmpty(sTargetDatabase)) mTargetDatabase = sTargetDatabase;
+            string sTargetCubeName = projectNode.GetProjectProperty("DeploymentServerCubeName");
+            if (!String.IsNullOrEmpty(sTargetCubeName)) mTargetCubeName = sTargetCubeName;
+        }
+        else
+        {
+            throw new Exception("Unable to find SSAS deployment settings. Unexpected project type.");
+        }
     }
 
 	public string TargetServer {
@@ -62,10 +83,21 @@ public class DeploymentSettings
 		get { return mTargetDatabase; }
 	}
 
+    public string TargetCubeName
+    {
+        get { return mTargetCubeName; }
+    }
+
     private void SetDefaultTargetServer()
     {
         Microsoft.Win32.RegistryKey regKey;
-        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\VisualStudio\\8.0\\Packages\\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\\Settings\\Analysis Services Project");
+#if DENALI
+        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\10.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
+#elif KATMAI
+        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\9.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
+#else
+        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\8.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
+#endif
         if (regKey == null) return;
         string targetSvr = (string)regKey.GetValue("DefaultTargetServer");
         if (!String.IsNullOrEmpty(targetSvr))

@@ -105,6 +105,7 @@ namespace BIDSHelper
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false);
                     if (sandbox != null)
                     {
+                        List<BIDSHelperPluginBase> checks = new List<BIDSHelperPluginBase>();
                         foreach (BIDSHelperPluginBase plugin in Connect.Plugins.Values)
                         {
                             Type t = plugin.GetType();
@@ -113,17 +114,30 @@ namespace BIDSHelper
                                 && !t.IsAbstract)
                             {
                                 ITabularOnPreBuildAnnotationCheck check = (ITabularOnPreBuildAnnotationCheck)plugin;
-                                string sWarning = check.GetPreBuildWarning(sandbox);
-                                if (sWarning != null)
+                                if (check.TabularOnPreBuildAnnotationCheckPriority == TabularOnPreBuildAnnotationCheckPriority.HighPriority)
                                 {
-                                    if (MessageBox.Show(sWarning, "BIDS Helper Pre-Build Warning - " + plugin.FeatureName, MessageBoxButtons.OKCancel) == DialogResult.OK)
-                                    {
-                                        Microsoft.VisualStudio.Project.Automation.OAFileItem project = hierItem.Object as Microsoft.VisualStudio.Project.Automation.OAFileItem;
-                                        Window win = project.Open(EnvDTE.Constants.vsViewKindPrimary);
-                                        win.Activate();
-                                        check.FixPreBuildWarning(sandbox);
-                                        project.Save(hierItem.Name);
-                                    }
+                                    checks.Insert(0, plugin); //insert the high priority checks at the front of the list so they get run first
+                                }
+                                else
+                                {
+                                    checks.Add(plugin);
+                                }
+                            }
+                        }
+
+                        foreach (BIDSHelperPluginBase plugin in checks)
+                        {
+                            ITabularOnPreBuildAnnotationCheck check = (ITabularOnPreBuildAnnotationCheck)plugin;
+                            string sWarning = check.GetPreBuildWarning(sandbox);
+                            if (sWarning != null)
+                            {
+                                if (MessageBox.Show(sWarning, "BIDS Helper Pre-Build Warning - " + plugin.FeatureName, MessageBoxButtons.OKCancel) == DialogResult.OK)
+                                {
+                                    Microsoft.VisualStudio.Project.Automation.OAFileItem project = hierItem.Object as Microsoft.VisualStudio.Project.Automation.OAFileItem;
+                                    Window win = project.Open(EnvDTE.Constants.vsViewKindPrimary);
+                                    win.Activate();
+                                    check.FixPreBuildWarning(sandbox);
+                                    project.Save(hierItem.Name);
                                 }
                             }
                         }

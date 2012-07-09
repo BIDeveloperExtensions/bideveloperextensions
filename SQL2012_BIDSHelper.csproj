@@ -264,6 +264,7 @@
     <Compile Include="Core\CustomClass.cs" />
     <Compile Include="Core\CustomProperty.cs" />
     <Compile Include="Core\CustomPropertyDescriptor.cs" />
+    <Compile Include="Core\DirtyMonitoredDictionary.cs" />
     <Compile Include="Core\VisualStudioHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\2012\Versioned.Designer.cs">
@@ -285,11 +286,19 @@
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
-    <Compile Include="SSAS\Tabular\TabularDisplayFoldersAnnotation.cs" />
-    <Compile Include="SSAS\Tabular\TabularDisplayFolderPlugin.cs" />
-    <Compile Include="SSAS\Tabular\TabularDisplayFolder.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslationsAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularDisplayFolderPlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularDisplayFoldersAnnotation.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml.cs">
       <DependentUpon>TabularDisplayFolderWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="SSAS\Tabular\TabularHideMemberIfAnnotation.cs" />
     <Compile Include="SSAS\Tabular\ITabularOnPreBuildAnnotationCheck.cs" />
@@ -305,6 +314,16 @@
     </Compile>
     <Compile Include="SSAS\Tabular\TabularHelpers.cs" />
     <Compile Include="SSAS\Tabular\TabularActionsEditorPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularTranslationsEditorPlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularTranslationsEditorWindow.xaml.cs">
+      <DependentUpon>TabularTranslationsEditorWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="SSIS\Adorners\BIDSHelperConfigurationAdorner.cs" />
     <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
       <SubType>Form</SubType>
@@ -954,8 +973,12 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SSAS\Tabular\TabularTranslationsEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 </Project>

@@ -279,6 +279,14 @@ namespace BIDSHelper
         }
 
         #region ITabularOnPreBuildAnnotationCheck
+        public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
+        {
+            get
+            {
+                return TabularOnPreBuildAnnotationCheckPriority.RegularPriority;
+            }
+        }
+
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             string sLevelsWithProblems = string.Empty;

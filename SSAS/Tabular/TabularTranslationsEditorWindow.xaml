@@ -1,0 +1,46 @@
+﻿<Window x:Class="BIDSHelper.SSAS.TabularTranslationsEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BIDS Helper Tabular Translations Editor" Height="387" Width="759" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <DataGrid AutoGenerateColumns="False" Name="dataGrid1" CanUserReorderColumns="False" Margin="18,12,17,34" MaxColumnWidth="400" MinColumnWidth="100" CanUserSortColumns="False" ContextMenuOpening="dataGrid1_ContextMenuOpening" FrozenColumnCount="4">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Remove Language" Click="MenuItem_Click"  />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Resources>
+                <Style x:Key="CellStyleGray" TargetType="DataGridCell">
+                    <Setter Property="Background" Value="WhiteSmoke" />
+                    <Setter Property="Foreground" Value="Black" />
+                    <Style.Triggers>
+                        <Trigger Property="DataGridCell.IsSelected" Value="True">
+                            <Setter Property="Background" Value="#3399FF" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="BorderBrush" Value="#3399FF" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                <Style x:Key="CellStyleTransparent" TargetType="DataGridCell">
+                    <Setter Property="Background" Value="White" />
+                    <Setter Property="Foreground" Value="Black" />
+                    <Style.Triggers>
+                        <Trigger Property="DataGridCell.IsSelected" Value="True">
+                            <Setter Property="Background" Value="#3399FF" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="BorderBrush" Value="#3399FF" />
+                        </Trigger>
+                        <Trigger Property="DataGridCell.IsEditing" Value="True">
+                            <Setter Property="Background" Value="White" />
+                            <Setter Property="Foreground" Value="Black" />
+                            <Setter Property="BorderBrush" Value="White" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
+        <Button Content="OK" Margin="0,0,108,6" Name="btnOK" HorizontalAlignment="Right" Width="75" Height="23" VerticalAlignment="Bottom" IsDefault="True" Click="btnOK_Click" />
+        <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,17,6" Name="btnCancel" VerticalAlignment="Bottom" Width="75" IsCancel="True" Click="btnCancel_Click" />
+        <Button Content="Add Language" Height="23" HorizontalAlignment="Left" Margin="18,0,0,6" Name="btnAddLanguage" VerticalAlignment="Bottom" Width="100" Click="btnAddLanguage_Click" />
+    </Grid>
+</Window>

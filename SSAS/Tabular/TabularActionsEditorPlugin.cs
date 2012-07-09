@@ -110,6 +110,7 @@ namespace BIDSHelper
                 sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
                 cube = sandbox.Cube;
+                if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
                 SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, sandbox.AdomdConnection);
                 if (form.ShowDialog() == DialogResult.OK)
@@ -163,6 +164,14 @@ namespace BIDSHelper
         }
 
         #region ITabularOnPreBuildAnnotationCheck
+        public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
+        {
+            get
+            {
+                return TabularOnPreBuildAnnotationCheckPriority.RegularPriority;
+            }
+        }
+
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             cube = sandbox.Cube;
