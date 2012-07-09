@@ -344,6 +344,7 @@ namespace BIDSHelper.SSIS
                     variable.Expression = expression;
                     changesvc.OnComponentChanging(sourceContainer, null);
                     changesvc.OnComponentChanged(sourceContainer, null, null, null); //marks the package designer as dirty
+                    SSISHelpers.MarkPackageDirty(package);
 
                     TypeDescriptor.Refresh(variable);
                     System.Windows.Forms.Application.DoEvents();
@@ -574,6 +575,7 @@ namespace BIDSHelper.SSIS
 
             changesvc.OnComponentChanging(targetContainer, null);
             changesvc.OnComponentChanged(targetContainer, null, null, null); //marks the package designer as dirty
+            SSISHelpers.MarkPackageDirty(package);
 
             ValidatePackage(package);
         }
