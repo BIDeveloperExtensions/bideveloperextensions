@@ -132,6 +132,8 @@ namespace BIDSHelper
                     if (package == null) continue;
                     SetPropertyValue(package, propertyPath, newValue);
 
+                    SSISHelpers.MarkPackageDirty(package); //for now always mark it as dirty
+
                     //ApplicationObject.ActiveDocument.Save(null);
                     //w.Close(vsSaveChanges.vsSaveChangesYes);
                     //w.Close(vsSaveChanges.vsSaveChangesNo); //close the designer
@@ -230,7 +232,7 @@ namespace BIDSHelper
                 //Flag value as changing
                 changesvc.OnComponentChanging(prop, null);
                 changesvc.OnComponentChanged(prop, null, null, null); //marks the package designer as dirty
-
+                
                 return prop.GetValue(dtsObject);
             }
 

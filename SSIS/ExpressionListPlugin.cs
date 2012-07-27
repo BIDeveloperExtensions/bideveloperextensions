@@ -267,6 +267,10 @@ namespace BIDSHelper.SSIS
                     changeService.OnComponentChanging(objectChanged, expressionsProperty);
                     changeService.OnComponentChanged(objectChanged, expressionsProperty, null, null); //marks the package designer as dirty
                 }
+                if (container is Package)
+                {
+                    SSISHelpers.MarkPackageDirty((Package)container);
+                }
             }
             finally
             {

@@ -299,6 +299,7 @@ namespace BIDSHelper
                     IComponentChangeService changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
                     changesvc.OnComponentChanging(package, null);
                     changesvc.OnComponentChanged(package, null, null, null); //marks the package designer as dirty
+                    SSISHelpers.MarkPackageDirty(package);
                 }
             }
             catch (Exception ex)

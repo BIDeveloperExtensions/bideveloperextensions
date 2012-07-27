@@ -12,6 +12,7 @@ namespace BIDSHelper
     {
         public static void MarkPackageDirty(Package package)
         {
+            if (package == null) return;
             #if DENALI
             Cud.Transaction trans = Cud.BeginTransaction(package);
             trans.ChangeComponent(package);
@@ -21,6 +22,14 @@ namespace BIDSHelper
             #endif
         }
 
+        public static Package GetPackageFromContainer(DtsContainer container)
+        {
+            while (!(container is Package))
+            {
+                container = container.Parent;
+            }
+            return (Package)container;
+        }
 
         public enum SsisDesignerTabIndex
         {
