@@ -58,6 +58,7 @@ public class DeploymentSettings
             string sTargetDatabase = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetDatabase" });
             if (!String.IsNullOrEmpty(sTargetDatabase)) mTargetDatabase = sTargetDatabase;
         }
+#if DENALI
         else if (project.Object is Microsoft.AnalysisServices.VSHost.Integration.ProjectNode) //Tabular
         {
             //during Visual Studio debug of BIDS Helper on my laptop, this throws an HRESULT: 0x80070057 (E_INVALIDARG) which I haven't been able to fix. But this works fine when not debugging BIDS Helper
@@ -69,6 +70,7 @@ public class DeploymentSettings
             string sTargetCubeName = projectNode.GetProjectProperty("DeploymentServerCubeName");
             if (!String.IsNullOrEmpty(sTargetCubeName)) mTargetCubeName = sTargetCubeName;
         }
+#endif
         else
         {
             throw new Exception("Unable to find SSAS deployment settings. Unexpected project type.");
