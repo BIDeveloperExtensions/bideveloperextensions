@@ -137,7 +137,7 @@ namespace BIDSHelper
                         continue;
                     }
 
-                    iDescriptionsSet += SyncDescriptions(d, bFirstDimension);
+                    iDescriptionsSet += SyncDescriptions(d, bFirstDimension, null, false);
                     bFirstDimension = false;
                     ApplicationObject.StatusBar.Progress(true, "Syncing Descriptions...", ++iDimension, ((System.Array)solExplorer.SelectedItems).Length);
                 }
@@ -162,15 +162,55 @@ namespace BIDSHelper
         private static Microsoft.DataWarehouse.Design.RDMSCartridge cartridge = null;
         private static string DBServerName = ""; //will say Oracle or Microsoft SQL Server
 
-        private string DescriptionPropertyName = "MS_Description";
-        private string[] OtherPropertyNamesToInclude = { "Example Values" }; //TODO: set these via UI
-        private bool OverwriteExistingDescriptions = false;
+        private static string DescriptionPropertyName = "MS_Description";
+        private static string[] OtherPropertyNamesToInclude = { "Example Values" }; //TODO: set these via UI
+        private static bool OverwriteExistingDescriptions = false;
 
-        private int SyncDescriptions(Dimension d, bool bPromptForProperties)
+        internal static int SyncDescriptions(Dimension d, bool bPromptForProperties, IServiceProvider provider, bool bIsTabular)
         {
             int iUpdatedDescriptions = 0;
             DataSource dataSource = d.DataSource;
-            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.DataWarehouse.DataWarehouseUtilities.GetOpenedDataSourceConnection((object)null, dataSource.ID, dataSource.Name, dataSource.ManagedProvider, dataSource.ConnectionString, dataSource.Site, false);
+
+            ColumnBinding colDimensionKey = null;
+#if DENALI
+            if (d.KeyAttribute.KeyColumns[0].Source is RowNumberBinding)
+            {
+                foreach (DimensionAttribute a in d.Attributes)
+                {
+                    if (a.KeyColumns != null && a.KeyColumns.Count > 0 && a.KeyColumns[0].Source is ColumnBinding)
+                    {
+                        colDimensionKey = GetColumnBindingForDataItem(a.KeyColumns[0]);
+                        break;
+                    }
+                }
+                if (colDimensionKey == null)
+                {
+                    throw new Exception("Couldn't find an attribute with a ColumnBinding, so couldn't find DSV table.");
+                }
+            }
+            else
+            {
+                colDimensionKey = GetColumnBindingForDataItem(d.KeyAttribute.KeyColumns[0]);
+            }
+#else
+            colDimensionKey = GetColumnBindingForDataItem(d.KeyAttribute.KeyColumns[0]);
+#endif
+
+            DataTable oDimensionKeyTable = d.DataSourceView.Schema.Tables[colDimensionKey.TableID];
+
+            //if this is a Tabular model, the Dimension.DataSource may point at the default data source for the data source view
+            if (oDimensionKeyTable.ExtendedProperties.ContainsKey("DataSourceID"))
+            {
+                dataSource = d.Parent.DataSources[oDimensionKeyTable.ExtendedProperties["DataSourceID"].ToString()];
+            }
+
+            IServiceProvider settingService = dataSource.Site;
+            if (settingService == null)
+            {
+                settingService = provider;
+            }
+
+            Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.DataWarehouse.DataWarehouseUtilities.GetOpenedDataSourceConnection((object)null, dataSource.ID, dataSource.Name, dataSource.ManagedProvider, dataSource.ConnectionString, settingService, false);
             try
             {
                 if (d.MiningModelID != null) return iUpdatedDescriptions;
@@ -199,9 +239,6 @@ namespace BIDSHelper
                     {
                         MessageBox.Show("Data source [" + d.DataSource.Name + "] connects to " + DBServerName + " which may not be supported.");
                     }
-
-                    ColumnBinding colDimensionKey = GetColumnBindingForDataItem(d.KeyAttribute.KeyColumns[0]);
-                    DataTable oDimensionKeyTable = d.DataSourceView.Schema.Tables[colDimensionKey.TableID];
 
                     String sql = "select distinct Name from sys.extended_properties order by Name";
 
@@ -235,7 +272,7 @@ namespace BIDSHelper
                     }
 
                     if ((string.IsNullOrEmpty(d.Description) || OverwriteExistingDescriptions)
-                    && !oDimensionKeyTable.ExtendedProperties.ContainsKey("QueryDefinition")
+                    && (!oDimensionKeyTable.ExtendedProperties.ContainsKey("QueryDefinition") || bIsTabular) //Tabular always has a QueryDefinition, even when it's just a table binding
                     && oDimensionKeyTable.ExtendedProperties.ContainsKey("DbTableName")
                     && oDimensionKeyTable.ExtendedProperties.ContainsKey("DbSchemaName"))
                     {
@@ -283,12 +320,26 @@ namespace BIDSHelper
                     {
                         ColumnBinding col = null;
 
+#if DENALI
+                        if (a.Type == AttributeType.RowNumber)
+                        {
+                            continue;
+                        }
+#endif
                         if (a.NameColumn != null)
                         {
+                            if (!(a.NameColumn.Source is ColumnBinding))
+                            {
+                                continue;
+                            }
                             col = GetColumnBindingForDataItem(a.NameColumn);
                         }
                         else if (a.KeyColumns.Count == 1)
                         {
+                            if (!(a.KeyColumns[0].Source is ColumnBinding))
+                            {
+                                continue;
+                            }
                             col = GetColumnBindingForDataItem(a.KeyColumns[0]);
                         }
                         else
@@ -298,7 +349,7 @@ namespace BIDSHelper
                         DataTable oDsvTable = d.DataSourceView.Schema.Tables[col.TableID];
 
                         if ((string.IsNullOrEmpty(a.Description) || OverwriteExistingDescriptions)
-                        && !oDsvTable.ExtendedProperties.ContainsKey("QueryDefinition")
+                        && (!oDsvTable.ExtendedProperties.ContainsKey("QueryDefinition") || bIsTabular)
                         && oDsvTable.ExtendedProperties.ContainsKey("DbTableName")
                         && oDsvTable.ExtendedProperties.ContainsKey("DbSchemaName"))
                         {
@@ -346,10 +397,13 @@ namespace BIDSHelper
                     }
 
 
-                    //mark dimension as dirty
-                    IComponentChangeService changesvc = (IComponentChangeService)d.Site.GetService(typeof(IComponentChangeService));
-                    changesvc.OnComponentChanging(d, null);
-                    changesvc.OnComponentChanged(d, null, null, null);
+                    if (d.Site != null) //if not Tabular
+                    {
+                        //mark dimension as dirty
+                        IComponentChangeService changesvc = (IComponentChangeService)d.Site.GetService(typeof(IComponentChangeService));
+                        changesvc.OnComponentChanging(d, null);
+                        changesvc.OnComponentChanged(d, null, null, null);
+                    }
                 }
             }
             finally

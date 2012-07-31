@@ -286,6 +286,7 @@
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularSyncDescriptionsPlugin.cs" />
     <Compile Include="SSAS\Tabular\TabularTranslationsAnnotation.cs" />
     <Compile Include="SSAS\Tabular\TabularDisplayFolder.cs">
       <SubType>Code</SubType>

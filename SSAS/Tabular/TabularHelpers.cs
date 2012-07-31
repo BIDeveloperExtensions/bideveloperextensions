@@ -29,6 +29,12 @@ namespace BIDSHelper
             return host;
         }
 
+        public static IServiceProvider GetTabularServiceProviderFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
+        {
+            GetVSHostManager(hierItem, openIfNotOpen); //just to force the window open if not open
+            return ((Microsoft.VisualStudio.Project.ProjectNode)((((Microsoft.VisualStudio.Project.Automation.OAProjectItem<Microsoft.VisualStudio.Project.FileNode>)(hierItem.Object)).ContainingProject).Object)).Site;
+        }
+
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
         {
             Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
