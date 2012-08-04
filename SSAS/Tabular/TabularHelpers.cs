@@ -24,7 +24,8 @@ namespace BIDSHelper
                 win.Activate();
             }
 
-            Microsoft.AnalysisServices.VSHost.Integration.BISMFileNode bim = (Microsoft.AnalysisServices.VSHost.Integration.BISMFileNode)project.Object;
+            Microsoft.AnalysisServices.VSHost.Integration.BISMFileNode bim = project.Object as Microsoft.AnalysisServices.VSHost.Integration.BISMFileNode;
+            if (bim == null) return null;
             Microsoft.AnalysisServices.VSHost.VSHostManager host = (Microsoft.AnalysisServices.VSHost.VSHostManager)bim.GetType().InvokeMember("VSHostManager", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, bim, null); //bim.VSHostManager;
             return host;
         }
