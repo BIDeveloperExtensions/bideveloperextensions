@@ -74,6 +74,7 @@ Section "MainSection" SEC01
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\ExpressionEditor.dll" "$INSTDIR\ExpressionEditor.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\Antlr3.Runtime.dll" "$INSTDIR\Antlr3.Runtime.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BimlEngine.dll" "$INSTDIR\BimlEngine.dll" $INSTDIR\Temp
+!insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\PostSharp.dll" "$INSTDIR\PostSharp.dll" $INSTDIR\Temp
 !undef LIBRARY_IGNORE_VERSION
   File "..\BIDSHelper.AddIn"
   File "/oname=$PROGRAMFILES\Microsoft Visual Studio 8\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
@@ -121,6 +122,7 @@ Section Uninstall
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\ExpressionEditor.dll
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\Antlr3.Runtime.dll
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\BimlEngine.dll
+  !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\PostSharp.dll
   
   Delete "$INSTDIR\BIDSHelper.Addin"
   DeleteRegValue ${PRODUCT_UNINST_ROOT_KEY} "${VSLOOK_IN_FOLDERS}" "$INSTDIR"

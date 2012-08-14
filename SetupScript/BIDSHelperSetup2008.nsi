@@ -73,6 +73,7 @@ Section "MainSection" SEC01
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BIDSHelper.dll" "$INSTDIR\BIDSHelper.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\Antlr3.Runtime.dll" "$INSTDIR\Antlr3.Runtime.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BimlEngine.dll" "$INSTDIR\BimlEngine.dll" $INSTDIR\Temp
+!insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\PostSharp.dll" "$INSTDIR\PostSharp.dll" $INSTDIR\Temp
 !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\ExpressionEditor.dll" "$INSTDIR\ExpressionEditor.dll" $INSTDIR\Temp
 !undef LIBRARY_IGNORE_VERSION
   File "..\BIDSHelper2008.AddIn"
@@ -121,6 +122,7 @@ Section Uninstall
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\BIDSHelper.dll
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\Antlr3.Runtime.dll
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\BimlEngine.dll
+  !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\PostSharp.dll
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\ExpressionEditor.dll
 
   Delete "$INSTDIR\BIDSHelper2008.Addin"

@@ -206,6 +206,10 @@
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2012\msddsp.dll</HintPath>
     </Reference>
+    <Reference Include="PostSharp, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b13fd38b8f9c99d7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\Biml\PostSharp.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System">
@@ -703,6 +707,7 @@
     <None Include="DLLs\Biml\BimlEngine.dll" />
     <None Include="Resources\NoIcon.ico" />
     <None Include="Resources\Icon1.ico" />
+    <None Include="DLLs\Biml\PostSharp.dll" />
     <Content Include="Resources\2012\DataFlow.ico" />
     <Content Include="Resources\2012\DestinationComponent.ico" />
     <Content Include="Resources\2012\EditVariable.ico" />
