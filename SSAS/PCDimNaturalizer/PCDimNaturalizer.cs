@@ -283,8 +283,8 @@ namespace PCDimNaturalizer
                     break;
                 }
             if (pid == null) throw new Exception("Dimension is not parent child.");
-            if (id.Table.ExtendedProperties["TableType"] != null && ((string)id.Table.ExtendedProperties["TableType"]) == "View")
-                throw new Exception("DSV views are not supported currently.  The PC Dimension Naturalizer only supports SQL tables or views for the dimension source.");
+            if (id.Table.ExtendedProperties.ContainsKey("QueryDefinition"))
+                throw new Exception("DSV named queries are not supported currently.  The PC Dimension Naturalizer only supports SQL tables or views for the dimension source.");
             tbl = id.Table;
         }
 
@@ -732,6 +732,22 @@ namespace PCDimNaturalizer
                             DataRelation dataRelation = new DataRelation("[" + tbl.ParentRelations[i].RelationName.Replace(tbl.ExtendedProperties["DbTableName"].ToString(), txtNewView.Replace("[", "").Replace("]", "") + j.ToString()) + "]",
                                 tbl.ParentRelations[i].ParentColumns,
                                 NewRelationColumns);
+
+                            //dedup relation name
+                            if (dim.DataSourceView.Schema.Relations.Contains(dataRelation.RelationName))
+                            {
+                                if (tbl.ExtendedProperties.ContainsKey("FriendlyName"))
+                                {
+                                    dataRelation.RelationName = dataRelation.RelationName.Replace(tbl.ExtendedProperties["FriendlyName"].ToString(), txtNewView.Replace("[", "").Replace("]", "") + j.ToString());
+                                }
+                                string sStartingName = dataRelation.RelationName;
+                                int iUniqueCounter = 1;
+                                while (dim.DataSourceView.Schema.Relations.Contains(dataRelation.RelationName))
+                                {
+                                    dataRelation.RelationName = sStartingName.Substring(0, sStartingName.Length-1) + (iUniqueCounter++) + "]";
+                                }
+                            }
+
                             dim.DataSourceView.Schema.Relations.Add(dataRelation);
                         }
                     }
