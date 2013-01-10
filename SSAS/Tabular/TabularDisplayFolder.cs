@@ -135,6 +135,12 @@ namespace BIDSHelper.SSAS
         {
             TabularDisplayFolder x = (TabularDisplayFolder)this;
             TabularDisplayFolder y = (TabularDisplayFolder)a;
+
+            if (x._Table == null || y._Table == null)
+            {
+                return x._ObjectName.CompareTo(y._ObjectName);
+            }
+
             int iTableCompare = x._Table.CompareTo(y._Table);
             if (iTableCompare != 0)
             {
