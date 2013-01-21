@@ -264,7 +264,7 @@ namespace BIDSHelper
         {
             if (sandbox.Database.Annotations.Contains(HIDEMEMBERIF_ANNOTATION))
             {
-                string xml = sandbox.Database.Annotations[HIDEMEMBERIF_ANNOTATION].Value.OuterXml;
+                string xml = TabularHelpers.GetAnnotationXml(sandbox.Database, HIDEMEMBERIF_ANNOTATION);
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(BIDSHelper.SSAS.TabularHideMemberIfAnnotation));
                 return (SSAS.TabularHideMemberIfAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
             }

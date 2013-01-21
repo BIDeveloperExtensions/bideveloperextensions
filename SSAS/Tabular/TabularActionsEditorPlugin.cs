@@ -156,7 +156,7 @@ namespace BIDSHelper
             SSAS.TabularActionsAnnotation annotation = new SSAS.TabularActionsAnnotation();
             if (cube.Annotations.Contains(SSAS.TabularActionsEditorForm.ACTION_ANNOTATION))
             {
-                string xml = cube.Annotations[SSAS.TabularActionsEditorForm.ACTION_ANNOTATION].Value.OuterXml;
+                string xml = TabularHelpers.GetAnnotationXml(cube, SSAS.TabularActionsEditorForm.ACTION_ANNOTATION);
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SSAS.TabularActionsAnnotation));
                 annotation = (SSAS.TabularActionsAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
             }

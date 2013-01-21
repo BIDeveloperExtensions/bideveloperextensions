@@ -408,7 +408,7 @@ namespace BIDSHelper
             SSAS.TabularTranslationsAnnotation annotation = new SSAS.TabularTranslationsAnnotation();
             if (sandbox.Database.Annotations.Contains(TRANSLATIONS_ANNOTATION))
             {
-                string xml = sandbox.Database.Annotations[TRANSLATIONS_ANNOTATION].Value.OuterXml;
+                string xml = TabularHelpers.GetAnnotationXml(sandbox.Database, TRANSLATIONS_ANNOTATION);
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SSAS.TabularTranslationsAnnotation));
                 annotation = (SSAS.TabularTranslationsAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
             }

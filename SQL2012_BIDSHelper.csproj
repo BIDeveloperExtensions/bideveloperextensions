@@ -290,6 +290,13 @@
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.Designer.cs">
+      <DependentUpon>TabularAnnotationWorkaroundForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundPlugin.cs" />
     <Compile Include="SSAS\Tabular\TabularSyncDescriptionsPlugin.cs" />
     <Compile Include="SSAS\Tabular\TabularTranslationsAnnotation.cs" />
     <Compile Include="SSAS\Tabular\TabularDisplayFolder.cs">
@@ -863,6 +870,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.resx">
       <DependentUpon>frmSQLFlattenerOptions.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.resx">
+      <DependentUpon>TabularAnnotationWorkaroundForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\Tabular\TabularActionsEditorForm.resx">

@@ -249,7 +249,7 @@ namespace BIDSHelper
             SSAS.TabularDisplayFoldersAnnotation annotation = new SSAS.TabularDisplayFoldersAnnotation();
             if (sandbox.Database.Annotations.Contains(DISPLAY_FOLDER_ANNOTATION))
             {
-                string xml = sandbox.Database.Annotations[DISPLAY_FOLDER_ANNOTATION].Value.OuterXml;
+                string xml = TabularHelpers.GetAnnotationXml(sandbox.Database, DISPLAY_FOLDER_ANNOTATION);
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SSAS.TabularDisplayFoldersAnnotation));
                 annotation = (SSAS.TabularDisplayFoldersAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
             }

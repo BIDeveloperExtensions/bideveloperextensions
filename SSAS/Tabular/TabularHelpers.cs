@@ -59,8 +59,39 @@ namespace BIDSHelper
             System.Xml.XmlDocument xml = new XmlDocument();
             xml.LoadXml(sb.ToString());
             if (obj.Annotations.Contains(annotationName)) obj.Annotations.Remove(annotationName);
-            Annotation annotation = new Annotation(annotationName, xml.DocumentElement);
-            obj.Annotations.Add(annotation);
+            if (TabularAnnotationWorkaroundPlugin.AreAnnotationsStringStyle(obj))
+            {
+                //this is just a workaround to this bug: https://connect.microsoft.com/SQLServer/feedback/details/776444/tabular-model-error-during-opening-bim-after-sp1-readelementcontentas-methods-cannot-be-called-on-an-element-that-has-child-elements
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.OmitXmlDeclaration = true;
+                StringBuilder sb2 = new StringBuilder();
+                XmlWriter wr = XmlWriter.Create(sb2, settings);
+                XmlDocument annotationDoc = new XmlDocument();
+                annotationDoc.LoadXml(xml.InnerXml);
+                annotationDoc.Save(wr);
+                wr.Close();
+
+                Annotation annotation = new Annotation(annotationName, sb2.ToString());
+                obj.Annotations.Add(annotation);
+            }
+            else
+            {
+                Annotation annotation = annotation = new Annotation(annotationName, xml.DocumentElement);
+                obj.Annotations.Add(annotation);
+            }
+        }
+
+        public static string GetAnnotationXml(MajorObject obj, string annotationName)
+        {
+            if (TabularAnnotationWorkaroundPlugin.AreAnnotationsStringStyle(obj))
+            {
+                return obj.Annotations[annotationName].Value.InnerText;
+            }
+            else
+            {
+                return obj.Annotations[annotationName].Value.OuterXml;
+            }
         }
 
         //executes the commands that we have scripted using AMO previously
