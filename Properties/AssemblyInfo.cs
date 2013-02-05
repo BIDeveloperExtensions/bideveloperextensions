@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("BIDS Helper")]
 [assembly: AssemblyDescription("Provides additional useful features to SQL Server Data Tools (formerly known as BI Development Studio)")]
 [assembly: AssemblyCompany("http://bidshelper.codeplex.com/")]
-[assembly: AssemblyCopyright("Copyright © 2012 BIDS Helper")]
+[assembly: AssemblyCopyright("Copyright © 2013 BIDS Helper")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("1.6.1.0")]
-[assembly: AssemblyFileVersion("1.6.1.0")]
+[assembly: AssemblyVersion("1.6.2.0")]
+[assembly: AssemblyFileVersion("1.6.2.0")]
 
 [assembly: ComVisible(true)]
 [assembly: CLSCompliant(false)]
