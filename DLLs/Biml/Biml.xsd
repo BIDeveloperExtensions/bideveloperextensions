@@ -1685,6 +1685,7 @@
       <xs:enumeration value="IndirectSqlServer" />
       <xs:enumeration value="IndirectFileInput" />
       <xs:enumeration value="MaintenancePlanCleanupFolder" />
+      <xs:enumeration value="ExternalProjectPackage" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="Varigence.Languages.Biml.Transformation.PivotUsage">
@@ -1817,6 +1818,12 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="Decimal" />
       <xs:enumeration value="Int32" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.SsisDeploymentModel">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Package" />
+      <xs:enumeration value="Project" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="System.TypeCode">
@@ -3422,6 +3429,21 @@
             <xs:documentation>Indicates whether this property contains a data linage column id.</xs:documentation>
           </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="TranslateValueToLineageId" type="xs:boolean" use="optional">
+          <xs:annotation>
+            <xs:documentation>Specifies whether the compiler should translate the property value or values into SSIS lineage ids during emission.  This property is used in combination with the LineageIdListSeparator property, if a list of lineage ids is expected.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="LineageIdListSeparator" type="xs:string" use="optional">
+          <xs:annotation>
+            <xs:documentation>In the case of a list of lineage ids, this property specifies the string sequence that is used to separate items in the list.  The same separator is used both for extracting column name lists and emitting the list of translated lineage ids.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="Description" type="xs:string" use="optional">
+          <xs:annotation>
+            <xs:documentation>This value stores the description that is emitted in SSIS for the data flow property.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="Name" type="xs:string" use="required">
           <xs:annotation>
             <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -4766,6 +4788,11 @@
         </xs:annotation>
       </xs:element>
       <xs:element name="CustomTask" type="Varigence.Languages.Biml.Task.AstCustomTaskNode">
+        <xs:annotation>
+          <xs:documentation>Container for child task definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Expression" type="Varigence.Languages.Biml.Task.AstExpressionTaskNode">
         <xs:annotation>
           <xs:documentation>Container for child task definitions.</xs:documentation>
         </xs:annotation>
@@ -9263,11 +9290,6 @@ PackageSubpath will override the default package location behavior. Packages wil
         </xs:annotation>
       </xs:element>
     </xs:all>
-    <xs:attribute name="ConnectionName" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>This value specifies a direct reference to the target sconnection.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute default="false" name="RetainSameConnection" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This tells SSIS to reuse the same connection object throughout package execution. It is normally used to support explicit transactions or temporary table usage.</xs:documentation>
@@ -9276,6 +9298,11 @@ PackageSubpath will override the default package location behavior. Packages wil
     <xs:attribute name="Id" type="xs:string" use="optional">
       <xs:annotation>
         <xs:documentation>Allows the developer to specify a unique identifier (GUID) for the connection. This can be used to retain a consistent ID between builds.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ConnectionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies a direct reference to the target connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -13465,6 +13492,11 @@ PackageSubpath will override the default package location behavior. Packages wil
         <xs:documentation>This value specifies the scale of the dataflow column referenced by PivotKeyValueColumnName.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="PivotKeyValueColumnCodePage" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the code page of the dataflow column referenced by PivotKeyValueColumnName.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
@@ -15053,6 +15085,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies which package or Biml object that generates a package will be executed.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalProjectPackage" type="Varigence.Languages.Biml.Task.AstExternalProjectPackageResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies which package or Biml object that generates a package will be executed.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="PrecedenceConstraints" type="Varigence.Languages.Biml.Task.AstTaskflowPrecedenceConstraintsNode">
         <xs:annotation>
           <xs:documentation>This is a container for task precedence constraint definitions.</xs:documentation>
@@ -15229,6 +15266,20 @@ PackageSubpath will override the default package location behavior. Packages wil
     <xs:attribute name="PackageEmitTargetName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>This value specifies a target of any type that can be emitted as a SQL Server Integration Services package.  This includes tables, schemas, static sources, principals, packages, and other items.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Task.AstExternalProjectPackageResourceNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Package" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies the name of the packagethat should be referenced within the containing package project.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -22649,6 +22700,135 @@ Optional. If it is not specified, the connection will default to the TargetConst
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Task.AstExpressionTaskNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="PrecedenceConstraints" type="Varigence.Languages.Biml.Task.AstTaskflowPrecedenceConstraintsNode">
+        <xs:annotation>
+          <xs:documentation>This is a container for task precedence constraint definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Events" type="AstTaskEventHandlerNode_AstTaskNode_Events_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of event handlers that can respond to SQL Server Integration Services events that are raised on this task.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Variables" type="AstVariableNode_AstTaskNode_Variables_List">
+        <xs:annotation>
+          <xs:documentation>This is a container for variable definitions that are specific to this task, container, or package.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="LogEvents" type="AstLogEventNode_AstTaskNode_LogEvents_List">
+        <xs:annotation>
+          <xs:documentation>This is a container for log event definitions that are specific to this task, container, or package.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="LogProviders" type="AstLogProviderBaseNode_AstTaskNode_LogProviders_List">
+        <xs:annotation>
+          <xs:documentation>Defines the log providers to use for the SSIS task or container</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstTaskNode_Expressions_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of SSIS expression definitions for property value overrides that are specific to this task, container, or package.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Expression" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the SSIS expression that will be evaluated by the Expression Task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ExecutionValueVariableName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies a variable to hold the execution results of this component.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="DelayValidation" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the validation of the Dataflow task in SSIS should be delayed until the package is executed. DelayValidation is most often used when the ETL process references tables and other server assets that were created in an earlier stage of the data processing run.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Serializable" name="IsolationLevel" type="Varigence.Languages.Biml.Task.IsolationLevel" use="optional">
+      <xs:annotation>
+        <xs:documentation>Sets the Isolation Level which controls how Transactions behave for this container.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="0" name="ForcedExecutionValue" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>If the ForceExecutionValue property is set to True, then the container will return the value stored in this property as its execution value.  Otherwise, this value will be ignored.  The default value for ForecedExecutionValue is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="None" name="ForceExecutionResult" type="Varigence.Languages.Biml.Task.ForceExecutionResult" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value indicates whether a specified execution result value will result if the container runs. The default value is None, which means that the container does not force a specified outcome.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="ForceExecutionValue" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Gets or sets a Boolean that indicates whether the execution value of the container should be forced to contain the value specified in the ForcedExecutionValue property.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Int32" name="ForcedExecutionValueDataType" type="System.TypeCode" use="optional">
+      <xs:annotation>
+        <xs:documentation>This property specifies the data type of the value stored in the ForceExecutionValue property.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="Disabled" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the package is disabled. The default value is False.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="FailPackageOnFailure" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value determines whether the container will fail when a container component fails. If this container corresponds to a package, then the only valid value is False.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="FailParentOnFailure" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value determines whether the parent container will fail when a child container failes. The default value is False.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="1" name="MaxErrorCount" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the maximum number of errors allowed to occur before a package is forced to stop running. The default value is 1.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Inherited" name="Language" type="Varigence.Languages.Biml.Cube.Language" use="optional">
+      <xs:annotation>
+        <xs:documentation>This specifies the default language to be used by this task and its descendants.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="DisableEventHandlers" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the event handlers for this task, container, or package should be prevented from executing. The default value is False.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Join" name="TransactionMode" type="Varigence.Languages.Biml.Task.ContainerTransactionMode" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the transaction context in which this task will execute.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="LoggingMode" type="Varigence.Languages.Biml.Task.LoggingMode" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether logging is enabled or disabled by the container or by the parent container. The default value is UseParentSetting.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Id" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Allows the developer to specify a unique identifier (GUID) for the package. This can be used to retain a consistent ID between builds.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Task.AstTaskflowOutputPathNode">
     <xs:all minOccurs="1" maxOccurs="1">
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -25038,16 +25218,21 @@ Optional. If it is not specified, the connection will default to the TargetConst
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-  <xs:complexType name="Varigence.Languages.Biml.DataIntegration.AstDataIntegrationProjectNode">
+  <xs:complexType name="Varigence.Languages.Biml.PackageProject.AstPackageProjectNode">
     <xs:all minOccurs="1" maxOccurs="1">
-      <xs:element minOccurs="0" maxOccurs="1" name="Packages" type="AstPackageReferenceNode_AstDataIntegrationProjectNode_Packages_List">
+      <xs:element minOccurs="0" maxOccurs="1" name="Packages" type="AstPackageReferenceNode_AstPackageProjectNode_Packages_List">
         <xs:annotation>
           <xs:documentation>Defines the collection of packages associated with this Data Integration project.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="Parameters" type="AstParameterNode_AstDataIntegrationProjectNode_Parameters_List">
+      <xs:element minOccurs="0" maxOccurs="1" name="Parameters" type="AstParameterNode_AstPackageProjectNode_Parameters_List">
         <xs:annotation>
           <xs:documentation>Defines the collection of parameters for this data integration project.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Connections" type="AstConnectionReferenceBaseNode_AstPackageProjectNode_Connections_List">
+        <xs:annotation>
+          <xs:documentation>This specifies a collection of connections that should be emitted as project-scoped connection managers in the output project.  This can be done by setting CreateInProject to true on the connection itself.  Alternatively, the connection can be referenced from this collection.  This funcationality is provided in case a single connection should be emitted as a project connection manager in some package projects and as a package connection manager for others.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -25056,22 +25241,32 @@ Optional. If it is not specified, the connection will default to the TargetConst
         </xs:annotation>
       </xs:element>
     </xs:all>
+    <xs:attribute name="ProjectSubpath" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>This specifies a file path fragment to use for emitting output files for this project and any files it includes.  ProjectSubpath will override the default project location behavior. Projects will no longer be emitted under OutputDirectory\Type\ProjectName.dtproj but instead OutputDirectory\&lt;ProjectSubpath&gt;\ProjectName.dtproj</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="DontSaveSensitive" name="ProtectionLevel" type="Varigence.Languages.Biml.ProtectionLevel" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the level of data protection for the package.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-  <xs:complexType name="AstPackageReferenceNode_AstDataIntegrationProjectNode_Packages_List">
+  <xs:complexType name="AstPackageReferenceNode_AstPackageProjectNode_Packages_List">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
-      <xs:element name="Package" type="Varigence.Languages.Biml.DataIntegration.AstPackageReferenceNode">
+      <xs:element name="Package" type="Varigence.Languages.Biml.PackageProject.AstPackageReferenceNode">
         <xs:annotation>
           <xs:documentation>Defines the collection of packages associated with this Data Integration project.</xs:documentation>
         </xs:annotation>
       </xs:element>
     </xs:choice>
   </xs:complexType>
-  <xs:complexType name="Varigence.Languages.Biml.DataIntegration.AstPackageReferenceNode">
+  <xs:complexType name="Varigence.Languages.Biml.PackageProject.AstPackageReferenceNode">
     <xs:all minOccurs="1" maxOccurs="1">
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
@@ -25090,7 +25285,7 @@ Optional. If it is not specified, the connection will default to the TargetConst
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-  <xs:complexType name="AstParameterNode_AstDataIntegrationProjectNode_Parameters_List">
+  <xs:complexType name="AstParameterNode_AstPackageProjectNode_Parameters_List">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
       <xs:element name="Parameter" type="Varigence.Languages.Biml.Task.AstParameterNode">
         <xs:annotation>
@@ -25098,6 +25293,29 @@ Optional. If it is not specified, the connection will default to the TargetConst
         </xs:annotation>
       </xs:element>
     </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="AstConnectionReferenceBaseNode_AstPackageProjectNode_Connections_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Connection" type="Varigence.Languages.Biml.Connection.AstConnectionReferenceBaseNode">
+        <xs:annotation>
+          <xs:documentation>This specifies a collection of connections that should be emitted as project-scoped connection managers in the output project.  This can be done by setting CreateInProject to true on the connection itself.  Alternatively, the connection can be referenced from this collection.  This funcationality is provided in case a single connection should be emitted as a project connection manager in some package projects and as a package connection manager for others.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Connection.AstConnectionReferenceBaseNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="ConnectionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies a direct reference to the target connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Cube.Action.AstActionNode">
     <xs:all minOccurs="1" maxOccurs="1">
@@ -25445,6 +25663,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -25498,6 +25721,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -25542,6 +25770,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -25584,6 +25817,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -25640,6 +25878,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -25682,6 +25925,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -25753,6 +26001,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -25785,6 +26038,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -25829,6 +26087,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -25925,6 +26188,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -25988,6 +26256,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -26027,6 +26300,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -26064,6 +26342,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -26113,6 +26396,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -26167,6 +26455,55 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Connection.AstCustomSsisConnectionNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="CreationName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>This property provides the strong name of the connection manager, used by SSIS to create an instance of it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ObjectData" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>This property defines the custom persistence data for the connection manager. It must be stored as encoded XML, with XML reserved characters properly escaped.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="DelayValidation" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value indicates that the connection should not be validated (tested to make sure that it points to a valid resource) until immediately before it is used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -26519,7 +26856,7 @@ Optional. If it is not specified, the connection will default to the TargetConst
           <xs:documentation>This is a collection of all server definitions in the project.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="DataIntegrationProjects" type="AstDataIntegrationProjectNode_AstRootNode_DataIntegrationProjects_List">
+      <xs:element minOccurs="0" maxOccurs="1" name="PackageProjects" type="AstPackageProjectNode_AstRootNode_PackageProjects_List">
         <xs:annotation>
           <xs:documentation>Defines the collection of Data Integration projects associated with this Biml project.</xs:documentation>
         </xs:annotation>
@@ -26599,6 +26936,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         </xs:annotation>
       </xs:element>
       <xs:element name="ExcelConnection" type="Varigence.Languages.Biml.Connection.AstExcelOleDbConnectionNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of all connection definitions in the project.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CustomSsisConnection" type="Varigence.Languages.Biml.Connection.AstCustomSsisConnectionNode">
         <xs:annotation>
           <xs:documentation>This is a collection of all connection definitions in the project.</xs:documentation>
         </xs:annotation>
@@ -26719,9 +27061,9 @@ Optional. If it is not specified, the connection will default to the TargetConst
       </xs:element>
     </xs:choice>
   </xs:complexType>
-  <xs:complexType name="AstDataIntegrationProjectNode_AstRootNode_DataIntegrationProjects_List">
+  <xs:complexType name="AstPackageProjectNode_AstRootNode_PackageProjects_List">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="DataIntegrationProject" type="Varigence.Languages.Biml.DataIntegration.AstDataIntegrationProjectNode">
+      <xs:element name="PackageProject" type="Varigence.Languages.Biml.PackageProject.AstPackageProjectNode">
         <xs:annotation>
           <xs:documentation>Defines the collection of Data Integration projects associated with this Biml project.</xs:documentation>
         </xs:annotation>
