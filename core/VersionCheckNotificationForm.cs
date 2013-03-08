@@ -97,7 +97,7 @@ namespace BIDSHelper.Core
                 {
                     if (_mtx.WaitOne(0, false)) //only returns true if no other BIDS Helper notification is open
                     {
-                        notifyIcon1.BalloonTipText = "You are currently running BIDS Helper version " + _versionCheckPlugin.LocalVersion + "\r\nThe latest version of BIDS Helper available is version " + _versionCheckPlugin.ServerVersion + "\r\nClick to download the latest version.";
+                        notifyIcon1.BalloonTipText = "You are currently running BIDS Helper version " + VersionCheckPlugin.LocalVersion + "\r\nThe latest version of BIDS Helper available is version " + _versionCheckPlugin.ServerVersion + "\r\nClick to download the latest version.";
                         notifyIcon1.Visible = true;
                         notifyIcon1.ShowBalloonTip(int.MaxValue);
                     }

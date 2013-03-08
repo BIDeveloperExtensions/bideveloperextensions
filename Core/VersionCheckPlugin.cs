@@ -129,11 +129,11 @@ namespace BIDSHelper
             }
         }
 
-        public string LocalVersion
+        public static string LocalVersion
         {
             get
             {
-                return this.GetType().Assembly.GetName().Version.ToString();
+                return typeof(VersionCheckPlugin).Assembly.GetName().Version.ToString();
             }
         }
 

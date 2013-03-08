@@ -19,7 +19,17 @@ namespace BIDSHelper
 
 
 
-        private DTE2 _applicationObject;
+        private static DTE2 _applicationObject;
+
+        public static DTE2 Application
+        {
+            get
+            {
+                return _applicationObject;
+            }
+        }
+
+        
         private AddIn _addInInstance;
         private DebuggerEvents _debuggerEvents;
         private enumIDEMode _ideMode = enumIDEMode.Design;
@@ -43,6 +53,8 @@ namespace BIDSHelper
         {
             return RegistryBasePath + "\\" + t.Name;
         }
+
+        public static Exception AddInLoadException = null;
 
         ///<summary>Implements the OnConnection method of the IDTExtensibility2 interface. Receives notification that the Add-in is being loaded.</summary>
         ///<param name='application'>Root object of the host application.</param>
@@ -92,13 +104,16 @@ namespace BIDSHelper
             }
             catch (Exception ex)
             {
+                //don't show a popup anymore since this exception is viewable in the Version dialog in the Tools menu
                 if (string.IsNullOrEmpty(sAddInTypeName))
                 {
-                    System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message + "\r\n" + ex.StackTrace);
+                    AddInLoadException = ex;
+                    //System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message + "\r\n" + ex.StackTrace);
                 }
                 else
                 {
-                    System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace);
+                    AddInLoadException = new Exception("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace, ex);
+                    //System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
             finally

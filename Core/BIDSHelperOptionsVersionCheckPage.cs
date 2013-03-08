@@ -67,26 +67,97 @@ namespace BIDSHelper.Core
                 AssemblyTitleAttribute attribute = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(assembly, typeof(AssemblyTitleAttribute));
                 this.lblTitle.Text = attribute.Title;
 
-                // First check we have a valid instance, the add-in may be disabled.
-                if (VersionCheckPlugin.VersionCheckPluginInstance == null)
+#if DENALI
+                string sBIDSName = "SSDTBI";
+#else
+                string sBIDSName = "BIDS";
+#endif
+
+                if (Connect.AddInLoadException != null)
                 {
-                    // Display disabled information and exit
-                    lblLocalVersion.Text = "[Add-in Disabled]";
-                    lblServerVersion.Text = "The BIDS Helper Add-in is not currently enabled.";
-                    linkNewVersion.Visible = false;
-                    return;
+                    this.lblBidsHelperLoadException.Text = "BIDS Helper encountered an error when Visual Studio started:\r\n" + Connect.AddInLoadException.Message + "\r\n" + Connect.AddInLoadException.StackTrace;
+                    this.lblBidsHelperLoadException.Visible = true;
+                }
+                else
+                {
+                    this.lblBidsHelperLoadException.Visible = false;
+                }
+
+                try
+                {
+                    this.lblSqlVersion.Text = sBIDSName + " " + GetFriendlySqlVersion() + " for Visual Studio " + GetFriendlyVisualStudioVersion() + " was detected";
+                }
+                catch
+                {
+                    //if there's an exception it's because we couldn't find SSDTBI or BIDS installed in this Visual Studio version
+                    try
+                    {
+                        this.lblSqlVersion.Text = sBIDSName + " for Visual Studio " + GetFriendlyVisualStudioVersion() + " was NOT detected. BIDS Helper disabled.";
+                        this.lblSqlVersion.ForeColor = System.Drawing.Color.Red;
+                        if (Connect.AddInLoadException != null && Connect.AddInLoadException is System.Reflection.ReflectionTypeLoadException)
+                        {
+                            //this is the expected exception if SSDTBI isn't installed... if this is the exception, don't show it... otherwise, show the exception
+                            this.lblBidsHelperLoadException.Visible = false;
+                        }
+                    }
+                    catch
+                    {
+                        this.lblSqlVersion.Visible = false;
+                    }
                 }
 
                 // Set current version
-                this.lblLocalVersion.Text = VersionCheckPlugin.VersionCheckPluginInstance.LocalVersion;
+                this.lblLocalVersion.Text = VersionCheckPlugin.LocalVersion;
 #if DEBUG
                 this.lblLocalVersion.Text += string.Format(CultureInfo.InvariantCulture, " (Debug {0})", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 #endif
 
+                // First check we have a valid instance, the add-in may be disabled.
+                if (VersionCheckPlugin.VersionCheckPluginInstance == null)
+                {
+                    bool bConnected = false;
+                    try
+                    {
+                        foreach (EnvDTE.AddIn addin in Connect.Application.AddIns)
+                        {
+                            if (addin.ProgID.ToLower() == "BIDSHelper.Connect".ToLower())
+                            {
+                                if (addin.Connected)
+                                {
+                                    bConnected = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+
+                    if (bConnected)
+                    {
+                        // Display disabled information and exit
+                        if (Connect.AddInLoadException == null)
+                            lblServerVersion.Text = "The BIDS Helper Add-in is not running because of problems loading!";
+                        else
+                            lblServerVersion.Visible = false;
+                        linkNewVersion.Visible = false;
+                    }
+                    else
+                    {
+                        // Display disabled information and exit
+                        lblLocalVersion.Text += " [Add-in Disabled]";
+                        lblServerVersion.Text = "The BIDS Helper Add-in is not currently enabled.";
+                        linkNewVersion.Visible = false;
+                    }
+                    
+                    
+                    return; //if we don't have the version check plugin loaded, then stop now and don't check version on server
+                }
+
+
                 try
                 {
                     VersionCheckPlugin.VersionCheckPluginInstance.LastVersionCheck = DateTime.Today;
-                    if (!VersionCheckPlugin.VersionIsLatest(VersionCheckPlugin.VersionCheckPluginInstance.LocalVersion, VersionCheckPlugin.VersionCheckPluginInstance.ServerVersion))
+                    if (!VersionCheckPlugin.VersionIsLatest(VersionCheckPlugin.LocalVersion, VersionCheckPlugin.VersionCheckPluginInstance.ServerVersion))
                     {
                         lblServerVersion.Text = "Version " + VersionCheckPlugin.VersionCheckPluginInstance.ServerVersion + " is available...";
                         lblServerVersion.Visible = true;
@@ -109,6 +180,46 @@ namespace BIDSHelper.Core
             {
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
             }
+        }
+
+        private string GetFriendlyVisualStudioVersion()
+        {
+            if (Connect.Application.Version.StartsWith("8.")) //YUKON runs here
+                return "2005";
+            else if (Connect.Application.Version.StartsWith("9.")) //KATMAI runs here
+                return "2008";
+            else if (Connect.Application.Version.StartsWith("10.")) //DENALI runs here
+                return "2010";
+            else if (Connect.Application.Version.StartsWith("11.")) //DENALI runs here
+                return "2012";
+            else
+                return Connect.Application.Version; //todo in future
+        }
+
+        private string GetFriendlySqlVersion()
+        {
+            Assembly assemb = System.Reflection.Assembly.Load("Microsoft.DataWarehouse"); //get a sample assembly that's installed with BIDS and use that to detect if BIDS is installed
+            string sVersion = assemb.GetName().Version.ToString();
+
+            try
+            {
+                //if it's a SQL2008 R2 release, you need to get the informational version attribute
+                //SQL2005 didn't have this attribute
+                AssemblyInformationalVersionAttribute attributeVersion = (AssemblyInformationalVersionAttribute)AssemblyTitleAttribute.GetCustomAttribute(assemb, typeof(AssemblyInformationalVersionAttribute));
+                if (attributeVersion != null) sVersion = attributeVersion.InformationalVersion;
+            }
+            catch { }
+
+            if (sVersion.StartsWith("9."))
+                return "2005";
+            else if (sVersion.StartsWith("10.5"))
+                return "2008 R2";
+            else if (sVersion.StartsWith("10."))
+                return "2008";
+            else if (sVersion.StartsWith("11."))
+                return "2012";
+            else
+                return sVersion; //todo in future post DENALI
         }
 
         /// <summary>

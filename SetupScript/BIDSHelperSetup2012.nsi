@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BIDS Helper 2012"
-!define PRODUCT_VERSION "1.6.2.0"
+!define PRODUCT_VERSION "1.6.3.0"
 !define PRODUCT_PUBLISHER "BIDS Helper"
 !define PRODUCT_WEB_SITE "http://www.codeplex.com/bidshelper"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -10,8 +10,9 @@
 !define PRODUCT_SETTINGS_KEY "Software\${PRODUCT_NAME}"
 !define PRODUCT_SETTINGS_ROOT_KEY "HKCU"
 !define VSLOOK_IN_FOLDERS "Software\Microsoft\VisualStudio\10.0\AutomationOptions\LookInFolders"
+!define VSLOOK_IN_FOLDERS2 "Software\Microsoft\VisualStudio\11.0\AutomationOptions\LookInFolders"
 
-!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} ${PRODUCT_VERSION} has been installed on your computer.\r\nIt will be activated next time you start the BI Development Studio (BIDS)\r\n\r\nClick Finish to close this wizard."
+!define MUI_FINISHPAGE_TEXT "${PRODUCT_NAME} ${PRODUCT_VERSION} has been installed on your computer.\r\nIt will be activated next time you start SQL Server Data Tools - Business Intelligence (SSDTBI)\r\n\r\nClick Finish to close this wizard."
 !define MUI_FINISHPAGE_TEXT_LARGE ""
 
 SetCompressor lzma
@@ -19,6 +20,8 @@ SetCompressor lzma
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
 !include Library.nsh
+!include LogicLib.nsh
+
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -77,14 +80,24 @@ Section "MainSection" SEC01
   !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\PostSharp.dll" "$INSTDIR\PostSharp.dll" $INSTDIR\Temp
   !undef LIBRARY_IGNORE_VERSION
   File "..\BIDSHelper2012.AddIn"
-  ExpandEnvStrings $0 "%VS100COMNTOOLS%\..\..\Xml\Schemas\Biml.xsd"
-  File "/oname=$0" "..\bin\DLLs\Biml\Biml.xsd"
-#  File "/oname=$0" "..\bin\Biml.xsd"
+
+
+  ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\10.0" InstallDir
+  ${If} $0 != ""
+	  File "/oname=$0..\..\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
+  ${EndIf}
+
+  ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\11.0" InstallDir
+  ${If} $0 != ""
+	  File "/oname=$0..\..\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
+  ${EndIf}
+
 SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${VSLOOK_IN_FOLDERS}" "$INSTDIR" ""
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${VSLOOK_IN_FOLDERS2}" "$INSTDIR" ""
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallPath" "$INSTDIR"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
@@ -99,6 +112,14 @@ Section -Post
   WriteRegStr HKCR "BIDSHelper.Biml\DefaultIcon" "" "$INSTDIR\BimlEngine.dll,0"
   System::Call 'shell32.dll::SHChangeNotify(i, i, i, i) v (${SHCNE_ASSOCCHANGED}, ${SHCNF_IDLIST}, 0, 0)'
   ${EndIf}
+
+  #if VS2012 is installed, then we have to also run devenv /setup so that it will pick up the registry changes
+  ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\11.0" InstallDir
+
+  ${If} $0 != ""
+	  Exec '"$0devenv.exe" /setup'
+  ${EndIf}
+
 SectionEnd
 
 
@@ -126,6 +147,7 @@ Section Uninstall
 
   Delete "$INSTDIR\BIDSHelper2012.Addin"
   DeleteRegValue ${PRODUCT_UNINST_ROOT_KEY} "${VSLOOK_IN_FOLDERS}" "$INSTDIR"
+  DeleteRegValue ${PRODUCT_UNINST_ROOT_KEY} "${VSLOOK_IN_FOLDERS2}" "$INSTDIR"
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey ${PRODUCT_SETTINGS_ROOT_KEY} "${PRODUCT_SETTINGS_KEY}"
   

@@ -34,6 +34,8 @@ namespace BIDSHelper.Core
             this.linkLabelCodePlexUrl = new System.Windows.Forms.LinkLabel();
             this.linkNewVersion = new System.Windows.Forms.LinkLabel();
             this.lblServerVersion = new System.Windows.Forms.Label();
+            this.lblSqlVersion = new System.Windows.Forms.Label();
+            this.lblBidsHelperLoadException = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lblTitle
@@ -78,7 +80,7 @@ namespace BIDSHelper.Core
             // linkNewVersion
             // 
             this.linkNewVersion.AutoSize = true;
-            this.linkNewVersion.Location = new System.Drawing.Point(1, 84);
+            this.linkNewVersion.Location = new System.Drawing.Point(1, 97);
             this.linkNewVersion.Name = "linkNewVersion";
             this.linkNewVersion.Size = new System.Drawing.Size(86, 13);
             this.linkNewVersion.TabIndex = 6;
@@ -88,19 +90,38 @@ namespace BIDSHelper.Core
             // 
             // lblServerVersion
             // 
-            this.lblServerVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblServerVersion.Location = new System.Drawing.Point(1, 69);
+            this.lblServerVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblServerVersion.Location = new System.Drawing.Point(1, 82);
             this.lblServerVersion.Name = "lblServerVersion";
-            this.lblServerVersion.Size = new System.Drawing.Size(377, 191);
+            this.lblServerVersion.Size = new System.Drawing.Size(377, 178);
             this.lblServerVersion.TabIndex = 7;
             this.lblServerVersion.Text = "Version 1.0.1 is available...";
+            // 
+            // lblSqlVersion
+            // 
+            this.lblSqlVersion.AutoSize = true;
+            this.lblSqlVersion.Location = new System.Drawing.Point(1, 57);
+            this.lblSqlVersion.Name = "lblSqlVersion";
+            this.lblSqlVersion.Size = new System.Drawing.Size(224, 13);
+            this.lblSqlVersion.TabIndex = 8;
+            this.lblSqlVersion.Text = "SSDTBI 2012 for Visual Studio 2012 detected";
+            // 
+            // lblBidsHelperLoadException
+            // 
+            this.lblBidsHelperLoadException.Location = new System.Drawing.Point(1, 124);
+            this.lblBidsHelperLoadException.Name = "lblBidsHelperLoadException";
+            this.lblBidsHelperLoadException.Size = new System.Drawing.Size(377, 136);
+            this.lblBidsHelperLoadException.TabIndex = 9;
+            this.lblBidsHelperLoadException.Text = "Exception x occurred on load of BIDS Helper\r\nException a\r\nException b";
             // 
             // BIDSHelperOptionsVersionCheckPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.lblBidsHelperLoadException);
+            this.Controls.Add(this.lblSqlVersion);
             this.Controls.Add(this.linkNewVersion);
             this.Controls.Add(this.linkLabelCodePlexUrl);
             this.Controls.Add(this.lblLocalVersion);
@@ -123,5 +144,7 @@ namespace BIDSHelper.Core
         private System.Windows.Forms.LinkLabel linkLabelCodePlexUrl;
         private System.Windows.Forms.LinkLabel linkNewVersion;
         private System.Windows.Forms.Label lblServerVersion;
+        private System.Windows.Forms.Label lblSqlVersion;
+        private System.Windows.Forms.Label lblBidsHelperLoadException;
     }
 }
