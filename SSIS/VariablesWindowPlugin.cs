@@ -118,9 +118,6 @@ namespace BIDSHelper.SSIS
                     // If buttons already added, no need to do it again so exit 
                     if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
 
-                    grid.SelectionChanged += new SelectionChangedEventHandler(grid_SelectionChanged);
-                    grid.Invalidated += new InvalidateEventHandler(grid_Invalidated);
-
                     ToolBarButton separator = new ToolBarButton();
                     separator.Style = ToolBarButtonStyle.Separator;
                     toolbar.Buttons.Add(separator);
@@ -144,6 +141,9 @@ namespace BIDSHelper.SSIS
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
                     toolbar.Wrappable = false;
 
+                    grid.SelectionChanged += new SelectionChangedEventHandler(grid_SelectionChanged);
+                    grid.Invalidated += new InvalidateEventHandler(grid_Invalidated);
+
                     SetButtonEnabled();
                     RefreshHighlights();
                     return;
@@ -158,8 +158,28 @@ namespace BIDSHelper.SSIS
         //only way I could find to monitor when row data in the grid changes
         void grid_Invalidated(object sender, InvalidateEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("variables grid invalidated");
+#if DENALI
+            CheckButtonIcons();
+#endif            
             RefreshHighlights();
+        }
+
+        private void CheckButtonIcons()
+        {
+            try
+            {
+                if (this.editExpressionButton != null && this.editExpressionButton.Parent != null
+                    && this.editExpressionButton.ImageIndex >= this.editExpressionButton.Parent.ImageList.Images.Count)
+                {
+                    //something has happened to the icons, so reset the icons... probably VS2012 high contrast support has blown away the icons
+                    this.moveCopyButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Common.Copy);
+                    this.moveCopyButton.ImageIndex = this.moveCopyButton.Parent.ImageList.Images.Count - 1;
+                    this.editExpressionButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
+                    this.editExpressionButton.ImageIndex = this.editExpressionButton.Parent.ImageList.Images.Count - 1;
+                    System.Diagnostics.Debug.WriteLine("fixed variables windows button icons");
+                }
+            }
+            catch { }
         }
 
         public static void RefreshHighlights()
