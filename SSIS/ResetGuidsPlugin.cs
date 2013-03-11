@@ -160,8 +160,9 @@ namespace BIDSHelper
         {
             foreach (Variable v in ((DtsContainer)parentExecutable).Variables)
             {
-                //if (v.Namespace == "User")
-                if (! v.SystemVariable)
+                //don't replace system variables since they're not in the XML
+                //don't replace parameters which show as variables since they have a different ID and you won't find the variable's ID in the XML to replace
+                if (!v.SystemVariable && !SSISHelpers.IsParameterVariable(v) )
                 {
                     AddGuid(v.ID);
                 }

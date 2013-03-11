@@ -31,6 +31,18 @@ namespace BIDSHelper
             return (Package)container;
         }
 
+        public static bool IsParameterVariable(Variable v)
+        {
+            if (v.Namespace == "$Package" || v.Namespace == "$Project")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public enum SsisDesignerTabIndex
         {
             ControlFlow = 0,
