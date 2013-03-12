@@ -101,6 +101,12 @@ namespace BIDSHelper
                     }
                 }
 
+#if DENALI
+                //handle assembly reference problems when the compiled reference doesn't exist in that version of Visual Studio
+                AppDomain currentDomain = AppDomain.CurrentDomain;
+                currentDomain.AssemblyResolve += new ResolveEventHandler(currentDomain_AssemblyResolve);
+#endif
+            
             }
             catch (Exception ex)
             {
@@ -121,6 +127,35 @@ namespace BIDSHelper
                 _applicationObject.StatusBar.Clear();
             }
         }
+
+#if DENALI
+        System.Reflection.Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
+                if (args.Name.StartsWith("Microsoft.AnalysisServices.VSHost,"))
+                {
+                    //this occurs in SSDTBI from SQL2012 in VS2012... apparently they added a .11 to the end of the assembly name
+                    return Assembly.Load("Microsoft.AnalysisServices.VSHost.11, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
+                }
+                else if (args.Name.StartsWith("Microsoft.AnalysisServices.MPFProjectBase,"))
+                {
+                    //this occurs in SSDTBI from SQL2012 in VS2012... apparently they added a .11 to the end of the assembly name
+                    return Assembly.Load("Microsoft.AnalysisServices.MPFProjectBase.11, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show("Problem during AssemblyResolve in BIDS Helper:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper");
+                return null;
+            }
+        }
+#endif
 
         void _debuggerEvents_OnEnterRunMode(dbgEventReason Reason)
         {
