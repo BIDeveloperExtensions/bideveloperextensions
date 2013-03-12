@@ -33,14 +33,7 @@ namespace BIDSHelper
 
         public static bool IsParameterVariable(Variable v)
         {
-            if (v.Namespace == "$Package" || v.Namespace == "$Project")
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return v.Namespace.StartsWith("$");
         }
 
         public enum SsisDesignerTabIndex
