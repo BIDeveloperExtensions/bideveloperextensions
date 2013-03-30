@@ -629,6 +629,7 @@ namespace BIDSHelper
             combo.Items.Clear();
             foreach (Annotation a in currentEdited)
             {
+                if (a.Name == null) continue;
                 if (!a.Name.StartsWith("http://schemas.microsoft.com") || !check.Checked)
                 {
                     combo.Items.Add(a.Name);
