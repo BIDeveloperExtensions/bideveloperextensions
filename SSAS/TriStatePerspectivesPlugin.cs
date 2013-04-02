@@ -13,6 +13,8 @@ using Microsoft.DataWarehouse.ComponentModel;
 using System;
 using Microsoft.Win32;
 using System.Collections;
+using System.Reflection;
+
 
 namespace BIDSHelper
 {
@@ -22,6 +24,7 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForPerspectives = new System.Collections.Generic.Dictionary<string,EditorWindow>();
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForGridEvents = new System.Collections.Generic.Dictionary<string,EditorWindow>();
+        private bool _IsMetroOrGreater = false;
 
         public TriStatePerspectivesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -48,7 +51,7 @@ namespace BIDSHelper
                 Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
                 grid.MouseClick -= grid_MouseClick;
                 grid.KeyPress -= grid_KeyPress;
-
+                HookCellPaintEvent(grid, false);
             }
 
             foreach (EditorWindow win in windowHandlesFixedForPerspectives.Values)
@@ -57,6 +60,58 @@ namespace BIDSHelper
             }
         }
 
+#if DENALI
+        //the CellPaint event is on an internal class Microsoft.AnalysisServices.Design.SquigglyFriendlyDlgGrid and it uses an internal Microsoft.AnalysisServices.Design.CellPaintEventArgs args, so you have to hook with reflection
+        private void HookCellPaintEvent(object grid, bool add)
+        {
+            //don't hook if we're not VS2012+
+            if (!_IsMetroOrGreater) return;
+
+            EventInfo eInfo = grid.GetType().GetEvent("CellPaint");
+            Type handlerType = eInfo.EventHandlerType;
+            MethodInfo mi = this.GetType().GetMethod("CellPaintEventHandler", BindingFlags.NonPublic | BindingFlags.Instance);
+            Delegate d = Delegate.CreateDelegate(handlerType, this, mi);
+            if (add)
+            {
+                eInfo.AddEventHandler(grid, d);
+            }
+            else
+            {
+                eInfo.RemoveEventHandler(grid, d);
+            }
+        }
+        
+        private void CellPaintEventHandler(object sender, object e)
+        {
+            try
+            {
+                int lRowNumber = (int)(long)e.GetType().InvokeMember("RowNumber", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic | BindingFlags.Public, null, e, null);
+                Microsoft.SqlServer.Management.UI.Grid.GridColumn oCol = (Microsoft.SqlServer.Management.UI.Grid.GridColumn)e.GetType().InvokeMember("GridColumn", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic | BindingFlags.Public, null, e, null);
+                int iColumnIndex = oCol.ColumnIndex;
+                Microsoft.SqlServer.Management.UI.Grid.DlgGridControl grid2 = (Microsoft.SqlServer.Management.UI.Grid.DlgGridControl)sender;
+                Microsoft.SqlServer.Management.UI.Grid.GridCell cell = grid2.GetCellInfo(lRowNumber, iColumnIndex);
+                TriStatePerspectiveGridCell cell2 = cell as TriStatePerspectiveGridCell;
+                if (cell2 != null && cell2.OverrideBkBrush != null)
+                {
+                    int iSelectedRow = 0;
+                    int iSelectedCol = 0;
+                    grid2.GetSelectedCell(out iSelectedRow, out iSelectedCol);
+                    if (iSelectedCol == iColumnIndex && iSelectedRow == lRowNumber && cell2.OverrideBkBrush.Color != System.Drawing.Color.Red)
+                    {
+                        return; //to avoid this selected cell looking funny when it's not highlighted but selected
+                    }
+                    System.Drawing.Graphics g = (System.Drawing.Graphics)e.GetType().InvokeMember("Graphics", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic | BindingFlags.Public, null, e, null);
+                    System.Drawing.Rectangle rect = (System.Drawing.Rectangle)e.GetType().InvokeMember("CellRectangle", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic | BindingFlags.Public, null, e, null);
+                    rect.X += 1;
+                    rect.Y += 2;
+                    rect.Width -= 2;
+                    rect.Height -= 3;
+                    g.DrawRectangle(new System.Drawing.Pen(cell2.OverrideBkBrush.Color, (float)2), rect);
+                }
+            }
+            catch { }
+        }
+#endif
 
         public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
@@ -93,6 +148,10 @@ namespace BIDSHelper
                     {
                         grid.MouseClick += new MouseEventHandler(grid_MouseClick);
                         grid.KeyPress += new KeyPressEventHandler(grid_KeyPress);
+#if DENALI
+                        _IsMetroOrGreater = VisualStudioHelpers.IsMetroOrGreater(win);
+                        HookCellPaintEvent(grid, true);
+#endif
                         windowHandlesFixedForGridEvents.Add(sHandle,win);
                     }
                     
@@ -143,20 +202,8 @@ namespace BIDSHelper
                                         }
                                     }
                                 }
-                                System.Reflection.BindingFlags setpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                                System.Drawing.SolidBrush brush = null;
-                                if (bHighlight)
-                                {
-                                    brush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
-                                }
-                                else
-                                {
-                                    brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
-                                }
-                                lock (cell)
-                                {
-                                    cell.GetType().InvokeMember("BkBrush", setpropertyflags, null, cell, new object[] { brush });
-                                }
+
+                                HighlightCell(bHighlight, columns, cell, j);
                             }
                         }
                         else if (rowObjectType == "CubeDimension")
@@ -194,20 +241,8 @@ namespace BIDSHelper
                                         }
                                     }
                                 }
-                                System.Reflection.BindingFlags setpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                                System.Drawing.SolidBrush brush = null;
-                                if (bHighlight)
-                                {
-                                    brush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
-                                }
-                                else
-                                {
-                                    brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
-                                }
-                                lock (cell)
-                                {
-                                    cell.GetType().InvokeMember("BkBrush", setpropertyflags, null, cell, new object[] { brush });
-                                }
+
+                                HighlightCell(bHighlight, columns, cell, j);
                             }
                         }
                         else if (rowObjectType == "Kpi")
@@ -228,20 +263,8 @@ namespace BIDSHelper
                                     PerspectiveKpi pkpi = perspective.Kpis[kpi.ID];
                                     bHighlight = ShouldPerspectiveKpiBeHighlighted(pkpi, mdxScriptCache);
                                 }
-                                System.Reflection.BindingFlags setpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                                System.Drawing.SolidBrush brush = null;
-                                if (bHighlight)
-                                {
-                                    brush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
-                                }
-                                else
-                                {
-                                    brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
-                                }
-                                lock (cell)
-                                {
-                                    cell.GetType().InvokeMember("BkBrush", setpropertyflags, null, cell, new object[] { brush });
-                                }
+
+                                HighlightCell(bHighlight, columns, cell, j);
                             }
                         }
                         else if (rowObjectType.EndsWith("Action"))
@@ -322,20 +345,7 @@ namespace BIDSHelper
                                     }
                                 }
 
-                                System.Reflection.BindingFlags setpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                                System.Drawing.SolidBrush brush = null;
-                                if (bHighlight)
-                                {
-                                    brush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
-                                }
-                                else
-                                {
-                                    brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
-                                }
-                                lock (cell)
-                                {
-                                    cell.GetType().InvokeMember("BkBrush", setpropertyflags, null, cell, new object[] { brush });
-                                }
+                                HighlightCell(bHighlight, columns, cell, j);
                             }
                         }
                         else if (rowObjectType == "CalculatedMember")
@@ -364,20 +374,7 @@ namespace BIDSHelper
                                     }
                                 }
 
-                                System.Reflection.BindingFlags setpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-                                System.Drawing.SolidBrush brush = null;
-                                if (bHighlight)
-                                {
-                                    brush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
-                                }
-                                else
-                                {
-                                    brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
-                                }
-                                lock (cell)
-                                {
-                                    cell.GetType().InvokeMember("BkBrush", setpropertyflags, null, cell, new object[] { brush });
-                                }
+                                HighlightCell(bHighlight, columns, cell, j);
                             }
                         }
                     }
@@ -385,6 +382,51 @@ namespace BIDSHelper
                 }
             }
             catch { }
+        }
+
+        private void HighlightCell(bool bHighlight, object[] columns, object cell, int j)
+        {
+            System.Drawing.SolidBrush brush = null;
+            if (bHighlight)
+            {
+                brush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
+            }
+            else
+            {
+                System.Reflection.BindingFlags getpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+                brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
+            }
+
+#if DENALI
+            //do this a new way that will work with VS2012 SSDT2012 and it's new usage of BkBrush to setup the new color scheme
+            if (_IsMetroOrGreater)
+            {
+                if (!(cell is TriStatePerspectiveGridCell))
+                {
+                    if (bHighlight) //only switch to a TriStatePerspectiveGridCell if we need to highlight
+                    {
+                        TriStatePerspectiveGridCell newcell = new TriStatePerspectiveGridCell((Microsoft.SqlServer.Management.UI.Grid.GridCell)cell);
+                        columns[j] = newcell;
+                        cell = newcell;
+                        newcell.OverrideBkBrush = brush;
+                    }
+                }
+                else
+                {
+                    lock (cell)
+                    {
+                        TriStatePerspectiveGridCell newcell = (TriStatePerspectiveGridCell)cell;
+                        newcell.OverrideBkBrush = brush;
+                    }
+                }
+                return;
+            }
+#endif
+            System.Reflection.BindingFlags setpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+            lock (cell)
+            {
+                cell.GetType().InvokeMember("BkBrush", setpropertyflags, null, cell, new object[] { brush });
+            }
         }
 
         private bool ShouldPerspectiveKpiBeHighlighted(PerspectiveKpi pkpi, Microsoft.AnalysisServices.Design.Scripts mdxScript)
@@ -520,5 +562,20 @@ namespace BIDSHelper
         public override void Exec()
         {
         }
+
+#if DENALI
+        private class TriStatePerspectiveGridCell : Microsoft.SqlServer.Management.UI.Grid.GridCell
+        {
+            private Microsoft.SqlServer.Management.UI.Grid.GridCell _original;
+
+            public TriStatePerspectiveGridCell(Microsoft.SqlServer.Management.UI.Grid.GridCell original) : base(string.Empty)
+            {
+                _original = original;
+                base.Assign(original);
+            }
+
+            public System.Drawing.SolidBrush OverrideBkBrush;
+        }
+#endif
     }
 }
