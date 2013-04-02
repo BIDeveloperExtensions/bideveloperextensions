@@ -24,7 +24,9 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForPerspectives = new System.Collections.Generic.Dictionary<string,EditorWindow>();
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForGridEvents = new System.Collections.Generic.Dictionary<string,EditorWindow>();
+#if DENALI
         private bool _IsMetroOrGreater = false;
+#endif
 
         public TriStatePerspectivesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
             : base(con, appObject, addinInstance)
@@ -51,7 +53,9 @@ namespace BIDSHelper
                 Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
                 grid.MouseClick -= grid_MouseClick;
                 grid.KeyPress -= grid_KeyPress;
+#if DENALI
                 HookCellPaintEvent(grid, false);
+#endif
             }
 
             foreach (EditorWindow win in windowHandlesFixedForPerspectives.Values)
