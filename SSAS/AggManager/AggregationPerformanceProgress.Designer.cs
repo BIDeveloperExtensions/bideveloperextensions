@@ -49,7 +49,11 @@ namespace AggManager
             this.label1 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.buttonCancel = new System.Windows.Forms.Button();
+            this.lnkASSP = new System.Windows.Forms.LinkLabel();
+            this.lblASSPInstallStatus = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.panel2.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // chkTestAgg
@@ -261,6 +265,35 @@ namespace AggManager
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
+            // lnkASSP
+            // 
+            this.lnkASSP.AutoSize = true;
+            this.lnkASSP.Location = new System.Drawing.Point(12, 6);
+            this.lnkASSP.Name = "lnkASSP";
+            this.lnkASSP.Size = new System.Drawing.Size(35, 13);
+            this.lnkASSP.TabIndex = 22;
+            this.lnkASSP.TabStop = true;
+            this.lnkASSP.Text = "ASSP";
+            this.lnkASSP.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkASSP_LinkClicked);
+            // 
+            // lblASSPInstallStatus
+            // 
+            this.lblASSPInstallStatus.Location = new System.Drawing.Point(12, 6);
+            this.lblASSPInstallStatus.Name = "lblASSPInstallStatus";
+            this.lblASSPInstallStatus.Size = new System.Drawing.Size(120, 90);
+            this.lblASSPInstallStatus.TabIndex = 23;
+            this.lblASSPInstallStatus.Text = "           version 1.3.5 or later is NOT installed on the server so the file syst" +
+    "em cache cannot be cleared between each test.";
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.lnkASSP);
+            this.panel1.Controls.Add(this.lblASSPInstallStatus);
+            this.panel1.Location = new System.Drawing.Point(312, 8);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(140, 98);
+            this.panel1.TabIndex = 24;
+            // 
             // AggregationPerformanceProgress
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -273,6 +306,7 @@ namespace AggManager
             this.Controls.Add(this.label4);
             this.Controls.Add(this.chkTestAgg);
             this.Controls.Add(this.buttonCancel);
+            this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
@@ -284,6 +318,8 @@ namespace AggManager
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AggregationPerformanceProgress_FormClosing);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -311,6 +347,9 @@ namespace AggManager
         private System.Windows.Forms.Label lblAggDesign;
         private System.Windows.Forms.Label label7;
         public System.Windows.Forms.CheckBox chkWithoutIndividualAggs;
+        private System.Windows.Forms.LinkLabel lnkASSP;
+        private System.Windows.Forms.Label lblASSPInstallStatus;
+        private System.Windows.Forms.Panel panel1;
 
     }
 }

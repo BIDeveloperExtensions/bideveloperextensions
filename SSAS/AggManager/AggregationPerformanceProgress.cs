@@ -67,6 +67,8 @@ namespace AggManager
             lblMeasureGroup.Text = aggD.Parent.Name;
             lblAggDesign.Text = aggD.Name;
             lblStatus.Text = "";
+
+            InitASSPLabel();
         }
 
         public void Init(Cube cube)
@@ -78,6 +80,26 @@ namespace AggManager
             lblMeasureGroup.Text = "";
             lblAggDesign.Text = "";
             lblStatus.Text = "";
+
+            InitASSPLabel();
+        }
+
+        private void InitASSPLabel()
+        {
+            try
+            {
+                Microsoft.AnalysisServices.AdomdClient.AdomdConnection conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection("Data Source=" + lblServer.Text + ";Initial Catalog=" + lblDatabase.Text);
+                conn.Open();
+
+                bool bASSPExists = AggManager.AggregationPerformanceTester.ASSPExists(conn);
+                if (bASSPExists)
+                {
+                    lblASSPInstallStatus.Text = "           version 1.3.5 or later is installed on the server so the file system cache will be cleared between each test.";
+                }
+
+                conn.Close();
+            }
+            catch { }
         }
 
         public List<AggregationPerformanceTester.AggregationPerformance> Results
@@ -173,9 +195,28 @@ namespace AggManager
 
             try
             {
-                this.Hide();
+                HideForm();
             }
             catch { }
+        }
+
+        private void HideForm()
+        {
+            try
+            {
+                if (this.InvokeRequired)
+                {
+                    this.BeginInvoke(new MethodInvoker(delegate() { HideForm(); }));
+                }
+                else
+                {
+                    this.Hide();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void tester_OnProgress(object sender, ProgressChangedEventArgs e)
@@ -258,6 +299,11 @@ namespace AggManager
                 chkTestAgg.Checked = true;
                 MessageBox.Show("You must test query performance with each agg each time.");
             }
+        }
+
+        private void lnkASSP_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://asstoredprocedures.codeplex.com/wikipage?title=FileSystemCache");
         }
 
     }

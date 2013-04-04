@@ -68,6 +68,25 @@ namespace AggManager
             get { return _listMissingAggPerf.ToArray(); }
         }
 
+        public static bool ASSPExists(AdomdConnection conn)
+        {
+            AdomdCommand cmd = new AdomdCommand();
+            cmd.CommandText = "call ASSP.AssemblyVersion()";
+            cmd.Connection = conn;
+            cmd.CommandTimeout = 0;
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
         public void StartTest()
         {
             try
@@ -81,6 +100,8 @@ namespace AggManager
 
                 if (_cancelled) return;
 
+                bool bCheckASSP = ASSPExists(conn);
+                
                 foreach (Partition p in _currentAggD.Parent.Partitions)
                 {
                     if (p.AggregationDesignID != _currentAggD.ID) continue;
@@ -225,12 +246,19 @@ namespace AggManager
                             aggP.PartitionRowCount = dictAggDesignRowCount[a.Parent];
                             aggP.MeasureGroupRowCount = aggP.PartitionRowCount; //if there are multiple aggregation designs, outside code will fix that
 
-                            ServerExecute(s, "<ClearCache xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" + "\r\n"
-                            + "    <Object>" + "\r\n"
-                            + "      <DatabaseID>" + _currentAggD.ParentDatabase.ID + "</DatabaseID>" + "\r\n"
-                            + "      <CubeID>" + _currentAggD.ParentCube.ID + "</CubeID>" + "\r\n"
-                            + "    </Object>" + "\r\n"
-                            + "  </ClearCache>");
+                            if (bCheckASSP)
+                            {
+                                ServerExecuteMDX(db, "call ASSP.ClearAllCaches()", _sessionID);
+                            }
+                            else
+                            {
+                                ServerExecute(s, "<ClearCache xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" + "\r\n"
+                                + "    <Object>" + "\r\n"
+                                + "      <DatabaseID>" + _currentAggD.ParentDatabase.ID + "</DatabaseID>" + "\r\n"
+                                + "      <CubeID>" + _currentAggD.ParentCube.ID + "</CubeID>" + "\r\n"
+                                + "    </Object>" + "\r\n"
+                                + "  </ClearCache>");
+                            }
 
                             _queryEnded = false;
 
@@ -394,12 +422,19 @@ namespace AggManager
 
                                 if (aggsToSkipTesting.Contains(deleteAP)) continue; //skip this agg if we've already determined it won't hit another agg
 
-                                ServerExecute(s, "<ClearCache xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" + "\r\n"
-                                + "    <Object>" + "\r\n"
-                                + "      <DatabaseID>" + _currentAggD.ParentDatabase.ID + "</DatabaseID>" + "\r\n"
-                                + "      <CubeID>" + _currentAggD.ParentCube.ID + "</CubeID>" + "\r\n"
-                                + "    </Object>" + "\r\n"
-                                + "  </ClearCache>");
+                                if (bCheckASSP)
+                                {
+                                    ServerExecuteMDX(db, "call ASSP.ClearAllCaches()", _sessionID);
+                                }
+                                else
+                                {
+                                    ServerExecute(s, "<ClearCache xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" + "\r\n"
+                                    + "    <Object>" + "\r\n"
+                                    + "      <DatabaseID>" + _currentAggD.ParentDatabase.ID + "</DatabaseID>" + "\r\n"
+                                    + "      <CubeID>" + _currentAggD.ParentCube.ID + "</CubeID>" + "\r\n"
+                                    + "    </Object>" + "\r\n"
+                                    + "  </ClearCache>");
+                                }
 
                                 _queryEnded = false;
 
@@ -533,12 +568,19 @@ namespace AggManager
                         {
                             RaiseProgressEvent(10 + (int)(87.0 * i++ / dictAggRowCount.Count / _totalIterations), "Testing performance with no aggs " + ((i - 1) % dictAggRowCount.Count + 1) + " of " + dictAggRowCount.Count + " (" + aggP.AggregationName + ")...");
 
-                            ServerExecute(s, "<ClearCache xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" + "\r\n"
-                            + "    <Object>" + "\r\n"
-                            + "      <DatabaseID>" + _currentAggD.ParentDatabase.ID + "</DatabaseID>" + "\r\n"
-                            + "      <CubeID>" + _currentAggD.ParentCube.ID + "</CubeID>" + "\r\n"
-                            + "    </Object>" + "\r\n"
-                            + "  </ClearCache>");
+                            if (bCheckASSP)
+                            {
+                                ServerExecuteMDX(db, "call ASSP.ClearAllCaches()", _sessionID);
+                            }
+                            else
+                            {
+                                ServerExecute(s, "<ClearCache xmlns=\"http://schemas.microsoft.com/analysisservices/2003/engine\">" + "\r\n"
+                                + "    <Object>" + "\r\n"
+                                + "      <DatabaseID>" + _currentAggD.ParentDatabase.ID + "</DatabaseID>" + "\r\n"
+                                + "      <CubeID>" + _currentAggD.ParentCube.ID + "</CubeID>" + "\r\n"
+                                + "    </Object>" + "\r\n"
+                                + "  </ClearCache>");
+                            }
 
                             if (_cancelled) return;
 
