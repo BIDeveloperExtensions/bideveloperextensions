@@ -85,11 +85,19 @@ Section "MainSection" SEC01
   ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\10.0" InstallDir
   ${If} $0 != ""
 	  File "/oname=$0..\..\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
+  ${Else}
+	  #if VS2010 is not installed, then just put the Biml.xsd in what will probably be the VS2010 install directory... that way once they install it, they won't have to reinstall BIDS Helper
+	  CreateDirectory "$PROGRAMFILES\Microsoft Visual Studio 10.0\Xml\Schemas"
+	  File "/oname=$PROGRAMFILES\Microsoft Visual Studio 10.0\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
   ${EndIf}
 
   ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\11.0" InstallDir
   ${If} $0 != ""
 	  File "/oname=$0..\..\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
+  ${Else}
+	  #if VS2012 is not installed, then just put the Biml.xsd in what will probably be the VS2012 install directory... that way once they install it, they won't have to reinstall BIDS Helper
+	  CreateDirectory "$PROGRAMFILES\Microsoft Visual Studio 11.0\Xml\Schemas"
+	  File "/oname=$PROGRAMFILES\Microsoft Visual Studio 11.0\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
   ${EndIf}
 
 SectionEnd
