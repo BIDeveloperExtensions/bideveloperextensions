@@ -463,6 +463,7 @@
     <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.Designer.cs">
       <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSIS\Biml\ProjectConnectionManagerInfo.cs" />
     <Compile Include="SSIS\ComponentInfo.cs">
     </Compile>
     <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />

@@ -7,6 +7,7 @@ using EnvDTE80;
 using Varigence.Flow.FlowFramework.Validation;
 using Varigence.Languages.Biml;
 using Varigence.Languages.Biml.Platform;
+using System.Xml;
 
 namespace BIDSHelper.SSIS.Biml
 {
@@ -56,7 +57,7 @@ namespace BIDSHelper.SSIS.Biml
             {
                 UIHierarchyItem hierItem = (UIHierarchyItem)selected;
                 ProjectItem projectItem = hierItem.Object as ProjectItem;
-                if (projectItem == null || !projectItem.Name.ToLower().EndsWith(".biml")) 
+                if (projectItem == null || !projectItem.Name.ToLower().EndsWith(".biml"))
                 {
                     return false;
                 }
@@ -116,16 +117,15 @@ namespace BIDSHelper.SSIS.Biml
             try
             {
                 Directory.CreateDirectory(tempTargetDirectory);
-                
-                // TODO: How to distinguish between SQL Server 2008 and 2008R2?
-                #if KATMAI
+
+#if KATMAI
                 SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
                 ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008);
-                #elif DENALI
+#elif DENALI
                 ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2012, SsasVersion.Ssas2008);
-                #else
+#else
                 ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Hadron.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005);
-                #endif
+#endif
 
                 if (validationReporter.HasErrors)
                 {
@@ -134,10 +134,18 @@ namespace BIDSHelper.SSIS.Biml
                 }
                 else
                 {
+                    List<string> newProjectFiles = new List<string>();
                     string[] newPackageFiles = Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories);
+                    newProjectFiles.AddRange(newPackageFiles);
+
+#if DENALI
+                    // Read packages AND project connection managers
+                    string[] newConnFiles = Directory.GetFiles(tempTargetDirectory, "*.conmgr", SearchOption.AllDirectories);
+                    newProjectFiles.AddRange(newConnFiles);
+#endif
                     var safePackageFilePaths = new List<string>();
                     var conflictingPackageFilePaths = new List<string>();
-                    foreach (var tempFilePath in newPackageFiles)
+                    foreach (var tempFilePath in newProjectFiles)
                     {
                         string tempFileName = Path.GetFileName(tempFilePath);
                         string projectItemFileName = Path.Combine(projectDirectory, tempFileName);
@@ -167,6 +175,131 @@ namespace BIDSHelper.SSIS.Biml
                         }
                     }
 
+#if DENALI
+                    /*
+                     * Make sure that the package correctly references the Project connection manager, if used
+                     */
+                    List<ProjectConnectionManagerInfo> prjConnInfoList = new List<ProjectConnectionManagerInfo>();
+
+                    // STEP 1 - Store all existing Project Connection Managers
+                    foreach (ProjectItem item in project.ProjectItems)
+                    {
+                        if (item.Name.EndsWith(".conmgr"))
+                        {
+                            string fileFullPath = item.FileNames[0];
+
+                            XmlReader r = new XmlTextReader(fileFullPath);
+                            XmlDocument doc = new XmlDocument();
+                            doc.Load(r);
+
+                            //XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(doc.NameTable);
+                            //xmlnsManager.AddNamespace("DTS", "www.microsoft.com/SqlServer/Dts");
+
+                            XmlElement node = doc.DocumentElement;
+
+                            string prefix = node.GetPrefixOfNamespace("www.microsoft.com/SqlServer/Dts");
+
+                            XmlAttribute xaObjectName = node.Attributes[prefix + ":ObjectName"];
+                            XmlAttribute xaDTSID = node.Attributes[prefix + ":DTSID"];
+
+                            if (xaObjectName == null) throw new ApplicationException("ObjectName attribute cannot found.");
+                            if (xaDTSID == null) throw new ApplicationException("DTSID attribute cannot found.");
+
+                            prjConnInfoList.Add(new ProjectConnectionManagerInfo(fileFullPath, xaObjectName.Value, xaDTSID.Value));
+
+                            r.Close();
+                        }
+                    }
+
+                    // STEP 2 - For all the Connection Managers that have to be inserted in the solution,
+                    //          if a connection manager with the same name alread exists, use the existing GUID
+                    //          to avoid corrupting the package that will be inserted
+                    foreach (var tempFilePath in safePackageFilePaths)
+                    {
+                        if (tempFilePath.EndsWith(".conmgr"))
+                        {
+                            string fileFullPath = tempFilePath;
+
+                            XmlReader r = new XmlTextReader(fileFullPath);
+                            XmlDocument doc = new XmlDocument();
+                            doc.Load(r);
+
+                            //XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(doc.NameTable);
+                            //xmlnsManager.AddNamespace("DTS", "www.microsoft.com/SqlServer/Dts");
+
+                            XmlElement node = doc.DocumentElement;
+
+                            string prefix = node.GetPrefixOfNamespace("www.microsoft.com/SqlServer/Dts");
+
+                            bool saveRequired = false;
+                            ProjectConnectionManagerInfo pcmi = prjConnInfoList.Find(x => System.IO.Path.GetFileName(x.FileFullPath) == System.IO.Path.GetFileName(fileFullPath));
+                            if (pcmi != null)
+                            {
+                                XmlAttribute xaDTSID = node.Attributes[prefix + ":DTSID"];
+                                if (xaDTSID == null) throw new ApplicationException("DTSID attribute cannot found.");
+
+                                xaDTSID.Value = pcmi.DTSID;
+                                saveRequired = true;
+                            }
+                            else
+                            {
+                                XmlAttribute xaObjectName = node.Attributes[prefix + ":ObjectName"];
+                                XmlAttribute xaDTSID = node.Attributes[prefix + ":DTSID"];
+
+                                if (xaObjectName == null) throw new ApplicationException("ObjectName attribute cannot found.");
+                                if (xaDTSID == null) throw new ApplicationException("DTSID attribute cannot found.");
+
+                                prjConnInfoList.Add(new ProjectConnectionManagerInfo(fileFullPath, xaObjectName.Value, xaDTSID.Value));
+                            }
+
+                            r.Close();
+
+                            if (saveRequired) doc.Save(fileFullPath);
+                        }
+                    }
+
+                    // STEP 3 - For Each NEW package make sure that the Project Connection Manager
+                    //          points to the correct GUID
+                    foreach (var tempFilePath in safePackageFilePaths)
+                    {
+                        if (tempFilePath.EndsWith(".dtsx"))
+                        {
+                            string fileFullPath = tempFilePath;
+
+                            XmlReader r = new XmlTextReader(fileFullPath);
+                            XmlDocument doc = new XmlDocument();
+                            doc.Load(r);
+
+                            XmlNamespaceManager xmlnsManager = new XmlNamespaceManager(doc.NameTable);
+                            xmlnsManager.AddNamespace("DTS", "www.microsoft.com/SqlServer/Dts");
+
+                            XmlElement root = doc.DocumentElement;
+
+                            XmlNodeList nodes = root.SelectNodes("//connection", xmlnsManager);
+                            foreach (XmlNode n in nodes)
+                            {
+                                string refID = n.Attributes["connectionManagerRefId"].Value;
+                                ProjectConnectionManagerInfo pcmi = prjConnInfoList.Find(x => "Package.ConnectionManagers[" + x.ObjectName + "]" == refID);
+                                if (pcmi != null)
+                                {
+                                    // If a local connection manager does NOT exists, then point to the project connection manager
+                                    XmlNode node = root.SelectSingleNode("/DTS:Executable/DTS:ConnectionManagers/DTS:ConnectionManager[@DTS:refId=\"" + pcmi.ObjectName + "\"]", xmlnsManager);
+                                    if (node == null)
+                                    {
+                                        n.Attributes["connectionManagerID"].Value = pcmi.DTSID + ":external";
+                                        n.Attributes["connectionManagerRefId"].Value = "Project.ConnectionManagers[" + pcmi.ObjectName + "]";
+                                    }
+                                }
+                            }
+
+                            r.Close();
+
+                            doc.Save(fileFullPath);
+                        }
+                    }
+#endif
+
+                    // Add files to VS Project
                     foreach (var tempFilePath in safePackageFilePaths)
                     {
                         string projectItemFilePath = Path.Combine(projectDirectory, Path.GetFileName(tempFilePath));
