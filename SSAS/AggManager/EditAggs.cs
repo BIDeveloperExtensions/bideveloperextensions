@@ -108,7 +108,8 @@ namespace AggManager
            AddGridStyle();
 
            PopulateTreeView();
-           checkBoxRelationships.Checked = true;  
+           checkBoxRelationships.Checked = true;
+           sychContr = SynchControls.Unknown;
            
            int i = 0;
            foreach (DataRow dRow in myDataView.Table.Rows)
@@ -789,11 +790,10 @@ namespace AggManager
                 if (checkBoxRelationships.Checked)
                 {
                     sychContr = SynchControls.SynchGridToTreeView;
-                   if (CheckOffTreeView(strAgg))
+                    if (CheckOffTreeViewAndReturnRigid(strAgg, true))
                         dr[2] = "Rigid";
                     else
                         dr[2] = "Flexible";
-
                 }
                 else
                 {
@@ -808,7 +808,7 @@ namespace AggManager
                                 childNode.Checked = true;
                                 childNode.BackColor = dataGrid1.HeaderBackColor;
                             }
-                            else 
+                            else
                             {
                                 sychContr = SynchControls.SynchGridToTreeView;
                                 childNode.Checked = false;
@@ -823,8 +823,10 @@ namespace AggManager
 
                 txtSummary.Text = GetCheckedNodeText(treeViewAggregation.Nodes);
             }
-            catch
-            { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
+            }
             sychContr = SynchControls.Unknown;
 
         }
@@ -953,6 +955,28 @@ namespace AggManager
         private void checkBoxRelationships_CheckedChanged(object sender, EventArgs e)
         {
             PopulateTreeView();
+
+            DataView myDataView;
+            myDataView = (DataView)dataGrid1.DataSource;
+
+            boolHandleClick = true;
+            int i = 0;
+            foreach (DataRow dataGridRow in myDataView.Table.Rows)
+            {
+                dataGrid1.CurrentRowIndex = i;
+                if (checkBoxRelationships.Checked)
+                {
+                    dataGrid1_Click(null, null);
+                }
+                else
+                {
+                    dataGridRow[2] = string.Empty; //not rigid or flexible since we're not in relationships view
+                }
+
+                i++;
+            }
+            boolHandleClick = false;
+            
             dataGrid1_Click(sender, e);
         }
 
@@ -962,9 +986,9 @@ namespace AggManager
         /// if attribute participates in aggregation, function will check the check box for 
         /// the attribute
         /// </summary>
-        private bool CheckOffTreeView(string strAgg)
+        private bool CheckOffTreeViewAndReturnRigid(string strAgg, bool bSetTreeChecks)
         {
-            string a1; 
+            string a1;
             int dimNum = 0;
             int attrNum = 0;
             bool newDim = true;
@@ -972,7 +996,7 @@ namespace AggManager
             boolIsRigid = true;
 
             TreeNode dimNode = treeViewAggregation.Nodes[0];
-            TreeNode attrNode; 
+            TreeNode attrNode;
             for (int i = 0; i < strAgg.Length; i++)
             {
                 a1 = strAgg[i].ToString();
@@ -985,18 +1009,21 @@ namespace AggManager
                         dimNode = treeViewAggregation.Nodes[dimNum];
                         break;
                     case "0":
-                        attrNode = FindChildNode(dimNode, dimAttributes[dimNum, attrNum]);
-                        if (attrNode != null)
+                        if (bSetTreeChecks)
                         {
-                            attrNode.Checked = false;
-                            attrNode.BackColor = treeViewAggregation.BackColor;
+                            attrNode = FindChildNode(dimNode, dimAttributes[dimNum, attrNum]);
+                            if (attrNode != null)
+                            {
+                                attrNode.Checked = false;
+                                attrNode.BackColor = treeViewAggregation.BackColor;
+                            }
                         }
                         break;
                     case "1":
 
                         if (newDim) newDim = false;
                         attrNode = FindChildNodeAndRelationships(dimNode, dimAttributes[dimNum, attrNum]);
-                        if (attrNode != null)
+                        if (attrNode != null && bSetTreeChecks)
                         {
                             attrNode.Checked = true;
                             attrNode.BackColor = dataGrid1.HeaderBackColor;
@@ -1008,8 +1035,9 @@ namespace AggManager
                 attrNum++;
             }
 
-           treeViewAggregation.ExpandAll();
-           return boolIsRigid;
+            if (bSetTreeChecks)
+                treeViewAggregation.ExpandAll();
+            return boolIsRigid;
         }
 
         private TreeNode FindChildNodeAndRelationships(TreeNode node, string strNodeID)
@@ -1080,6 +1108,9 @@ namespace AggManager
 
                 foreach (TreeNode node in treeViewAggregation.Nodes)
                     OptimizeNode(node, false);
+
+                dataGrid1_Click(null, null); //reset Rigid
+
                 i++;
             }
             boolHandleClick = false;
@@ -1239,6 +1270,16 @@ namespace AggManager
                         }
 
                         DataRow dr = GetCurrentDataGridRow();
+
+                        if (checkBoxRelationships.Checked)
+                        {
+                            //set rigid/flexible
+                            if (CheckOffTreeViewAndReturnRigid(dr[1].ToString(), false))
+                                dr[2] = "Rigid";
+                            else
+                                dr[2] = "Flexible";
+                        }
+
                         SetEstimatedSize(GetAggregationFromString(dr[0].ToString(), dr[1].ToString()));
                         boolInExpandOrCollapse = false;
 
