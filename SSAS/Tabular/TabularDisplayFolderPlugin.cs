@@ -102,6 +102,7 @@ namespace BIDSHelper
         }
         #endregion
 
+
         public override void Exec()
         {
             try
@@ -110,6 +111,20 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
                 sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+
+                ExecSandbox(sandbox);
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error");
+            }
+        }
+
+        private void ExecSandbox(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
+        {
+            try
+            {
+                sandbox = sandboxParam;
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
                 cube = sandbox.Cube;
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
@@ -315,7 +330,7 @@ namespace BIDSHelper
         public void FixPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             //open the actions form and let it fix actions
-            Exec();
+            ExecSandbox(sandbox);
         }
         #endregion
 
