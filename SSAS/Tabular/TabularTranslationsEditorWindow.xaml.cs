@@ -114,8 +114,9 @@ namespace BIDSHelper.SSAS
             //null out deleted translations now they they have clicked OK
             foreach (SSAS.TabularTranslatedItem row in dataGrid1.ItemsSource)
             {
-                foreach (int iLang in row.Languages.Keys)
+                for (int i = 0; i < row.Languages.Keys.Count; i++)
                 {
+                    int iLang = row.Languages.Keys.ElementAt(i);
                     if (!_languages.Contains(iLang))
                     {
                         row.Languages[iLang] = null; //null out the translation so it will mark it as dirty and so we won't save this translation they've deleted
