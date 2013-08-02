@@ -34,17 +34,18 @@ namespace BIDSHelper
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (((Project)hierItem.Object).Object is Database)
+                if (!(hierItem.Object is ProjectItem)) return false;
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                if (sFileName.EndsWith(".bim"))
                 {
-                        currentDB = (Database)(((Project)hierItem.Object).Object);
-                        return true;
+                    currentDB = (Database) (((Project) hierItem.Object).Object);
+                    return true;
                 }
-                return false;
             }
             catch
             {
-                return false;
             }
+            return false;
         }
 
         public override void Exec()
