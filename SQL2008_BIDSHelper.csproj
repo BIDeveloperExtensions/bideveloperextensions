@@ -742,6 +742,7 @@
     <None Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsageBusMatrix.rdlc" />
     <EmbeddedResource Include="SSAS\M2MMatrixCompressionForm.resx">
       <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
       <SubType>Designer</SubType>

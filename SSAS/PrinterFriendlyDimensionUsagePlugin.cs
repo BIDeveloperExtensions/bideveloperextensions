@@ -97,15 +97,30 @@ namespace BIDSHelper
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
                 Cube cub = (Cube)projItem.Object;
 
+                DialogResult res = MessageBox.Show("Would you like a detailed report?\r\n\r\nPress Yes to see a detailed dimension usage report.\r\n\r\nPress No to see a summary level Bus Matrix dimension usage report.", "BIDS Helper - Printer Friendly Dimension Usage - Which Report Type?", MessageBoxButtons.YesNo);
+
                 ReportViewerForm frm = new ReportViewerForm();
                 frm.ReportBindingSource.DataSource = PrinterFriendlyDimensionUsage.GetDimensionUsage(cub);
-                frm.Report = "SSAS.PrinterFriendlyDimensionUsage.rdlc";
+
+                if (res == DialogResult.No)
+                    frm.Report = "SSAS.PrinterFriendlyDimensionUsageBusMatrix.rdlc";
+                else
+                    frm.Report = "SSAS.PrinterFriendlyDimensionUsage.rdlc";
+
                 Microsoft.Reporting.WinForms.ReportDataSource reportDataSource1 = new Microsoft.Reporting.WinForms.ReportDataSource();
                 reportDataSource1.Name = "BIDSHelper_DimensionUsage";
                 reportDataSource1.Value = frm.ReportBindingSource;
                 frm.ReportViewerControl.LocalReport.DataSources.Add(reportDataSource1);
-                frm.ReportViewerControl.LocalReport.ReportEmbeddedResource = "BIDSHelper.PrinterFriendlyDimensionUsage.rdlc";
-                frm.Caption = "Printer Friendly Dimension Usage";
+                if (res == DialogResult.No)
+                {
+                    frm.ReportViewerControl.LocalReport.ReportEmbeddedResource = "BIDSHelper.PrinterFriendlyDimensionUsageBusMatrix.rdlc";
+                    frm.Caption = "Printer Friendly Dimension Usage Bus Matrix";
+                }
+                else
+                {
+                    frm.ReportViewerControl.LocalReport.ReportEmbeddedResource = "BIDSHelper.PrinterFriendlyDimensionUsage.rdlc";
+                    frm.Caption = "Printer Friendly Dimension Usage";
+                }
                 frm.Show();
             }
             catch (System.Exception ex)
