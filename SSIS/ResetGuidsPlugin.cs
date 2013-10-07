@@ -179,7 +179,7 @@ namespace BIDSHelper
 
         private void AddGuid(string guid)
         {
-            if (!_listGuidsToReplace.Contains(guid))
+            if (!string.IsNullOrEmpty(guid) && !_listGuidsToReplace.Contains(guid))
                 _listGuidsToReplace.Add(guid);
         }
     }
