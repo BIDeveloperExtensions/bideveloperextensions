@@ -229,6 +229,13 @@ namespace BIDSHelper
                                     listRoleDimensions.Add(info2);
                             }
                         }
+
+                        RoleDimensionInfo infoMeasures = new RoleDimensionInfo();
+                        infoMeasures.role = r;
+                        infoMeasures.isMeasuresDimension = true;
+                        infoMeasures.cube = c;
+                        if (!string.IsNullOrEmpty(infoMeasures.AllowedMemberSet) || !string.IsNullOrEmpty(infoMeasures.DeniedMemberSet) || !string.IsNullOrEmpty(infoMeasures.DefaultMember) || !string.IsNullOrEmpty(infoMeasures.VisualTotals))
+                            listRoleDimensions.Add(infoMeasures);
                     }
                 }
 
@@ -862,17 +869,26 @@ namespace BIDSHelper
             public Dimension dimension;
             public CubeDimension cubeDimension;
             public DimensionAttribute dimensionAttribute;
+            public bool isMeasuresDimension;
+            public Cube cube;
 
             public string DimensionName
             {
-                get { return dimension.Name; }
+                get
+                {
+                    if (isMeasuresDimension)
+                        return "Measures";
+                    else
+                        return dimension.Name;
+                }
             }
 
             public string CubeDimensionName
             {
                 get
                 {
-                    if (cubeDimension == null) return dimension.Name;
+                    if (isMeasuresDimension) return "Measures (" + cube.Name + ")";
+                    if (cubeDimension == null) return this.DimensionName;
                     if (cubeDimension.Name == dimension.Name) return cubeDimension.Name + " (" + cubeDimension.Parent.Name + ")";
                     else return cubeDimension.Name + " (" + dimension.Name + " - " + cubeDimension.Parent.Name + ")";
                 }
@@ -887,6 +903,7 @@ namespace BIDSHelper
             {
                 get
                 {
+                    if (isMeasuresDimension) return null;
                     if (cubeDimension != null && cubeDimension.Parent.CubePermissions != null)
                     {
                         CubePermission cubePerm = cubeDimension.Parent.CubePermissions.FindByRole(role.ID);
@@ -933,6 +950,7 @@ namespace BIDSHelper
             {
                 get
                 {
+                    if (isMeasuresDimension) return null;
                     if (cubeDimension != null)
                     {
                         return null;
@@ -954,6 +972,7 @@ namespace BIDSHelper
             {
                 get
                 {
+                    if (isMeasuresDimension) return null;
                     DatabasePermission dbPerm = dimension.Parent.DatabasePermissions.FindByRole(role.ID);
                     if (dbPerm != null && dbPerm.Administer) return "Admin";
                     if (dbPerm != null && dbPerm.Process) return "Process";
@@ -968,6 +987,8 @@ namespace BIDSHelper
             {
                 get
                 {
+                    if (isMeasuresDimension)
+                        return "Measures";
                     if (dimensionAttribute == null) return null;
                     else return dimensionAttribute.Name;
                 }
@@ -1012,6 +1033,26 @@ namespace BIDSHelper
 
             private AttributePermission GetDimensionAttributeSecurityPermission()
             {
+                if (isMeasuresDimension)
+                {
+                    CubePermission cubePerm = cube.CubePermissions.FindByRole(role.ID);
+                    if (cubePerm != null)
+                    {
+                        CubeDimensionPermission cubeDimPerm = cubePerm.DimensionPermissions.Find("Measures");
+                        if (cubeDimPerm != null && cubeDimPerm.AttributePermissions != null)
+                        {
+                            return cubeDimPerm.AttributePermissions.Find("Measures");
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
                 if (dimensionAttribute == null) return null;
                 if (cubeDimension != null && cubeDimension.Parent.CubePermissions != null)
                 {
