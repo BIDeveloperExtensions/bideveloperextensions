@@ -280,6 +280,11 @@ namespace BIDSHelper.SSIS.Biml
                             {
                                 string refID = n.Attributes["connectionManagerRefId"].Value;
                                 ProjectConnectionManagerInfo pcmi = prjConnInfoList.Find(x => "Package.ConnectionManagers[" + x.ObjectName + "]" == refID);
+                                if (pcmi == null)
+                                {
+                                    pcmi = prjConnInfoList.Find(x => "Project.ConnectionManagers[" + x.ObjectName + "]" == refID);
+                                }
+
                                 if (pcmi != null)
                                 {
                                     // If a local connection manager does NOT exists, then point to the project connection manager
