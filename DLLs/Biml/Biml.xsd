@@ -995,6 +995,7 @@
       <xs:enumeration value="Key" />
       <xs:enumeration value="Other" />
       <xs:enumeration value="Audit" />
+      <xs:enumeration value="SurrogateKey" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="Varigence.Languages.Biml.Transformation.ScdColumnMappingType">
@@ -1824,6 +1825,50 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="Package" />
       <xs:enumeration value="Project" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.Transformation.TeradataDetailedTracingLevel">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Off" />
+      <xs:enumeration value="All" />
+      <xs:enumeration value="Cli" />
+      <xs:enumeration value="CommonLibrary" />
+      <xs:enumeration value="General" />
+      <xs:enumeration value="NotifyMethod" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.Transformation.TeradataReplicationOverride">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Default" />
+      <xs:enumeration value="Off" />
+      <xs:enumeration value="On" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.Transformation.OdbcCharColumnMapping">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Unicode" />
+      <xs:enumeration value="Ansi" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.Transformation.OdbcNumericMapping">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Char" />
+      <xs:enumeration value="Numeric" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.Transformation.DataflowColumnUsageType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ReadOnly" />
+      <xs:enumeration value="ReadWrite" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.DataflowPathAnnotation">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AsNeeded" />
+      <xs:enumeration value="SourceName" />
+      <xs:enumeration value="PathName" />
+      <xs:enumeration value="Never" />
+      <xs:enumeration value="Ids" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="System.TypeCode">
@@ -2965,6 +3010,21 @@
           <xs:documentation>This is a container for index include column reference definitions.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="FilterPredicate" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Specifies the T-SQL predicate expression that should be used to include/exclude rows from a filtered index.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="FileGroup" type="Varigence.Languages.Biml.Table.AstDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the file group within which this index should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalFileGroup" type="Varigence.Languages.Biml.Table.AstExternalDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the file group within which this index should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -3080,6 +3140,34 @@
     <xs:attribute name="ColumnName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the column that is being referenced.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Table.AstDatabaseFileGroupResourceNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="FileGroupName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies a reference to the database filegroup object to use to create this index.  This object should be defined in the Biml project as a child of the database containing the parent table of the referencing index.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Table.AstExternalDatabaseFileGroupResourceNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="FileGroup" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the filegroup to use to create this index.  While the filegroup must be present on the database containing the parent table of the referencing index, the filegroup need not be modeled and referenceable within the Biml project.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -4984,6 +5072,16 @@
           <xs:documentation>Defines the information necessary to emit the table as a view.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="FileGroup" type="Varigence.Languages.Biml.Table.AstDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalFileGroup" type="Varigence.Languages.Biml.Table.AstExternalDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -5138,6 +5236,11 @@ This value specifies the length parameter for the column type associated with th
 Removing this property or setting the value to 0 will remove the IDENTITY specification for this column.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="DefaultConstraintName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the name that should be used for the default value constraint for this column in the database.  If the Default property has not been specified, the value of this property will be ignored.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -5261,6 +5364,11 @@ This value specifies the length parameter for the column type associated with th
 Removing this property or setting the value to 0 will remove the IDENTITY specification for this column.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="DefaultConstraintName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the name that should be used for the default value constraint for this column in the database.  If the Default property has not been specified, the value of this property will be ignored.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
@@ -5348,6 +5456,11 @@ This value specifies the length parameter for the column type associated with th
         <xs:documentation>Set IdentityIncrement to a non-zero value to enable this column as an IDENTITY. This value specifies the amount by which the Identity value is incremented when a row is inserted. 
 
 Removing this property or setting the value to 0 will remove the IDENTITY specification for this column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DefaultConstraintName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the name that should be used for the default value constraint for this column in the database.  If the Default property has not been specified, the value of this property will be ignored.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -5452,6 +5565,11 @@ This value specifies the length parameter for the column type associated with th
         <xs:documentation>Set IdentityIncrement to a non-zero value to enable this column as an IDENTITY. This value specifies the amount by which the Identity value is incremented when a row is inserted. 
 
 Removing this property or setting the value to 0 will remove the IDENTITY specification for this column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DefaultConstraintName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the name that should be used for the default value constraint for this column in the database.  If the Default property has not been specified, the value of this property will be ignored.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="Name" type="xs:string" use="required">
@@ -5624,6 +5742,16 @@ Removing this property or setting the value to 0 will remove the IDENTITY specif
       <xs:element minOccurs="0" maxOccurs="1" name="View" type="Varigence.Languages.Biml.Table.AstViewNode">
         <xs:annotation>
           <xs:documentation>Defines the information necessary to emit the table as a view.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="FileGroup" type="Varigence.Languages.Biml.Table.AstDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalFileGroup" type="Varigence.Languages.Biml.Table.AstExternalDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -6103,6 +6231,16 @@ Removing this property or setting the value to 0 will remove the IDENTITY specif
           <xs:documentation>Defines the information necessary to emit the table as a view.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="FileGroup" type="Varigence.Languages.Biml.Table.AstDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalFileGroup" type="Varigence.Languages.Biml.Table.AstExternalDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -6332,6 +6470,16 @@ Removing this property or setting the value to 0 will remove the IDENTITY specif
       <xs:element minOccurs="0" maxOccurs="1" name="View" type="Varigence.Languages.Biml.Table.AstViewNode">
         <xs:annotation>
           <xs:documentation>Defines the information necessary to emit the table as a view.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="FileGroup" type="Varigence.Languages.Biml.Table.AstDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalFileGroup" type="Varigence.Languages.Biml.Table.AstExternalDatabaseFileGroupResourceNode">
+        <xs:annotation>
+          <xs:documentation>Specifies the database file group within which this table should be created.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -8992,6 +9140,36 @@ PackageSubpath will override the default package location behavior. Packages wil
         <xs:documentation>This identifies the tool that created a package.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="VersionMajor" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the major version number for the package.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="VersionMinor" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the minor version number for the package.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="VersionBuild" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the build number for the package.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreatorName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the username of the person that created this package.  If this value is not specified, the username from the system environment will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreatorComputerName" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the computer that was used to create this package.  If this value is not specified, the computer name from the system environment will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreationDate" type="xs:dateTime" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the date when the package was created.  If this value is not specified, the current date at the time of build will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="ConstraintMode" type="Varigence.Languages.Biml.Task.ContainerConstraintMode" use="required">
       <xs:annotation>
         <xs:documentation>This value specifies the mode that should be used to execute the children of the container or package.  Parallel directly matches the SSIS behavior and will require that precedence constraints are created manually for all task connections.  Linear will automatically create precedence constraints so that tasks will run one after the other in the order that they are specified in the Biml.  Linear is primarily useful for scripting scenarios where creating precedence constraints would be tedious.</xs:documentation>
@@ -9979,6 +10157,31 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="OdbcSource" type="Varigence.Languages.Biml.Transformation.AstOdbcSourceNode">
+        <xs:annotation>
+          <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OracleSource" type="Varigence.Languages.Biml.Transformation.AstOracleSourceNode">
+        <xs:annotation>
+          <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OdbcDestination" type="Varigence.Languages.Biml.Transformation.Destination.AstOdbcDestinationNode">
+        <xs:annotation>
+          <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OracleDestination" type="Varigence.Languages.Biml.Transformation.Destination.AstOracleDestinationNode">
+        <xs:annotation>
+          <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="BalancedDataDistributor" type="Varigence.Languages.Biml.Transformation.AstBalancedDataDistributorNode">
+        <xs:annotation>
+          <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:choice>
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Transformation.AstLookupNode">
@@ -10026,6 +10229,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11091,6 +11299,274 @@ PackageSubpath will override the default package location behavior. Packages wil
       </xs:element>
     </xs:choice>
   </xs:complexType>
+  <xs:complexType name="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Component" type="Varigence.Languages.Biml.Transformation.AstDataflowComponentOverrideNode">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="InputPath" type="Varigence.Languages.Biml.Transformation.AstDataflowInputPathOverrideNode">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OutputPath" type="Varigence.Languages.Biml.Transformation.AstDataflowOutputPathOverrideNode">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDataflowComponentOverrideNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Properties" type="AstDataflowOverridePropertyNode_AstDataflowOverrideNode_Properties_List">
+        <xs:annotation>
+          <xs:documentation>Provides a list of key/value pair override objects that can be used to more easily override properties from a metadata source or to override properties that have not been defined as attributes of the relevant override nodes.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="ComponentName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the SSIS dataflow component/transformation that is being targeted for property overrides.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ErrorRowDisposition" type="Varigence.Languages.Biml.Transformation.ErrorRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden error row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TruncationRowDisposition" type="Varigence.Languages.Biml.Transformation.TruncationRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden truncation row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Description" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden description property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowOverridePropertyNode_AstDataflowOverrideNode_Properties_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Property" type="Varigence.Languages.Biml.Transformation.AstDataflowOverridePropertyNode">
+        <xs:annotation>
+          <xs:documentation>Provides a list of key/value pair override objects that can be used to more easily override properties from a metadata source or to override properties that have not been defined as attributes of the relevant override nodes.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDataflowOverridePropertyNode">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="PropertyName" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>Specifies the name of the property to be overridden.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDataflowInputPathOverrideNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDataflowColumnOverrideNode_AstDataflowInputPathOverrideNode_Columns_List">
+        <xs:annotation>
+          <xs:documentation>Provides a list of dataflow column property override objects that can be used to override properties of columns defined on the referenced InputPath.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Properties" type="AstDataflowOverridePropertyNode_AstDataflowOverrideNode_Properties_List">
+        <xs:annotation>
+          <xs:documentation>Provides a list of key/value pair override objects that can be used to more easily override properties from a metadata source or to override properties that have not been defined as attributes of the relevant override nodes.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="InputPathName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the Input Path that is the target of property overrides.  This should normally match the value of the SsisName property of the relevant input path node.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ErrorOrTruncationOperation" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden error or truncation operation of the target dataflow input path.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ErrorRowDisposition" type="Varigence.Languages.Biml.Transformation.ErrorRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden error row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TruncationRowDisposition" type="Varigence.Languages.Biml.Transformation.TruncationRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden truncation row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Description" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden description property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowColumnOverrideNode_AstDataflowInputPathOverrideNode_Columns_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Column" type="Varigence.Languages.Biml.Transformation.AstDataflowColumnOverrideNode">
+        <xs:annotation>
+          <xs:documentation>Provides a list of dataflow column property override objects that can be used to override properties of columns defined on the referenced InputPath.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDataflowColumnOverrideNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Properties" type="AstDataflowOverridePropertyNode_AstDataflowOverrideNode_Properties_List">
+        <xs:annotation>
+          <xs:documentation>Provides a list of key/value pair override objects that can be used to more easily override properties from a metadata source or to override properties that have not been defined as attributes of the relevant override nodes.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="ColumnName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the dataflow column on the parent path that is the target of the property overrides.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="OutputAlias" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden output alias of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DataType" type="System.Data.DbType" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden data type of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="-1" name="Length" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden data length of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="-1" name="Precision" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden data precision of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="-1" name="Scale" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden data scale of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="-1" name="SortKeyPosition" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden sort key position of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="-1" name="ComparisonFlags" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden comparison flags of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="-1" name="SpecialFlags" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden special flags of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ErrorOrTruncationOperation" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden error or truncation operation of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="-1" name="CodePage" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden code page of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="UsageType" type="Varigence.Languages.Biml.Transformation.DataflowColumnUsageType" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden usage type of the target dataflow column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ErrorRowDisposition" type="Varigence.Languages.Biml.Transformation.ErrorRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden error row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TruncationRowDisposition" type="Varigence.Languages.Biml.Transformation.TruncationRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden truncation row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Description" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden description property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDataflowOutputPathOverrideNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDataflowColumnOverrideNode_AstDataflowOutputPathOverrideNode_Columns_List">
+        <xs:annotation>
+          <xs:documentation>Provides a list of dataflow column property override objects that can be used to override properties of columns defined on the referenced OutputPath.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Properties" type="AstDataflowOverridePropertyNode_AstDataflowOverrideNode_Properties_List">
+        <xs:annotation>
+          <xs:documentation>Provides a list of key/value pair override objects that can be used to more easily override properties from a metadata source or to override properties that have not been defined as attributes of the relevant override nodes.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="OutputPathName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the dataflow output path that should be used as the target of the property overrides.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="PathAnnotation" type="Varigence.Languages.Biml.DataflowPathAnnotation" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the path annotation mode that should be used for the target output path.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ErrorRowDisposition" type="Varigence.Languages.Biml.Transformation.ErrorRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden error row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TruncationRowDisposition" type="Varigence.Languages.Biml.Transformation.TruncationRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden truncation row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Description" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden description property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowColumnOverrideNode_AstDataflowOutputPathOverrideNode_Columns_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Column" type="Varigence.Languages.Biml.Transformation.AstDataflowColumnOverrideNode">
+        <xs:annotation>
+          <xs:documentation>Provides a list of dataflow column property override objects that can be used to override properties of columns defined on the referenced OutputPath.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Transformation.AstXmlSourceNode">
     <xs:all minOccurs="1" maxOccurs="1">
       <xs:element minOccurs="0" maxOccurs="1" name="FileInput" type="Varigence.Languages.Biml.Task.AstFileResourceNode">
@@ -11136,6 +11612,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11205,6 +11686,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -11261,6 +11747,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11331,6 +11822,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -11398,6 +11894,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -11459,6 +11960,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11532,6 +12038,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11630,6 +12141,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -11678,6 +12194,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -11719,6 +12240,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11777,6 +12303,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11840,6 +12371,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -11953,6 +12489,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -12071,6 +12612,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12145,6 +12691,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12198,6 +12749,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12235,6 +12791,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -12308,6 +12869,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -12391,6 +12957,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -12521,6 +13092,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12630,6 +13206,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12681,6 +13262,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -12756,6 +13342,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12823,6 +13414,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12881,6 +13477,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -12927,6 +13528,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -12981,6 +13587,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13063,6 +13674,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13166,6 +13782,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13285,6 +13906,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -13372,6 +13998,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -13454,6 +14085,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13539,6 +14175,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -13585,6 +14226,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13635,6 +14281,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -13683,6 +14334,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -13715,6 +14371,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13769,6 +14430,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13831,6 +14497,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -13901,6 +14572,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -13969,6 +14645,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -14032,6 +14713,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -14088,6 +14774,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -14151,6 +14842,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
         <xs:annotation>
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -14706,6 +15402,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -14783,6 +15484,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -14855,6 +15561,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -14884,6 +15595,11 @@ PackageSubpath will override the default package location behavior. Packages wil
     <xs:attribute name="ContactInfo" type="xs:string" use="optional">
       <xs:annotation>
         <xs:documentation>Provides the contact information for the compnent developer.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ComponentClassId" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>For custom components that do not use UserComponentTypeName to identify themselves, the ComponentClassId can be specified directly.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
@@ -14979,6 +15695,11 @@ PackageSubpath will override the default package location behavior. Packages wil
           <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -15008,6 +15729,11 @@ PackageSubpath will override the default package location behavior. Packages wil
     <xs:attribute name="ContactInfo" type="xs:string" use="optional">
       <xs:annotation>
         <xs:documentation>Provides the contact information for the compnent developer.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ComponentClassId" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>For custom components that do not use UserComponentTypeName to identify themselves, the ComponentClassId can be specified directly.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
@@ -15053,6 +15779,476 @@ PackageSubpath will override the default package location behavior. Packages wil
       </xs:element>
     </xs:choice>
   </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstOdbcSourceNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="DirectInput" type="Varigence.Languages.Biml.Task.AstDirectResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the SQL query to use to load data from the specified connection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="TableInput" type="Varigence.Languages.Biml.Task.AstTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the SQL query to use to load data from the specified connection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalTableInput" type="Varigence.Languages.Biml.Task.AstUnmanagedTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the SQL query to use to load data from the specified connection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDataflowColumnMappingNode_AstOdbcSourceNode_Columns_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of mapping nodes from source columns prior to sending them to the output path.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Connection" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies the ODBC connection used to access the database.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="UseBatch" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether Batch load should be used instead of the default Row-By-Row load mechanism.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="1000" name="BatchSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how many rows can be loaded into the destination table in each batch before additional rows are requested from the data flow pipeline. The default value is 1000.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Unicode" name="BindCharColumnAs" type="Varigence.Languages.Biml.Transformation.OdbcCharColumnMapping" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how multibyte string types (SQL_CHAR, SQL_VARCHAR, SQL_LONGVARCHAR, etc.) should be mapped by the component.  Either Unicode (SQL_C_WCHAR) or ANSI (SQL_C_CHAR) can be selected. The default value is Unicode.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Char" name="BindNumericAs" type="Varigence.Languages.Biml.Transformation.OdbcNumericMapping" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how numerci data should be mapped by the component.  Either Char or Numeric can be selected.  The default value is Char.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DefaultCodePage" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which code page to use when the data source does not provide code page information.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="32768" name="LobChunkSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the chunk size that should be allocated of Large Object (LOB) columns.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CommandTimeout" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>The number of seconds before the command times out. Zero indicates an infinite time-out.  The default value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ExposeCharColumnsAsUnicode" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether CHAR columns are exposed as multibyte strings (DT_STR) or as Unicode wide strings (DT_WSTR).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Inherited" name="LocaleId" type="Varigence.Languages.Biml.Cube.Language" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which locale is used by the dataflow task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowColumnMappingNode_AstOdbcSourceNode_Columns_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Column" type="Varigence.Languages.Biml.Transformation.AstDataflowColumnMappingNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of mapping nodes from source columns prior to sending them to the output path.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstOracleSourceNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="DirectInput" type="Varigence.Languages.Biml.Task.AstDirectResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the SQL query to use to load data from the specified connection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="TableInput" type="Varigence.Languages.Biml.Task.AstTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the SQL query to use to load data from the specified connection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalTableInput" type="Varigence.Languages.Biml.Task.AstUnmanagedTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the SQL query to use to load data from the specified connection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDataflowColumnMappingNode_AstOracleSourceNode_Columns_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of mapping nodes from source columns prior to sending them to the output path.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Connection" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies the Oracle connection used to access the database.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DefaultCodePage" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which code page to use when the data source does not provide code page information.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="32768" name="LobChunkSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the chunk size that should be allocated of Large Object (LOB) columns.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="PrefetchCount" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the number of rows that should be retrieved each time data is fetched.  These extra rows are cached by the client as a performance enhancement.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="100" name="BatchSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how many rows can be loaded from the source table in each batch before additional rows are requested from the data flow pipeline. The default value is 100.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Inherited" name="LocaleId" type="Varigence.Languages.Biml.Cube.Language" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which locale is used by the dataflow task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowColumnMappingNode_AstOracleSourceNode_Columns_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Column" type="Varigence.Languages.Biml.Transformation.AstDataflowColumnMappingNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of mapping nodes from source columns prior to sending them to the output path.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.Destination.AstOdbcDestinationNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDataflowColumnMappingNode_AstOdbcDestinationNode_Columns_List">
+        <xs:annotation>
+          <xs:documentation>This value specifies how the component should map columns in the data flow to columns in the destination. Columns that are not explicitly listed in this collection are automatically mapped based on name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="TableOutput" type="Varigence.Languages.Biml.Task.AstTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the location to which the data is written.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalTableOutput" type="Varigence.Languages.Biml.Task.AstUnmanagedTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the location to which the data is written.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="InputPath" type="Varigence.Languages.Biml.Transformation.AstDataflowInputPathNode">
+        <xs:annotation>
+          <xs:documentation>This specifies the input path that will be used by this dataflow component.  If an input path is not specified, the dataflow component will attempt to automatically discover an appropriate input path based on the surrounding dataflow.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Connection" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies the ODBC connection to use when loading the data.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="UseBatch" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether Batch load should be used instead of the default Row-By-Row load mechanism.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="1000" name="BatchSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how many rows can be loaded into the destination table in each batch before additional rows are requested from the data flow pipeline. The default value is 1000.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="BindCharColumnAs" type="Varigence.Languages.Biml.Transformation.OdbcCharColumnMapping" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how multibyte string types (SQL_CHAR, SQL_VARCHAR, SQL_LONGVARCHAR, etc.) should be mapped by the component.  Either Unicode (SQL_C_WCHAR) or ANSI (SQL_C_CHAR) can be selected. The default value is Unicode.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="BindNumericAs" type="Varigence.Languages.Biml.Transformation.OdbcNumericMapping" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how numerci data should be mapped by the component.  Either Char or Numeric can be selected.  The default value is Char.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DefaultCodePage" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which code page to use when the data source does not provide code page information.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="32768" name="LobChunkSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the chunk size that should be allocated of Large Object (LOB) columns.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Timeout" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>The number of seconds before the command times out. Zero indicates an infinite time-out.  The default value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TransactionSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how many rows can be added in a single transaction before a new transaction must created on the ODBC target.  Zero indicates that all rows should be loaded in the same transaction.  The default value is 0.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Inherited" name="LocaleId" type="Varigence.Languages.Biml.Cube.Language" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which locale is used by the dataflow task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowColumnMappingNode_AstOdbcDestinationNode_Columns_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Column" type="Varigence.Languages.Biml.Transformation.AstDataflowColumnMappingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how the component should map columns in the data flow to columns in the destination. Columns that are not explicitly listed in this collection are automatically mapped based on name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.Destination.AstOracleDestinationNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDataflowColumnMappingNode_AstOracleDestinationNode_Columns_List">
+        <xs:annotation>
+          <xs:documentation>This value specifies how the component should map columns in the data flow to columns in the destination. Columns that are not explicitly listed in this collection are automatically mapped based on name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="TableOutput" type="Varigence.Languages.Biml.Task.AstTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the location to which the data is written.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ExternalTableOutput" type="Varigence.Languages.Biml.Task.AstUnmanagedTableResourceNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies the location to which the data is written.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="InputPath" type="Varigence.Languages.Biml.Transformation.AstDataflowInputPathNode">
+        <xs:annotation>
+          <xs:documentation>This specifies the input path that will be used by this dataflow component.  If an input path is not specified, the dataflow component will attempt to automatically discover an appropriate input path based on the surrounding dataflow.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Connection" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies the Oracle connection to use when loading the data.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="UseFastLoadIfAvailable" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether Oracle conventional bulk load options are used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="MaximumErrorCount" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the maximum number of errors that may be encountered before the component execution fails.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="100" name="TransactionSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how many rows can be added in a single transaction before a new transaction must created on the Oracle server.  The default value is 100.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="100" name="BatchSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies how many rows can be loaded into the destination table in each batch before additional rows are requested from the data flow pipeline. The default value is 100.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="UseParallelLoad" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>When set to true, this value indicates that the data can be loaded into the Oracle target table via multiple parallel data transfers.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="UseNoLogging" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether target table logging should be disabled.  Logging is typically disabled to reduce the quantity of redo metadata that is generated on the server.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="64" name="TransferBufferSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the size in kilobytes (KB) of the memory buffer that is used to transfer data to the Oracle server.  The default value is 64.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="DefaultCodePage" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which code page to use when the data source does not provide code page information.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="32768" name="LobChunkSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the chunk size that should be allocated of Large Object (LOB) columns.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Inherited" name="LocaleId" type="Varigence.Languages.Biml.Cube.Language" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which locale is used by the dataflow task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowColumnMappingNode_AstOracleDestinationNode_Columns_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Column" type="Varigence.Languages.Biml.Transformation.AstDataflowColumnMappingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how the component should map columns in the data flow to columns in the destination. Columns that are not explicitly listed in this collection are automatically mapped based on name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstBalancedDataDistributorNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="OutputPaths" type="AstDataflowOutputPathNode_AstBalancedDataDistributorNode_OutputPaths_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of the output paths into which the Balanced Data Distributor transformation will distribute incoming rows.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="InputPath" type="Varigence.Languages.Biml.Transformation.AstDataflowInputPathNode">
+        <xs:annotation>
+          <xs:documentation>This specifies the input path that will be used by this dataflow component.  If an input path is not specified, the dataflow component will attempt to automatically discover an appropriate input path based on the surrounding dataflow.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Inherited" name="LocaleId" type="Varigence.Languages.Biml.Cube.Language" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which locale is used by the dataflow task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDataflowOutputPathNode_AstBalancedDataDistributorNode_OutputPaths_List">
+    <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="OutputPath" type="Varigence.Languages.Biml.Transformation.AstDataflowOutputPathNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of the output paths into which the Balanced Data Distributor transformation will distribute incoming rows.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Task.AstExecutePackageTaskNode">
     <xs:all minOccurs="1" maxOccurs="1">
       <xs:element minOccurs="0" maxOccurs="1" name="Table" type="Varigence.Languages.Biml.Task.AstTableResourceNode">
@@ -15088,6 +16284,11 @@ PackageSubpath will override the default package location behavior. Packages wil
       <xs:element minOccurs="0" maxOccurs="1" name="ExternalProjectPackage" type="Varigence.Languages.Biml.Task.AstExternalProjectPackageResourceNode">
         <xs:annotation>
           <xs:documentation>This value specifies which package or Biml object that generates a package will be executed.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ParameterBindings" type="AstVariableParameterMappingNode_AstExecutePackageTaskNode_ParameterBindings_List">
+        <xs:annotation>
+          <xs:documentation>Configures bindings between target package parameters and parameters or variables in the current project or package.  Note that parameter bindings are only used for packages executed via a package project reference.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="PrecedenceConstraints" type="Varigence.Languages.Biml.Task.AstTaskflowPrecedenceConstraintsNode">
@@ -15282,6 +16483,15 @@ PackageSubpath will override the default package location behavior. Packages wil
         <xs:documentation>This value specifies the name of the packagethat should be referenced within the containing package project.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstVariableParameterMappingNode_AstExecutePackageTaskNode_ParameterBindings_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="ParameterBinding" type="Varigence.Languages.Biml.Task.AstVariableParameterMappingNode">
+        <xs:annotation>
+          <xs:documentation>Configures bindings between target package parameters and parameters or variables in the current project or package.  Note that parameter bindings are only used for packages executed via a package project reference.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Task.AstMergeTaskNode">
     <xs:all minOccurs="1" maxOccurs="1">
@@ -25049,6 +26259,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
           <xs:documentation>This collection specifies the definition for one or more SSIS package containers that can be used to execute custom actions relevant to the creation of this database. This is useful for creating stored procedures, custom constraints, and other custom operations.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="FileGroups" type="AstDatabaseFileGroupNode_AstDatabaseNode_FileGroups_List">
+        <xs:annotation>
+          <xs:documentation>Defines the avaliable file groups in the database.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
         <xs:annotation>
           <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
@@ -25204,6 +26419,62 @@ Optional. If it is not specified, the connection will default to the TargetConst
       </xs:element>
     </xs:choice>
   </xs:complexType>
+  <xs:complexType name="AstDatabaseFileGroupNode_AstDatabaseNode_FileGroups_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="FileGroup" type="Varigence.Languages.Biml.Table.AstDatabaseFileGroupNode">
+        <xs:annotation>
+          <xs:documentation>Defines the avaliable file groups in the database.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Table.AstDatabaseFileGroupNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Files" type="AstDatabaseFileNode_AstDatabaseFileGroupNode_Files_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of database file items that comprise the parent database file group.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="IsDefault" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether this filegroup should be the default for the containing database.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDatabaseFileNode_AstDatabaseFileGroupNode_Files_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="File" type="Varigence.Languages.Biml.Table.AstDatabaseFileNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of database file items that comprise the parent database file group.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Table.AstDatabaseFileNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Table.AstServerNode">
     <xs:all minOccurs="1" maxOccurs="1">
       <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
@@ -25282,6 +26553,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="true" name="IsEntryPoint" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>Indicates whether the referenced package is considered an entry point for the Data Integration Project.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="IsStartupObject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether the referenced package should be treated as the startup object for Build/Run and debugging scenarios.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
@@ -25889,6 +27165,104 @@ Optional. If it is not specified, the connection will default to the TargetConst
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Connection.AstOracleConnectionNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="ConnectionString" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies how to open the connection for the specified data source.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="RetainSameConnection" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value indicates whether the same connection can be used for multiple tasks.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="0" name="MaxActiveConnections" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the maximum number of concurrent connections allowed.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="DelayValidation" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value indicates that the connection should not be validated (tested to make sure that it points to a valid resource) until immediately before it is used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Connection.AstOdbcConnectionNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="ConnectionString" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This value specifies how to open the connection for the specified data source.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="RetainSameConnection" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value indicates whether the same connection can be used for multiple tasks.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="0" name="MaxActiveConnections" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies the maximum number of concurrent connections allowed.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="DelayValidation" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value indicates that the connection should not be validated (tested to make sure that it points to a valid resource) until immediately before it is used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstFileConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
@@ -25915,6 +27289,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute default="false" name="RelativePath" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies a relative path for the source data file to connect to.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="HasMultipleFiles" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether or not a MultiFile connection manager should be used for this file connection.  If this property is set to true, then pipe (|) separated and wildcard paths can be specified in the FilePath property.  See http://msdn.microsoft.com/en-us/library/ms137798.aspx for more details.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute default="false" name="DelayValidation" type="xs:boolean" use="optional">
@@ -26334,6 +27713,11 @@ Optional. If it is not specified, the connection will default to the TargetConst
         <xs:documentation>This value specifies whether to use delimited, fixed width, or ragged right file format.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="HasMultipleFiles" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether or not a MultiFlatFile connection manager should be used for this flat file connection.  If this property is set to true, then pipe (|) separated and wildcard paths can be specified in the FilePath property.  See http://msdn.microsoft.com/en-us/library/ms137830.aspx for more details.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute default="false" name="DelayValidation" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value indicates that the connection should not be validated (tested to make sure that it points to a valid resource) until immediately before it is used.</xs:documentation>
@@ -26481,7 +27865,7 @@ Optional. If it is not specified, the connection will default to the TargetConst
         </xs:annotation>
       </xs:element>
     </xs:all>
-    <xs:attribute name="CreationName" type="xs:string" use="optional">
+    <xs:attribute name="CreationName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>This property provides the strong name of the connection manager, used by SSIS to create an instance of it.</xs:documentation>
       </xs:annotation>
@@ -26941,6 +28325,16 @@ Optional. If it is not specified, the connection will default to the TargetConst
         </xs:annotation>
       </xs:element>
       <xs:element name="CustomSsisConnection" type="Varigence.Languages.Biml.Connection.AstCustomSsisConnectionNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of all connection definitions in the project.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OracleConnection" type="Varigence.Languages.Biml.Connection.AstOracleConnectionNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of all connection definitions in the project.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OdbcConnection" type="Varigence.Languages.Biml.Connection.AstOdbcConnectionNode">
         <xs:annotation>
           <xs:documentation>This is a collection of all connection definitions in the project.</xs:documentation>
         </xs:annotation>
@@ -27577,6 +28971,35 @@ Optional. If it is not specified, the connection will default to the TargetConst
     <xs:attribute name="CubeDimensionName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>This value specifies a direct reference to the cube dimension that will be bound to the measure group.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDataflowOverrideNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Properties" type="AstDataflowOverridePropertyNode_AstDataflowOverrideNode_Properties_List">
+        <xs:annotation>
+          <xs:documentation>Provides a list of key/value pair override objects that can be used to more easily override properties from a metadata source or to override properties that have not been defined as attributes of the relevant override nodes.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="ErrorRowDisposition" type="Varigence.Languages.Biml.Transformation.ErrorRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden error row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="TruncationRowDisposition" type="Varigence.Languages.Biml.Transformation.TruncationRowDisposition" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden truncation row disposition property value for the targeted dataflow object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Description" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the overridden description property value for the targeted dataflow object.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
