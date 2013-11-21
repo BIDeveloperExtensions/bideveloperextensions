@@ -281,7 +281,14 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="SSAS\DeleteUnusedIndexesPlugin.cs" />
     <Compile Include="SSAS\DuplicateRole.cs" />
+    <Compile Include="SSAS\DeleteUnusedIndexesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\DeleteUnusedIndexesForm.designer.cs">
+      <DependentUpon>DeleteUnusedIndexesForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -289,6 +296,7 @@
       <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
+    <Compile Include="SSAS\MDXHelper.cs" />
     <Compile Include="SSAS\RolesReportPlugin.cs" />
     <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.cs">
       <SubType>Form</SubType>
@@ -836,6 +844,9 @@
     <None Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\DeleteUnusedIndexesForm.resx">
+      <DependentUpon>DeleteUnusedIndexesForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsageBusMatrix.rdlc" />
     <EmbeddedResource Include="SSAS\M2MMatrixCompressionForm.resx">
       <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>

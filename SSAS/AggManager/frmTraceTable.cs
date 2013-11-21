@@ -141,7 +141,7 @@ namespace AggManager
                 if (conn.State != ConnectionState.Open) conn.Open();
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = conn;
-                cmd.CommandText = "select name from master..sysdatabases where dbid not in (2,3) order by name";
+                cmd.CommandText = "select name from master..sysdatabases order by name";
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -197,7 +197,8 @@ namespace AggManager
                 if (conn.State != ConnectionState.Open) conn.Open();
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = conn;
-                cmd.CommandText = "select st.name from sys.tables st, sys.schemas ss where st.name not like '#%%' and st.type='U' and ss.schema_id=st.schema_id and not st.is_ms_shipped=1 and ss.name=@Schema order by st.name";
+                cmd.CommandText = "select st.name from sys.tables st, sys.schemas ss where st.name not like '#%%' and st.type='U' and ss.schema_id=st.schema_id and not st.is_ms_shipped=1 and ss.name=@Schema "
+                 + " union all select st.name from sys.views st, sys.schemas ss where st.name not like '#%%' and st.type='V' and ss.schema_id=st.schema_id and not st.is_ms_shipped=1 and ss.name=@Schema order by st.name";
                 cmd.Parameters.Add("@Schema", SqlDbType.VarChar).Value = comboSchema.Text;
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
