@@ -144,6 +144,15 @@
                 <GroupExpressions>
                   <GroupExpression>=Fields!MeasureGroup.Value</GroupExpression>
                 </GroupExpressions>
+                <Filters>
+                  <Filter>
+                    <FilterExpression>=Fields!MeasureGroup.Value</FilterExpression>
+                    <Operator>NotEqual</Operator>
+                    <FilterValues>
+                      <FilterValue>=Nothing</FilterValue>
+                    </FilterValues>
+                  </Filter>
+                </Filters>
               </Grouping>
               <Sorting>
                 <SortBy>
@@ -160,6 +169,7 @@
                     <PaddingTop>2pt</PaddingTop>
                     <PaddingBottom>2pt</PaddingBottom>
                   </Style>
+                  <ZIndex>1</ZIndex>
                   <CanGrow>true</CanGrow>
                   <Value>=Fields!MeasureGroup.Value</Value>
                 </Textbox>
@@ -192,6 +202,7 @@
                     <PaddingTop>2pt</PaddingTop>
                     <PaddingBottom>2pt</PaddingBottom>
                   </Style>
+                  <ZIndex>2</ZIndex>
                   <CanGrow>true</CanGrow>
                   <Value>=Fields!DimensionName.Value</Value>
                 </Textbox>
@@ -211,6 +222,7 @@
                 <PaddingTop>2pt</PaddingTop>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
+              <ZIndex>3</ZIndex>
               <CanGrow>true</CanGrow>
               <Value />
             </Textbox>

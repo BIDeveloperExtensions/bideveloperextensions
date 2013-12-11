@@ -12,6 +12,12 @@ namespace BIDSHelper
 
         public static List<DimensionUsage> GetDimensionUsage(Cube c)
         {
+            List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
+            foreach (CubeDimension cd in c.Dimensions)
+            {
+                listCubeDimensions.Add(cd);
+            }
+
             List<DimensionUsage> dimUsage = new List<DimensionUsage>();
             foreach (MeasureGroup mg in c.MeasureGroups)
             {
@@ -44,8 +50,19 @@ namespace BIDSHelper
                         RegularMeasureGroupDimension regMDdim = (RegularMeasureGroupDimension)mgdim;
                         getRegularMeasureGroupAttributeUsage(dimUsage, mg, regMDdim);
                     }
+                    if (listCubeDimensions.Contains(mgdim.CubeDimension))
+                    {
+                        listCubeDimensions.Remove(mgdim.CubeDimension);
+                    }
                 }
             
+            }
+
+            //add any cube dimensions which aren't related to any measure groups
+            foreach (CubeDimension cd in listCubeDimensions)
+            {
+                DimensionUsage du = new DimensionUsage(string.Empty, null, cd, cd.Dimension);
+                dimUsage.Add(du);
             }
 
             return dimUsage;
@@ -246,11 +263,19 @@ namespace BIDSHelper
 #region Constructor
         public DimensionUsage(string relationshipType, MeasureGroup mg, CubeDimension dimCube, Dimension dim) //, string factTableColumn, string attributeColumn)
         {
-            mCubeName = mg.Parent.Name;
-            mDatabaseName = mg.Parent.Parent.Name;
+            if (mg != null)
+            {
+                mCubeName = mg.Parent.Name;
+                mDatabaseName = mg.Parent.Parent.Name;
+                mMeasureGroup = mg.Name;
+            }
+            else if (dimCube != null)
+            {
+                mCubeName = dimCube.Parent.Name;
+                mDatabaseName = dimCube.Parent.Parent.Name;
+            }
             mDimensionName = dimCube.Name;
             if (dimCube.Name != dim.Name)  mDimensionName += " (" + dim.Name + ")";
-            mMeasureGroup = mg.Name;
             mRelationshipType = relationshipType;
             //mFactTableColumnName = factTableColumn;
             //mAttributeColumnName = attributeColumn;
