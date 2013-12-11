@@ -65,8 +65,15 @@ namespace BIDSHelper
                 liveDB = selectedCube.Parent;
                 liveCube = selectedCube;
 
-                adomdConnection = new AdomdConnection("Data Source=" + liveServer.Name + ";Initial Catalog=" + liveDB.Name);
-                adomdConnection.Open();
+                try
+                {
+                    adomdConnection = new AdomdConnection(liveServer.ConnectionString + ";Initial Catalog=" + liveDB.Name);
+                    adomdConnection.Open();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error connecting ADOMD.NET to server with connection string: " + liveServer.ConnectionString, ex);
+                }
             }
             else
             {
@@ -74,12 +81,28 @@ namespace BIDSHelper
                 // the deployment settings
                 DeploymentSettings deploySet = new DeploymentSettings(projItem);
                 liveServer = new Server();
-                liveServer.Connect(deploySet.TargetServer);
+
+                try
+                {
+                    liveServer.Connect(deploySet.TargetServer);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error connecting AMO to server from deployment properties: " + deploySet.TargetServer, ex);
+                }
+                
                 liveDB = liveServer.Databases.GetByName(deploySet.TargetDatabase);
                 liveCube = liveDB.Cubes.GetByName(selectedCube.Name);
 
-                adomdConnection = new AdomdConnection("Data Source=" + deploySet.TargetServer + ";Initial Catalog=" + deploySet.TargetDatabase);
-                adomdConnection.Open();
+                try
+                {
+                    adomdConnection = new AdomdConnection("Data Source=" + deploySet.TargetServer + ";Initial Catalog=" + deploySet.TargetDatabase);
+                    adomdConnection.Open();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Error connecting ADOMD.NET to server from deployment properties: " + deploySet.TargetServer, ex);
+                }
             }
             sCubePath = liveServer.ID + "." + liveDB.ID + "." + liveCube.ID + ".";
 

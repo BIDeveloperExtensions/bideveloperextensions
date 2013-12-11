@@ -47,7 +47,7 @@ namespace AggManager
                     _cancelled = true;
                     RaiseProgressEvent(99, "Starting cancel...");
                     Server s = new Server();
-                    s.Connect("Data Source=" + _currentAggD.ParentServer.Name);
+                    s.Connect(_currentAggD.ParentServer.ConnectionString);
                     s.CancelSession(_sessionID);
                     RaiseProgressEvent(100, "Successfully cancelled...");
                 }
@@ -94,7 +94,7 @@ namespace AggManager
                 Dictionary<Aggregation, long> dictAggRowCount = new Dictionary<Aggregation, long>();
                 Dictionary<AggregationDesign, long> dictAggDesignRowCount = new Dictionary<AggregationDesign, long>();
 
-                AdomdConnection conn = new AdomdConnection("Data Source=" + _currentAggD.ParentServer.Name + ";Initial Catalog=" + _currentAggD.ParentDatabase.Name);
+                AdomdConnection conn = new AdomdConnection(_currentAggD.ParentServer.ConnectionString + ";Initial Catalog=" + _currentAggD.ParentDatabase.Name);
                 conn.Open();
                 _sessionID = conn.SessionID;
 
@@ -199,10 +199,10 @@ namespace AggManager
                 RaiseProgressEvent(2, "Starting trace...");
 
                 Server s = new Server();
-                s.Connect("Data Source=" + _currentAggD.ParentServer.Name, _sessionID);
+                s.Connect(_currentAggD.ParentServer.ConnectionString, _sessionID);
 
                 Server sAlt = new Server();
-                sAlt.Connect("Data Source=" + _currentAggD.ParentServer.Name);
+                sAlt.Connect(_currentAggD.ParentServer.ConnectionString);
                 MeasureGroup mgAlt = sAlt.Databases.GetByName(_currentAggD.ParentDatabase.Name).Cubes.GetByName(_currentAggD.ParentCube.Name).MeasureGroups.GetByName(_currentAggD.Parent.Name);
 
                 try
@@ -623,7 +623,7 @@ namespace AggManager
                     {
                         if (!s.Connected)
                         {
-                            s.Connect("Data Source=" + _currentAggD.ParentServer.Name, _sessionID);
+                            s.Connect(_currentAggD.ParentServer.ConnectionString, _sessionID);
                         }
                     }
                     catch
@@ -632,7 +632,7 @@ namespace AggManager
                         {
                             if (!s.Connected)
                             {
-                                s.Connect("Data Source=" + _currentAggD.ParentServer.Name); //can't connect to that session, so just reconnect
+                                s.Connect(_currentAggD.ParentServer.ConnectionString); //can't connect to that session, so just reconnect
                             }
                         }
                         catch { }

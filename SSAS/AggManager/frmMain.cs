@@ -829,6 +829,7 @@ namespace AggManager
                     // if we are in Online mode there will be a parent server
                     serverName = realCube.ParentServer.Name;
                     databaseName = realCube.Parent.Name;
+                    s.Connect(realCube.ParentServer.ConnectionString);
                 }
                 else
                 {
@@ -837,9 +838,8 @@ namespace AggManager
                     DeploymentSettings deploySet = new DeploymentSettings(mProjItem);
                     serverName = deploySet.TargetServer;
                     databaseName = deploySet.TargetDatabase; //use the target database instead of selectedCube.Parent.Name because selectedCube.Parent.Name only reflects the last place it was deployed to, and we want the user to be able to use the deployment settings to control which deployed server/database to check against
+                    s.Connect("Data Source=" + serverName);
                 }
-
-                s.Connect("Data Source=" + serverName);
 
                 Database db = s.Databases.FindByName(databaseName);
                 if (db == null)
@@ -908,6 +908,7 @@ namespace AggManager
                     // if we are in Online mode there will be a parent server
                     serverName = aggD.ParentServer.Name;
                     databaseName = aggD.ParentDatabase.Name;
+                    s.Connect(aggD.ParentServer.ConnectionString);
                 }
                 else
                 {
@@ -916,9 +917,8 @@ namespace AggManager
                     DeploymentSettings deploySet = new DeploymentSettings(mProjItem);
                     serverName = deploySet.TargetServer;
                     databaseName = deploySet.TargetDatabase; //use the target database instead of selectedCube.Parent.Name because selectedCube.Parent.Name only reflects the last place it was deployed to, and we want the user to be able to use the deployment settings to control which deployed server/database to check against
+                    s.Connect("Data Source=" + serverName);
                 }
-
-                s.Connect("Data Source=" + serverName);
 
                 Database db = s.Databases.FindByName(databaseName);
                 if (db == null)
