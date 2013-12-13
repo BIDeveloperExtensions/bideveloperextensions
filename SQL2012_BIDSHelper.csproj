@@ -281,6 +281,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="SSAS\DeployPerspectivesPlugin.cs" />
     <Compile Include="SSAS\DeleteUnusedIndexesPlugin.cs" />
     <Compile Include="SSAS\DuplicateRole.cs" />
     <Compile Include="SSAS\DeleteUnusedIndexesForm.cs">
@@ -733,6 +734,8 @@
     <Content Include="Resources\2012\Sequence.ico" />
     <Content Include="Resources\2012\SourceComponent.ico" />
     <Content Include="Resources\2012\Variable.ico" />
+    <None Include="Resources\DeployPerspectives.xslt" />
+    <Content Include="Resources\DeployPerspectives.ico" />
     <Content Include="SetupScript\SQL2012CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />

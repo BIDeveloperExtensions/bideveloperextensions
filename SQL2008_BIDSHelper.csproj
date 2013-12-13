@@ -249,6 +249,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Common.resx</DependentUpon>
     </Compile>
+    <Compile Include="SSAS\DeployPerspectivesPlugin.cs" />
     <Compile Include="SSAS\DeleteUnusedIndexesPlugin.cs" />
     <Compile Include="SSAS\DuplicateRole.cs" />
     <Compile Include="SSAS\DeleteUnusedIndexesForm.cs">
@@ -639,6 +640,8 @@
     <Content Include="Resources\2005\Sequence.ico" />
     <Content Include="Resources\2005\SourceComponent.ico" />
     <Content Include="Resources\2005\Variable.ico" />
+    <None Include="Resources\DeployPerspectives.xslt" />
+    <Content Include="Resources\DeployPerspectives.ico" />
     <Content Include="SetupScript\SQL2008CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
     <None Include="Resources\Process Progress1052856.bmp" />
