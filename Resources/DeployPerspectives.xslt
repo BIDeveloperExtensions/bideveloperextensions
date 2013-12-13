@@ -5,12 +5,6 @@
 
 	<xsl:output indent="yes" omit-xml-declaration="yes" />
 
-
-	<!-- effectively remove these two child nodes
-	<xsl:template match="//as:CreatedTimestamp"/>
-	<xsl:template match="//as:LastSchemaUpdate"/>
-	-->
-
 	<xsl:template match="/">
 		<Batch xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
 			<xsl:apply-templates/>
@@ -31,38 +25,16 @@
 				</PerspectiveID>
 			</Object>
 			<ObjectDefinition>
-				<!--<xsl:copy-of select="." />-->
-
 				<xsl:copy>
 					<xsl:copy-of select="node()[local-name()!='CreatedTimestamp' and local-name()!='LastSchemaUpdate']"/>
-					<!--<xsl:apply-templates select="node()[local-name()!='CreatedTimestamp' and local-name()!='LastSchemaUpdate']"/>-->
 				</xsl:copy>
 
 			</ObjectDefinition>
 
 		</Alter>
 	</xsl:template>
-
-	<!--
-	<xsl:template match="//as:Perspective/node()[local-name()!='CreatedTimestamp' and local-name()!='LastSchemaUpdate']">
-		<xsl:copy-of select="."/>
-	</xsl:template>
--->
-	<!--
-	<xsl:template match="//as:Perspective//text()">
-		<xsl:value-of select="."/>
-	</xsl:template>
-	-->
-
-		
-
-	<xsl:template match="text()"/>
 	
-	<!--
-	<xsl:template match="//as:Perspective">
-		<xsl:copy-of select="//as:Perspective" />
-	</xsl:template>
-	-->
+	<xsl:template match="text()"/>
 
 	
 </xsl:stylesheet>
