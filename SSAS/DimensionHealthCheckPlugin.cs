@@ -274,7 +274,9 @@ namespace BIDSHelper
                     HtmlElement error = el.Document.GetElementById("error" + el.GetAttribute("ErrorCnt"));
                     if (error != null)
                     {
-                        if (error.Style.ToLower().StartsWith("display"))
+                        if (error.Style.ToLower().StartsWith("display") 
+                            || error.Style.ToLower().Contains("display: none") 
+                            || error.Style.ToLower().Contains("display:none"))
                             error.Style = "font-family:Arial;font-size:10pt";
                         else
                             error.Style = "display:none;font-family:Arial;font-size:10pt";
