@@ -53,6 +53,7 @@ namespace BIDSHelper
             this.imgListMetadata = new System.Windows.Forms.ImageList(this.components);
             this.lblUnusedAggregationsToDelete = new System.Windows.Forms.Label();
             this.btnExport = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
             this.grpProgress.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -272,6 +273,7 @@ namespace BIDSHelper
             this.treeViewAggregation.Margin = new System.Windows.Forms.Padding(2);
             this.treeViewAggregation.Name = "treeViewAggregation";
             this.treeViewAggregation.SelectedImageIndex = 0;
+            this.treeViewAggregation.ShowNodeToolTips = true;
             this.treeViewAggregation.Size = new System.Drawing.Size(614, 343);
             this.treeViewAggregation.TabIndex = 55;
             this.treeViewAggregation.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAggregation_AfterCheck);
@@ -289,9 +291,10 @@ namespace BIDSHelper
             this.lblUnusedAggregationsToDelete.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblUnusedAggregationsToDelete.Location = new System.Drawing.Point(12, 142);
             this.lblUnusedAggregationsToDelete.Name = "lblUnusedAggregationsToDelete";
-            this.lblUnusedAggregationsToDelete.Size = new System.Drawing.Size(320, 13);
+            this.lblUnusedAggregationsToDelete.Size = new System.Drawing.Size(578, 13);
             this.lblUnusedAggregationsToDelete.TabIndex = 56;
-            this.lblUnusedAggregationsToDelete.Text = "Disable the indexes with a checkmark when I click OK:";
+            this.lblUnusedAggregationsToDelete.Text = "Disable the indexes with a checkmark and enable the indexes without a checkmark w" +
+    "hen I click OK:";
             // 
             // btnExport
             // 
@@ -303,11 +306,21 @@ namespace BIDSHelper
             this.btnExport.UseVisualStyleBackColor = true;
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
             // 
-            // DeleteUnusedIndexes
+            // label7
+            // 
+            this.label7.Location = new System.Drawing.Point(140, 511);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(297, 31);
+            this.label7.TabIndex = 58;
+            this.label7.Text = "Mouse over an item for an explanation of green highlighting, red highlighting, an" +
+    "d gray text.";
+            // 
+            // DeleteUnusedIndexesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 553);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.btnExport);
             this.Controls.Add(this.lblUnusedAggregationsToDelete);
             this.Controls.Add(this.treeViewAggregation);
@@ -328,7 +341,7 @@ namespace BIDSHelper
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "DeleteUnusedIndexes";
+            this.Name = "DeleteUnusedIndexesForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "BIDS Helper - Delete Unused Indexes";
@@ -365,5 +378,6 @@ namespace BIDSHelper
         private System.Windows.Forms.ImageList imgListMetadata;
         public System.Windows.Forms.TreeView treeViewAggregation;
         private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.Label label7;
     }
 }

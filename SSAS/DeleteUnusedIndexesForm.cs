@@ -526,13 +526,27 @@ namespace BIDSHelper
                         string sRecommendation = "";
                         if (optimized == OptimizationType.FullyOptimized && iIndexHits == 0)
                         {
+                            attributeNode.ForeColor = Color.Black;
                             sRecommendation = "Disable";
                             attributeNode.BackColor = Color.Green;
+                            attributeNode.ToolTipText = "Currently indexed but the index was not used during the profiler trace. If left checked, BIDS Helper will disable the indexes when you click OK.";
                         }
-                        else if (optimized == OptimizationType.NotOptimized && iIndexHits > 0)
+                        else if (optimized == OptimizationType.NotOptimized)
                         {
-                            sRecommendation = "Enable";
-                            attributeNode.BackColor = Color.Red;
+                            attributeNode.ForeColor = Color.DarkGray;
+                            attributeNode.ToolTipText = "Indexes not currently being built.";
+                            if (iIndexHits > 0)
+                            {
+                                sRecommendation = "Enable";
+                                attributeNode.ForeColor = Color.Black;
+                                attributeNode.BackColor = Color.Red;
+                                attributeNode.ToolTipText = "Currently not indexed but the queries observed during the profiler trace would have used the index if it had been built. If left unchecked, BIDS Helper will re-enable indexing when you click OK.";
+                            }
+                        }
+                        else
+                        {
+                            attributeNode.ForeColor = Color.Black;
+                            attributeNode.ToolTipText = "Indexes are being built and are used during the queries observed during the profiler trace.";
                         }
 
                         long? iCardinality = null;
