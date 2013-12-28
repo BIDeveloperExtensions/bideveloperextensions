@@ -329,6 +329,19 @@ namespace BIDSHelper
             //TODO: need to add in code to allow you to cancel such that it will stop an executing query
 
             DataSource dataSource = d.DataSource;
+
+            try
+            {
+                //if the key attribute points to a table with a different data source than the default data source for the DSV, use it
+                ColumnBinding col = GetColumnBindingForDataItem(d.KeyAttribute.KeyColumns[0]);
+                DataTable table = d.DataSourceView.Schema.Tables[col.TableID];
+                if (table.ExtendedProperties.ContainsKey("DataSourceID"))
+                {
+                    dataSource = d.Parent.DataSources[table.ExtendedProperties["DataSourceID"].ToString()];
+                }
+            }
+            catch { }
+
             Microsoft.DataWarehouse.Design.DataSourceConnection openedDataSourceConnection = Microsoft.DataWarehouse.DataWarehouseUtilities.GetOpenedDataSourceConnection((object)null, dataSource.ID, dataSource.Name, dataSource.ManagedProvider, dataSource.ConnectionString, dataSource.Site, false);
             try
             {
@@ -342,7 +355,7 @@ namespace BIDSHelper
             if (openedDataSourceConnection == null)
             {
                 DimensionError err = new DimensionError();
-                err.ErrorDescription = "Unable to connect to data source [" + d.DataSource.Name + "] to test attribute relationships and key uniqueness.";
+                err.ErrorDescription = "Unable to connect to data source [" + dataSource.Name + "] to test attribute relationships and key uniqueness.";
                 problems.Add(err);
             }
             else
