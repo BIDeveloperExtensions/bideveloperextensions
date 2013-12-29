@@ -90,9 +90,13 @@ namespace BIDSHelper
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                if (sFileName.EndsWith(".bim") && !(this is UsedColumnsPlugin)) return true; //show the menu if this is the .bim file of a Tabular model, but don't show the Used Columns Report for Tabular since the data source view isn't really something a Tabular developer manages
+
                 ProjectItem pi = (ProjectItem)hierItem.Object;
                 if (!(pi.Object is DataSourceView)) return false;
                 Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.ContainingProject;
+
                 return (projExt.Kind == BIDSProjectKinds.SSAS); //only show in an SSAS project, not in a report model or SSIS project (which also can have a DSV)
             }
             catch
@@ -109,8 +113,30 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
-                DataSourceView dsv = (DataSourceView)projItem.Object;
-                IterateDsvColumns(dsv);
+
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+
+                if (sFileName.EndsWith(".bim"))
+                {
+#if DENALI
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                    foreach (DataSourceView o in sandbox.Database.DataSourceViews)
+                    {
+                        IterateDsvColumns(o);
+                    }
+#endif
+                }
+                else
+                {
+                    DataSourceView dsv = (DataSourceView)projItem.Object;
+                    IterateDsvColumns(dsv);
+                }
+
+                if (unusedColumns.Count == 0)
+                {
+                    MessageBox.Show("There are no unused columns.", "BIDS Helper - Unused Columns Report");
+                    return;
+                }
 
                 ReportViewerForm frm = new ReportViewerForm();
                 frm.ReportBindingSource.DataSource = unusedColumns.Values;
