@@ -10,6 +10,19 @@
     </DataSource>
   </DataSources>
   <InteractiveHeight>11in</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="IsTabular">
+      <DataType>Boolean</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=False</Value>
+        </Values>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>IsTabular</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+  </ReportParameters>
   <rd:DrawGrid>true</rd:DrawGrid>
   <InteractiveWidth>8.5in</InteractiveWidth>
   <rd:GridSpacing>0.0625in</rd:GridSpacing>
@@ -36,6 +49,10 @@
         </Field>
         <Field Name="DatabasePermissionReadDefinition">
           <DataField>DatabasePermissionReadDefinition</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DatabasePermissionRead">
+          <DataField>DatabasePermissionRead</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="GroupType">
@@ -276,23 +293,22 @@
   <Body>
     <ReportItems>
       <Rectangle Name="rectangle2">
-        <ZIndex>8</ZIndex>
-        <Top>2.75in</Top>
+        <ZIndex>9</ZIndex>
+        <Top>3.0625in</Top>
         <PageBreakAtEnd>true</PageBreakAtEnd>
-        <Height>0.0625in</Height>
+        <Height>0.125in</Height>
       </Rectangle>
       <Rectangle Name="rectangle1">
-        <ZIndex>7</ZIndex>
-        <Top>4in</Top>
+        <ZIndex>8</ZIndex>
+        <Top>4.3125in</Top>
         <PageBreakAtEnd>true</PageBreakAtEnd>
         <Height>0.0625in</Height>
       </Rectangle>
       <Table Name="table5">
-        <NoRows>No mining structures</NoRows>
-        <ZIndex>6</ZIndex>
+        <NoRows>=iif(Parameters!IsTabular.Value,"Intentionally blank","No mining structures")</NoRows>
+        <ZIndex>7</ZIndex>
         <DataSetName>BIDSHelper_RoleMiningInfo</DataSetName>
-        <PageBreakAtStart>true</PageBreakAtStart>
-        <Top>5.875in</Top>
+        <Top>6.25in</Top>
         <Details>
           <TableRows>
             <TableRow>
@@ -307,6 +323,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>5</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=IIf(Fields!MiningModelName.Value Is Nothing,Fields!MiningStructureName.Value,"     " &amp; Fields!MiningModelName.Value)</Value>
                     </Textbox>
@@ -322,6 +339,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>4</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!RoleName.Value</Value>
                     </Textbox>
@@ -337,6 +355,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>3</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!ProcessAccess.Value</Value>
                     </Textbox>
@@ -352,6 +371,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>2</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!DrillthroughBrowseAccess.Value</Value>
                     </Textbox>
@@ -367,6 +387,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>1</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!ReadAccess.Value</Value>
                     </Textbox>
@@ -427,6 +448,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>11</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Mining Structure/Model</Value>
                     </Textbox>
@@ -444,6 +466,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>10</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Role</Value>
                     </Textbox>
@@ -461,6 +484,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>9</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Process</Value>
                     </Textbox>
@@ -478,6 +502,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>8</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Drill/Browse</Value>
                     </Textbox>
@@ -495,6 +520,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>7</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read/Write</Value>
                     </Textbox>
@@ -512,6 +538,7 @@
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>6</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read Definition</Value>
                     </Textbox>
@@ -545,9 +572,9 @@
         </TableColumns>
       </Table>
       <Table Name="table4">
-        <ZIndex>5</ZIndex>
+        <ZIndex>6</ZIndex>
         <DataSetName>BIDSHelper_RoleDimensionInfo</DataSetName>
-        <Top>4.125in</Top>
+        <Top>4.5in</Top>
         <TableGroups>
           <TableGroup>
             <Grouping Name="table4_Group1">
@@ -568,6 +595,7 @@
             </Sorting>
             <Visibility>
               <Hidden>=Sum(IIf(Fields!AttributeName.Value is nothing,0,1))=0 
+AndAlso Fields!AllowedMemberSet.Value is nothing 
 AndAlso Fields!ReadAccess.Value="Read" 
 AndAlso Fields!ProcessAccess.Value="None" 
 AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
@@ -586,6 +614,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>17</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=Fields!CubeDimensionName.Value</Value>
                         </Textbox>
@@ -601,6 +630,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>16</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=Fields!RoleName.Value</Value>
                         </Textbox>
@@ -609,6 +639,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                     <TableCell>
                       <ReportItems>
                         <Textbox Name="textbox75">
+                          <Visibility>
+                            <Hidden>=Parameters!IsTabular.Value</Hidden>
+                          </Visibility>
                           <Style>
                             <FontSize>8pt</FontSize>
                             <PaddingLeft>2pt</PaddingLeft>
@@ -616,6 +649,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>15</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=Fields!ProcessAccess.Value</Value>
                         </Textbox>
@@ -624,6 +658,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                     <TableCell>
                       <ReportItems>
                         <Textbox Name="textbox77">
+                          <Visibility>
+                            <Hidden>=Parameters!IsTabular.Value</Hidden>
+                          </Visibility>
                           <Style>
                             <FontSize>8pt</FontSize>
                             <PaddingLeft>2pt</PaddingLeft>
@@ -631,6 +668,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>14</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=Fields!ReadAccess.Value</Value>
                         </Textbox>
@@ -639,6 +677,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                     <TableCell>
                       <ReportItems>
                         <Textbox Name="textbox78">
+                          <Visibility>
+                            <Hidden>=Parameters!IsTabular.Value</Hidden>
+                          </Visibility>
                           <Style>
                             <FontSize>8pt</FontSize>
                             <PaddingLeft>2pt</PaddingLeft>
@@ -646,6 +687,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>13</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=Fields!ReadDefinitionAccess.Value</Value>
                         </Textbox>
@@ -662,7 +704,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
           <TableRows>
             <TableRow>
               <Visibility>
-                <Hidden>=IIf(Fields!AllowedMemberSet.Value is Nothing and Fields!DeniedMemberSet.Value is Nothing and Fields!DefaultMember.Value is Nothing and Fields!VisualTotals.Value is Nothing, True, False)</Hidden>
+                <Hidden>=IIf(Fields!AllowedMemberSet.Value is Nothing and Fields!DeniedMemberSet.Value is Nothing and Fields!DefaultMember.Value is Nothing and Fields!VisualTotals.Value is Nothing or Fields!AttributeName.Value is Nothing, True, False)</Hidden>
               </Visibility>
               <TableCells>
                 <TableCell>
@@ -675,6 +717,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>12</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>="    Attribute: " &amp; Fields!AttributeName.Value</Value>
                     </Textbox>
@@ -690,6 +733,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>11</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value />
                     </Textbox>
@@ -705,6 +749,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>10</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value />
                     </Textbox>
@@ -720,6 +765,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>9</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value />
                     </Textbox>
@@ -735,6 +781,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>8</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value />
                     </Textbox>
@@ -760,6 +807,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>7</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Allowed Member Set:</Value>
                     </Textbox>
@@ -777,6 +825,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>6</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!AllowedMemberSet.Value</Value>
                     </Textbox>
@@ -802,6 +851,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>5</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Denied Member Set:</Value>
                     </Textbox>
@@ -819,6 +869,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>4</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!DeniedMemberSet.Value</Value>
                     </Textbox>
@@ -844,6 +895,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>3</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Default Member:</Value>
                     </Textbox>
@@ -861,6 +913,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>2</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!DefaultMember.Value</Value>
                     </Textbox>
@@ -886,6 +939,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>1</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Visual Totals:</Value>
                     </Textbox>
@@ -935,6 +989,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
         <Header>
           <TableRows>
             <TableRow>
+              <Visibility>
+                <Hidden>=Parameters!IsTabular.Value</Hidden>
+              </Visibility>
               <TableCells>
                 <TableCell>
                   <ColSpan>5</ColSpan>
@@ -949,6 +1006,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>23</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Hiding rows which have default permissions (read access, no process access, and no read definition access)</Value>
                     </Textbox>
@@ -971,6 +1029,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>22</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Dimension</Value>
                     </Textbox>
@@ -988,6 +1047,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>21</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Role</Value>
                     </Textbox>
@@ -996,6 +1056,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                 <TableCell>
                   <ReportItems>
                     <Textbox Name="textbox63">
+                      <Visibility>
+                        <Hidden>=Parameters!IsTabular.Value</Hidden>
+                      </Visibility>
                       <Style>
                         <BackgroundColor>LightGrey</BackgroundColor>
                         <FontSize>8pt</FontSize>
@@ -1005,6 +1068,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>20</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Process</Value>
                     </Textbox>
@@ -1013,6 +1077,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                 <TableCell>
                   <ReportItems>
                     <Textbox Name="textbox65">
+                      <Visibility>
+                        <Hidden>=Parameters!IsTabular.Value</Hidden>
+                      </Visibility>
                       <Style>
                         <BackgroundColor>LightGrey</BackgroundColor>
                         <FontSize>8pt</FontSize>
@@ -1022,6 +1089,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>19</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read/Write</Value>
                     </Textbox>
@@ -1030,6 +1098,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                 <TableCell>
                   <ReportItems>
                     <Textbox Name="textbox66">
+                      <Visibility>
+                        <Hidden>=Parameters!IsTabular.Value</Hidden>
+                      </Visibility>
                       <Style>
                         <BackgroundColor>LightGrey</BackgroundColor>
                         <FontSize>8pt</FontSize>
@@ -1039,6 +1110,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>18</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read Definition</Value>
                     </Textbox>
@@ -1070,9 +1142,10 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
         <Height>1.5in</Height>
       </Table>
       <Table Name="table3">
-        <ZIndex>4</ZIndex>
+        <NoRows>Intentionally blank</NoRows>
+        <ZIndex>5</ZIndex>
         <DataSetName>BIDSHelper_RoleCubeInfo</DataSetName>
-        <Top>2.9375in</Top>
+        <Top>3.25in</Top>
         <Details>
           <TableRows>
             <TableRow>
@@ -1087,6 +1160,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>11</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!CubeName.Value</Value>
                     </Textbox>
@@ -1102,6 +1176,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>10</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!RoleName.Value</Value>
                     </Textbox>
@@ -1117,6 +1192,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>9</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!ProcessAccess.Value</Value>
                     </Textbox>
@@ -1132,6 +1208,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>8</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!DrillthroughAccess.Value</Value>
                     </Textbox>
@@ -1147,6 +1224,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>7</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!ReadAccess.Value</Value>
                     </Textbox>
@@ -1162,6 +1240,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>6</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!ReadDefinitionAccess.Value</Value>
                     </Textbox>
@@ -1187,6 +1266,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>5</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Cell Security Read:</Value>
                     </Textbox>
@@ -1207,6 +1287,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>4</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!CellSecurityReadPermissions.Value</Value>
                     </Textbox>
@@ -1232,6 +1313,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>3</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Cell Security Read Contingent:</Value>
                     </Textbox>
@@ -1252,6 +1334,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>2</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!CellSecurityReadContingentPermissions.Value</Value>
                     </Textbox>
@@ -1277,6 +1360,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>1</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Cell Security Read/Write:</Value>
                     </Textbox>
@@ -1338,6 +1422,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>17</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Cube</Value>
                     </Textbox>
@@ -1355,6 +1440,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>16</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Role</Value>
                     </Textbox>
@@ -1372,6 +1458,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>15</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Process</Value>
                     </Textbox>
@@ -1390,6 +1477,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>14</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Drillthrough</Value>
                     </Textbox>
@@ -1407,6 +1495,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>13</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read/Write</Value>
                     </Textbox>
@@ -1424,6 +1513,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>12</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read Definition</Value>
                     </Textbox>
@@ -1458,10 +1548,10 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
         <Height>0.9375in</Height>
       </Table>
       <Table Name="table1">
-        <ZIndex>3</ZIndex>
+        <NoRows>Intentionally blank</NoRows>
+        <ZIndex>4</ZIndex>
         <DataSetName>BIDSHelper_RoleDataSourceInfo</DataSetName>
-        <PageBreakAtStart>true</PageBreakAtStart>
-        <Top>2.3125in</Top>
+        <Top>2.5625in</Top>
         <Details>
           <TableRows>
             <TableRow>
@@ -1476,6 +1566,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>3</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!DataSourceName.Value</Value>
                     </Textbox>
@@ -1492,6 +1583,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>2</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!RoleName.Value</Value>
                     </Textbox>
@@ -1507,6 +1599,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>1</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!ReadAccess.Value</Value>
                     </Textbox>
@@ -1563,6 +1656,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>7</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Data Source</Value>
                     </Textbox>
@@ -1580,6 +1674,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>6</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Role</Value>
                     </Textbox>
@@ -1598,6 +1693,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>5</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read</Value>
                     </Textbox>
@@ -1616,6 +1712,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>4</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>Read Definition</Value>
                     </Textbox>
@@ -1653,7 +1750,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
           <PaddingTop>2pt</PaddingTop>
           <PaddingBottom>2pt</PaddingBottom>
         </Style>
-        <ZIndex>2</ZIndex>
+        <ZIndex>3</ZIndex>
         <CanGrow>true</CanGrow>
         <Height>0.63492cm</Height>
         <Value>="[Target Server: " &amp; First(Fields!TargetServerName.Value, "BIDSHelper_RoleMemberInfo") &amp; "; Database: " &amp; First(Fields!DatabaseName.Value, "BIDSHelper_RoleMemberInfo") &amp; "]"</Value>
@@ -1668,12 +1765,13 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
           <PaddingTop>2pt</PaddingTop>
           <PaddingBottom>2pt</PaddingBottom>
         </Style>
-        <ZIndex>1</ZIndex>
+        <ZIndex>2</ZIndex>
         <CanGrow>true</CanGrow>
         <Height>0.75cm</Height>
         <Value>Roles Report</Value>
       </Textbox>
       <Table Name="table2">
+        <ZIndex>1</ZIndex>
         <DataSetName>BIDSHelper_RoleMemberInfo</DataSetName>
         <Top>0.6875in</Top>
         <TableGroups>
@@ -1705,6 +1803,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>24</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Role Name:</Value>
                         </Textbox>
@@ -1723,6 +1822,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>23</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=Fields!RoleName.Value</Value>
                         </Textbox>
@@ -1766,6 +1866,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>22</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Role Description:</Value>
                         </Textbox>
@@ -1782,6 +1883,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>21</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=First(Fields!RoleDescription.Value)</Value>
                         </Textbox>
@@ -1803,6 +1905,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>20</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Administer DB:</Value>
                         </Textbox>
@@ -1819,6 +1922,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>19</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=First(Fields!DatabasePermissionAdminister.Value)</Value>
                         </Textbox>
@@ -1840,6 +1944,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>18</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Process DB:</Value>
                         </Textbox>
@@ -1856,8 +1961,48 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>17</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=First(Fields!DatabasePermissionProcess.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.1875in</Height>
+                </TableRow>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox90">
+                          <Style>
+                            <FontSize>8pt</FontSize>
+                            <FontWeight>700</FontWeight>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>16</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>Read DB:</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ColSpan>4</ColSpan>
+                      <ReportItems>
+                        <Textbox Name="textbox91">
+                          <Style>
+                            <FontSize>8pt</FontSize>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>15</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=First(Fields!DatabasePermissionRead.Value)</Value>
                         </Textbox>
                       </ReportItems>
                     </TableCell>
@@ -1877,6 +2022,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>14</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Read DB Definition:</Value>
                         </Textbox>
@@ -1893,8 +2039,9 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>13</ZIndex>
                           <CanGrow>true</CanGrow>
-                          <Value>=First(Fields!DatabasePermissionProcess.Value)</Value>
+                          <Value>=First(Fields!DatabasePermissionReadDefinition.Value)</Value>
                         </Textbox>
                       </ReportItems>
                     </TableCell>
@@ -1913,6 +2060,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>12</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value />
                         </Textbox>
@@ -1929,6 +2077,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>11</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value />
                         </Textbox>
@@ -1944,6 +2093,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>10</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value />
                         </Textbox>
@@ -1960,6 +2110,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>9</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value />
                         </Textbox>
@@ -1976,6 +2127,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>8</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value />
                         </Textbox>
@@ -1999,6 +2151,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>7</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>=IIf(String.IsNullOrEmpty(Max(Fields!MemberName.Value)),"No Members", "Members")</Value>
                         </Textbox>
@@ -2016,6 +2169,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>6</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Enabled?</Value>
                         </Textbox>
@@ -2033,6 +2187,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>5</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Type</Value>
                         </Textbox>
@@ -2051,6 +2206,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
+                          <ZIndex>4</ZIndex>
                           <CanGrow>true</CanGrow>
                           <Value>Is Valid?</Value>
                         </Textbox>
@@ -2083,6 +2239,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>3</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Space(Fields!MemberIndent.Value*4) &amp; Fields!MemberName.Value</Value>
                     </Textbox>
@@ -2101,6 +2258,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>2</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!MemberDisabled.Value</Value>
                     </Textbox>
@@ -2119,6 +2277,7 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
                         <PaddingTop>2pt</PaddingTop>
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
+                      <ZIndex>1</ZIndex>
                       <CanGrow>true</CanGrow>
                       <Value>=Fields!GroupType.Value</Value>
                     </Textbox>
@@ -2169,10 +2328,15 @@ AndAlso Fields!ReadDefinitionAccess.Value="None"</Hidden>
             <Width>2.5in</Width>
           </TableColumn>
         </TableColumns>
-        <Height>1.5in</Height>
+        <Height>1.6875in</Height>
       </Table>
+      <Rectangle Name="rectangle3">
+        <Top>6.125in</Top>
+        <PageBreakAtEnd>true</PageBreakAtEnd>
+        <Height>0.0625in</Height>
+      </Rectangle>
     </ReportItems>
-    <Height>6.25in</Height>
+    <Height>6.625in</Height>
   </Body>
   <PageFooter>
     <PrintOnFirstPage>true</PrintOnFirstPage>
