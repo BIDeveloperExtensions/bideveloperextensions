@@ -648,6 +648,11 @@ namespace BIDSHelper
             System.IO.File.WriteAllBytes(xmlPath, memoryStream.GetBuffer()); //can't write out to the input file until after the Transform is done
         }
 
+
+#if DENALI
+        private static string VS2012_SHELL_INTEROP_ASSEMBLY_FULL_NAME = "Microsoft.VisualStudio.Shell.Interop.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+#endif
+
         private void ShowDiff(string oldFile, string newFile, bool bIgnoreCase, bool bIgnoreEOL, bool bIgnoreWhiteSpace, string sOldFileName, string sNewFileName)
         {
             string sCustomDiffViewer = CustomDiffViewer;
@@ -666,6 +671,46 @@ namespace BIDSHelper
                     throw new Exception("There was a problem using the custom diff viewer: " + sCustomDiffViewer, ex);
                 }
             }
+
+
+            //try the VS2012 built-in diff viewer
+            string sVS2012Error = string.Empty;
+#if DENALI
+            if (this.ApplicationObject.Version.CompareTo("11.") == 1)
+            {
+                try
+                {
+
+                    System.Reflection.Assembly vsAssembly = System.Reflection.Assembly.Load(VS2012_SHELL_INTEROP_ASSEMBLY_FULL_NAME);
+
+                    UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+                    UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
+                    ProjectItem projItem = (ProjectItem)hierItem.Object;
+                    string sTabName = projItem.Name + " (BIDS Helper Smart Diff)";
+
+                    System.IServiceProvider provider = null;
+                    if (projItem.ContainingProject is System.IServiceProvider)
+                    {
+                        provider = (System.IServiceProvider)projItem.ContainingProject;
+                    }
+                    else
+                    {
+                        provider = TabularHelpers.GetTabularServiceProviderFromBimFile(hierItem, false);
+                    }
+                    //TODO: test .rdlc inside C# projects
+
+                    Type t = vsAssembly.GetType("Microsoft.VisualStudio.Shell.Interop.IVsDifferenceService");
+                    object oVsDifferenceService = provider.GetService(vsAssembly.GetType("Microsoft.VisualStudio.Shell.Interop.SVsDifferenceService"));
+                    Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame frame = (Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame)t.InvokeMember("OpenComparisonWindow2", System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, null, oVsDifferenceService, new object[] { oldFile, newFile, sTabName, "BIDS Helper Smart Diff", sOldFileName, sNewFileName, "", "", (uint)0 });
+
+                    return;
+                }
+                catch (Exception exVS2012)
+                {
+                    sVS2012Error = exVS2012.Message;
+                }
+            }
+#endif
 
             int fFlags = 0;
             string sFlags = "";
@@ -692,7 +737,7 @@ namespace BIDSHelper
             }
             catch (Exception exMSDiff)
             {
-                //couldn't use MSDiff (which gets intalled with TFS)
+                //couldn't use MSDiff (which gets intalled with TFS2010 and below)
                 //try VSS EXE
                 try
                 {
@@ -708,7 +753,8 @@ namespace BIDSHelper
                 }
                 catch (Exception exVSS)
                 {
-                    throw new Exception("Could not start Microsoft Visual SourceSafe 2005 to view diff. " + exVSS.Message + "\r\n\r\nCould not utilize Microsoft Team Foundation Server to view diff. " + exMSDiff.Message);
+                    if (!string.IsNullOrEmpty(sVS2012Error)) sVS2012Error = "\r\n\r\nCould not use the built-in Visual Studio diff viewer:\r\n" + sVS2012Error;
+                    throw new Exception("Could not start Microsoft Visual SourceSafe 2005 to view diff. " + exVSS.Message + "\r\n\r\nCould not utilize Microsoft Team Foundation Server to view diff. " + exMSDiff.Message + sVS2012Error);
                 }
             }
         }
