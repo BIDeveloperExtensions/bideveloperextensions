@@ -271,6 +271,11 @@ class LatticeDrawing
     {
         foreach (LatticeRelationship lr in ln.Relationships)
         {
+            if (lr.node.DistanceFromKey != DistanceFromKey)
+            {
+                continue; //if there are redundant attribute relationships with different depths, then skip marking this if we're at the wrong depth
+            }
+
             LatticeNode r = lr.node;
             if (r.MaxRelationshipDepth == MaxRelationshipDepth && r.MinColumnPosition == 0)
             {
