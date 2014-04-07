@@ -95,7 +95,18 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
-                Cube cub = (Cube)projItem.Object;
+
+                Cube cub = null;
+                if (projItem.Object is Cube)
+                {
+                    cub = (Cube)projItem.Object;
+                }
+                else
+                {
+                    //if you are launching this feature from the Dimension Usage tab, but some other item in Solution Explorer is highlighted, then this code works and the above doesn't
+                    projItem = this.ApplicationObject.ActiveWindow.ProjectItem;
+                    cub = (Cube)projItem.Object;
+                }
 
                 DialogResult res = MessageBox.Show("Would you like a detailed report?\r\n\r\nPress Yes to see a detailed dimension usage report.\r\n\r\nPress No to see a summary level Bus Matrix dimension usage report.", "BIDS Helper - Printer Friendly Dimension Usage - Which Report Type?", MessageBoxButtons.YesNo);
 
