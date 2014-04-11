@@ -121,14 +121,9 @@ namespace BIDSHelper
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-                SandboxEditor editor = TabularHelpers.GetTabularSandboxEditorFromBimFile(hierItem, false);
+                SandboxEditor editor = TabularHelpers.GetTabularSandboxEditorFromProjectItem(pi, false);
                 if (editor == null) return;
-                Microsoft.AnalysisServices.Common.DiagramDisplay diagramDisplay = (Microsoft.AnalysisServices.Common.DiagramDisplay)editor.GetType().InvokeMember("GetCurrentDiagramDisplay", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.NonPublic, null, editor, new object[] { });
-                Microsoft.AnalysisServices.Common.ERDiagram diagram = null;
-                if (diagramDisplay != null)
-                {
-                    diagram = diagramDisplay.Diagram as Microsoft.AnalysisServices.Common.ERDiagram;
-                }
+                Microsoft.AnalysisServices.Common.ERDiagram diagram = TabularHelpers.GetTabularERDiagramFromSandboxEditor(editor);
                 if (diagram != null)
                 {
                     SetupContextMenu(diagram);
@@ -189,9 +184,7 @@ namespace BIDSHelper
 
         internal HideIfValue GetHideMemberIf(IEnumerable<Tuple<string, string, string>> hierarchyLevels)
         {
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false);
+            Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow();
             if (sandbox != null)
             {
                 foreach (Tuple<string, string, string> tuple in hierarchyLevels)
@@ -371,9 +364,7 @@ namespace BIDSHelper
                 {
                     IEnumerable<Tuple<string, string, string>> hierarchyLevels = this.SortHierarchyLevels(actionInstance.Targets.OfType<IDiagramNode>());
 
-                    UIHierarchy solExplorer = _plugin.ApplicationObject.ToolWindows.SolutionExplorer;
-                    UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false);
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow();
                     if (sandbox == null) throw new Exception("Can't get Sandbox!");
 
                     string sWarning = _plugin.GetPreBuildWarning(sandbox);

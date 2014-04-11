@@ -6,7 +6,7 @@ using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
 #region Conditional compile for Yukon vs Katmai
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
 using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;
@@ -173,7 +173,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             if (exe == null || !(exe is TaskHost))
             {
                 this._Failed = true;
-                System.Windows.Forms.MessageBox.Show(this.PerformanceTab, "Couldn't find data flow task with ID " + this._DataFlowID);
+                VisualStudioHelpers.SafeShowMessageBox(this.PerformanceTab, "Couldn't find data flow task with ID " + this._DataFlowID);
                 return;
             }
 
@@ -182,7 +182,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             if (pipelineReference == null)
             {
                 this._Failed = true;
-                System.Windows.Forms.MessageBox.Show(this.PerformanceTab, "Task ID " + this._DataFlowID + " was not a data flow task");
+                VisualStudioHelpers.SafeShowMessageBox(this.PerformanceTab, "Task ID " + this._DataFlowID + " was not a data flow task");
                 return;
             }
 
@@ -360,7 +360,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     {
                         this._TestsRunning = false;
                         this._Failed = true;
-                        System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(this.PerformanceTab, "The following error occurred during test iteration " + this._TestIndex + " and package execution has been stopped.\r\n\r\nClick OK to open the temp directory with the test iteration packages to you can troubleshoot (and then delete manually when finished).\r\nClick Cancel to delete the temp directory now.\r\n\r\n" + sError, "BIDS Helper - Pipeline Component Performance Breakdown - Error", System.Windows.Forms.MessageBoxButtons.OKCancel, System.Windows.Forms.MessageBoxIcon.Error);
+                        System.Windows.Forms.DialogResult result = VisualStudioHelpers.SafeShowMessageBox(this.PerformanceTab, "The following error occurred during test iteration " + this._TestIndex + " and package execution has been stopped.\r\n\r\nClick OK to open the temp directory with the test iteration packages to you can troubleshoot (and then delete manually when finished).\r\nClick Cancel to delete the temp directory now.\r\n\r\n" + sError, "BIDS Helper - Pipeline Component Performance Breakdown - Error", System.Windows.Forms.MessageBoxButtons.OKCancel, System.Windows.Forms.MessageBoxIcon.Error);
                         if (result == System.Windows.Forms.DialogResult.OK)
                         {
                             System.Diagnostics.Process.Start(this._TempDirectory);
@@ -389,19 +389,19 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 //on error, prompt asking them if they would like to save the problem package off somewhere for troubleshooting
                 if (packageToModify != null && sNewPackagePath != null)
                 {
-                    System.Windows.Forms.MessageBox.Show(this.PerformanceTab, "An unexpected error has occurred while executing test iteration " + this._TestIndex + ". The temp directory with the test iteration packages will now open. Please troubleshoot the problem.\r\n\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                    VisualStudioHelpers.SafeShowMessageBox(this.PerformanceTab, "An unexpected error has occurred while executing test iteration " + this._TestIndex + ". The temp directory with the test iteration packages will now open. Please troubleshoot the problem.\r\n\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                     try
                     {
                         _app.SaveToXml(sNewPackagePath, packageToModify, null);
                     }
                     catch (Exception ex2)
                     {
-                        System.Windows.Forms.MessageBox.Show(this.PerformanceTab, "problem saving package to path " + sNewPackagePath + "\r\n" + ex2.Message + "\r\n" + ex2.StackTrace);
+                        VisualStudioHelpers.SafeShowMessageBox(this.PerformanceTab, "problem saving package to path " + sNewPackagePath + "\r\n" + ex2.Message + "\r\n" + ex2.StackTrace);
                     }
                 }
                 else
                 {
-                    System.Windows.Forms.MessageBox.Show(this.PerformanceTab, "An unexpected error has occurred while executing test iteration " + this._TestIndex + ". The temp directory with the test iteration packages will now open. Please troubleshoot the problem.\r\n\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                    VisualStudioHelpers.SafeShowMessageBox(this.PerformanceTab, "An unexpected error has occurred while executing test iteration " + this._TestIndex + ". The temp directory with the test iteration packages will now open. Please troubleshoot the problem.\r\n\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                 }
                 System.Diagnostics.Process.Start(this._TempDirectory);
             }
@@ -435,7 +435,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             }
             if (System.IO.Directory.Exists(this._TempDirectory))
             {
-                System.Windows.Forms.MessageBox.Show(this.PerformanceTab, "Unable to delete temp directory because another process was using it:\r\n" + this._TempDirectory);
+                VisualStudioHelpers.SafeShowMessageBox(this.PerformanceTab, "Unable to delete temp directory because another process was using it:\r\n" + this._TempDirectory);
             }
         }
 

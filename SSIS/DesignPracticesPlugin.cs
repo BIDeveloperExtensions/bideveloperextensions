@@ -91,32 +91,39 @@ namespace BIDSHelper.SSIS
 
         public override void Exec()
         {
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                return;
-
-            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            ProjectItem pi = (ProjectItem)hierItem.Object;
-
-            Window w = pi.Open(BIDSViewKinds.Designer); //opens the designer
-            w.Activate();
-
-            IDesignerHost designer = w.Object as IDesignerHost;
-            if (designer == null) return;
-            EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-            Package package = win.PropertiesLinkComponent as Package;
-            if (package == null) return;
-
-            Results results = new Results();
-
-            foreach (DesignPractice practice in _practices)
+            try
             {
-                if (!practice.Enabled) continue;
-                practice.Check(package, pi);
-                results.AddRange(practice.Results);
-            }
+                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+                if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                    return;
 
-            AddErrorsToVSErrorList(w, results);
+                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                ProjectItem pi = (ProjectItem)hierItem.Object;
+
+                Window w = pi.Open(BIDSViewKinds.Designer); //opens the designer
+                w.Activate();
+
+                IDesignerHost designer = w.Object as IDesignerHost;
+                if (designer == null) return;
+                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                Package package = win.PropertiesLinkComponent as Package;
+                if (package == null) return;
+
+                Results results = new Results();
+
+                foreach (DesignPractice practice in _practices)
+                {
+                    if (!practice.Enabled) continue;
+                    practice.Check(package, pi);
+                    results.AddRange(practice.Results);
+                }
+
+                AddErrorsToVSErrorList(w, results);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+            }
         }
 
         private void AddErrorsToVSErrorList(Window window, Results errors)

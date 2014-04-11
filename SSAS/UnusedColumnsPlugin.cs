@@ -118,7 +118,7 @@ namespace BIDSHelper
 
                 if (sFileName.EndsWith(".bim"))
                 {
-#if DENALI
+#if DENALI || SQL2014
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
                     foreach (DataSourceView o in sandbox.Database.DataSourceViews)
                     {

@@ -87,7 +87,7 @@ namespace BIDSHelper.SSIS
             // during testing, otherwise we get some strange behaviour with this
             IntPtr icon = BIDSHelper.Resources.Common.ExpressionListIcon.ToBitmap().GetHbitmap();
 
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
             toolWindow.SetTabPicture(icon.ToInt32()); 
 #else
             toolWindow.SetTabPicture(icon); 
@@ -308,7 +308,7 @@ namespace BIDSHelper.SSIS
 
         private Package GetCurrentPackage()
         {
-            #if DENALI
+            #if DENALI || SQL2014
             // This seems to simple, but it appears to work (Green)
             return (Package)win.PropertiesLinkComponent;
             #else

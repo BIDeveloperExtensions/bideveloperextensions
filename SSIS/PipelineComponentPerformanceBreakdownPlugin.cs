@@ -122,7 +122,7 @@ namespace BIDSHelper.SSIS
                     EditorWindow.EditorView view = win.SelectedView;
                     Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
 
-#if DENALI
+#if DENALI || SQL2014
                     Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)viewControl.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, viewControl, null);
                     if (ctlFlowModel == null) return false;
                     Microsoft.SqlServer.IntegrationServices.Designer.Model.TaskModelElement taskModelEl = ctlFlowModel.SelectedItems[0] as Microsoft.SqlServer.IntegrationServices.Designer.Model.TaskModelElement;
@@ -159,7 +159,7 @@ namespace BIDSHelper.SSIS
                     {
                         if (!c.Visible) continue;
 
-#if DENALI
+#if DENALI || SQL2014
                         if (c.GetType().FullName != "Microsoft.DataTransformationServices.Design.PipelineTaskView") continue;
                         object pipelineDesigner = c.GetType().InvokeMember("PipelineTaskDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, c, null);
                         if (pipelineDesigner == null) continue;

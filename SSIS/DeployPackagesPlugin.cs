@@ -548,7 +548,7 @@ namespace BIDSHelper
 
         public static bool IsLegacyDeploymentMode(Project project)
         {
-#if DENALI
+#if DENALI || SQL2014
             Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
             return IsLegacyDeploymentMode(projectManager);
@@ -559,7 +559,7 @@ namespace BIDSHelper
 
         public static bool IsLegacyDeploymentMode(DataWarehouseProjectManager projectManager)
         {
-#if DENALI
+#if DENALI || SQL2014
             Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager manager = projectManager as Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager;
             if ((manager != null) && (manager.ObjectModelProject != null))
             {
@@ -660,7 +660,7 @@ namespace BIDSHelper
             typeof(DebugPropertyPage), 
             typeof(DtsProjectExtendedDeployPropertyPage) })]
         public class DtsProjectExtendedConfigurationOptions : DataTransformationsProjectConfigurationOptions
-#if DENALI
+#if DENALI || SQL2014
             , ICustomTypeDescriptor
 #endif
         {
@@ -821,7 +821,7 @@ namespace BIDSHelper
 
 
 
-#if DENALI //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
+#if DENALI || SQL2014 //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
 
 #pragma warning disable //disable warning that I'm hiding the GetAttributes method in the base class
             public AttributeCollection GetAttributes()

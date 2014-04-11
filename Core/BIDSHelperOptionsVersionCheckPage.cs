@@ -67,7 +67,7 @@ namespace BIDSHelper.Core
                 AssemblyTitleAttribute attribute = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(assembly, typeof(AssemblyTitleAttribute));
                 this.lblTitle.Text = attribute.Title;
 
-#if DENALI
+#if DENALI || SQL2014
                 string sBIDSName = "SSDTBI";
 #else
                 string sBIDSName = "BIDS";
@@ -192,6 +192,8 @@ namespace BIDSHelper.Core
                 return "2010";
             else if (Connect.Application.Version.StartsWith("11.")) //DENALI runs here
                 return "2012";
+            else if (Connect.Application.Version.StartsWith("12.")) //SQL2014 runs here
+                return "2013";
             else
                 return Connect.Application.Version; //todo in future
         }
@@ -218,8 +220,10 @@ namespace BIDSHelper.Core
                 return "2008";
             else if (sVersion.StartsWith("11."))
                 return "2012";
+            else if (sVersion.StartsWith("12."))
+                return "2014";
             else
-                return sVersion; //todo in future post DENALI
+                return sVersion; //todo in future post DENALI and SQL2014
         }
 
         /// <summary>

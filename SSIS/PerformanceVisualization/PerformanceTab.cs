@@ -55,7 +55,10 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         //pipeline component performance breakdown
         private DtsPipelineTestDirector pipelineBreakdownTestDirector = null;
 
-#if DENALI
+#if SQL2014
+        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
+        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.4";
+#elif DENALI
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.3";
 #elif KATMAI

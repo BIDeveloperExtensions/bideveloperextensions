@@ -168,7 +168,7 @@ namespace BIDSHelper
                     }
                     else
                     {
-#if DENALI
+#if DENALI || SQL2014
                         //in VS2010, performance of cmdBars[sMenuName] is terrible: http://www.mztools.com/articles/2011/MZ2011005.aspx
                         //plus looking up cmdBars["Other Windows"] failsof the ones we're looking for are there
                         //performs better when you look at the root level of the CommandBars since most 
@@ -309,7 +309,7 @@ namespace BIDSHelper
             {
                 System.Drawing.Bitmap bmp = this.CustomMenuIcon.ToBitmap();
                 btn.Picture = (stdole.StdPicture)ImageToPictureDispConverter.GetIPictureDispFromImage(bmp);
-#if DENALI
+#if DENALI || SQL2014
                 //.Mask has been deprecated in VS2010: http://msmvps.com/blogs/carlosq/archive/2009/11/01/more-on-commandbarbutton-mask-property-deprecated-in-vs-2010.aspx
 #else
                 btn.Mask = (stdole.StdPicture)ImageToPictureDispConverter.GetMaskIPictureDispFromBitmap(bmp);

@@ -13,7 +13,7 @@ namespace BIDSHelper
         public static void MarkPackageDirty(Package package)
         {
             if (package == null) return;
-            #if DENALI
+            #if DENALI || SQL2014
             Cud.Transaction trans = Cud.BeginTransaction(package);
             trans.ChangeComponent(package);
             trans.Commit();
@@ -40,7 +40,7 @@ namespace BIDSHelper
         {
             ControlFlow = 0,
             DataFlow = 1,
-#if DENALI
+#if DENALI || SQL2014
             Parameters = 2,
             EventHandlers = 3,
             PackageExplorer = 4

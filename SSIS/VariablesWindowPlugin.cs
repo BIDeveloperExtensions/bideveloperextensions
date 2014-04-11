@@ -14,7 +14,7 @@ namespace BIDSHelper.SSIS
     using Microsoft.SqlServer.Dts.Design;
     using Microsoft.SqlServer.Management.UI.Grid;
 
-    #if KATMAI || DENALI
+    #if KATMAI || DENALI || SQL2014
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
     #else
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
@@ -22,7 +22,9 @@ namespace BIDSHelper.SSIS
     
     public class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
-#if DENALI
+#if SQL2014
+        private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{826881A1-F158-483E-A118-8D5289CB6F1C}";//"{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
+#elif DENALI
         private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{41C287E9-BCD9-4D20-8D38-B6FD9CFB73C9}";
 #else
         private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
@@ -106,7 +108,7 @@ namespace BIDSHelper.SSIS
                     changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
 
                     // Get grid and toolbar
-#if DENALI
+#if DENALI || SQL2014
                     // "tableLayoutPanelMain" - "tableLayoutPanelVariable" - "dlgGridControl1" | "toolBarVariable"
                     grid = (DlgGridControl)variablesToolWindowControl.Controls[0].Controls[0].Controls[0];
                     ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls[0].Controls[0].Controls[1];
@@ -158,7 +160,7 @@ namespace BIDSHelper.SSIS
         //only way I could find to monitor when row data in the grid changes
         void grid_Invalidated(object sender, InvalidateEventArgs e)
         {
-#if DENALI
+#if DENALI || SQL2014
             CheckButtonIcons();
 #endif            
             RefreshHighlights();
@@ -189,7 +191,7 @@ namespace BIDSHelper.SSIS
                 if (bSkipHighlighting) return;
                 if (variablesToolWindowControl == null) return;
 
-#if DENALI
+#if DENALI || SQL2014
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
 #else
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
@@ -216,7 +218,7 @@ namespace BIDSHelper.SSIS
                         System.Diagnostics.Debug.WriteLine(cell.CellData.GetType().FullName);
                         Variable variable = GetVariableForRow(iRow);
 
-#if DENALI
+#if DENALI || SQL2014
                         // Denali doesn't need variable highlighting, it is built in. This is a quick fix to disable the highlighting
                         // for Denali only. The other code stays the same for backward compatability when compiled as 2005 or 2008 projects.
                         // We will retain the configuration highlighting though.
@@ -322,7 +324,7 @@ namespace BIDSHelper.SSIS
         {
             try
             {
-#if DENALI
+#if DENALI || SQL2014
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
 #else
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
@@ -389,7 +391,7 @@ namespace BIDSHelper.SSIS
                 if (variables.Count > 0)
                 {
                     System.Collections.ArrayList variableDesigners = GetSelectedVariableDesigners();
-#if DENALI
+#if DENALI || SQL2014
                     packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
 #else
                     packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
@@ -580,7 +582,7 @@ namespace BIDSHelper.SSIS
 
             if (move)
             {
-#if DENALI
+#if DENALI || SQL2014
                 //terrible workaround to get the exact right parameter type for the DeleteVariables method in Denali. Guess calling InvokeMember against a function with a parameter of a generic type is tricky
                 System.Collections.IList listParam = ((System.Collections.IList)System.Type.GetType("System.Collections.Generic.List`1[[" + ExpressionHighlighterPlugin.GetPrivateType(variablesToolWindowControl.GetType(), "Microsoft.DataTransformationServices.Design.VariableDesigner").AssemblyQualifiedName + "]]").GetConstructor(new Type[] { }).Invoke(new object[] { }));
                 foreach (object o in sourceVariableDesigners)
@@ -662,7 +664,7 @@ namespace BIDSHelper.SSIS
                             Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass eval = new Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass();
                             eval.Expression = v.Expression;
                             eval.Events = events;
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
                             eval.Evaluate(DtsConvert.GetExtendedInterface(o.VariableDispenser), out val, false);
 #else
                             eval.Evaluate(DtsConvert.ToVariableDispenser90(o.VariableDispenser), out val, false);

@@ -649,7 +649,8 @@ namespace BIDSHelper
         }
 
 
-#if DENALI
+#if DENALI || SQL2014
+        //apparently this 11.0 DLL is used in VS2012 and VS2013... the 12.0 DLL didn't have the classes I need
         private static string VS2012_SHELL_INTEROP_ASSEMBLY_FULL_NAME = "Microsoft.VisualStudio.Shell.Interop.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 #endif
 
@@ -675,8 +676,8 @@ namespace BIDSHelper
 
             //try the VS2012 built-in diff viewer
             string sVS2012Error = string.Empty;
-#if DENALI
-            if (this.ApplicationObject.Version.CompareTo("11.") == 1)
+#if DENALI || SQL2014
+            if (this.ApplicationObject.Version.CompareTo("11.") == 1 || this.ApplicationObject.Version.CompareTo("12.") == 1)
             {
                 try
                 {

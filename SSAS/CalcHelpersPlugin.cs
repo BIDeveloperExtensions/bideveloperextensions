@@ -136,7 +136,7 @@ namespace BIDSHelper
                                     newCalcPropButton.ToolTipText = "Calculation Properties (BIDS Helper)";
                                     newCalcPropButton.Name = this.FullName + ".CommandProperties";
                                     newCalcPropButton.Tag = newCalcPropButton.Name;
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
                                     newCalcPropButton.ImageIndex = 12;
 #else
                                     newCalcPropButton.ImageIndex = 11;

@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 using Microsoft.DataWarehouse.Controls;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
 using IDTSConnectionManagerDatabaseParametersXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerDatabaseParameters100;
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSCustomPropertyXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;

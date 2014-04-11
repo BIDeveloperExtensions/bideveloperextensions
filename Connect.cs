@@ -103,6 +103,7 @@ namespace BIDSHelper
 
 #if DENALI
                 //handle assembly reference problems when the compiled reference doesn't exist in that version of Visual Studio
+                //doesn't appear to be needed for VS2013
                 AppDomain currentDomain = AppDomain.CurrentDomain;
                 currentDomain.AssemblyResolve += new ResolveEventHandler(currentDomain_AssemblyResolve);
 #endif
@@ -129,6 +130,7 @@ namespace BIDSHelper
         }
 
 #if DENALI
+//this isn't necessary in VS2013 apparently
         System.Reflection.Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             try

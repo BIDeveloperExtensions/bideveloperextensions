@@ -11,7 +11,11 @@ namespace BIDSHelper
     public class VersionCheckPlugin : BIDSHelperPluginBase
     {
 
-#if DENALI
+#if SQL2014
+        private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2014CurrentReleaseVersion.xml";
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2014";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2014";
+#elif DENALI
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2012CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2012";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2012";
@@ -25,7 +29,7 @@ namespace BIDSHelper
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2005";
 #endif
 
-        public static string BIDS_HELPER_RELEASE_URL = "http://www.codeplex.com/bidshelper/Release/ProjectReleases.aspx";
+        public static string BIDS_HELPER_RELEASE_URL = "https://bidshelper.codeplex.com/releases";
         private const int CHECK_EVERY_DAYS = 7;
         private const int CHECK_SECONDS_AFTER_STARTUP = 60;
 

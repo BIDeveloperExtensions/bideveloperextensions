@@ -49,7 +49,7 @@ namespace BIDSHelper.SSIS
 
                 ConnectionManager cm = p.Connections[sConnectionManagerName];
 
-#if DENALI
+#if DENALI || SQL2014
                 if (cm.OfflineMode) return list.ToArray();
 #endif
 

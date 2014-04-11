@@ -6,7 +6,7 @@
     using Microsoft.SqlServer.Dts.Runtime;
 
     //TODO: Update this to work with 2005
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
     class DataFlowAsynchPathsPractice : DesignPractice
     {
         //private ComponentInfos _componentInfos;
@@ -78,7 +78,7 @@
 
     }
 
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
     class DataFlowSortPractice : DesignPractice
     {
         public DataFlowSortPractice(string registryPath)
@@ -132,7 +132,7 @@
     }
 #endif
 
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
     class AccessModePractice : DesignPractice
     {
         public AccessModePractice(string registryPath)
@@ -163,7 +163,12 @@
                     PackageHelper.ComponentInfos[key].Name == "ADO NET Source" ||
                     PackageHelper.ComponentInfos[key].Name == "Lookup")
                 {
-                    IDTSCustomProperty100 prop = comp.CustomPropertyCollection["AccessMode"];
+                    IDTSCustomProperty100 prop = null;
+                    try
+                    {
+                        prop = comp.CustomPropertyCollection["AccessMode"]; //was throwing an error on some Lookup components
+                    }
+                    catch { }
 
                     if (prop != null && prop.Value is int)
                     {

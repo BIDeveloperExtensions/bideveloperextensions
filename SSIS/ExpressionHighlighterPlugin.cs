@@ -14,13 +14,13 @@ namespace BIDSHelper.SSIS
     using System.Threading;
     using Microsoft.Win32;
 
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
     using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 #else
     using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
 #endif
 
-#if DENALI
+#if DENALI || SQL2014
     using Microsoft.SqlServer.IntegrationServices.Designer.Model;
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
 #endif
@@ -125,7 +125,7 @@ namespace BIDSHelper.SSIS
                 if (ClosingWindow == null) return;
                 IDesignerHost designer = ClosingWindow.Object as IDesignerHost;
                 if (designer == null) return;
-#if !DENALI //apparently ProjectItem is null in Denali
+#if !DENALI && !SQL2014 //apparently ProjectItem is null in Denali and above
                 ProjectItem pi = ClosingWindow.ProjectItem;
                 if (pi == null || !(pi.Name.ToLower().EndsWith(".dtsx"))) return;
 #endif
@@ -216,7 +216,7 @@ namespace BIDSHelper.SSIS
 
                 try
                 {
-#if DENALI
+#if DENALI || SQL2014
                     IClipboardService clipboardService = (IClipboardService)package.Site.GetService(typeof(IClipboardService));
                     if (clipboardService.IsPasteActive)
                         bRequeue = true;
@@ -275,7 +275,7 @@ namespace BIDSHelper.SSIS
                                 if (diagram.ComponentDiagram == null) continue;
                                 ComponentDiagram oDtrControlFlowDiagram = diagram.ComponentDiagram;
 
-                                //#if DENALI
+                                //#if DENALI || SQL2014
                                 //IClipboardService clipService = diagram.Site.GetService(typeof(IClipboardService)) as IClipboardService;
                                 //#else
                                 Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipboardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)typeof(ComponentDiagram).InvokeMember("clipboardCommands", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
@@ -322,7 +322,7 @@ namespace BIDSHelper.SSIS
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#if !DENALI
+#if !DENALI && !SQL2014
                 try
                 {
                     if (!mostRecentDDSRefresh.ContainsKey(win))
@@ -367,7 +367,7 @@ namespace BIDSHelper.SSIS
 
                     if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.ControlFlow)
                     {
-#if DENALI
+#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
@@ -379,7 +379,7 @@ namespace BIDSHelper.SSIS
                         BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
 #endif
 
-#if DENALI
+#if DENALI || SQL2014
                         Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)viewControl.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, viewControl, null);
                         foreach (Microsoft.SqlServer.Graph.Model.ModelElement task in ctlFlowModel)
                         {
@@ -468,7 +468,7 @@ namespace BIDSHelper.SSIS
                             //don't need to monitor the Base Control (leftmost) combo box because changing it will trigger a change to the event handler combo: ((Microsoft.DataWarehouse.Controls.BaseControlComboBox)(viewControl.Controls["panel1"].Controls["panel2"].Controls["Custom ComboBox"]))
                         }
 
-#if DENALI
+#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
@@ -480,7 +480,7 @@ namespace BIDSHelper.SSIS
                         BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
 #endif                        
 
-#if DENALI 
+#if DENALI || SQL2014
                         foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
                         {
                             if (!(c is Microsoft.DataTransformationServices.Design.EventHandlerElementHost)) continue;
@@ -568,7 +568,7 @@ namespace BIDSHelper.SSIS
                     }
                     else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.DataFlow)
                     {
-#if DENALI
+#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
@@ -580,7 +580,7 @@ namespace BIDSHelper.SSIS
                         BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
 #endif
 
-#if DENALI
+#if DENALI || SQL2014
                         Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox pipelineComboBox = (Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox)(viewControl.Controls["panel1"].Controls["tableLayoutPanel"].Controls["pipelineComboBox"]);
                         if (pipelineComboBox.Tag == null)
                         {
@@ -757,7 +757,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-#if DENALI
+#if DENALI || SQL2014
         private void BuildConnectionManagerToDos(Package package, Control lvwConnMgrs, bool bIncremental, bool bRescan, ConnectionManager oIncrementalConnectionManager)
         {
             ConnectionManagerUserControl cmControl = (ConnectionManagerUserControl)lvwConnMgrs.GetType().InvokeMember("m_connectionManagerUserControl", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, lvwConnMgrs, null);
@@ -986,7 +986,7 @@ namespace BIDSHelper.SSIS
         #endregion
 
         #region Event Handlers For Incremental Highlighting
-#if !DENALI
+#if !DENALI && !SQL2014
         private void lvwConnMgrs_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             try

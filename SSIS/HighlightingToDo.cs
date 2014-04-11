@@ -8,7 +8,7 @@ namespace BIDSHelper.SSIS
     using Microsoft.DataWarehouse.Controls;
     using Microsoft.SqlServer.Dts.Runtime;
 
-#if DENALI
+#if DENALI || SQL2014
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
 #endif
 
@@ -296,7 +296,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-#if DENALI
+#if DENALI || SQL2014
         private static Dictionary<string, System.Windows.Media.Imaging.BitmapSource> _cacheBitmapSource = new Dictionary<string, System.Windows.Media.Imaging.BitmapSource>();
         public static System.Windows.Media.Imaging.BitmapSource GetBitmapSource(System.Drawing.Color color)
         {
@@ -392,7 +392,7 @@ namespace BIDSHelper.SSIS
         public Executable executable = null;
         public IDesignerHost controlFlowDesigner = null;
 
-#if DENALI
+#if DENALI || SQL2014
         public Microsoft.SqlServer.Graph.Model.ModelElement controlFlowTaskModelElement;
 #else
         public DdsDiagramHostControl controlFlowDiagram = null;
@@ -452,7 +452,7 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("highlighting task from cache");
             }
 
-#if DENALI
+#if DENALI || SQL2014
             this.controlFlowTaskModelElement.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
                 (System.Windows.Threading.DispatcherPriority.Normal,
                 (Action)(() =>
@@ -497,7 +497,7 @@ namespace BIDSHelper.SSIS
             bool returnValue = false;
             HasConfiguration = false;
 
-#if !DENALI //has built-in expression highlighting
+#if !DENALI && !SQL2014 //has built-in expression highlighting
             foreach (DtsProperty p in task.Properties)
             {
                 try
@@ -527,7 +527,7 @@ namespace BIDSHelper.SSIS
             {
                 ForEachEnumeratorHost forEachEnumerator = ((ForEachLoop)executable).ForEachEnumerator;
 
-#if !DENALI //has built-in expression highlighting
+#if !DENALI && !SQL2014 //has built-in expression highlighting
                 if (!returnValue)
                 {
                     foreach (DtsProperty p in forEachEnumerator.Properties)
@@ -576,7 +576,7 @@ namespace BIDSHelper.SSIS
         public string transformName = null;
         public string transformUniqueID = null;
 
-#if DENALI
+#if DENALI || SQL2014
         public Microsoft.SqlServer.Graph.Model.ModelElement dataFlowTransformModelElement;
 #else
         public IDesignerHost dataFlowDesigner = null;
@@ -614,7 +614,7 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("highlighting from cache for: " + transformUniqueID);
             }
 
-#if DENALI
+#if DENALI || SQL2014
             this.dataFlowTransformModelElement.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
                 (System.Windows.Threading.DispatcherPriority.Normal,
                 (Action)(() =>
@@ -686,7 +686,7 @@ namespace BIDSHelper.SSIS
     public class ConnectionManagerHighlightingToDo : HighlightingToDo
     {
         public ConnectionManager connection = null;
-#if DENALI
+#if DENALI || SQL2014
         public List<System.Windows.FrameworkElement> listConnectionLVIs = new List<System.Windows.FrameworkElement>();
 #else
         public List<ListViewItem> listConnectionLVIs = new List<ListViewItem>();
@@ -726,7 +726,7 @@ namespace BIDSHelper.SSIS
 
             lock (listConnectionLVIs)
             {
-#if DENALI
+#if DENALI || SQL2014
                 foreach (System.Windows.FrameworkElement fe in listConnectionLVIs)
                 {
                     if (fe != null)
@@ -754,7 +754,7 @@ namespace BIDSHelper.SSIS
         }
 
 
-#if !DENALI
+#if !DENALI && !SQL2014
         public static void HighlightConnectionManagerLVI(ListViewItem lviConn)
         {
             ConnectionManager connection = (ConnectionManager)lviConn.GetType().InvokeMember("Component", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, lviConn, null);
@@ -860,7 +860,7 @@ namespace BIDSHelper.SSIS
             bool returnValue = false;
             HasConfiguration = false;
 
-#if !DENALI //connection managers already have built-in expression highlighting in Denali, so don't run this code in Denali
+#if !DENALI && !SQL2014 //connection managers already have built-in expression highlighting in Denali, so don't run this code in Denali
             foreach (DtsProperty p in dtsObject.Properties)
             {
                 try

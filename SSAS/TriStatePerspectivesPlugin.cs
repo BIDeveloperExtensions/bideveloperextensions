@@ -24,7 +24,7 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForPerspectives = new System.Collections.Generic.Dictionary<string,EditorWindow>();
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForGridEvents = new System.Collections.Generic.Dictionary<string,EditorWindow>();
-#if DENALI
+#if DENALI || SQL2014
         private bool _IsMetroOrGreater = false;
 #endif
 
@@ -53,7 +53,7 @@ namespace BIDSHelper
                 Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
                 grid.MouseClick -= grid_MouseClick;
                 grid.KeyPress -= grid_KeyPress;
-#if DENALI
+#if DENALI || SQL2014
                 HookCellPaintEvent(grid, false);
 #endif
             }
@@ -64,7 +64,7 @@ namespace BIDSHelper
             }
         }
 
-#if DENALI
+#if DENALI || SQL2014
         //the CellPaint event is on an internal class Microsoft.AnalysisServices.Design.SquigglyFriendlyDlgGrid and it uses an internal Microsoft.AnalysisServices.Design.CellPaintEventArgs args, so you have to hook with reflection
         private void HookCellPaintEvent(object grid, bool add)
         {
@@ -152,7 +152,7 @@ namespace BIDSHelper
                     {
                         grid.MouseClick += new MouseEventHandler(grid_MouseClick);
                         grid.KeyPress += new KeyPressEventHandler(grid_KeyPress);
-#if DENALI
+#if DENALI || SQL2014
                         _IsMetroOrGreater = VisualStudioHelpers.IsMetroOrGreater(win);
                         HookCellPaintEvent(grid, true);
 #endif
@@ -162,7 +162,7 @@ namespace BIDSHelper
                     System.Reflection.BindingFlags getpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
 
                     object dlgStorage = null;
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
                     dlgStorage = grid.GetType().BaseType.BaseType.InvokeMember("DlgStorage", getpropertyflags, null, grid, null);
 #else
                     dlgStorage = grid.GetType().BaseType.InvokeMember("DlgStorage", getpropertyflags, null, grid, null); //Microsoft.SqlServer.Management.UI.Grid.IDlgStorage
@@ -401,7 +401,7 @@ namespace BIDSHelper
                 brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
             }
 
-#if DENALI
+#if DENALI || SQL2014
             //do this a new way that will work with VS2012 SSDT2012 and it's new usage of BkBrush to setup the new color scheme
             if (_IsMetroOrGreater)
             {
@@ -567,7 +567,7 @@ namespace BIDSHelper
         {
         }
 
-#if DENALI
+#if DENALI || SQL2014
         private class TriStatePerspectiveGridCell : Microsoft.SqlServer.Management.UI.Grid.GridCell
         {
             private Microsoft.SqlServer.Management.UI.Grid.GridCell _original;

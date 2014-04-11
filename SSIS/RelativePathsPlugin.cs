@@ -68,7 +68,7 @@ namespace BIDSHelper
                         Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
                         
                         IWin32Window parentWin;
-                        #if DENALI
+                        #if DENALI || SQL2014
                         parentWin = viewControl;
                         #else
                         DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
@@ -121,7 +121,7 @@ namespace BIDSHelper
             }
             else
             {
-                #if DENALI
+                #if DENALI || SQL2014
                 Cud.Transaction trans = Cud.BeginTransaction(this.packageForFixButton);
                 #endif
 
@@ -136,7 +136,7 @@ namespace BIDSHelper
                             sb.Append("Configuration ").Append(config.Name).AppendLine(" changed to relative path");
                             bChanged = true;
 
-                            #if DENALI
+                            #if DENALI || SQL2014
                             trans.ChangeProperty(config, "ConfigurationString");
                             #endif
                         }
@@ -154,7 +154,7 @@ namespace BIDSHelper
                     Control packageConfigurationsGridControl1 = form.Controls["packageConfigurationsGridControl1"];
                     packageConfigurationsGridControl1.GetType().InvokeMember("RefreshConfigurations", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod, null, packageConfigurationsGridControl1, new object[] { });
 
-                    #if DENALI
+                    #if DENALI || SQL2014
                     trans.Commit();
                     #endif
                 }
@@ -309,7 +309,7 @@ namespace BIDSHelper
 
                     outputWindow.ReportStatusMessage("Package " + item.Name);
 
-                    #if DENALI
+                    #if DENALI || SQL2014
                     Cud.Transaction trans = Cud.BeginTransaction(package);
                     #endif
 
@@ -324,7 +324,7 @@ namespace BIDSHelper
                                 outputWindow.ReportStatusMessage("  Configuration " + config.Name + " changed to relative path");
                                 bChanged = true;
 
-                                #if DENALI
+                                #if DENALI || SQL2014
                                 trans.ChangeProperty(config, "ConfigurationString");
                                 #endif
                             }
@@ -338,7 +338,7 @@ namespace BIDSHelper
                             outputWindow.ReportStatusMessage("  Connection " + conn.Name + " changed to relative path");
                             bChanged = true;
 
-                            #if DENALI
+                            #if DENALI || SQL2014
                             trans.ChangeProperty(conn, "ConnectionString");
                             #endif
                         }

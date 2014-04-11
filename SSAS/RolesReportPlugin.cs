@@ -133,7 +133,7 @@ namespace BIDSHelper
                 bool bIsTabular = false;
                 if (sFileName.EndsWith(".bim"))
                 {
-#if DENALI
+#if DENALI || SQL2014
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
                     db = sandbox.Database;
                     bIsTabular = true;
@@ -1064,7 +1064,7 @@ namespace BIDSHelper
             {
                 get
                 {
-#if DENALI
+#if DENALI || SQL2014
                     try //Tabular
                     {
                         if (dimensionAttribute == null)
@@ -1249,7 +1249,7 @@ namespace BIDSHelper
                     {
                         MiningStructurePermission perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
                         if (perm == null) return "None";
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
                         return perm.AllowDrillThrough ? "Drillthrough" : "None";
 #else
                         return "None";

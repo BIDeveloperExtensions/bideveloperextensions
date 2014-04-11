@@ -20,6 +20,19 @@ namespace BIDSHelper.SSAS.Tabular
             this.erDiagram = diagramInput;
         }
 
+#if SQL2014 || (DENALI && DEBUG)
+        //after SQL2012 RTM at some point this Microsoft.AnalysisServices.Common.DiagramActionBasic method changed to not include the second parameter?
+        //so for SQL2014 compile without the second parameter
+        //for SQL2012 on the build server (which is RTM) compile with the second parameter
+        //for SQL2012 on our laptop (DEBUG) skip the second parameter
+        public override IDiagramActionInstance CreateActionInstance(IEnumerable<IDiagramObject> targets) //, bool forceExecutionWithConfirmSkipped)
+        {
+            DiagramActionInstance instance = new DiagramActionInstance(this);
+            instance.Targets = targets;
+            //instance.ForceExecutionWithConfirmSkipped = forceExecutionWithConfirmSkipped;
+            return instance;
+        }
+#elif DENALI
         public override IDiagramActionInstance CreateActionInstance(IEnumerable<IDiagramObject> targets, bool forceExecutionWithConfirmSkipped)
         {
             DiagramActionInstance instance = new DiagramActionInstance(this);
@@ -27,6 +40,7 @@ namespace BIDSHelper.SSAS.Tabular
             instance.ForceExecutionWithConfirmSkipped = forceExecutionWithConfirmSkipped;
             return instance;
         }
+#endif
 
         // Properties
         protected ERDiagram ERDiagram

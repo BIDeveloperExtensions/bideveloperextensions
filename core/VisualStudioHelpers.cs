@@ -46,5 +46,39 @@ namespace BIDSHelper
             catch { }
             return false;
         }
+
+
+        public static System.Windows.Forms.DialogResult SafeShowMessageBox(System.Windows.Forms.UserControl form, string text)
+        {
+            if (form.InvokeRequired)
+            {
+                //important to show the notification on the main thread of BIDS
+                return (System.Windows.Forms.DialogResult)form.Invoke(
+                    new Func<System.Windows.Forms.DialogResult>(() => SafeShowMessageBox(form, text))
+                    );
+            }
+            else
+            {
+                System.Windows.Forms.IWin32Window owner = (System.Windows.Forms.IWin32Window)form;
+                return System.Windows.Forms.MessageBox.Show(owner, text);
+            }
+        }
+
+        public static System.Windows.Forms.DialogResult SafeShowMessageBox(System.Windows.Forms.UserControl form, string text, string caption, System.Windows.Forms.MessageBoxButtons buttons, System.Windows.Forms.MessageBoxIcon icon)
+        {
+            if (form.InvokeRequired)
+            {
+                //important to show the notification on the main thread of BIDS
+                return (System.Windows.Forms.DialogResult)form.Invoke(
+                    new Func<System.Windows.Forms.DialogResult>(() => SafeShowMessageBox(form, text, caption, buttons, icon))
+                    );
+            }
+            else
+            {
+                System.Windows.Forms.IWin32Window owner = (System.Windows.Forms.IWin32Window)form;
+                return System.Windows.Forms.MessageBox.Show(owner, text, caption, buttons, icon);
+            }
+        }
+
     }
 }

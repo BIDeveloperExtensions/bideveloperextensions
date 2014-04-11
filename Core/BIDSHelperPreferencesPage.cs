@@ -32,13 +32,27 @@ namespace BIDSHelper.Core
             this.Width = 395; //392
             this.Height = 290;
 
+#if DENALI || SQL2014
+            if (Connect.Application.Version.CompareTo("11.") == 1 || Connect.Application.Version.CompareTo("12.") == 1)
+            {
+                lblTFS.Text = "Visual Studio Built-in";
+                lblVSS.Text = string.Empty;
+            }
+            else
+            {
+                lblTFS.Text = "TFS: " + (SmartDiffPlugin.TFSInstalled ? "Installed" : "Not Installed");
+                lblVSS.Text = "VSS: " + (SmartDiffPlugin.VSSInstalled ? "Installed" : "Not Installed");
+            }
+#else
             lblTFS.Text = "TFS: " + (SmartDiffPlugin.TFSInstalled ? "Installed" : "Not Installed");
             lblVSS.Text = "VSS: " + (SmartDiffPlugin.VSSInstalled ? "Installed" : "Not Installed");
+#endif
+
 
             if (string.IsNullOrEmpty(SmartDiffPlugin.CustomDiffViewer))
             {
                 radSmartDiffDefault.Checked = true;
-                txtSmartDiffCustom.Text = "\"C:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\IDE\\diffmerge.exe\" ? ? /ignoreeol /ignorespace";
+                txtSmartDiffCustom.Text = "\"C:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\Common7\\IDE\\diffmerge.exe\" ? ? /ignoreeol /ignorespace";
             }
             else
             {

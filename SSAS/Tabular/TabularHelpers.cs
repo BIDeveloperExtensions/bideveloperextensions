@@ -17,6 +17,12 @@ namespace BIDSHelper
         {
             Microsoft.VisualStudio.Project.Automation.OAFileItem project = hierItem.Object as Microsoft.VisualStudio.Project.Automation.OAFileItem;
             if (project == null) return null;
+            return GetVSHostManager(project, openIfNotOpen);
+        }
+
+        private static Microsoft.AnalysisServices.VSHost.VSHostManager GetVSHostManager(Microsoft.VisualStudio.Project.Automation.OAFileItem project, bool openIfNotOpen)
+        {
+            if (project == null) return null;
             if (openIfNotOpen && !project.get_IsOpen(EnvDTE.Constants.vsViewKindPrimary))
             {
                 Window win = project.Open(EnvDTE.Constants.vsViewKindPrimary);
@@ -36,9 +42,34 @@ namespace BIDSHelper
             return ((Microsoft.VisualStudio.Project.ProjectNode)((((Microsoft.VisualStudio.Project.Automation.OAProjectItem<Microsoft.VisualStudio.Project.FileNode>)(hierItem.Object)).ContainingProject).Object)).Site;
         }
 
+        public static IServiceProvider GetTabularServiceProviderFromActiveWindow()
+        {
+            return GetTabularServiceProviderFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+        }
+
+        public static IServiceProvider GetTabularServiceProviderFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
+        {
+            Microsoft.VisualStudio.Project.Automation.OAFileItem project = projectItem as Microsoft.VisualStudio.Project.Automation.OAFileItem;
+            GetVSHostManager(project, openIfNotOpen); //just to force the window open if not open
+            return ((Microsoft.VisualStudio.Project.ProjectNode)((project.ContainingProject).Object)).Site;
+        }
+
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
         {
             Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
+            if (host == null) return null;
+            return host.Sandbox;
+        }
+
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromActiveWindow()
+        {
+            return GetTabularSandboxFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+        }
+
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
+        {
+            Microsoft.VisualStudio.Project.Automation.OAFileItem project = projectItem as Microsoft.VisualStudio.Project.Automation.OAFileItem;
+            Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(project, openIfNotOpen);
             if (host == null) return null;
             return host.Sandbox;
         }
@@ -48,6 +79,30 @@ namespace BIDSHelper
             Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
             if (host == null) return null;
             return host.Editor;
+        }
+
+        public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromActiveWindow()
+        {
+            return GetTabularSandboxEditorFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+        }
+
+        public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
+        {
+            Microsoft.VisualStudio.Project.Automation.OAFileItem project = projectItem as Microsoft.VisualStudio.Project.Automation.OAFileItem;
+            Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(project, openIfNotOpen);
+            if (host == null) return null;
+            return host.Editor;
+        }
+
+        public static Microsoft.AnalysisServices.Common.ERDiagram GetTabularERDiagramFromSandboxEditor(Microsoft.AnalysisServices.Common.SandboxEditor editor)
+        {
+            Microsoft.AnalysisServices.Common.DiagramDisplay diagramDisplay = (Microsoft.AnalysisServices.Common.DiagramDisplay)editor.GetType().InvokeMember("GetCurrentDiagramDisplay", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.NonPublic, null, editor, new object[] { });
+            Microsoft.AnalysisServices.Common.ERDiagram diagram = null;
+            if (diagramDisplay != null)
+            {
+                diagram = diagramDisplay.Diagram as Microsoft.AnalysisServices.Common.ERDiagram;
+            }
+            return diagram;
         }
 
         public static void SaveXmlAnnotation(MajorObject obj, string annotationName, object annotationValue)

@@ -15,6 +15,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\IDE\devenv.exe</StartProgram>
-    <StartArguments>"C:\Temp\Yukon to Katmai Testing\Yukon to Katmai Testing.dtproj"</StartArguments>
+    <StartArguments>
+    </StartArguments>
   </PropertyGroup>
 </Project>

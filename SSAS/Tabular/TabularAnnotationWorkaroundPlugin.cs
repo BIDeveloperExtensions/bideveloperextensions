@@ -86,6 +86,7 @@ namespace BIDSHelper
         /// <returns></returns>
         public override bool DisplayCommand(UIHierarchyItem item)
         {
+#if DENALI
             try
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
@@ -106,6 +107,7 @@ namespace BIDSHelper
             catch
             {
             }
+#endif
             return false;
         }
         #endregion

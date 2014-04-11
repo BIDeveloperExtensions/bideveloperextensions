@@ -127,7 +127,7 @@ namespace BIDSHelper
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
             Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
 
-#if DENALI
+#if DENALI || SQL2014
             Control lvwConnMgrs = null;
             package = (Package)win.PropertiesLinkComponent;
 
@@ -240,7 +240,7 @@ namespace BIDSHelper
 
                 if (dialogResult == DialogResult.OK)
                 {
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
                     wrap.IDTSConnectionManagerFlatFile100 ff = conn.InnerObject as wrap.IDTSConnectionManagerFlatFile100;
                     DtsConvert.GetExtendedInterface(conn);
 #else
@@ -267,7 +267,7 @@ namespace BIDSHelper
                         }
                         listUsedNames.Add(sName);
 
-#if KATMAI || DENALI
+#if KATMAI || DENALI || SQL2014
                         wrap.IDTSConnectionManagerFlatFileColumn100 col = ff.Columns.Add();
                         wrap.IDTSName100 name = col as wrap.IDTSName100;
 #else
