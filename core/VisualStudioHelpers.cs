@@ -47,6 +47,8 @@ namespace BIDSHelper
             return false;
         }
 
+        private delegate System.Windows.Forms.DialogResult DialogResultDelegate(System.Windows.Forms.UserControl form, string text);
+        private delegate System.Windows.Forms.DialogResult DialogResultDelegate2(System.Windows.Forms.UserControl form, string text, string caption, System.Windows.Forms.MessageBoxButtons buttons, System.Windows.Forms.MessageBoxIcon icon);
 
         public static System.Windows.Forms.DialogResult SafeShowMessageBox(System.Windows.Forms.UserControl form, string text)
         {
@@ -54,8 +56,8 @@ namespace BIDSHelper
             {
                 //important to show the notification on the main thread of BIDS
                 return (System.Windows.Forms.DialogResult)form.Invoke(
-                    new Func<System.Windows.Forms.DialogResult>(() => SafeShowMessageBox(form, text))
-                    );
+                    new DialogResultDelegate(SafeShowMessageBox), new object[] { form, text}
+                );
             }
             else
             {
@@ -70,8 +72,8 @@ namespace BIDSHelper
             {
                 //important to show the notification on the main thread of BIDS
                 return (System.Windows.Forms.DialogResult)form.Invoke(
-                    new Func<System.Windows.Forms.DialogResult>(() => SafeShowMessageBox(form, text, caption, buttons, icon))
-                    );
+                    new DialogResultDelegate2(SafeShowMessageBox), new object[] { form, text, caption, buttons, icon }
+                );
             }
             else
             {
