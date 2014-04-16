@@ -6,9 +6,11 @@ Doing a release of BIDSHelper
    b. BIDSHelper.Addin              (AboutBox details)
    c. BIDSHelper2008.Addin          (AboutBox details)
    d. BIDSHelper2012.Addin          (AboutBox details)
-   e. Setup\BIDSHelperSetup.nsi     ($PRODUCT_VERSION variable)
-   f. Setup\BIDSHelperSetup2008.nsi ($PRODUCT_VERSION variable)
-   g. Setup\BIDSHelperSetup2012.nsi ($PRODUCT_VERSION variable)
+   e. BIDSHelper2014.Addin          (AboutBox details)
+   f. Setup\BIDSHelperSetup.nsi     ($PRODUCT_VERSION variable)
+   g. Setup\BIDSHelperSetup2008.nsi ($PRODUCT_VERSION variable)
+   h. Setup\BIDSHelperSetup2012.nsi ($PRODUCT_VERSION variable)
+   i. Setup\BIDSHelperSetup2014.nsi ($PRODUCT_VERSION variable)
 
 2. Exclude any files still being worked on from the solution
 
@@ -24,3 +26,4 @@ Doing a release of BIDSHelper
    SQL2005CurrentReleaseVersion.xml
    SQL2008CurrentReleaseVersion.xml
    SQL2012CurrentReleaseVersion.xml
+   SQL2014CurrentReleaseVersion.xml
