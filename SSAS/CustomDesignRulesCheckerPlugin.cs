@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation;
 using System.Windows.Forms;
+using BIDSHelper.SSAS;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.AnalysisServices;
@@ -122,15 +123,17 @@ namespace BIDSHelper
         {
             try
             {
-
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
 
+                // test if this is a Multi-Dim project
                 if (hierItem.Object is EnvDTE.Project)
                 {
                     EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = p as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                    if (p == null) return false;
+
                     if (projExt.Kind == BIDSProjectKinds.SSAS)
                     {
 
@@ -139,7 +142,10 @@ namespace BIDSHelper
                         //ScanAnalysisServicesProperties(db);
                     }
                 }
-                return false;
+                // else test if this is a tabular .bim file
+                if (!(hierItem.Object is ProjectItem)) return false;
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                return (sFileName.EndsWith(".bim"));
 
             }
             catch
@@ -155,23 +161,39 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                SolutionClass solution = hierItem.Object as SolutionClass;
-
+                //SolutionClass solution = hierItem.Object as SolutionClass;
+                
+                Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = null;
+                Database db = null;
+                bool targetFound=false;
                 if (hierItem.Object is EnvDTE.Project)
                 {
                     EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
                     if (projExt.Kind == BIDSProjectKinds.SSAS)
                     {
-
-                        Database db = (Database)p.Object;
-                        //ScanAnalysisServicesProperties(db);
-                        RunCustomDesignRules(db);
+                        db = (Database)p.Object;
+                        targetFound = true;
+                    }
+                }
+                if (hierItem.Object is ProjectItem)
+                {
+                    string sFileName = ((ProjectItem) hierItem.Object).Name.ToLower();
+                    if (sFileName.EndsWith(".bim"))
+                    {
+                        sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                        targetFound = true;
                     }
                 }
 
-
-
+                if (targetFound)
+                {
+                    RunCustomDesignRules(db, sandbox);
+                }
+                else
+                {
+                    MessageBox.Show("No valid design rule target found");
+                }
             }
             catch (System.Exception ex)
             {
@@ -179,7 +201,7 @@ namespace BIDSHelper
             }
         }
 
-        public void RunCustomDesignRules(Database db)
+        public void RunCustomDesignRules(Database db, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             if (((System.Array)solExplorer.SelectedItems).Length != 1)
@@ -196,9 +218,21 @@ namespace BIDSHelper
             {
                 //ClearTaskList();
                 ClearErrorList();
-
+                ApplicationObject.StatusBar.Text = "Starting Powershell Design Rules Engine...";
                 var ps = PowerShell.Create();
-                ps.Runspace.SessionStateProxy.SetVariable("CurrentDB", db);
+                string modelType;
+                if (db == null)
+                {
+                    modelType = "Tabular";
+                    ps.Runspace.SessionStateProxy.SetVariable("WorkspaceConnection", sandbox.AdomdConnection);
+                    ps.Runspace.SessionStateProxy.SetVariable("CurrentCube", sandbox.Cube);
+                }
+                else
+                {
+                    modelType = "MultiDim";
+                    ps.Runspace.SessionStateProxy.SetVariable("CurrentDB", db);
+                }
+                ps.Runspace.SessionStateProxy.SetVariable("ModelType", modelType);
                 ps.Runspace.SessionStateProxy.SetVariable("VerbosePreference", "Continue");
 
 
@@ -207,21 +241,63 @@ namespace BIDSHelper
                 ps.Streams.Error.DataAdded += new EventHandler<DataAddedEventArgs>(Error_DataAdded);
                 ps.Streams.Verbose.DataAdded += new EventHandler<DataAddedEventArgs>(Verbose_DataAdded);
 
+                ApplicationObject.StatusBar.Text = "Loading Custom Design Rules...";
+
+                // TODO - look into adding a script to allow calling a copy from a central rule repository
+
                 string dllFile = (new System.Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase)).AbsolutePath;
                 System.Diagnostics.Debug.WriteLine(dllFile);
                 FileInfo dll = new FileInfo(dllFile);
                 DirectoryInfo scripts = new DirectoryInfo(dll.Directory.FullName + "\\SSAS_Design_Rules");
 
-                foreach (FileInfo f in scripts.GetFiles("*.ps1"))
+                foreach (FileInfo f in scripts.GetFiles(modelType + "_*.ps1"))
                 {
                     TextReader tr = new StreamReader(f.OpenRead());
 
                     string psScript = tr.ReadToEnd();
                     ps.Commands.Clear();
-                    ps.Commands.AddScript(psScript);
+                    ps.AddScript(psScript);
                     ps.Invoke();
                 }
+                ps.Commands.Clear();
+                // get a list of functions
+                var pipeline = ps.Runspace.CreatePipeline();
+                
+                var cmd1 = new System.Management.Automation.Runspaces.Command("get-childitem");
+                cmd1.Parameters.Add("Path", @"function:\Check*");
+                pipeline.Commands.Add(cmd1);
 
+                var cmd2 = new System.Management.Automation.Runspaces.Command("where-object");
+                var sb = ScriptBlock.Create("$_.Parameters.Count -eq 0");
+                cmd2.Parameters.Add("FilterScript", sb);
+                pipeline.Commands.Add(cmd2);  
+
+                var funcs = pipeline.Invoke();
+                var funcList = new List<string>();
+                foreach (var f in funcs)
+                {
+                    funcList.Add(f.ToString());
+                }
+                ps.Commands.Clear();
+                ApplicationObject.StatusBar.Text = "";
+                // show dialog
+                var dialog = new CustomDesignRulesCheckerForm();
+                dialog.Functions = funcList;
+                dialog.Plugin = this;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    var iCnt = 0;
+                    // run selected functions
+                    foreach (var f in dialog.Functions)
+                    {
+                        ApplicationObject.StatusBar.Progress(true,string.Format("Running rule '{0}'",f),iCnt, dialog.Functions.Count );
+                        ps.AddCommand(f);
+                        ps.Invoke();
+                        iCnt++;
+                    }
+                    ApplicationObject.StatusBar.Progress(false);
+                }
             }
             catch (System.Exception ex)
             {
@@ -371,7 +447,7 @@ namespace BIDSHelper
             tl.Parent.Activate();
         }
 
-        private void ClearErrorList()
+        public void ClearErrorList()
         {
             //TODO
             ErrorTask objErrorTask;
