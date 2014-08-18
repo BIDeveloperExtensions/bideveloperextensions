@@ -32,9 +32,9 @@ namespace BIDSHelper.SSAS
             foreach (Microsoft.AnalysisServices.Action action in _listActionClones)
             {
                 bool bAlreadyAdded = false;
-                if (action is DrillThroughAction)
+                if (action is DrillThroughAction | action.Type == ActionType.Rowset )
                 {
-                    DrillThroughAction daction = (DrillThroughAction)action;
+                    var daction = (Microsoft.AnalysisServices.Action)action;
                     MeasureGroup mg = null;
                     foreach (MeasureGroup mg2 in cube.MeasureGroups)
                     {
@@ -55,7 +55,7 @@ namespace BIDSHelper.SSAS
                         {
                             TabularAction actionAnnotation = new TabularAction();
 
-                            DrillThroughAction newaction = (DrillThroughAction)daction.Clone();
+                            var newaction = (Microsoft.AnalysisServices.Action)daction.Clone();
                             string sSuffix = " " + (i++);
                             newaction.Target = Convert.ToString(r["MEASURE_UNIQUE_NAME"]);
 
