@@ -286,13 +286,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="SSAS\CustomDesignRulesCheckerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSAS\CustomDesignRulesCheckerForm.Designer.cs">
-      <DependentUpon>CustomDesignRulesCheckerForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSAS\CustomDesignRulesCheckerPlugin.cs" />
     <Compile Include="SSAS\DeployPerspectivesPlugin.cs" />
     <Compile Include="SSAS\DeleteUnusedIndexesPlugin.cs" />
     <Compile Include="SSAS\DuplicateRole.cs" />
@@ -859,9 +852,6 @@
     <None Include="Resources\DeployMdxScript.xslt" />
     <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
     <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
-    <EmbeddedResource Include="SSAS\CustomDesignRulesCheckerForm.resx">
-      <DependentUpon>CustomDesignRulesCheckerForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\DeleteUnusedIndexesForm.resx">
       <DependentUpon>DeleteUnusedIndexesForm.cs</DependentUpon>
     </EmbeddedResource>
