@@ -32,55 +32,52 @@ namespace BIDSHelper.SSAS
             foreach (Microsoft.AnalysisServices.Action action in _listActionClones)
             {
                 bool bAlreadyAdded = false;
-                if (action is DrillThroughAction | action.Type == ActionType.Rowset )
+                var daction = (Microsoft.AnalysisServices.Action)action;
+                MeasureGroup mg = null;
+                foreach (MeasureGroup mg2 in cube.MeasureGroups)
                 {
-                    var daction = (Microsoft.AnalysisServices.Action)action;
-                    MeasureGroup mg = null;
-                    foreach (MeasureGroup mg2 in cube.MeasureGroups)
+                    if (daction.Target == "MeasureGroupMeasures(\"" + mg2.Name + "\")")
                     {
-                        if (daction.Target == "MeasureGroupMeasures(\"" + mg2.Name + "\")")
-                        {
-                            mg = mg2;
-                            break;
-                        }
-                    }
-                    if (mg != null) //if this is a drillthrough action targeting a whole measure group, MeasureGroupMeasures doesn't actually return the calculated measures in a measure group, so we have to take this one drillthrough action and clone it for each measure under the covers
-                    {
-                        Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
-                        restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
-                        restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("MEASUREGROUP_NAME", mg.Name));
-                        DataSet dataset = conn.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
-                        int i = 0;
-                        foreach (DataRow r in dataset.Tables[0].Rows)
-                        {
-                            TabularAction actionAnnotation = new TabularAction();
-
-                            var newaction = (Microsoft.AnalysisServices.Action)daction.Clone();
-                            string sSuffix = " " + (i++);
-                            newaction.Target = Convert.ToString(r["MEASURE_UNIQUE_NAME"]);
-
-                            if (i == 1)
-                            {
-                                actionAnnotation.IsMasterClone = true;
-                            }
-                            else
-                            {
-                                newaction.ID = daction.ID + sSuffix;
-                                newaction.Name = daction.Name + sSuffix;
-                                _dictActionPerspectives.Add(newaction.ID, _dictActionPerspectives[action.ID]);
-                            }
-
-                            actionAnnotation.ID = newaction.ID;
-                            actionAnnotation.Perspectives = _dictActionPerspectives[action.ID];
-                            actionAnnotation.OriginalTarget = daction.Target;
-
-                            listAnnotationActions.Add(actionAnnotation);
-                            list.Add(newaction);
-                            bAlreadyAdded = true;
-                        }
+                        mg = mg2;
+                        break;
                     }
                 }
-                
+                if (mg != null) //if this is a drillthrough action targeting a whole measure group, MeasureGroupMeasures doesn't actually return the calculated measures in a measure group, so we have to take this one drillthrough action and clone it for each measure under the covers
+                {
+                    Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
+                    restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
+                    restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("MEASUREGROUP_NAME", mg.Name));
+                    DataSet dataset = conn.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
+                    int i = 0;
+                    foreach (DataRow r in dataset.Tables[0].Rows)
+                    {
+                        TabularAction actionAnnotation = new TabularAction();
+
+                        var newaction = (Microsoft.AnalysisServices.Action)daction.Clone();
+                        string sSuffix = " " + (i++);
+                        newaction.Target = Convert.ToString(r["MEASURE_UNIQUE_NAME"]);
+
+                        if (i == 1)
+                        {
+                            actionAnnotation.IsMasterClone = true;
+                        }
+                        else
+                        {
+                            newaction.ID = daction.ID + sSuffix;
+                            newaction.Name = daction.Name + sSuffix;
+                            _dictActionPerspectives.Add(newaction.ID, _dictActionPerspectives[action.ID]);
+                        }
+
+                        actionAnnotation.ID = newaction.ID;
+                        actionAnnotation.Perspectives = _dictActionPerspectives[action.ID];
+                        actionAnnotation.OriginalTarget = daction.Target;
+
+                        listAnnotationActions.Add(actionAnnotation);
+                        list.Add(newaction);
+                        bAlreadyAdded = true;
+                    }
+                }
+
                 if (!bAlreadyAdded)
                 {
                     list.Add(action);
@@ -179,11 +176,7 @@ namespace BIDSHelper.SSAS
                 _listActionClones.Add(clone);
                 if (!string.IsNullOrEmpty(actionAnnotation.OriginalTarget))
                 {
-                    DrillThroughAction daction = clone as DrillThroughAction;
-                    if (daction != null)
-                    {
-                        daction.Target = actionAnnotation.OriginalTarget;
-                    }
+                    clone.Target = actionAnnotation.OriginalTarget;
                 }
 
                 List<string> lPerspectives = new List<string>();
@@ -778,12 +771,9 @@ namespace BIDSHelper.SSAS
             {
                 cmbTarget.Items.Clear();
                 cmbTarget.Items.Add(string.Empty);
-                if (cmbActionType.Text == ActionType.DrillThrough.ToString())
+                foreach (MeasureGroup mg in cube.MeasureGroups)
                 {
-                    foreach (MeasureGroup mg in cube.MeasureGroups)
-                    {
-                        cmbTarget.Items.Add("MeasureGroupMeasures(\"" + mg.Name + "\")");
-                    }
+                    cmbTarget.Items.Add("MeasureGroupMeasures(\"" + mg.Name + "\")");
                 }
             }
             else if (targetType == ActionTargetType.Cube)
