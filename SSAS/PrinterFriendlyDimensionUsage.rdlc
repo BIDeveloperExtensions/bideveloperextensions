@@ -447,7 +447,7 @@
                           <rd:DefaultName>Column1Name</rd:DefaultName>
                           <Style>
                             <BorderStyle>
-                              <Bottom>Solid</Bottom>
+                              <Bottom>=iif(Fields!Column1Name.Value = "","","Solid")</Bottom>
                             </BorderStyle>
                             <FontSize>9pt</FontSize>
                             <FontWeight>700</FontWeight>

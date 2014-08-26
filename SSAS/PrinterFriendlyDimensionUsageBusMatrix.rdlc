@@ -186,6 +186,15 @@
                 <GroupExpressions>
                   <GroupExpression>=Fields!DimensionName.Value</GroupExpression>
                 </GroupExpressions>
+                <Filters>
+                  <Filter>
+                    <FilterExpression>=Fields!DimensionName.Value</FilterExpression>
+                    <Operator>NotEqual</Operator>
+                    <FilterValues>
+                      <FilterValue>=Nothing</FilterValue>
+                    </FilterValues>
+                  </Filter>
+                </Filters>
               </Grouping>
               <Sorting>
                 <SortBy>

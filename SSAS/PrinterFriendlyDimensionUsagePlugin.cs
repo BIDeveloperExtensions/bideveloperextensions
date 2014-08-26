@@ -77,8 +77,14 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 if (((System.Array)solExplorer.SelectedItems).Length != 1)
                     return false;
-
+                
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                if (sFileName.EndsWith(".bim"))
+                {
+                    return true;
+                }
+
                 return (((ProjectItem)hierItem.Object).Object is Cube);
             }
             catch
@@ -96,10 +102,27 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
 
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+
+#if DENALI || SQL2014
+                Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = null;
+#endif
+
+
+                bool bIsTabular = false;
                 Cube cub = null;
                 if (projItem.Object is Cube)
                 {
                     cub = (Cube)projItem.Object;
+                }
+                else if (sFileName.EndsWith(".bim"))
+                {
+#if DENALI || SQL2014
+                    sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                    cub = sandbox.Cube;
+                    bIsTabular = true;
+                    Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Measures;
+#endif
                 }
                 else
                 {
@@ -111,7 +134,26 @@ namespace BIDSHelper
                 DialogResult res = MessageBox.Show("Would you like a detailed report?\r\n\r\nPress Yes to see a detailed dimension usage report.\r\n\r\nPress No to see a summary level Bus Matrix dimension usage report.", "BIDS Helper - Printer Friendly Dimension Usage - Which Report Type?", MessageBoxButtons.YesNo);
 
                 ReportViewerForm frm = new ReportViewerForm();
-                frm.ReportBindingSource.DataSource = PrinterFriendlyDimensionUsage.GetDimensionUsage(cub);
+
+                if (bIsTabular)
+                {
+                    bool bIsBusMatrix = (res == DialogResult.No);
+                    System.Collections.Generic.List<DimensionUsage> list = PrinterFriendlyDimensionUsage.GetTabularDimensionUsage(sandbox, bIsBusMatrix);
+                    DeploymentSettings _deploymentSettings = new DeploymentSettings(projItem);
+
+                    //reset the database and cube name per the deployment settings
+                    foreach (DimensionUsage du in list)
+                    {
+                        du.DatabaseName = _deploymentSettings.TargetDatabase;
+                        du.CubeName = _deploymentSettings.TargetCubeName;
+                    }
+
+                    frm.ReportBindingSource.DataSource = list;
+                }
+                else
+                {
+                    frm.ReportBindingSource.DataSource = PrinterFriendlyDimensionUsage.GetDimensionUsage(cub);
+                }
 
                 if (res == DialogResult.No)
                     frm.Report = "SSAS.PrinterFriendlyDimensionUsageBusMatrix.rdlc";

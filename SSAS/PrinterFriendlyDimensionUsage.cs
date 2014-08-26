@@ -68,6 +68,133 @@ namespace BIDSHelper
             return dimUsage;
         }
 
+#if DENALI || SQL2014
+        public static List<DimensionUsage> GetTabularDimensionUsage(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox, bool bIsBusMatrix)
+        {
+            Cube c = sandbox.Cube;
+
+            List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
+            List<DimensionUsage> dimUsage = new List<DimensionUsage>();
+            foreach (CubeDimension cd in c.Dimensions)
+            {
+                bool bFoundVisibleAttribute = false;
+                foreach (DimensionAttribute da in cd.Dimension.Attributes)
+                {
+                    if (da.AttributeHierarchyVisible)
+                    {
+                        bFoundVisibleAttribute = true;
+                        break;
+                    }
+                }
+                if (bFoundVisibleAttribute)
+                    listCubeDimensions.Add(cd);
+
+                bool bFoundVisibleMeasure = false;
+                foreach (Microsoft.AnalysisServices.BackEnd.DataModelingMeasure m in sandbox.Measures)
+                {
+                    if (m.Table == cd.Dimension.Name && !m.IsPrivate)
+                    {
+                        bFoundVisibleMeasure = true;
+                        break;
+                    }
+                }
+                if (!bFoundVisibleMeasure && bIsBusMatrix) continue;
+
+                MeasureGroup mg = c.MeasureGroups[cd.DimensionID];
+                List<DimensionUsage> tmp = RecurseTabularRelationships(cd.Dimension, mg, bIsBusMatrix);
+                dimUsage.AddRange(tmp);
+
+                if (bFoundVisibleAttribute && bFoundVisibleMeasure) //if this table had a measure but no dimension relationships (except to itself)
+                {
+                    DimensionUsage du = new DimensionUsage("Fact", mg, cd, cd.Dimension);
+                    dimUsage.Add(du);
+                }
+                else if (tmp.Count == 0 && bIsBusMatrix && bFoundVisibleMeasure) //if this table with a measure had no dimension relationships, add it as such...
+                {
+                    DimensionUsage du = new DimensionUsage(string.Empty, mg, null, null);
+                    dimUsage.Add(du);
+                }
+            }
+
+            //remove dimensions in relationships
+            foreach (DimensionUsage du in dimUsage)
+            {
+                for (int i = 0; i < listCubeDimensions.Count; i++)
+                {
+                    if (listCubeDimensions[i].Name == du.DimensionName)
+                    {
+                        listCubeDimensions.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+
+            //add any cube dimensions which aren't related to any measure groups
+            foreach (CubeDimension cd in listCubeDimensions)
+            {
+                DimensionUsage du = new DimensionUsage(string.Empty, null, cd, cd.Dimension);
+                dimUsage.Add(du);
+            }
+
+            return dimUsage;
+        }
+
+        private static List<DimensionUsage> RecurseTabularRelationships(Dimension dMG, MeasureGroup mgOuter, bool bIsBusMatrix)
+        {
+            List<DimensionUsage> list = new List<DimensionUsage>();
+            foreach (Relationship relOuter in dMG.Relationships)
+            {
+                bool bFound = false;
+                MeasureGroup mgFrom = dMG.Parent.Cubes[0].MeasureGroups[relOuter.FromRelationshipEnd.DimensionID];
+                DimensionAttribute daFrom = dMG.Attributes[relOuter.FromRelationshipEnd.Attributes[0].AttributeID];
+                Dimension dTo = dMG.Parent.Dimensions[relOuter.ToRelationshipEnd.DimensionID];
+                DimensionAttribute daTo = dTo.Attributes[relOuter.ToRelationshipEnd.Attributes[0].AttributeID];
+                CubeDimension dToCube = dMG.Parent.Cubes[0].Dimensions[relOuter.ToRelationshipEnd.DimensionID];
+                foreach (MeasureGroupDimension mgdOuter in mgFrom.Dimensions)
+                {
+                    ReferenceMeasureGroupDimension rmgdOuter = mgdOuter as ReferenceMeasureGroupDimension;
+                    if (rmgdOuter != null && rmgdOuter.Materialization == ReferenceDimensionMaterialization.Regular && rmgdOuter.RelationshipID == relOuter.ID)
+                    {
+                        //active relationships have a materialized reference relationship
+                        bFound = true;
+                        break;
+                    }
+                }
+                string sActiveFlag = "Active";
+                if (!bFound)
+                {
+                    sActiveFlag = "Inactive";
+                    if (bIsBusMatrix) continue; //don't show inactive relationships in bus matrix view
+                }
+
+                DimensionUsage usage = new DimensionUsage(sActiveFlag, mgOuter, dToCube, dTo);
+                usage.Column1Name = "Foreign Key Column";
+                usage.Column1Value = daFrom.Name;
+                usage.Column2Name = "Primary Key Column";
+                usage.Column2Value = daTo.Name;
+
+                bool bFoundVisibleAttribute = false;
+                foreach (DimensionAttribute da in dTo.Attributes)
+                {
+                    if (da.AttributeHierarchyVisible)
+                    {
+                        bFoundVisibleAttribute = true;
+                        break;
+                    }
+                }
+                if (bFoundVisibleAttribute) //only if the To end has visible attributes should we show it as a dimension
+                    list.Add(usage);
+
+                if (bIsBusMatrix)
+                {
+                    //recurse if it's the bus matrix view
+                    list.AddRange(RecurseTabularRelationships(dTo, mgOuter, bIsBusMatrix));
+                }
+            }
+
+            return list;
+        }
+#endif
 
         /*
         * All relationships - Relationship Type
@@ -244,10 +371,14 @@ namespace BIDSHelper
                         {
                             usage.Column2Value = ((ColumnBinding)di.Source).TableID;
                             DataSourceView dsv = mga.ParentCube.DataSourceView;
-                            DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(usage.Column2Value)];
-                            if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+
+                            if (dsv.Schema.Tables.Contains(usage.Column2Value))
                             {
-                                usage.Column2Value = oTable.ExtendedProperties["FriendlyName"].ToString();
+                                DataTable oTable = dsv.Schema.Tables[dsv.Schema.Tables.IndexOf(usage.Column2Value)];
+                                if (oTable.ExtendedProperties.ContainsKey("FriendlyName"))
+                                {
+                                    usage.Column2Value = oTable.ExtendedProperties["FriendlyName"].ToString();
+                                }
                             }
                         }
                     }
@@ -274,8 +405,11 @@ namespace BIDSHelper
                 mCubeName = dimCube.Parent.Name;
                 mDatabaseName = dimCube.Parent.Parent.Name;
             }
-            mDimensionName = dimCube.Name;
-            if (dimCube.Name != dim.Name)  mDimensionName += " (" + dim.Name + ")";
+            if (dimCube != null)
+            {
+                mDimensionName = dimCube.Name;
+                if (dimCube.Name != dim.Name) mDimensionName += " (" + dim.Name + ")";
+            }
             mRelationshipType = relationshipType;
             //mFactTableColumnName = factTableColumn;
             //mAttributeColumnName = attributeColumn;
@@ -305,16 +439,22 @@ namespace BIDSHelper
         public string CubeName
         {
             get { return mCubeName; }
+            set { mCubeName = value; }
         }
 
         public string DatabaseName
         {
             get { return mDatabaseName; }
+            set { mDatabaseName = value; }
         }
 
         public string ImageName
         {
-            get { return "relationship" + RelationshipType.Replace(" ", string.Empty); }
+            get
+            {
+                if (RelationshipType == "Active" || RelationshipType == "Inactive") return "relationshipRegular"; //tabular
+                return "relationship" + RelationshipType.Replace(" ", string.Empty);
+            }
         }
 
         public string RelationshipType
