@@ -29,12 +29,12 @@ namespace BIDSHelper.SSAS
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridViewDrillthroughColumns = new System.Windows.Forms.DataGridView();
             this.DrillthroughDataGridCubeDimension = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.DrillthroughDataGridAttribute = new System.Windows.Forms.DataGridViewComboBoxColumn();
@@ -80,6 +80,8 @@ namespace BIDSHelper.SSAS
             this.valueDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.reportParameterBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.linkHelp = new System.Windows.Forms.LinkLabel();
+            this.btnDrillthroughDefault = new System.Windows.Forms.Button();
+            this.btnCopy = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDrillthroughColumns)).BeginInit();
             this.contextMenuStripDrillColumns.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.drillthroughColumnBindingSource)).BeginInit();
@@ -95,38 +97,38 @@ namespace BIDSHelper.SSAS
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridViewDrillthroughColumns.AutoGenerateColumns = false;
             this.dataGridViewDrillthroughColumns.CausesValidation = false;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewDrillthroughColumns.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewDrillthroughColumns.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewDrillthroughColumns.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewDrillthroughColumns.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.DrillthroughDataGridCubeDimension,
             this.DrillthroughDataGridAttribute});
             this.dataGridViewDrillthroughColumns.ContextMenuStrip = this.contextMenuStripDrillColumns;
             this.dataGridViewDrillthroughColumns.DataSource = this.drillthroughColumnBindingSource;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewDrillthroughColumns.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewDrillthroughColumns.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewDrillthroughColumns.Location = new System.Drawing.Point(123, 269);
             this.dataGridViewDrillthroughColumns.Name = "dataGridViewDrillthroughColumns";
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewDrillthroughColumns.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewDrillthroughColumns.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridViewDrillthroughColumns.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewDrillthroughColumns.ShowEditingIcon = false;
             this.dataGridViewDrillthroughColumns.Size = new System.Drawing.Size(432, 99);
@@ -205,7 +207,7 @@ namespace BIDSHelper.SSAS
             this.cmbAction.FormattingEnabled = true;
             this.cmbAction.Location = new System.Drawing.Point(123, 13);
             this.cmbAction.Name = "cmbAction";
-            this.cmbAction.Size = new System.Drawing.Size(339, 21);
+            this.cmbAction.Size = new System.Drawing.Size(280, 21);
             this.cmbAction.TabIndex = 0;
             this.cmbAction.SelectedIndexChanged += new System.EventHandler(this.cmbAction_SelectedIndexChanged);
             // 
@@ -353,6 +355,7 @@ namespace BIDSHelper.SSAS
             this.cmbTarget.Size = new System.Drawing.Size(457, 21);
             this.cmbTarget.Sorted = true;
             this.cmbTarget.TabIndex = 7;
+            this.cmbTarget.SelectedIndexChanged += new System.EventHandler(this.cmbTarget_SelectedIndexChanged);
             // 
             // lblChangingLabel
             // 
@@ -456,7 +459,7 @@ namespace BIDSHelper.SSAS
             // btnAdd
             // 
             this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAdd.Location = new System.Drawing.Point(468, 13);
+            this.btnAdd.Location = new System.Drawing.Point(409, 13);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(53, 21);
             this.btnAdd.TabIndex = 30;
@@ -559,38 +562,38 @@ namespace BIDSHelper.SSAS
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridViewReportParameters.AutoGenerateColumns = false;
             this.dataGridViewReportParameters.CausesValidation = false;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewReportParameters.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewReportParameters.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewReportParameters.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewReportParameters.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.valueDataGridViewTextBoxColumn});
             this.dataGridViewReportParameters.ContextMenuStrip = this.contextMenuStripDrillColumns;
             this.dataGridViewReportParameters.DataSource = this.reportParameterBindingSource;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewReportParameters.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewReportParameters.DefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewReportParameters.Location = new System.Drawing.Point(124, 269);
             this.dataGridViewReportParameters.Name = "dataGridViewReportParameters";
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewReportParameters.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewReportParameters.RowHeadersDefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridViewReportParameters.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewReportParameters.ShowEditingIcon = false;
             this.dataGridViewReportParameters.Size = new System.Drawing.Size(456, 99);
@@ -627,6 +630,29 @@ namespace BIDSHelper.SSAS
             this.linkHelp.Text = "Help and Examples";
             this.linkHelp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkHelp_LinkClicked);
             // 
+            // btnDrillthroughDefault
+            // 
+            this.btnDrillthroughDefault.Location = new System.Drawing.Point(15, 291);
+            this.btnDrillthroughDefault.Name = "btnDrillthroughDefault";
+            this.btnDrillthroughDefault.Size = new System.Drawing.Size(102, 23);
+            this.btnDrillthroughDefault.TabIndex = 39;
+            this.btnDrillthroughDefault.Text = "Add All Columns";
+            this.btnDrillthroughDefault.UseVisualStyleBackColor = true;
+            this.btnDrillthroughDefault.Visible = false;
+            this.btnDrillthroughDefault.Click += new System.EventHandler(this.btnDrillthroughDefault_Click);
+            // 
+            // btnCopy
+            // 
+            this.btnCopy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCopy.Location = new System.Drawing.Point(468, 13);
+            this.btnCopy.Name = "btnCopy";
+            this.btnCopy.Size = new System.Drawing.Size(53, 21);
+            this.btnCopy.TabIndex = 40;
+            this.btnCopy.TabStop = false;
+            this.btnCopy.Text = "Copy";
+            this.btnCopy.UseVisualStyleBackColor = true;
+            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
+            // 
             // TabularActionsEditorForm
             // 
             this.AcceptButton = this.okButton;
@@ -635,6 +661,8 @@ namespace BIDSHelper.SSAS
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(594, 572);
             this.ControlBox = false;
+            this.Controls.Add(this.btnCopy);
+            this.Controls.Add(this.btnDrillthroughDefault);
             this.Controls.Add(this.linkHelp);
             this.Controls.Add(this.dataGridViewReportParameters);
             this.Controls.Add(this.txtReportServer);
@@ -678,7 +706,7 @@ namespace BIDSHelper.SSAS
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "BIDS Helper Tabular Actions Editor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TabularActionsEditorForm_FormClosing);
-            this.Load += new System.EventHandler(this.MeasureGroupHealthCheckForm_Load);
+            this.Load += new System.EventHandler(this.TabularActionsEditorForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDrillthroughColumns)).EndInit();
             this.contextMenuStripDrillColumns.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.drillthroughColumnBindingSource)).EndInit();
@@ -736,5 +764,7 @@ namespace BIDSHelper.SSAS
         private System.Windows.Forms.LinkLabel linkHelp;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDrillColumns;
         private System.Windows.Forms.ToolStripMenuItem contextMenuDelete;
+        private System.Windows.Forms.Button btnDrillthroughDefault;
+        private System.Windows.Forms.Button btnCopy;
     }
 }

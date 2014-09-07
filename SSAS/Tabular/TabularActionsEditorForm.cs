@@ -187,7 +187,10 @@ namespace BIDSHelper.SSAS
                         lPerspectives.Add(perspective.Name);
                     }
                 }
-                _dictActionPerspectives.Add(action.ID, lPerspectives.ToArray());
+                if (!_dictActionPerspectives.ContainsKey(action.ID))
+                    _dictActionPerspectives.Add(action.ID, lPerspectives.ToArray());
+                else
+                    _dictActionPerspectives[action.ID] = lPerspectives.ToArray();
 
                 //see if this action is assigned to perspectives
                 if (actionAnnotation.Perspectives != null && actionAnnotation.Perspectives.Length > 0)
@@ -244,7 +247,7 @@ namespace BIDSHelper.SSAS
             }
         }
 
-        private void MeasureGroupHealthCheckForm_Load(object sender, EventArgs e)
+        private void TabularActionsEditorForm_Load(object sender, EventArgs e)
         {
         }
 
@@ -292,6 +295,69 @@ namespace BIDSHelper.SSAS
                         comboBox.SelectedIndex = list.IndexOf(item.Attribute);
                 }
             }
+            else if (this.dataGridViewDrillthroughColumns.CurrentCell.ColumnIndex == this.DrillthroughDataGridCubeDimension.Index)
+            {
+                MeasureGroup mg = null;
+                foreach (MeasureGroup mg2 in cube.MeasureGroups)
+                {
+                    if (Convert.ToString(cmbTarget.SelectedItem) == "MeasureGroupMeasures(\"" + mg2.Name + "\")")
+                    {
+                        mg = mg2;
+                        break;
+                    }
+                }
+
+                BindingSource bindingSource = this.dataGridViewDrillthroughColumns.DataSource as BindingSource;
+                TabularActionsEditorPlugin.DrillthroughColumn item = bindingSource.Current as TabularActionsEditorPlugin.DrillthroughColumn;
+                DataGridViewComboBoxEditingControl comboBox = e.Control as DataGridViewComboBoxEditingControl;
+
+                if (mg != null)
+                {
+                    List<string> relatedTables = GetRelatedTables(cube.Parent.Dimensions.GetByName(mg.Name), mg);
+                    relatedTables.Add(mg.Name);
+                    relatedTables.Sort();
+                    comboBox.Items.Clear();
+                    comboBox.Items.AddRange(relatedTables.ToArray());
+
+                    if (!string.IsNullOrEmpty(item.CubeDimension))
+                        comboBox.SelectedIndex = relatedTables.IndexOf(item.CubeDimension);
+                }
+                else
+                {
+                    comboBox.DataSource = new string[] { };
+                }
+            }
+        }
+
+        private static List<string> GetRelatedTables(Dimension dMG, MeasureGroup mgOuter)
+        {
+            List<string> list = new List<string>();
+            foreach (Relationship relOuter in dMG.Relationships)
+            {
+                bool bFound = false;
+                MeasureGroup mgFrom = dMG.Parent.Cubes[0].MeasureGroups[relOuter.FromRelationshipEnd.DimensionID];
+                Dimension dTo = dMG.Parent.Dimensions[relOuter.ToRelationshipEnd.DimensionID];
+                CubeDimension dToCube = dMG.Parent.Cubes[0].Dimensions[relOuter.ToRelationshipEnd.DimensionID];
+                foreach (MeasureGroupDimension mgdOuter in mgFrom.Dimensions)
+                {
+                    ReferenceMeasureGroupDimension rmgdOuter = mgdOuter as ReferenceMeasureGroupDimension;
+                    if (rmgdOuter != null && rmgdOuter.Materialization == ReferenceDimensionMaterialization.Regular && rmgdOuter.RelationshipID == relOuter.ID)
+                    {
+                        //active relationships have a materialized reference relationship
+                        bFound = true;
+                        break;
+                    }
+                }
+                if (!bFound)
+                {
+                    continue; //don't show inactive relationships 
+                }
+
+                list.Add(dToCube.Name);
+                list.AddRange(GetRelatedTables(dTo, mgOuter));
+            }
+
+            return list;
         }
 
         private void btnDrillthroughColumnMoveUp_Click(object sender, EventArgs e)
@@ -352,8 +418,50 @@ namespace BIDSHelper.SSAS
             {
                 lPerspectives.Add(p.Name);
             }
-            _dictActionPerspectives.Add(action.ID, lPerspectives.ToArray());
+            if (!_dictActionPerspectives.ContainsKey(action.ID))
+                _dictActionPerspectives.Add(action.ID, lPerspectives.ToArray());
+            else
+                _dictActionPerspectives[action.ID] = lPerspectives.ToArray();
             DisableControls(false, arrEnabledControls);
+        }
+
+        private void btnCopy_Click(object sender, EventArgs e)
+        {
+            SaveAction();
+
+            Microsoft.AnalysisServices.Action action = _currentAction.Clone();
+            string sName = action.Name + " Copy";
+            if (sName.Length > 95)
+                sName = sName.Substring(0, 95);
+            action.Name = sName;
+            action.ID = Guid.NewGuid().ToString();
+            _listActionClones.Add(action);
+
+            if (!_dictActionPerspectives.ContainsKey(action.ID))
+                _dictActionPerspectives.Add(action.ID, _dictActionPerspectives[_currentAction.ID]);
+            else
+                _dictActionPerspectives[action.ID] = _dictActionPerspectives[_currentAction.ID];
+            
+            cmbAction.Items.Add(action);
+            cmbAction.SelectedItem = _listActionClones[_listActionClones.Count - 1];
+
+            string sNameError = string.Empty;
+            if (!IsValidActionName(action.Name, out sNameError))
+            {
+                for (int i = 2; i < 1000000; i++)
+                {
+                    if (IsValidActionName(action.Name + " " + i, out sNameError))
+                    {
+                        action.Name = action.Name + " " + i;
+                        txtName.Text = action.Name;
+                        break;
+                    }
+                }
+            }
+
+            DisableControls(false, arrEnabledControls);
+
+            FillScreen();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -364,7 +472,10 @@ namespace BIDSHelper.SSAS
             if (_listActionClones.Count > 0)
                 cmbAction.SelectedIndex = 0;
             else
+            {
                 DisableControls(true, arrEnabledControls);
+                _currentAction = null;
+            }
         }
 
         private void cmbAction_SelectedIndexChanged(object sender, EventArgs e)
@@ -441,8 +552,15 @@ namespace BIDSHelper.SSAS
                 {
                     if (!string.IsNullOrEmpty(col.CubeDimension) && !string.IsNullOrEmpty(col.Attribute))
                     {
-                        CubeDimension cd = cube.Dimensions.GetByName(col.CubeDimension);
-                        action.Columns.Add(new CubeAttributeBinding(cube.ID, cd.ID, cd.Dimension.Attributes.GetByName(col.Attribute).ID, AttributeBindingType.Key)); //6/20/2012 - using AttributeBindingType.Key so that numbers come back as numbers in drillthrough
+                        CubeDimension cd = cube.Dimensions.FindByName(col.CubeDimension);
+                        if (cd != null)
+                        {
+                            DimensionAttribute da = cd.Dimension.Attributes.FindByName(col.Attribute); //if a column doesn't exist anymore in the model, don't throw an error, just skip it... TODO: give some warning or red indication or error?
+                            if (da != null)
+                            {
+                                action.Columns.Add(new CubeAttributeBinding(cube.ID, cd.ID, da.ID, AttributeBindingType.Key)); //6/20/2012 - using AttributeBindingType.Key so that numbers come back as numbers in drillthrough
+                            }
+                        }
                     }
                 }
 
@@ -494,6 +612,7 @@ namespace BIDSHelper.SSAS
                 if (_currentAction.Target != null && !cmbTarget.Items.Contains(_currentAction.Target))
                     cmbTarget.Items.Add(_currentAction.Target);
                 cmbTarget.SelectedItem = _currentAction.Target;
+                cmbTarget_SelectedIndexChanged(null, null);
 
                 cmbInvocation.SelectedItem = _currentAction.Invocation.ToString();
 
@@ -928,6 +1047,69 @@ namespace BIDSHelper.SSAS
                 e.Cancel = true;
                 MessageBox.Show(sNameErrorReason, "BIDS Helper Tabular Actions Editor");
             }
+        }
+
+        private void btnDrillthroughDefault_Click(object sender, EventArgs e)
+        {
+            SaveAction();
+            _listDrillthroughColumns = new List<TabularActionsEditorPlugin.DrillthroughColumn>();
+
+            MeasureGroup mg = null;
+            foreach (MeasureGroup mg2 in cube.MeasureGroups)
+            {
+                if (_currentAction.Target == "MeasureGroupMeasures(\"" + mg2.Name + "\")")
+                {
+                    mg = mg2;
+                    break;
+                }
+            }
+
+            if (mg != null)
+            {
+                List<string> relatedTables = GetRelatedTables(cube.Parent.Dimensions.GetByName(mg.Name), mg);
+                relatedTables.Add(mg.Name);
+                relatedTables.Sort();
+
+                foreach (string sTable in relatedTables)
+                {
+                    CubeDimension cd = cube.Dimensions.GetByName(sTable);
+                    if (cd == null) continue;
+
+                    foreach (Microsoft.AnalysisServices.DimensionAttribute a in cd.Dimension.Attributes)
+                    {
+                        if (a.Type != AttributeType.RowNumber) //RowNumber was not supposed to return in drillthrough commands but was at RTM due to a bug
+                        {
+                            TabularActionsEditorPlugin.DrillthroughColumn col = new TabularActionsEditorPlugin.DrillthroughColumn();
+                            col.CubeDimension = cd.Name;
+                            col.Attribute = a.Name;
+                            _listDrillthroughColumns.Add(col);
+                        }
+                    }
+                }
+
+                this.dataGridViewDrillthroughColumns.EndEdit();
+                this.drillthroughColumnBindingSource.DataSource = _listDrillthroughColumns;
+                dataGridViewDrillthroughColumns.DataSource = drillthroughColumnBindingSource;
+                dataGridViewDrillthroughColumns.Refresh();
+            }
+            else
+            {
+                return;
+            }
+
+        }
+
+        private void cmbTarget_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbActionType.Text == ActionType.DrillThrough.ToString())
+            {
+                if (Convert.ToString(cmbTarget.SelectedItem).StartsWith("MeasureGroupMeasures("))
+                {
+                    btnDrillthroughDefault.Visible = true;
+                    return;
+                }
+            }
+            btnDrillthroughDefault.Visible = false;
         }
 
 
