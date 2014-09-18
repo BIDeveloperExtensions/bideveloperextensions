@@ -832,6 +832,7 @@ namespace BIDSHelper.SSAS
                 txtMaxRows.Visible = true;
                 cmbTargetType.SelectedItem = ActionTargetType.Cells.ToString();
                 txtReportServer.Visible = false;
+                btnTestMDX.Top = this.lblCondition.Bottom + 2;
             }
             else if (cmbActionType.Text == ActionType.Report.ToString())
             {
@@ -849,6 +850,7 @@ namespace BIDSHelper.SSAS
                 txtMaxRows.Text = string.Empty;
                 txtMaxRows.Visible = true;
                 txtReportServer.Visible = true;
+                btnTestMDX.Top = btnDrillthroughDefault.Top;
 
                 _listReportParameters = new List<ReportParameter>();
                 _listReportParameters.Add(new ReportParameter("rs:Format", "\"HTML5\""));
@@ -869,6 +871,7 @@ namespace BIDSHelper.SSAS
                 cmbDefault.Visible = false;
                 txtMaxRows.Visible = false;
                 txtReportServer.Visible = false;
+                btnTestMDX.Top = btnDrillthroughDefault.Top;
             }
         }
 
@@ -1052,6 +1055,7 @@ namespace BIDSHelper.SSAS
         private void btnDrillthroughDefault_Click(object sender, EventArgs e)
         {
             SaveAction();
+
             _listDrillthroughColumns = new List<TabularActionsEditorPlugin.DrillthroughColumn>();
 
             MeasureGroup mg = null;
@@ -1096,7 +1100,6 @@ namespace BIDSHelper.SSAS
             {
                 return;
             }
-
         }
 
         private void cmbTarget_SelectedIndexChanged(object sender, EventArgs e)
@@ -1110,6 +1113,78 @@ namespace BIDSHelper.SSAS
                 }
             }
             btnDrillthroughDefault.Visible = false;
+        }
+
+        private void btnTestMDX_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SaveAction();
+
+                Microsoft.AnalysisServices.AdomdClient.AdomdCommand cmd = new Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
+                cmd.CommandTimeout = 0;
+                cmd.Connection = conn;
+
+                Dictionary<string, string> dictQueries = new Dictionary<string, string>();
+
+                if (_currentAction.CaptionIsMdx)
+                {
+                    dictQueries.Add("Caption MDX", "WITH MEMBER [Measures].[Caption MDX] as " + _currentAction.Caption + "\r\nSELECT [Measures].[Caption MDX] on COLUMNS");
+                }
+                if (!string.IsNullOrWhiteSpace(_currentAction.Condition))
+                {
+                    dictQueries.Add("Condition MDX", "WITH MEMBER [Measures].[Condition MDX] as " + _currentAction.Condition + "\r\nSELECT [Measures].[Condition MDX] on COLUMNS");
+                }
+                if (txtExpression.Visible && !string.IsNullOrWhiteSpace(txtExpression.Text))
+                {
+                    dictQueries.Add("Expression MDX", "WITH MEMBER [Measures].[Expression MDX] as " + txtExpression.Text + "\r\nSELECT [Measures].[Expression MDX] on COLUMNS");
+                }
+                if (_currentAction is ReportAction)
+                {
+                    ReportAction reportAction = (ReportAction)_currentAction;
+                    for (int i = 0; i < reportAction.ReportParameters.Count; i++)
+                    {
+                        ReportParameter rp = reportAction.ReportParameters[i];
+                        dictQueries.Add("Report Parameter " + i + " MDX (" + rp.Name + ")", "WITH MEMBER [Measures].[Report Parameter " + i + " MDX] as " + rp.Value + "\r\nSELECT [Measures].[Report Parameter " + i + " MDX] on COLUMNS");
+                    }
+                }
+
+                StringBuilder sbResult = new StringBuilder();
+                sbResult.AppendLine("Each MDX expression in this action is tested to make sure it works. Ensure each expression evaluates to a string except for the Condition which should evaluate to a boolean.\r\n");
+                foreach (string sKey in dictQueries.Keys)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine(dictQueries[sKey]);
+                    sb.AppendLine("FROM [" + cube.Name + "]");
+                    if (_currentAction.TargetType == ActionTargetType.AttributeMembers || _currentAction.TargetType == ActionTargetType.HierarchyMembers || _currentAction.TargetType == ActionTargetType.Hierarchy)
+                    {
+                        sb.AppendLine("WHERE (" + _currentAction.Target + ".[All].FirstChild)");
+                    }
+                    else if (_currentAction.TargetType == ActionTargetType.Level || _currentAction.TargetType == ActionTargetType.LevelMembers)
+                    {
+                        sb.AppendLine("WHERE (Head(" + _currentAction.Target + ",1))");
+                    }
+
+                    cmd.CommandText = sb.ToString();
+                    try
+                    {
+                        Microsoft.AnalysisServices.AdomdClient.CellSet cs = cmd.ExecuteCellSet();
+                        sbResult.AppendLine(sKey + ": " + Convert.ToString(cs.Cells[0].Value));
+                    }
+                    catch (Exception exMDX)
+                    {
+                        sbResult.AppendLine(sKey + ": ERROR! " + exMDX.Message);
+                    }
+                    sbResult.AppendLine();
+                }
+                if (dictQueries.Count == 0)
+                    sbResult.AppendLine("No MDX expressions used in this action.");
+                MessageBox.Show(sbResult.ToString(), "BIDS Helper Tabular Actions Editor - Test MDX Expressions");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
 

@@ -60,7 +60,7 @@ namespace BIDSHelper.SSAS
             this.cmbTarget = new System.Windows.Forms.ComboBox();
             this.lblChangingLabel = new System.Windows.Forms.Label();
             this.txtCondition = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
+            this.lblCondition = new System.Windows.Forms.Label();
             this.txtExpression = new System.Windows.Forms.TextBox();
             this.listPerspectives = new System.Windows.Forms.CheckedListBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -82,6 +82,7 @@ namespace BIDSHelper.SSAS
             this.linkHelp = new System.Windows.Forms.LinkLabel();
             this.btnDrillthroughDefault = new System.Windows.Forms.Button();
             this.btnCopy = new System.Windows.Forms.Button();
+            this.btnTestMDX = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDrillthroughColumns)).BeginInit();
             this.contextMenuStripDrillColumns.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.drillthroughColumnBindingSource)).BeginInit();
@@ -381,14 +382,14 @@ namespace BIDSHelper.SSAS
             this.txtCondition.Size = new System.Drawing.Size(457, 40);
             this.txtCondition.TabIndex = 9;
             // 
-            // label8
+            // lblCondition
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 223);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(54, 13);
-            this.label8.TabIndex = 21;
-            this.label8.Text = "Condition:";
+            this.lblCondition.AutoSize = true;
+            this.lblCondition.Location = new System.Drawing.Point(12, 223);
+            this.lblCondition.Name = "lblCondition";
+            this.lblCondition.Size = new System.Drawing.Size(54, 13);
+            this.lblCondition.TabIndex = 21;
+            this.lblCondition.Text = "Condition:";
             // 
             // txtExpression
             // 
@@ -653,6 +654,16 @@ namespace BIDSHelper.SSAS
             this.btnCopy.UseVisualStyleBackColor = true;
             this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
             // 
+            // btnTestMDX
+            // 
+            this.btnTestMDX.Location = new System.Drawing.Point(15, 237);
+            this.btnTestMDX.Name = "btnTestMDX";
+            this.btnTestMDX.Size = new System.Drawing.Size(102, 23);
+            this.btnTestMDX.TabIndex = 41;
+            this.btnTestMDX.Text = "Test All MDX";
+            this.btnTestMDX.UseVisualStyleBackColor = true;
+            this.btnTestMDX.Click += new System.EventHandler(this.btnTestMDX_Click);
+            // 
             // TabularActionsEditorForm
             // 
             this.AcceptButton = this.okButton;
@@ -661,6 +672,7 @@ namespace BIDSHelper.SSAS
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(594, 572);
             this.ControlBox = false;
+            this.Controls.Add(this.btnTestMDX);
             this.Controls.Add(this.btnCopy);
             this.Controls.Add(this.btnDrillthroughDefault);
             this.Controls.Add(this.linkHelp);
@@ -679,7 +691,7 @@ namespace BIDSHelper.SSAS
             this.Controls.Add(this.label11);
             this.Controls.Add(this.listPerspectives);
             this.Controls.Add(this.txtCondition);
-            this.Controls.Add(this.label8);
+            this.Controls.Add(this.lblCondition);
             this.Controls.Add(this.lblChangingLabel);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.cmbTarget);
@@ -739,7 +751,7 @@ namespace BIDSHelper.SSAS
         private System.Windows.Forms.ComboBox cmbTarget;
         private System.Windows.Forms.Label lblChangingLabel;
         private System.Windows.Forms.TextBox txtCondition;
-        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label lblCondition;
         private System.Windows.Forms.TextBox txtExpression;
         private System.Windows.Forms.CheckedListBox listPerspectives;
         private System.Windows.Forms.Label label11;
@@ -766,5 +778,6 @@ namespace BIDSHelper.SSAS
         private System.Windows.Forms.ToolStripMenuItem contextMenuDelete;
         private System.Windows.Forms.Button btnDrillthroughDefault;
         private System.Windows.Forms.Button btnCopy;
+        private System.Windows.Forms.Button btnTestMDX;
     }
 }
