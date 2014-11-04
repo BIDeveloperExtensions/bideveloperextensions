@@ -13,6 +13,7 @@ using Microsoft.DataWarehouse.Project;
 using Microsoft.DataWarehouse.VsIntegration.Shell;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.CommandBars;
+using Microsoft.CSharp;
 
 namespace BIDSHelper
 {
@@ -85,7 +86,8 @@ namespace BIDSHelper
             if (((System.Array)solExplorer.SelectedItems).Length == 1)
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project proj = hierItem.Object as Project;
+                //Project proj = hierItem.Object as Project;
+                Project proj = GetProjectReference(solExplorer);
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
@@ -125,10 +127,15 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                Project pr = GetProjectReference(solExplorer);
 
                 bool bJustDeploySelectedPackages = false;
                 System.Collections.Generic.List<Project> projects = new System.Collections.Generic.List<Project>();
-                if (hierItem.Object is Project)
+                if (pr != null)
+                {
+                    projects.Add(pr);
+                }
+                else if (hierItem.Object is Project)
                 {
                     projects.Add((Project)hierItem.Object);
                 }
@@ -491,8 +498,8 @@ namespace BIDSHelper
                     if (((System.Array)solExplorer.SelectedItems).Length != 1)
                         return;
 
-                    UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = hierItem.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = GetProjectReference(solExplorer);
+
                     if (proj == null || proj.Kind != BIDSProjectKinds.SSIS) return;
 
                     Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
@@ -545,6 +552,8 @@ namespace BIDSHelper
             }
 
         }
+
+        
 
         public static bool IsLegacyDeploymentMode(Project project)
         {

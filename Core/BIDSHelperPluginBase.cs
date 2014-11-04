@@ -577,6 +577,21 @@ namespace BIDSHelper
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
             }
         }
+
+        protected static Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetProjectReference(UIHierarchy solExplorer)
+        {
+            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = hierItem.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+
+            // if a project is in a folder the UIHierarchy object appears to return a project 
+            // wrapped in a ProjectItem so we need to unwrap it to get to the project.
+            if (proj == null)
+            {
+                var pi = (ProjectItem)hierItem.Object;
+                proj = pi.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+            }
+            return proj;
+        }
     }
 
 }
