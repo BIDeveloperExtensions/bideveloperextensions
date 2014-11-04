@@ -578,8 +578,9 @@ namespace BIDSHelper
             }
         }
 
-        protected static Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetProjectReference(UIHierarchy solExplorer)
+        protected Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetSelectedProjectReference()
         {
+            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
             Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = hierItem.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
 

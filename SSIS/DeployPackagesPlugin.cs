@@ -87,7 +87,7 @@ namespace BIDSHelper
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 //Project proj = hierItem.Object as Project;
-                Project proj = GetProjectReference(solExplorer);
+                Project proj = this.GetSelectedProjectReference();
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
@@ -127,7 +127,7 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project pr = GetProjectReference(solExplorer);
+                Project pr = GetSelectedProjectReference();
 
                 bool bJustDeploySelectedPackages = false;
                 System.Collections.Generic.List<Project> projects = new System.Collections.Generic.List<Project>();
@@ -498,7 +498,7 @@ namespace BIDSHelper
                     if (((System.Array)solExplorer.SelectedItems).Length != 1)
                         return;
 
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = GetProjectReference(solExplorer);
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = GetSelectedProjectReference();
 
                     if (proj == null || proj.Kind != BIDSProjectKinds.SSIS) return;
 
