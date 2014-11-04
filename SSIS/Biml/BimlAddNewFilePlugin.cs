@@ -50,7 +50,8 @@ namespace BIDSHelper.SSIS.Biml
             if (((System.Array)solExplorer.SelectedItems).Length == 1)
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project project = hierItem.Object as Project;
+                Project project = GetSelectedProjectReference();
+
                 ProjectItem projectItem = hierItem.Object as ProjectItem;
                 if (project != null)
                 {
@@ -72,7 +73,7 @@ namespace BIDSHelper.SSIS.Biml
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            Project project = hierItem.Object as Project;
+            Project project = GetSelectedProjectReference();
             ProjectItem projectItem = hierItem.Object as ProjectItem;
             if (project == null && projectItem != null)
             {

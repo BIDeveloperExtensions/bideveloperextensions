@@ -102,11 +102,12 @@ namespace BIDSHelper
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
-                if (hierItem.Object is EnvDTE.Project)
+                EnvDTE.Project proj = GetSelectedProjectReference();
+
+                if (proj != null)
                 {
-                    EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
-                    if (!(p.Object is Database)) return false;
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
+                    if (!(proj.Object is Database)) return false;
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
                     return (projExt.Kind == BIDSProjectKinds.SSIS);
                 }
                 else if (solution != null)
@@ -133,12 +134,13 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
+                EnvDTE.Project proj = GetSelectedProjectReference();
 
-                if (hierItem.Object is EnvDTE.Project)
+                if (proj != null)
                 {
-                    EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
-                        this.DatabaseName = "Project: " + p.Name;
+                    
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
+                        this.DatabaseName = "Project: " + proj.Name;
 
                         try
                         {
@@ -146,9 +148,9 @@ namespace BIDSHelper
                             {
                                 int iProgress = 0;
                                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
-                                foreach (ProjectItem pi in p.ProjectItems)
+                                foreach (ProjectItem pi in proj.ProjectItems)
                                 {
-                                    ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, p.ProjectItems.Count);
+                                    ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, proj.ProjectItems.Count);
                                     string sFileName = pi.Name.ToLower();
                                     if (!sFileName.EndsWith(".dtsx")) continue;
                                     piCurrent = pi;

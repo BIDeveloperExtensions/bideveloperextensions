@@ -231,7 +231,7 @@ namespace BIDSHelper
             if (((System.Array)solExplorer.SelectedItems).Length == 1)
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                EnvDTE.Project proj = hierItem.Object as EnvDTE.Project;
+                EnvDTE.Project proj = GetSelectedProjectReference();
                 if (proj != null)
                 {
                     return (proj.Kind == BIDSProjectKinds.SSIS);
@@ -250,10 +250,7 @@ namespace BIDSHelper
                 this.ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationFind);
                 this.ApplicationObject.StatusBar.Text = "Fixing relative paths...";
 
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                EnvDTE.Project proj = (EnvDTE.Project)hierItem.Object;
-
+                EnvDTE.Project proj = GetSelectedProjectReference();
                 Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                 DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 

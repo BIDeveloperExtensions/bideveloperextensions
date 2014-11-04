@@ -79,7 +79,8 @@ namespace BIDSHelper.SSRS
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project p = hierItem.Object as Project;
+                Project p = GetSelectedProjectReference();
+
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (p != null)
                 {
@@ -111,12 +112,12 @@ namespace BIDSHelper.SSRS
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
+                Project proj = GetSelectedProjectReference();
 
                 List<string> lstRdls = new List<string>();
-                if (hierItem.Object is Project)
+                if (proj != null)
                 {
-                    Project p = (Project)hierItem.Object;
-                    lstRdls.AddRange(UnusedDatasetsPlugin.GetRdlFilesInProjectItems(p.ProjectItems, false));
+                    lstRdls.AddRange(UnusedDatasetsPlugin.GetRdlFilesInProjectItems(proj.ProjectItems, false));
                 }
                 else if (solution != null)
                 {

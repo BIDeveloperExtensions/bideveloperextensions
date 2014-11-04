@@ -119,11 +119,12 @@ namespace BIDSHelper
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
-                if (hierItem.Object is EnvDTE.Project)
+                var proj = GetSelectedProjectReference();
+
+                if (proj != null)
                 {
-                    EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
-                    if (!(p.Object is Database)) return false;
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
+                    if (!(proj.Object is Database)) return false;
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
                     return (projExt.Kind == BIDSProjectKinds.SSAS || projExt.Kind == BIDSProjectKinds.SSIS);
                 }
                 else if (solution != null)
@@ -155,10 +156,10 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
+                EnvDTE.Project p = GetSelectedProjectReference();
 
-                if (hierItem.Object is EnvDTE.Project)
+                if (p != null)
                 {
-                    EnvDTE.Project p = (EnvDTE.Project)hierItem.Object;
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
                     if (projExt.Kind == BIDSProjectKinds.SSAS)
                     {
@@ -217,20 +218,20 @@ namespace BIDSHelper
                         using (WaitCursor cursor1 = new WaitCursor())
                         {
                             ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
-                            foreach (EnvDTE.Project p in solution.Projects)
+                            foreach (EnvDTE.Project proj in solution.Projects)
                             {
-                                Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
+                                Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
                                 if (projExt.Kind == BIDSProjectKinds.SSIS)
                                 {
                                     int iProgress = 0;
                                     Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
-                                    foreach (ProjectItem pi in p.ProjectItems)
+                                    foreach (ProjectItem pi in proj.ProjectItems)
                                     {
-                                        ApplicationObject.StatusBar.Progress(true, "Scanning project " + p.Name + " package " + pi.Name, iProgress++, p.ProjectItems.Count);
+                                        ApplicationObject.StatusBar.Progress(true, "Scanning project " + proj.Name + " package " + pi.Name, iProgress++, proj.ProjectItems.Count);
                                         string sFileName = pi.Name.ToLower();
                                         if (!sFileName.EndsWith(".dtsx")) continue;
                                         piCurrent = pi;
-                                        this.PackagePathPrefix = p.Name + "\\" + pi.Name;
+                                        this.PackagePathPrefix = proj.Name + "\\" + pi.Name;
                                         Package package = GetPackageFromIntegrationServicesProjectItem(pi);
                                         ScanIntegrationServicesProperties(package);
                                     }
