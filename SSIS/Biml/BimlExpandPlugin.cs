@@ -138,7 +138,8 @@ namespace BIDSHelper.SSIS.Biml
                     string[] newPackageFiles = Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories);
                     newProjectFiles.AddRange(newPackageFiles);
 
-#if DENALI
+#if (!YUKON && !KATMAI)
+                    //IF DENALI or later...
                     // Read packages AND project connection managers
                     string[] newConnFiles = Directory.GetFiles(tempTargetDirectory, "*.conmgr", SearchOption.AllDirectories);
                     newProjectFiles.AddRange(newConnFiles);
