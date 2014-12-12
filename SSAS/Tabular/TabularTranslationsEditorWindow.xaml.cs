@@ -142,7 +142,9 @@ namespace BIDSHelper.SSAS
                     if (!info.IsNeutralCulture)
                     {
                         int lCID = info.LCID;
-                        if (!this._languages.Contains(lCID) && lCID != _defaultLanguage && !hashtable.ContainsKey(info.DisplayName))
+                        if (!this._languages.Contains(lCID)
+                            //&& lCID != _defaultLanguage //allowing you to build a translation for the default language now, per http://www.sqlbi.com/articles/frictionless-renaming-in-tabular-models-with-analysis-services/
+                            && !hashtable.ContainsKey(info.DisplayName))
                         {
                             form.ListBox.Items.Add(info.DisplayName);
                             hashtable.Add(info.DisplayName, info.LCID);
