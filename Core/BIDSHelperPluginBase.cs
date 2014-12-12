@@ -586,7 +586,7 @@ namespace BIDSHelper
 
             // if a project is in a folder the UIHierarchy object appears to return a project 
             // wrapped in a ProjectItem so we need to unwrap it to get to the project.
-            if (proj == null)
+            if (proj == null && hierItem.Object is ProjectItem)
             {
                 var pi = (ProjectItem)hierItem.Object;
                 proj = pi.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
