@@ -41,7 +41,7 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -57,7 +57,7 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -157,6 +157,7 @@ namespace BIDSHelper.SSIS
                     sError += exLoop.Message + "\r\n";
                     exLoop = exLoop.InnerException;
                 }
+                sError += ex.StackTrace;
                 MessageBox.Show(sError, "BIDS Helper Smart Diff Error");
             }
         }
@@ -172,7 +173,7 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
@@ -199,7 +200,7 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
