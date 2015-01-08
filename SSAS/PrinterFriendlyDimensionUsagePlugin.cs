@@ -137,6 +137,7 @@ namespace BIDSHelper
 
                 if (bIsTabular)
                 {
+#if DENALI || SQL2014
                     bool bIsBusMatrix = (res == DialogResult.No);
                     System.Collections.Generic.List<DimensionUsage> list = PrinterFriendlyDimensionUsage.GetTabularDimensionUsage(sandbox, bIsBusMatrix);
                     DeploymentSettings _deploymentSettings = new DeploymentSettings(projItem);
@@ -149,6 +150,7 @@ namespace BIDSHelper
                     }
 
                     frm.ReportBindingSource.DataSource = list;
+#endif
                 }
                 else
                 {
