@@ -133,7 +133,7 @@ namespace BIDSHelper.SSIS.Biml
                 }
                 else
                 {
-                    var form = new BimlValidationListForm(validationReporter);
+                    var form = new BimlValidationListForm(validationReporter, true);
                     form.ShowDialog();
                 }
             }

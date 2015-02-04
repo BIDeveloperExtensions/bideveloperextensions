@@ -131,7 +131,7 @@ namespace BIDSHelper.SSIS.Biml
 
                 if (validationReporter.HasErrors)
                 {
-                    var form = new BimlValidationListForm(validationReporter);
+                    var form = new BimlValidationListForm(validationReporter, true);
                     form.ShowDialog();
                 }
                 else

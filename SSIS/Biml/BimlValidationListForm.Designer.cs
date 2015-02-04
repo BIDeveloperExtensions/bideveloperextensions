@@ -29,53 +29,10 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BimlValidationListForm));
-            this.listViewValidationItems = new System.Windows.Forms.ListView();
-            this.columnHeaderSeverity = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderDescription = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderRecommendation = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderLine = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderColumn = new System.Windows.Forms.ColumnHeader();
             this.buttonClose = new System.Windows.Forms.Button();
             this.helpButton = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
-            // 
-            // listViewValidationItems
-            // 
-            this.listViewValidationItems.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.listViewValidationItems.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderSeverity,
-            this.columnHeaderDescription,
-            this.columnHeaderRecommendation,
-            this.columnHeaderLine,
-            this.columnHeaderColumn});
-            this.listViewValidationItems.Location = new System.Drawing.Point(12, 12);
-            this.listViewValidationItems.Name = "listViewValidationItems";
-            this.listViewValidationItems.Size = new System.Drawing.Size(635, 253);
-            this.listViewValidationItems.TabIndex = 1;
-            this.listViewValidationItems.UseCompatibleStateImageBehavior = false;
-            this.listViewValidationItems.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeaderSeverity
-            // 
-            this.columnHeaderSeverity.Text = "Severity";
-            // 
-            // columnHeaderDescription
-            // 
-            this.columnHeaderDescription.Text = "Description";
-            // 
-            // columnHeaderRecommendation
-            // 
-            this.columnHeaderRecommendation.Text = "Recommendation";
-            // 
-            // columnHeaderLine
-            // 
-            this.columnHeaderLine.Text = "Line";
-            // 
-            // columnHeaderColumn
-            // 
-            this.columnHeaderColumn.Text = "Column";
             // 
             // buttonClose
             // 
@@ -87,6 +44,7 @@
             this.buttonClose.TabIndex = 2;
             this.buttonClose.Text = "Close";
             this.buttonClose.UseVisualStyleBackColor = true;
+            this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
             // 
             // helpButton
             // 
@@ -99,6 +57,20 @@
             this.helpButton.UseVisualStyleBackColor = true;
             this.helpButton.Click += new System.EventHandler(this.helpButton_Click);
             // 
+            // textBox1
+            // 
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox1.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox1.Location = new System.Drawing.Point(12, 12);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBox1.Size = new System.Drawing.Size(635, 253);
+            this.textBox1.TabIndex = 4;
+            this.textBox1.WordWrap = false;
+            // 
             // BimlValidationListForm
             // 
             this.AcceptButton = this.buttonClose;
@@ -106,27 +78,22 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonClose;
             this.ClientSize = new System.Drawing.Size(659, 306);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.helpButton);
             this.Controls.Add(this.buttonClose);
-            this.Controls.Add(this.listViewValidationItems);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "BimlValidationListForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Biml Validation Items";
-            this.Load += new System.EventHandler(this.BimlValidationListForm_Load);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.ListView listViewValidationItems;
-        private System.Windows.Forms.ColumnHeader columnHeaderSeverity;
-        private System.Windows.Forms.ColumnHeader columnHeaderDescription;
-        private System.Windows.Forms.ColumnHeader columnHeaderRecommendation;
-        private System.Windows.Forms.ColumnHeader columnHeaderLine;
-        private System.Windows.Forms.ColumnHeader columnHeaderColumn;
         private System.Windows.Forms.Button buttonClose;
         private System.Windows.Forms.Button helpButton;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }

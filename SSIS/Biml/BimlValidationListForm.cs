@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Windows.Forms;
 using Varigence.Flow.FlowFramework.Validation;
+using System.Text;
 
 namespace BIDSHelper.SSIS.Biml
 {
     public partial class BimlValidationListForm : Form
     {
-        public BimlValidationListForm(ValidationReporter validationReporter)
+        public BimlValidationListForm(ValidationReporter validationReporter, bool ShowWarnings)
         {
             InitializeComponent();
-            foreach (var validationItem in validationReporter.Errors)
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in validationReporter.ValidationItems)
             {
-                listViewValidationItems.Items.Add(new ListViewItem(new string[] { validationItem.Severity.ToString(), validationItem.Message, validationItem.Recommendation, validationItem.Line.ToString(), validationItem.Offset.ToString() }));
+                if (item.Severity == Varigence.Flow.FlowFramework.Severity.Error ||
+                    (item.Severity == Varigence.Flow.FlowFramework.Severity.Warning && ShowWarnings)
+                    )
+                sb.AppendLine(item.ToString(true));
             }
-            listViewValidationItems.Columns[1].Width = -1;
-            listViewValidationItems.Columns[2].Width = -1;
+            textBox1.Text = sb.ToString();
         }
 
         private void helpButton_Click(object sender, EventArgs e)
@@ -22,17 +26,9 @@ namespace BIDSHelper.SSIS.Biml
             System.Diagnostics.Process.Start(BIDSHelper.Resources.Common.BimlValidationHelpUrl);
         }
 
-        private void BimlValidationListForm_Load(object sender, EventArgs e)
+        private void buttonClose_Click(object sender, EventArgs e)
         {
-            if (listViewValidationItems.Columns[1].Width > 225)
-            {
-                listViewValidationItems.Columns[1].Width = 225;
-            }
 
-            if (listViewValidationItems.Columns[2].Width > 225)
-            {
-                listViewValidationItems.Columns[2].Width = 225;
-            }
         }
     }
 }
