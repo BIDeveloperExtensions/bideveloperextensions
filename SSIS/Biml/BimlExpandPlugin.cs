@@ -136,6 +136,12 @@ namespace BIDSHelper.SSIS.Biml
                 }
                 else
                 {
+                    if (validationReporter.HasErrors || validationReporter.HasWarnings)
+                    {
+                        var form = new BimlValidationListForm(validationReporter, true);
+                        form.ShowDialog();
+                    }
+
                     List<string> newProjectFiles = new List<string>();
                     string[] newPackageFiles = Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories);
                     newProjectFiles.AddRange(newPackageFiles);
