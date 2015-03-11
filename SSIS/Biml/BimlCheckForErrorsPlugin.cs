@@ -1,15 +1,14 @@
-using System;
-using System.IO;
-using System.Windows.Forms;
-using EnvDTE;
-using EnvDTE80;
-using Varigence.Flow.FlowFramework.Validation;
-using Varigence.Languages.Biml;
-using Varigence.Languages.Biml.Platform;
-using System.Collections.Generic;
-
 namespace BIDSHelper.SSIS.Biml
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Windows.Forms;
+    using EnvDTE;
+    using EnvDTE80;
+    using Microsoft.DataWarehouse.Design;
+    using Varigence.Flow.FlowFramework.Validation;
+
     public class BimlCheckForErrorsPlugin : BimlFeaturePluginBase
     {
         public BimlCheckForErrorsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -115,31 +114,31 @@ namespace BIDSHelper.SSIS.Biml
             {
                 Directory.CreateDirectory(tempTargetDirectory);
 
-                // TODO: How to distinguish between SQL Server 2008 and 2008R2?  Check for 10.5 version in registry.
-#if KATMAI
-                SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008, SsisDeploymentModel.Package);
-#elif DENALI
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2012, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
-#elif SQL2014
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2014, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
-#else
-                ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005, SsisDeploymentModel.Package);
-#endif
+                // Get the General output window, and use that to write out our BIML "compilation" messages
+                IOutputWindowFactory service = ((System.IServiceProvider)project).GetService(typeof(IOutputWindowFactory)) as IOutputWindowFactory;
+                IOutputWindow outputWindow = service.GetStandardOutputWindow(StandardOutputWindow.General);
+                outputWindow.Clear();
+                outputWindow.ReportStatusMessage("Validating BIML");
+
+                ValidationReporter validationReporter = BimlUtility.GetValidationReporter(bimlScriptPaths, project, projectDirectory, tempTargetDirectory);
 
                 if (!validationReporter.HasErrors && !validationReporter.HasWarnings)
                 {
-                    MessageBox.Show("No errors or warnings were found.");
+                    // Write a closing message to the output window
+                    outputWindow.ReportStatusMessage("No errors or warnings were found.");
+                    outputWindow.ReportStatusMessage("BIML validation completed.");
+
+                    // Show message to user
+                    MessageBox.Show("No errors or warnings were found.", DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    var form = new BimlValidationListForm(validationReporter, true);
-                    form.ShowDialog();
+                    BimlUtility.ProcessValidationReport(outputWindow, validationReporter);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
             finally
             {

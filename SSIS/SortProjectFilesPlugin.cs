@@ -10,9 +10,6 @@ using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using System.Data;
 
-#if KATMAI || DENALI || SQL2014
-//Katmai implemented this feature
-#else
 namespace BIDSHelper
 {
     public class SortProjectFilesPlugin : BIDSHelperPluginBase
@@ -34,7 +31,11 @@ namespace BIDSHelper
 
         public override string ButtonText
         {
+#if KATMAI || DENALI || SQL2014
+            get { return "Sort by name, persisted"; }
+#else
             get { return "Sort by name"; }
+#endif
         }
 
         public override string ToolTip
@@ -72,7 +73,7 @@ namespace BIDSHelper
         /// <value>The description.</value>
         public override string FeatureDescription
         {
-            get { return "Adds a 'Sort by name' menu option to the SSIS Packages folder allowing you to easily re-order the packages. (Available in SQL Server 2005 Only)"; }
+            get { return "Adds a 'Sort by name' menu option to the SSIS Packages folder allowing you to easily re-order the packages."; }
         }
 
         /// <summary>
@@ -129,4 +130,3 @@ namespace BIDSHelper
 
     }
 }
-#endif

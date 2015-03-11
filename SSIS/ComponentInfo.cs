@@ -35,7 +35,7 @@
             this.name = componentInfo.Name;
             this.creationName = componentInfo.CreationName;
 
-            Assembly assembly = GetComponentAssembly(componentInfo);
+            Assembly assembly = ComponentInfo.GetComponentAssembly(componentInfo);
 
             if (assembly != null)
             {
@@ -76,7 +76,7 @@
             }
         }
 
-        private Assembly GetComponentAssembly(IDTSName name)
+        private static Assembly GetComponentAssembly(IDTSName name)
         {
             Assembly assembly = null;
             try
@@ -128,7 +128,7 @@
                     /* EXTRACT ICON ERROR */
 
                     // BUBBLE UP
-                    throw new ApplicationException("Could not extract icon", ex);
+                    throw new Exception("Could not extract icon", ex);
                 }
                 finally
                 {

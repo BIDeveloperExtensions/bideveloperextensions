@@ -1,8 +1,15 @@
-﻿using Microsoft.Win32;
-using Varigence.Languages.Biml.Platform;
-
-namespace BIDSHelper.SSIS.Biml
+﻿namespace BIDSHelper.SSIS.Biml
 {
+    using System.Collections.Generic;
+    using System.Text;
+    using EnvDTE;
+    using Microsoft.DataWarehouse.Design;
+    using Microsoft.Win32;
+    using Varigence.Flow.FlowFramework;
+    using Varigence.Flow.FlowFramework.Validation;
+    using Varigence.Languages.Biml;
+    using Varigence.Languages.Biml.Platform;
+    
     internal static class BimlUtility
     {
         public static bool CheckRequiredFrameworkVersion()
@@ -18,7 +25,7 @@ namespace BIDSHelper.SSIS.Biml
             return true;
         }
 
-        public static SsisVersion GetSsisVersion2008Variant()
+        private static SsisVersion GetSsisVersion2008Variant()
         {
             RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Microsoft SQL Server\100\DTS\Setup");
             if (rk != null)
@@ -32,5 +39,101 @@ namespace BIDSHelper.SSIS.Biml
 
             return SsisVersion.Ssis2008;
         }
+
+        internal static ValidationReporter GetValidationReporter(List<string> bimlScriptPaths, Project project, string projectDirectory, string tempTargetDirectory)
+        {
+#if KATMAI
+            SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
+            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008, SsisDeploymentModel.Package);
+#elif DENALI
+            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2012, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
+#elif SQL2014
+            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2014, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
+#else
+            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005, SsisDeploymentModel.Package);
+#endif
+            return validationReporter;
+        }
+
+        internal static void ProcessValidationReport(IOutputWindow outputWindow, ValidationReporter validationReporter)
+        {
+            // The previous version had a ShowWarnings filter, but hadn't really been implemented, so now removed.
+            // Enumerate validation messages and write to the output window.
+            foreach (ValidationItem item in validationReporter.ValidationItems)
+            {
+                if (item.Severity == Severity.Error)
+                {
+                    outputWindow.ReportStatusError(OutputWindowErrorSeverity.Error, GetErrorId(item.ValidationCode), GetValidationReporterMessage(item), item.FilePath, item.Line, item.Offset);
+                }
+                else if (item.Severity == Severity.Warning)
+                {
+                    outputWindow.ReportStatusError(OutputWindowErrorSeverity.Warning, GetErrorId(item.ValidationCode), GetValidationReporterMessage(item), item.FilePath, item.Line, item.Offset);
+                }
+                else
+                {
+                    outputWindow.ReportStatusMessage(GetValidationReporterMessage(item));
+                }
+            }
+
+
+            var form = new BimlValidationListForm(validationReporter, true);
+            form.ShowDialog();
+        }
+
+        private static string GetErrorId(ValidationCode validationCode)
+        {
+            return ((int)validationCode).ToString();
+        }
+
+        private static string GetValidationReporterMessage(ValidationItem item)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            // Check we have a value, and it isn't something useless i.e. "BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297"
+            if (!string.IsNullOrEmpty(item.PhaseName) && !item.PhaseName.StartsWith("BimlEngine, Version")) 
+            {
+                builder.AppendFormat("{0}. ", item.PhaseName);
+            }
+
+            GetMessageString(item.Message, ref builder);
+            GetMessageString(item.Recommendation, ref builder);
+
+            if (!string.IsNullOrEmpty(item.PropertyName))
+            {
+                builder.AppendFormat("Property {0}. ", item.PropertyName);
+            }
+
+            if (!string.IsNullOrEmpty(item.SchemaName))
+            {
+                builder.AppendFormat("Schema {0}. ", item.SchemaName);
+            }
+
+            if (item.Exception != null)
+            {
+                builder.AppendFormat("Exception: {0}", item.Exception);
+            }
+
+            return builder.ToString().TrimEnd();
+        }
+
+        private static void GetMessageString(string input, ref StringBuilder builder)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return;
+            }
+
+            input = input.Trim();
+
+            if (input.EndsWith("."))
+            {
+                builder.AppendFormat("{0} ", input);
+            }
+            else
+            {
+                builder.AppendFormat("{0}. ", input);
+            }
+        }
+
     }
 }

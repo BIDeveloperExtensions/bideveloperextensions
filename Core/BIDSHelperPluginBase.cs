@@ -18,7 +18,7 @@ namespace BIDSHelper
         /// <summary>
         /// Standard caption for message boxes shown by plug-ins.
         /// </summary>
-        private const string DefaultMessageBoxCaption = "BIDS Helper";
+        protected const string DefaultMessageBoxCaption = "BIDS Helper";
 
         private const string BASE_NAME = "BIDSHelper.Connect.";
         private const int UNKNOWN_CMD_ID = -1;
