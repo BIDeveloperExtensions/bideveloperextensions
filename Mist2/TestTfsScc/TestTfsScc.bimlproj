@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(AssemblyPath)\Varigence.Biml.targets" Condition="true" />
+  <ItemGroup Condition="true">
+    <Sources Include="$(MSBuildProjectDirectory)\\**\*.biml" />
+  </ItemGroup>
+  <!-- 
+  Any changes outside of the auto-generated ItemGroup and PropertyGroup tags 
+  will be ignored by the Configuration designer.
+  Any content within the auto-generated ItemGroup and PropertyGroup tags can be overwritten by the Configuration designer. 
+  -->
+</Project>

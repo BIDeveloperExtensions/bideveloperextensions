@@ -1,0 +1,5 @@
+﻿<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+    <Schemas>
+        <Schema Name="Schema1" />
+    </Schemas>
+</Biml>
