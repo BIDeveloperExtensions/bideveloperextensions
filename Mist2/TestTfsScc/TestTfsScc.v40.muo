@@ -1,6 +1,0 @@
-<Configuration xmlns="http://schemas.varigence.com/Settings.xsd">
-    <Settings>
-        <StringSetting Name="OpenDocumentWindows">SN:OleDbConnection1|SN:Schema1|PV:|</StringSetting>
-        <StringSetting Name="NotificationStatus">[]</StringSetting>
-    </Settings>
-</Configuration>
