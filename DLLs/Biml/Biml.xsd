@@ -1946,6 +1946,20 @@
       <xs:enumeration value="FastAppend" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.Connection.SsasImpersonationMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Inherit" />
+      <xs:enumeration value="ImpersonateCurrentUser" />
+      <xs:enumeration value="ImpersonateServiceAccount" />
+      <xs:enumeration value="ImpersonateAccount" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Varigence.Languages.Biml.Transformation.TeradataBufferMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ProcessRowByRow" />
+      <xs:enumeration value="ProcessBufferedRows" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="System.TypeCode">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Empty" />
@@ -5266,6 +5280,13 @@
         </xs:annotation>
       </xs:element>
     </xs:all>
+    <xs:attribute default="false" name="IsSsasNamedCalculation" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>When false, specifies that the column is a normal relational table or view column.  When true, specifies that the column should not be emitted into the relational table or view DDL, and that it should instead be emitted as a Named Calculation in the DSV for the parent table or view in SQL Server Analysis Services.
+
+When true, the named calculation expression should be placed in the Computed property.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute default="Int32" name="DataType" type="System.Data.DbType" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies the type of the data stored in this column using the unified type system. The type values include all of those types commonly used in Microsoft SQL Server table definitions.</xs:documentation>
@@ -9199,6 +9220,11 @@ PackageSubpath will override the default package location behavior. Packages wil
         <xs:documentation>Specifies a path that should be used for organizing the tree display of this object in the Logical View in Mist.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="PackagePassword" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the password to use when using password-based encryption.  This value is only used when the package ProtectionLevel is set to EncryptAllWithPassword or EncryptSensitiveWithPassword.  If a global password value is specified for SSIS encryption, this property will override that value.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute default="Parallel" name="ConstraintMode" type="Varigence.Languages.Biml.Task.ContainerConstraintMode" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies the mode that should be used to execute the children of the container or package.  Parallel directly matches the SSIS behavior and will require that precedence constraints are created manually for all task connections.  Linear will automatically create precedence constraints so that tasks will run one after the other in the order that they are specified in the Biml.  Linear is primarily useful for scripting scenarios where creating precedence constraints would be tedious.</xs:documentation>
@@ -10222,6 +10248,11 @@ PackageSubpath will override the default package location behavior. Packages wil
         </xs:annotation>
       </xs:element>
       <xs:element name="CdcSource" type="Varigence.Languages.Biml.Transformation.AstCdcSourceNode">
+        <xs:annotation>
+          <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="DqsCleansing" type="Varigence.Languages.Biml.Transformation.AstDqsCleansingNode">
         <xs:annotation>
           <xs:documentation>Container for child dataflow transformations definitions.</xs:documentation>
         </xs:annotation>
@@ -16010,6 +16041,16 @@ PackageSubpath will override the default package location behavior. Packages wil
         <xs:documentation>Specifies the Teradata queryband expression, which is a collection of user-defined key/value pairs that can be used to identify the source of the query.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute default="ProcessBufferedRows" name="BufferMode" type="Varigence.Languages.Biml.Transformation.TeradataBufferMode" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the buffer mode that should be used when extracting data from the source.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="64260" name="BufferMaxSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>When BufferMode is set to ProcessBufferedRows, this property specifies the maximum size of the buffer.  Note that the maximum buffer size must accommodate at least one row of data which includes all data values and an additional 8 bytes of row storage overhead.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
@@ -16399,6 +16440,16 @@ PackageSubpath will override the default package location behavior. Packages wil
         <xs:documentation>Specifies the Teradata queryband expression, which is a collection of user-defined key/value pairs that can be used to identify the source of the query.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute default="ProcessBufferedRows" name="BufferMode" type="Varigence.Languages.Biml.Transformation.TeradataBufferMode" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the buffer mode that should be used when loading data into the destination.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="64260" name="BufferMaxSize" type="xs:integer" use="optional">
+      <xs:annotation>
+        <xs:documentation>When BufferMode is set to ProcessBufferedRows, this property specifies the maximum size of the buffer.  Note that the maximum buffer size must accommodate at least one row of data which includes all data values and an additional 8 bytes of row storage overhead.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
       <xs:annotation>
         <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
@@ -16601,16 +16652,6 @@ PackageSubpath will override the default package location behavior. Packages wil
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Transformation.AstCdcSourceNode">
     <xs:all minOccurs="1" maxOccurs="1">
-      <xs:element minOccurs="0" maxOccurs="1" name="Table" type="Varigence.Languages.Biml.Task.AstTableResourceNode">
-        <xs:annotation>
-          <xs:documentation>Specifies the CDC-enabled table that should be used as the source for CDC rows generated by this CDC Source.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="ExternalTable" type="Varigence.Languages.Biml.Task.AstUnmanagedTableResourceNode">
-        <xs:annotation>
-          <xs:documentation>Specifies the CDC-enabled table that should be used as the source for CDC rows generated by this CDC Source.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDataflowColumnMappingNode_AstCdcSourceNode_Columns_List">
         <xs:annotation>
           <xs:documentation>This is a collection of mapping nodes from source columns prior to sending them to the output path.</xs:documentation>
@@ -16686,6 +16727,143 @@ PackageSubpath will override the default package location behavior. Packages wil
         </xs:annotation>
       </xs:element>
     </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDqsCleansingNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Columns" type="AstDqsCleansingColumnMappingNode_AstDqsCleansingNode_Columns_List">
+        <xs:annotation>
+          <xs:documentation>This is the collection of column mapping nodes that specify how to cleanse and process each data flow column of interest.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="InputPath" type="Varigence.Languages.Biml.Transformation.AstDataflowInputPathNode">
+        <xs:annotation>
+          <xs:documentation>This specifies the input path that will be used by this dataflow component.  If an input path is not specified, the dataflow component will attempt to automatically discover an appropriate input path based on the surrounding dataflow.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ErrorHandling" type="Varigence.Languages.Biml.Transformation.AstComponentErrorHandlingNode">
+        <xs:annotation>
+          <xs:documentation>This value specifies how errors are handled by default in columns processed by the component.  This can be overriden at the component or column level for specific cases.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="DataflowOverrides" type="AstDataflowOverrideNode_AstTransformationNode_DataflowOverrides_List">
+        <xs:annotation>
+          <xs:documentation>Provides a collection of objects to override properties of the component, its input paths, its output paths, and its consituent dataflow columns.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="KnowledgeBase" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the DQS knowledge base that should be used for this cleansing operation.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="EncryptConnection" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether the connection between SSIS and DQS should be encrypted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="StandardizeOutput" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether the ouput values should use the standardized format provided in the knowledge base domain.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="EnableConfidenceColumn" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether a column including the confidence level for the correction should be included in the output path for each selected input column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="EnableReasonColumn" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether a column including the reason for the correction should be included in the output path for each selected input column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="EnableAppendedDataColumn" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether a column including any additional values from a reference data provider should be included in the output path for each selected input column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="EnableAppendedDataSchemaColumn" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies whether a column including the schema for additional values from a reference data provider should be included in the output path for each selected input column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ConnectionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the connection the SQL Server DQS instance that should be used for this cleansing operation.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="ValidateExternalMetadata" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the data flow transformation is validated against columns that originated in external data sources. When server assets such as tables and stored procedures are created during processing, ValidateExternalMetadata is normally set to False, which prevents validation from completing at compile time.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="Inherited" name="LocaleId" type="Varigence.Languages.Biml.Cube.Language" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies which locale is used by the dataflow task.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="AstDqsCleansingColumnMappingNode_AstDqsCleansingNode_Columns_List">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Column" type="Varigence.Languages.Biml.Transformation.AstDqsCleansingColumnMappingNode">
+        <xs:annotation>
+          <xs:documentation>This is the collection of column mapping nodes that specify how to cleanse and process each data flow column of interest.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Transformation.AstDqsCleansingColumnMappingNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="ColumnName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the input column that should undergo correction via the rules specified in the DQS domain.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Domain" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the domain to use for correcting the values in this column.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="SourceAlias" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the output column that should be created to store the original value for this column.  If not specified, the SourceAlias will default to the name of the input column followed by '_Source'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="OutputAlias" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the output column that should be created to store the corrected value for this column (or the original value if no correction was performed).  If not specified, the OutputAlias will default to the name of the input column followed by '_Output'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="StatusAlias" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the output column that should be created to store the status information for this column.  If not specified, the StatusAlias will default to the name of the input column followed by '_Status'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ConfidenceAlias" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the output column that should be created to store the confidence level for the correction applied to this column.  If not specified, the ConfidenceAlias will default to the name of the input column followed by '_Confidence'.  This value will be ignored if EnableConfidenceColumn is not set to true on the parent DQS Cleansing component.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ReasonAlias" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the output column that should be created to store the reason for the correction applied to this column.  If not specified, the ReasonAlias will default to the name of the input column followed by '_Reason'.  This value will be ignored if EnableReasonColumn is not set to true on the parent DQS Cleansing component.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Task.AstExecutePackageTaskNode">
     <xs:all minOccurs="1" maxOccurs="1">
@@ -28304,6 +28482,11 @@ This value specifies the length parameter for the DataType associated with this 
         <xs:documentation>This value specifies the level of data protection for the package.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="ProjectPassword" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the password to use when using password-based encryption.  This value is only used when the project ProtectionLevel is set to EncryptAllWithPassword or EncryptSensitiveWithPassword.  If a global password value is specified for SSIS encryption, this property will override that value.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="LogicalDisplayFolder" type="xs:string" use="optional">
       <xs:annotation>
         <xs:documentation>Specifies a path that should be used for organizing the tree display of this object in the Logical View in Mist.</xs:documentation>
@@ -28905,6 +29088,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstDbConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -28957,8 +29145,37 @@ This value specifies the length parameter for the DataType associated with this 
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute default="Inherit" name="ImpersonationMode" type="Varigence.Languages.Biml.Connection.SsasImpersonationMode" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the impersonation mode that should be used when connecting to the SQL Server Analysis Services (SSAS) instance.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="ReadCommitted" name="IsolationLevel" type="Varigence.Languages.Biml.Task.IsolationLevel" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the isolation level to use when executing commands.  This will determine the degree to which individual transactions are isolated from each other including resource usage, interactions between data modifications, and rollback granularity.  Permitted values include ReadCommitted and Snapshot.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="AccountToImpersonate" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the user account that should be impersonated when connecting to SQL Server Analysis Services (SSAS).  This value is only used and is required when ImpersonationMode is set to ImpersonateAccount.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstOleDbConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -29013,6 +29230,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstExcelOleDbConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -29067,6 +29289,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstAdoNetConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -29131,6 +29358,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstOracleConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -29190,6 +29422,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstTeradataConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -29244,6 +29481,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstOdbcConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -29298,6 +29540,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstSqlServerPdwConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -29387,6 +29634,11 @@ This value specifies the length parameter for the DataType associated with this 
   </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionNode">
     <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="AnalysisServicesConnectionInformation" type="Varigence.Languages.Biml.Connection.AstAnalysisServicesConnectionInformationNode">
+        <xs:annotation>
+          <xs:documentation>Specifies supplemental information that is used by SQL Server Analysis Services (SSAS) to connect to a given data source.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
         <xs:annotation>
           <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
@@ -30073,6 +30325,55 @@ This value specifies the length parameter for the DataType associated with this 
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
+  <xs:complexType name="Varigence.Languages.Biml.Connection.AstSqlServerDqsConnectionNode">
+    <xs:all minOccurs="1" maxOccurs="1">
+      <xs:element minOccurs="0" maxOccurs="1" name="Expressions" type="AstPropertyExpressionNode_AstConnectionBaseNode_Expressions_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of SSIS expression definitions for connection property value overrides.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Annotations" type="AstAnnotationNode_AstNode_Annotations_List">
+        <xs:annotation>
+          <xs:documentation>This is a collection of annotation items that can be used to specify documentation, tags, or other information.  Annotations are particularly useful for storing information about nodes that can be used by BimlScript code.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="Server" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies that name of the server where the SQL Server DQS instance is hosted.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Qualifier" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies the qualifier that should be used for the connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="DelayValidation" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value indicates that the connection should not be validated (tested to make sure that it points to a valid resource) until immediately before it is used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="true" name="CreatePackageConfiguration" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether a PackageConfiguration should be created for this connection.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="CreateInProject" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>This value specifies whether the Connection should be created as a ConnectionManager within each SSIS package that uses it or as a shared ConnectionManager for each project that uses it.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="LogicalDisplayFolder" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation>Specifies a path that should be used for organizing the tree display of this object in the Logical View in Mist.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies the name of the object.  This name can be used to reference this object from anywhere else in the program.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
   <xs:complexType name="Varigence.Languages.Biml.AstPropertyNode">
     <xs:simpleContent>
       <xs:extension base="xs:string">
@@ -30542,6 +30843,11 @@ This value specifies the length parameter for the DataType associated with this 
         </xs:annotation>
       </xs:element>
       <xs:element name="SqlServerPdwConnection" type="Varigence.Languages.Biml.Connection.AstSqlServerPdwConnectionNode">
+        <xs:annotation>
+          <xs:documentation>This is a collection of all connection definitions in the project.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="SqlServerDqsConnection" type="Varigence.Languages.Biml.Connection.AstSqlServerDqsConnectionNode">
         <xs:annotation>
           <xs:documentation>This is a collection of all connection definitions in the project.</xs:documentation>
         </xs:annotation>
