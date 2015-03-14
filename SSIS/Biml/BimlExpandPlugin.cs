@@ -125,18 +125,20 @@ namespace BIDSHelper.SSIS.Biml
 
                 ValidationReporter validationReporter = BimlUtility.GetValidationReporter(bimlScriptPaths, project, projectDirectory, tempTargetDirectory);
 
+                // If we have errors show them, and finish
                 if (validationReporter.HasErrors)
                 {
-                    BimlUtility.ProcessValidationReport(outputWindow, validationReporter);
+                    BimlUtility.ProcessValidationReport(outputWindow, validationReporter, false);
                 }
                 else
                 {
+                    // We can compile OK, but show warnings if we have them
                     if (validationReporter.HasWarnings)
                     {
-                        BimlUtility.ProcessValidationReport(outputWindow, validationReporter);
+                        BimlUtility.ProcessValidationReport(outputWindow, validationReporter, true);
                     }
 
-                    // Write a closing message to the output window
+                    // Write a closing message to the output window, since we have completed OK
                     outputWindow.ReportStatusMessage("BIML expansion completed.");
 
 

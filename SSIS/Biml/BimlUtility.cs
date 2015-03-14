@@ -55,10 +55,9 @@
             return validationReporter;
         }
 
-        internal static void ProcessValidationReport(IOutputWindow outputWindow, ValidationReporter validationReporter)
+        internal static void ProcessValidationReport(IOutputWindow outputWindow, ValidationReporter validationReporter, bool showWarnings)
         {
-            // The previous version had a ShowWarnings filter, but hadn't really been implemented, so now removed.
-            // Enumerate validation messages and write to the output window.
+            // Enumerate all validation messages and write to the output window.
             foreach (ValidationItem item in validationReporter.ValidationItems)
             {
                 if (item.Severity == Severity.Error)
@@ -75,8 +74,8 @@
                 }
             }
 
-
-            var form = new BimlValidationListForm(validationReporter, true);
+            // Display the modal form as well
+            var form = new BimlValidationListForm(validationReporter, showWarnings);
             form.ShowDialog();
         }
 

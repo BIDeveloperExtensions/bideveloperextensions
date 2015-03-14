@@ -110,11 +110,12 @@ namespace BIDSHelper.SSIS.Biml
         private void ShowValidationItems(List<string> bimlScriptPaths, Project project, string projectDirectory)
         {
             var tempTargetDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
             try
             {
                 Directory.CreateDirectory(tempTargetDirectory);
 
-                // Get the General output window, and use that to write out our BIML "compilation" messages
+                // Get the General output window, we use it to write out our BIML "compilation" messages
                 IOutputWindowFactory service = ((System.IServiceProvider)project).GetService(typeof(IOutputWindowFactory)) as IOutputWindowFactory;
                 IOutputWindow outputWindow = service.GetStandardOutputWindow(StandardOutputWindow.General);
                 outputWindow.Clear();
@@ -122,6 +123,7 @@ namespace BIDSHelper.SSIS.Biml
 
                 ValidationReporter validationReporter = BimlUtility.GetValidationReporter(bimlScriptPaths, project, projectDirectory, tempTargetDirectory);
 
+                // If we have no errors and no warnings, say so
                 if (!validationReporter.HasErrors && !validationReporter.HasWarnings)
                 {
                     // Write a closing message to the output window
@@ -133,7 +135,8 @@ namespace BIDSHelper.SSIS.Biml
                 }
                 else
                 {
-                    BimlUtility.ProcessValidationReport(outputWindow, validationReporter);
+                    // We have errors and/or warnings. Show even warnings in for this Check plug-in, as opposed to Expand plug-in which only stops for errors.
+                    BimlUtility.ProcessValidationReport(outputWindow, validationReporter, true);
                 }
             }
             catch (Exception ex)
@@ -142,6 +145,8 @@ namespace BIDSHelper.SSIS.Biml
             }
             finally
             {
+
+                // Clean up the temporary directory and files, but supress any errors encountered
                 try
                 {
                     if (Directory.Exists(tempTargetDirectory))

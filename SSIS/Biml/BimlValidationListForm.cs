@@ -56,5 +56,9 @@
         {
             System.Diagnostics.Process.Start(BIDSHelper.Resources.Common.BimlValidationHelpUrl);
         }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        { 
+        }
     }
 }
