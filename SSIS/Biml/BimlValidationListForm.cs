@@ -33,6 +33,15 @@
                 this.dataGridView.Rows.Add(this.imageList.Images[(int)validationItem.Severity], validationItem.Message, validationItem.Recommendation, validationItem.Line, validationItem.Offset, Path.GetFileName(validationItem.FileName), validationItem.FilePath);
             }
 
+            // Enumerate validation items and add them to the 
+            if (showWarnings)
+            {
+                foreach (var validationItem in validationReporter.Warnings)
+                {
+                    this.dataGridView.Rows.Add(this.imageList.Images[(int)validationItem.Severity], validationItem.Message, validationItem.Recommendation, validationItem.Line, validationItem.Offset, Path.GetFileName(validationItem.FileName), validationItem.FilePath);
+                }
+            }
+
             // Add a final row that tells people to go and look in the Output window, coz it is cool!
             this.dataGridView.Rows.Add(null, "Please see the Output window for more information.");
         }

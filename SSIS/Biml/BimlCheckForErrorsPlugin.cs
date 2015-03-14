@@ -135,7 +135,7 @@ namespace BIDSHelper.SSIS.Biml
                 }
                 else
                 {
-                    // We have errors and/or warnings. Show even warnings in for this Check plug-in, as opposed to Expand plug-in which only stops for errors.
+                    // We have errors and/or warnings. Show both.
                     BimlUtility.ProcessValidationReport(outputWindow, validationReporter, true);
                 }
             }

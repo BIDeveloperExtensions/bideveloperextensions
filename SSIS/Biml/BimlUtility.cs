@@ -74,9 +74,12 @@
                 }
             }
 
-            // Display the modal form as well
-            var form = new BimlValidationListForm(validationReporter, showWarnings);
-            form.ShowDialog();
+            if (validationReporter.HasErrors || (showWarnings && validationReporter.HasWarnings))
+            {
+                // Display the modal form as well
+                var form = new BimlValidationListForm(validationReporter, showWarnings);
+                form.ShowDialog();
+            }
         }
 
         private static string GetErrorId(ValidationCode validationCode)
