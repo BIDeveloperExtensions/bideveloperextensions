@@ -86,6 +86,7 @@
 
         private static string GetValidationReporterMessage(ValidationItem item)
         {
+            // Build a more detailed message for the Output window.
             StringBuilder builder = new StringBuilder();
 
             // Check we have a value, and it isn't something useless i.e. "BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297"
@@ -109,7 +110,9 @@
 
             if (item.Exception != null)
             {
-                builder.AppendFormat("Exception: {0}", item.Exception);
+                // Just show the exception type name, which can help indicate the type of issue, e.g. invalid XML vs invalid BIML
+                // We don't want the full Exception as it is confusing and makes you think something has gone wrong.
+                builder.AppendFormat("Exception type: {0}", item.Exception.GetType().Name);
             }
 
             return builder.ToString().TrimEnd();
