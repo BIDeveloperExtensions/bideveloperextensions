@@ -36,6 +36,7 @@ namespace BIDSHelper.Core
             this.lblServerVersion = new System.Windows.Forms.Label();
             this.lblSqlVersion = new System.Windows.Forms.Label();
             this.lblBidsHelperLoadException = new System.Windows.Forms.Label();
+            this.btnCopyError = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblTitle
@@ -116,10 +117,21 @@ namespace BIDSHelper.Core
             this.lblBidsHelperLoadException.TabIndex = 9;
             this.lblBidsHelperLoadException.Text = "Exception x occurred on load of BIDS Helper\r\nException a\r\nException b";
             // 
+            // btnCopyError
+            // 
+            this.btnCopyError.Location = new System.Drawing.Point(302, 82);
+            this.btnCopyError.Name = "btnCopyError";
+            this.btnCopyError.Size = new System.Drawing.Size(75, 23);
+            this.btnCopyError.TabIndex = 10;
+            this.btnCopyError.Text = "Copy Error";
+            this.btnCopyError.UseVisualStyleBackColor = true;
+            this.btnCopyError.Click += new System.EventHandler(this.btnCopyError_Click);
+            // 
             // BIDSHelperOptionsVersionCheckPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btnCopyError);
             this.Controls.Add(this.lblBidsHelperLoadException);
             this.Controls.Add(this.lblSqlVersion);
             this.Controls.Add(this.linkNewVersion);
@@ -146,5 +158,6 @@ namespace BIDSHelper.Core
         private System.Windows.Forms.Label lblServerVersion;
         private System.Windows.Forms.Label lblSqlVersion;
         private System.Windows.Forms.Label lblBidsHelperLoadException;
+        private System.Windows.Forms.Button btnCopyError;
     }
 }

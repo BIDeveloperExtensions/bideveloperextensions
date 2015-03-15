@@ -76,11 +76,36 @@ namespace BIDSHelper.Core
                 if (Connect.AddInLoadException != null)
                 {
                     this.lblBidsHelperLoadException.Text = "BIDS Helper encountered an error when Visual Studio started:\r\n" + Connect.AddInLoadException.Message + "\r\n" + Connect.AddInLoadException.StackTrace;
+
+                    ReflectionTypeLoadException ex = Connect.AddInLoadException as ReflectionTypeLoadException;
+                    if (ex != null)
+                    {
+                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                        foreach (Exception exSub in ex.LoaderExceptions)
+                        {
+                            sb.AppendLine();
+                            sb.AppendLine(exSub.Message);
+                            System.IO.FileNotFoundException exFileNotFound = exSub as System.IO.FileNotFoundException;
+                            if (exFileNotFound != null)
+                            {
+                                if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
+                                {
+                                    sb.AppendLine("Fusion Log:");
+                                    sb.AppendLine(exFileNotFound.FusionLog);
+                                }
+                            }
+                            sb.AppendLine();
+                        }
+                        this.lblBidsHelperLoadException.Text += sb.ToString();
+                    }
+
                     this.lblBidsHelperLoadException.Visible = true;
+                    this.btnCopyError.Visible = true;
                 }
                 else
                 {
                     this.lblBidsHelperLoadException.Visible = false;
+                    this.btnCopyError.Visible = false;
                 }
 
                 try
@@ -264,6 +289,11 @@ namespace BIDSHelper.Core
             {
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
             }
+        }
+
+        private void btnCopyError_Click(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Clipboard.SetText(this.lblBidsHelperLoadException.Text);
         }
     }
 }
