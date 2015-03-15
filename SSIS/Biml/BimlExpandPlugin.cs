@@ -118,8 +118,9 @@ namespace BIDSHelper.SSIS.Biml
                 Directory.CreateDirectory(tempTargetDirectory);
 
                 // Get the General output window, and use that to write out our BIML "compilation" messages
+                this.ApplicationObject.ToolWindows.OutputWindow.Parent.SetFocus();
                 IOutputWindowFactory service = ((System.IServiceProvider)project).GetService(typeof(IOutputWindowFactory)) as IOutputWindowFactory;
-                IOutputWindow outputWindow = service.GetStandardOutputWindow(StandardOutputWindow.General);
+                IOutputWindow outputWindow = service.GetStandardOutputWindow(StandardOutputWindow.Build);
                 outputWindow.Clear();
                 outputWindow.ReportStatusMessage("Expanding BIML");
 
