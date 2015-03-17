@@ -142,6 +142,7 @@ namespace BIDSHelper.SSIS.Biml
                 if (validationReporter.HasErrors)
                 {
                     ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+                    ApplicationObject.StatusBar.Progress(false, "Generating SSIS Packages", 3, 3);
                     BimlUtility.ProcessValidationReport(outputWindow, validationReporter, false);
                 }
                 else
