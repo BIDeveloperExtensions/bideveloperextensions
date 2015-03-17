@@ -58,7 +58,7 @@
         internal static void ProcessValidationReport(IOutputWindow outputWindow, ValidationReporter validationReporter, bool showWarnings)
         {
             // Enumerate all validation messages and write to the output window.
-            foreach (ValidationItem item in validationReporter.ValidationItems)
+            foreach (ValidationItem item in validationReporter.ValidationItemsList)
             {
                 if (item.Severity == Severity.Error)
                 {
