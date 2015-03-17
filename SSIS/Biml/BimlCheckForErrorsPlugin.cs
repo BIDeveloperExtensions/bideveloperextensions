@@ -122,7 +122,13 @@ namespace BIDSHelper.SSIS.Biml
                 outputWindow.Clear();
                 outputWindow.ReportStatusMessage("Validating BIML");
 
+                ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                ApplicationObject.StatusBar.Progress(true, "Checking Biml for Errors", 1, 2);
+
                 ValidationReporter validationReporter = BimlUtility.GetValidationReporter(bimlScriptPaths, project, projectDirectory, tempTargetDirectory);
+                
+                ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+                ApplicationObject.StatusBar.Progress(false, "Checking Biml for Errors", 2, 2);
 
                 // If we have no errors and no warnings, say so
                 if (!validationReporter.HasErrors && !validationReporter.HasWarnings)
@@ -158,6 +164,13 @@ namespace BIDSHelper.SSIS.Biml
                 catch (Exception)
                 {
                 }
+
+                try
+                {
+                    ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+                    ApplicationObject.StatusBar.Progress(false, "Checking Biml for Errors", 2, 2);
+                }
+                catch { }
             }
         }
     }

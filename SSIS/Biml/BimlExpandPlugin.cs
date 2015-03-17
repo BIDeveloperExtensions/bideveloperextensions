@@ -101,11 +101,23 @@ namespace BIDSHelper.SSIS.Biml
             {
                 try
                 {
+                    ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                    ApplicationObject.StatusBar.Progress(true, "Generating SSIS Packages", 1, 3);
+                    
                     Expand(emittableFilePaths, containingProject, projectDirectory);
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    try
+                    {
+                        ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
+                        ApplicationObject.StatusBar.Progress(false, "Generating SSIS Packages", 3, 3);
+                    }
+                    catch { }
                 }
             }
         }
@@ -129,6 +141,7 @@ namespace BIDSHelper.SSIS.Biml
                 // If we have errors show them, and finish
                 if (validationReporter.HasErrors)
                 {
+                    ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
                     BimlUtility.ProcessValidationReport(outputWindow, validationReporter, false);
                 }
                 else
@@ -141,6 +154,7 @@ namespace BIDSHelper.SSIS.Biml
 
                     // Write a closing message to the output window, since we have completed OK
                     outputWindow.ReportStatusMessage("BIML expansion completed.");
+                    ApplicationObject.StatusBar.Progress(true, "Generating SSIS Packages", 2, 3);
 
 
                     List<string> newProjectFiles = new List<string>();
