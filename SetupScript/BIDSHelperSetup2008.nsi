@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "BIDS Helper 2008"
-!define PRODUCT_VERSION "1.6.6.0"
+!define PRODUCT_VERSION "1.7.0.0"
 !define PRODUCT_PUBLISHER "BIDS Helper"
 !define PRODUCT_WEB_SITE "http://www.codeplex.com/bidshelper"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
