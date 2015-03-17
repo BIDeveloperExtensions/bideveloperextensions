@@ -10,6 +10,8 @@ namespace BIDSHelper.SSAS.Tabular
     //this is the base class for a context menu item in the Tabular diagram editor
     internal abstract class ERDiagramActionBase : DiagramActionBasic
     {
+        private static Type TYPE_DIAGRAM_ACTION_INSTANCE = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(typeof(Microsoft.AnalysisServices.Common.IDiagramActionInstance), "Microsoft.AnalysisServices.Common.DiagramActionInstance");
+
         // Fields
         private ERDiagram erDiagram;
 
@@ -20,24 +22,25 @@ namespace BIDSHelper.SSAS.Tabular
             this.erDiagram = diagramInput;
         }
 
-#if SQL2014 || (DENALI && DEBUG)
+#if SQL2014 || (DENALI && DEBUG) || NEWER_DENALI
         //after SQL2012 RTM at some point this Microsoft.AnalysisServices.Common.DiagramActionBasic method changed to not include the second parameter?
         //so for SQL2014 compile without the second parameter
         //for SQL2012 on the build server (which is RTM) compile with the second parameter
         //for SQL2012 on our laptop (DEBUG) skip the second parameter
+        //GG 20150112 changed this to use reflection so we could avoid having to build our own DiagramActionInstance class since the fact that SQL 2012 RTM has a ForceExecutionWithConfirmSkipped property and later doesn't was causing problems during the launch of visual studio... builds on my laptop would cause errors if run on RTM... the reflection below resolves that
         public override IDiagramActionInstance CreateActionInstance(IEnumerable<IDiagramObject> targets) //, bool forceExecutionWithConfirmSkipped)
         {
-            DiagramActionInstance instance = new DiagramActionInstance(this);
-            instance.Targets = targets;
-            //instance.ForceExecutionWithConfirmSkipped = forceExecutionWithConfirmSkipped;
+            System.Reflection.ConstructorInfo constructor = TYPE_DIAGRAM_ACTION_INSTANCE.GetConstructor(new Type[] { typeof(IDiagramAction) });
+            IDiagramActionInstance instance = (IDiagramActionInstance)constructor.Invoke(new object[] { this });
+            TYPE_DIAGRAM_ACTION_INSTANCE.InvokeMember("Targets", System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, instance, new object[] { targets });
             return instance;
         }
 #elif DENALI
         public override IDiagramActionInstance CreateActionInstance(IEnumerable<IDiagramObject> targets, bool forceExecutionWithConfirmSkipped)
         {
-            DiagramActionInstance instance = new DiagramActionInstance(this);
-            instance.Targets = targets;
-            instance.ForceExecutionWithConfirmSkipped = forceExecutionWithConfirmSkipped;
+            System.Reflection.ConstructorInfo constructor = TYPE_DIAGRAM_ACTION_INSTANCE.GetConstructor(new Type[] { typeof(IDiagramAction) });
+            IDiagramActionInstance instance = (IDiagramActionInstance)constructor.Invoke(new object[] { this });
+            TYPE_DIAGRAM_ACTION_INSTANCE.InvokeMember("Targets", System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, instance, new object[] { targets });
             return instance;
         }
 #endif
@@ -48,100 +51,6 @@ namespace BIDSHelper.SSAS.Tabular
             get
             {
                 return this.erDiagram;
-            }
-        }
-    }
-
-
-    internal class DiagramActionInstance : IDiagramActionInstance
-    {
-        // Fields
-        private IDiagramAction actionType;
-        private object confirmedOption;
-        private bool isCancelledFromConfirm;
-        private HashSet<IDiagramObject> targets = new HashSet<IDiagramObject>();
-
-        // Methods
-        public DiagramActionInstance(IDiagramAction actionTypeInput)
-        {
-            this.actionType = actionTypeInput;
-        }
-
-        public virtual bool Equals(IDiagramActionInstance actionInstanceToCompare)
-        {
-            if (actionInstanceToCompare.ActionType != this.ActionType)
-            {
-                return false;
-            }
-            int num = this.Targets.Count<IDiagramObject>();
-            int num2 = actionInstanceToCompare.Targets.Count<IDiagramObject>();
-            if (num != num2)
-            {
-                return false;
-            }
-            if (actionInstanceToCompare.Targets.Intersect<IDiagramObject>(this.Targets).Count<IDiagramObject>() != num)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public void SetConfirmationResult(bool isCancelled, object selectedOption)
-        {
-            this.isCancelledFromConfirm = isCancelled;
-            this.confirmedOption = selectedOption;
-        }
-
-        // Properties
-        public IDiagramAction ActionType
-        {
-            get
-            {
-                return this.actionType;
-            }
-        }
-
-        public object ConfirmedOption
-        {
-            get
-            {
-                return this.confirmedOption;
-            }
-        }
-
-        public bool ForceExecutionWithConfirmSkipped
-        {
-            get
-            {
-                return false;
-            }
-            set
-            {
-                bool x = value;
-            }
-        }
-
-        public bool IsCancelledFromConfirmation
-        {
-            get
-            {
-                return this.isCancelledFromConfirm;
-            }
-        }
-
-        public IEnumerable<IDiagramObject> Targets
-        {
-            get
-            {
-                return this.targets;
-            }
-            set
-            {
-                this.targets.Clear();
-                foreach (IDiagramObject obj2 in value)
-                {
-                    this.targets.Add(obj2);
-                }
             }
         }
     }
