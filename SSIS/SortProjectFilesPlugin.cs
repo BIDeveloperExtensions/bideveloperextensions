@@ -1,17 +1,20 @@
 using System;
-using Extensibility;
+using System.Reflection;
+using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
-using System.Windows.Forms;
-using System.Collections.Generic;
-using Microsoft.AnalysisServices;
-using System.Data;
+using Microsoft.DataWarehouse.Interfaces;
+using Microsoft.DataWarehouse.Project;
+using Microsoft.DataWarehouse.VsIntegration.Hierarchy;
+using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
 
 namespace BIDSHelper
 {
+    /// <summary>
+    /// Sort packages in SSIS project. This is very usefull for SQL2005 but was implemented natively in SQL 2008, however was not persisted.
+    /// This persistence only works on projects which use the older Package deployment model. 
+    /// The sorting itself works on newer Project deployment model projects but it doesn't get saved, so no benefit over native SSDT sorting.
+    /// </summary>
     public class SortProjectFilesPlugin : BIDSHelperPluginBase
     {
         public SortProjectFilesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
@@ -59,7 +62,7 @@ namespace BIDSHelper
         }
 
         /// <summary>
-        /// Gets the feature category used to organise the plug-in in the enabled features list.
+        ///     Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
@@ -68,16 +71,20 @@ namespace BIDSHelper
         }
 
         /// <summary>
-        /// Gets the full description used for the features options dialog.
+        ///     Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The description.</value>
         public override string FeatureDescription
         {
+#if KATMAI || DENALI || SQL2014
+            get { return "Adds a 'Sort by name, persisted' menu option to the SSIS Packages folder allowing you to easily re-order the packages. Only available for Package deployment model projects."; }
+#else
             get { return "Adds a 'Sort by name' menu option to the SSIS Packages folder allowing you to easily re-order the packages."; }
+#endif
         }
 
         /// <summary>
-        /// Determines if the command should be displayed or not.
+        ///     Determines if the command should be displayed or not.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
@@ -85,11 +92,31 @@ namespace BIDSHelper
         {
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+                // Get a referebce to teh solution explorer
+                var solExplorer = ApplicationObject.ToolWindows.SolutionExplorer;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                // Check if we have multiple items selected
+                if (((Array) solExplorer.SelectedItems).Length != 1)
+                {
+                    return false;
+                }
+
+                // Get the project
+                Project project = this.GetSelectedProjectReference();
+                if (project == null)
+                {
+                    return false;
+                }
+
+                // Persistence doesn't work in Project deployment mode, so don't show command
+                if (!DeployPackagesPlugin.IsLegacyDeploymentMode(project))
+                {
+                    return false;
+                }
+
+                // Get item should be a folder like "SSIS Packages"
+                var hierItem = ((UIHierarchyItem)((Array) solExplorer.SelectedItems).GetValue(0));
+
                 // Check that we are looking at the "SSIS Packages" node by checking that there is 
                 // more than one child item and that the first item (in the 1 based collection)
                 // ends with ".dtsx"
@@ -101,32 +128,43 @@ namespace BIDSHelper
             }
         }
 
-
         public override void Exec()
         {
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
-                ProjectItem pi = (ProjectItem)hierItem.Object;
-                Project p = pi.ContainingProject;
+                var solExplorer = ApplicationObject.ToolWindows.SolutionExplorer;
+                var hierItem = (UIHierarchyItem) ((Array) solExplorer.SelectedItems).GetValue(0);
+                var pi = (ProjectItem) hierItem.Object;
+                var p = pi.ContainingProject;
 
-                Microsoft.DataWarehouse.VsIntegration.Shell.Project.FileProjectVirtualFolder folder = hierItem.Object.GetType().InvokeMember("projectNode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy, null, hierItem.Object, null) as Microsoft.DataWarehouse.VsIntegration.Shell.Project.FileProjectVirtualFolder;
+                var folder =
+                    hierItem.Object.GetType()
+                        .InvokeMember("projectNode",
+                            BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance |
+                            BindingFlags.FlattenHierarchy, null, hierItem.Object, null) as FileProjectVirtualFolder;
                 if (folder == null) throw new Exception("Could not get FileProjectVirtualFolder");
-                Microsoft.DataWarehouse.VsIntegration.Hierarchy.ISortableHierarchyCollection children = folder.Children as Microsoft.DataWarehouse.VsIntegration.Hierarchy.ISortableHierarchyCollection;
+                var children = folder.Children as ISortableHierarchyCollection;
                 if (children == null) throw new Exception("Could not get ISortableHierarchyCollection");
                 children.Sort();
 
-                //mark the project as dirty
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)p).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
-                Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
-                projectManager.GetType().InvokeMember("MarkTextBufferAsUnsaved", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.InvokeMethod, null, projectManager, new object[] { });
+                // Mark the project as dirty
+                var settings =
+                    (IConfigurationSettings) ((IServiceProvider) p).GetService(typeof (IConfigurationSettings));
+                var projectManager =
+                    (DataWarehouseProjectManager)
+                        settings.GetType()
+                            .InvokeMember("ProjectManager",
+                                BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty |
+                                BindingFlags.FlattenHierarchy, null, settings, null);
+                projectManager.GetType()
+                    .InvokeMember("MarkTextBufferAsUnsaved",
+                        BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy |
+                        BindingFlags.InvokeMethod, null, projectManager, new object[] {});
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
-
     }
 }

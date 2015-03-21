@@ -553,8 +553,12 @@ namespace BIDSHelper
 
         }
 
-        
 
+        /// <summary>
+        /// Determines whether the project users the legacy Package deployment model, as opposed to the newer Project deployment model.
+        /// </summary>
+        /// <param name="project">The project to check.</param>
+        /// <returns>true if the project uses the legacy package deployment model; otherwise else false.</returns>
         public static bool IsLegacyDeploymentMode(Project project)
         {
 #if DENALI || SQL2014
@@ -566,6 +570,11 @@ namespace BIDSHelper
 #endif
         }
 
+        /// <summary>
+        /// Determines whether the project users the legacy Package deployment model, as opposed to the newer Project deployment model.
+        /// </summary>
+        /// <param name="projectManager">The project to check.</param>
+        /// <returns>true if the project uses the legacy package deployment model; otherwise else false.</returns>
         public static bool IsLegacyDeploymentMode(DataWarehouseProjectManager projectManager)
         {
 #if DENALI || SQL2014

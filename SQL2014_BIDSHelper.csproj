@@ -498,6 +498,7 @@
     </Compile>
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
+    <Compile Include="SSIS\AutoSortProjectFilesPlugin.cs" />
     <Compile Include="SSIS\SSISHelpers.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>

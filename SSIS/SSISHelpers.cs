@@ -1,41 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.DataWarehouse.Design;
+﻿using Microsoft.DataWarehouse.Design;
+using Microsoft.DataWarehouse.Project;
 using Microsoft.SqlServer.Dts.Runtime;
-using Microsoft.DataTransformationServices.Design;
-
 
 namespace BIDSHelper
 {
-    class SSISHelpers
+    public class SSISHelpers
     {
-        public static void MarkPackageDirty(Package package)
-        {
-            if (package == null) return;
-            #if DENALI || SQL2014
-            Cud.Transaction trans = Cud.BeginTransaction(package);
-            trans.ChangeComponent(package);
-            trans.Commit();
-            #else
-            DesignUtils.MarkPackageDirty(package);
-            #endif
-        }
-
-        public static Package GetPackageFromContainer(DtsContainer container)
-        {
-            while (!(container is Package))
-            {
-                container = container.Parent;
-            }
-            return (Package)container;
-        }
-
-        public static bool IsParameterVariable(Variable v)
-        {
-            return v.Namespace.StartsWith("$");
-        }
-
         public enum SsisDesignerTabIndex
         {
             ControlFlow = 0,
@@ -50,5 +20,30 @@ namespace BIDSHelper
 #endif
         }
 
+        public static void MarkPackageDirty(Package package)
+        {
+            if (package == null) return;
+#if DENALI || SQL2014
+            var trans = Cud.BeginTransaction(package);
+            trans.ChangeComponent(package);
+            trans.Commit();
+#else
+            DesignUtils.MarkPackageDirty(package);
+            #endif
+        }
+
+        public static Package GetPackageFromContainer(DtsContainer container)
+        {
+            while (!(container is Package))
+            {
+                container = container.Parent;
+            }
+            return (Package) container;
+        }
+
+        public static bool IsParameterVariable(Variable v)
+        {
+            return v.Namespace.StartsWith("$");
+        }
     }
 }

@@ -493,10 +493,10 @@
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
-    <Compile Include="SSIS\PackageHelper.cs">
-    </Compile>
+    <Compile Include="SSIS\PackageHelper.cs" />
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
+    <Compile Include="SSIS\AutoSortProjectFilesPlugin.cs" />
     <Compile Include="SSIS\SSISHelpers.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>
