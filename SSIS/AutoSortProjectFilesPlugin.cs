@@ -71,8 +71,8 @@ namespace BIDSHelper
                     return;
                 }
 
-                var solutionItem = solExplorer.UIHierarchyItems.Item(1);
-                if (solutionItem == null)
+                var rootItem = solExplorer.UIHierarchyItems.Item(1);
+                if (rootItem == null)
                 {
                     return;
                 }
@@ -83,28 +83,37 @@ namespace BIDSHelper
                     return;
                 }
 
-                for (var i = 1; i <= solutionItem.UIHierarchyItems.Count; i++)
-                {
-                    // Get the child item in the solution
-                    var projectItem = solutionItem.UIHierarchyItems.Item(i);
-
-                    // Check if it is a Project, skip if not
-                    var project = projectItem.Object as Project;
-                    if (project == null)
-                    {
-                        continue;
-                    }
-
-                    // Check if it is a SSIS Project, process if it is
-                    if (project.Kind == BIDSProjectKinds.SSIS)
-                    {
-                        ProcessProject(projectItem);
-                    }
-                }
+                ProcessHierarchyItem(rootItem);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private void ProcessHierarchyItem(UIHierarchyItem hierarchyItem)
+        {
+            for (var i = 1; i <= hierarchyItem.UIHierarchyItems.Count; i++)
+            {
+                // Get the child item in the solution or folder
+                var projectItem = hierarchyItem.UIHierarchyItems.Item(i);
+
+                // Check if it is a Project, skip if not (Solution folders are a type of project too)
+                var project = projectItem.Object as Project;
+                if (project == null)
+                {
+                    continue;
+                }
+
+                // Check if it is a SSIS Project, process if it is
+                if (project.Kind == BIDSProjectKinds.SSIS)
+                {
+                    ProcessProject(projectItem);
+                }
+                else if (project.Kind == BIDSProjectKinds.SolutionFolder)
+                {
+                    ProcessHierarchyItem(projectItem);
+                }
             }
         }
 

@@ -134,7 +134,8 @@ namespace BIDSHelper.Core
                 // Set current version
                 this.lblLocalVersion.Text = VersionCheckPlugin.LocalVersion;
 #if DEBUG
-                this.lblLocalVersion.Text += string.Format(CultureInfo.InvariantCulture, " (Debug {0})", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                DateTime buildDateTime = GetBuildDateTime(assembly);
+                this.lblLocalVersion.Text += string.Format(CultureInfo.InvariantCulture, " (Debug Build {0:yyyy-MM-dd HH:mm:ss})", buildDateTime);
 #endif
 
                 // First check we have a valid instance, the add-in may be disabled.
@@ -287,13 +288,62 @@ namespace BIDSHelper.Core
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
+                MessageBox.Show(ex.Message + Environment.NewLine + ex.StackTrace, DefaultMessageBoxCaption);
             }
         }
 
         private void btnCopyError_Click(object sender, EventArgs e)
         {
-            System.Windows.Forms.Clipboard.SetText(this.lblBidsHelperLoadException.Text);
+            Clipboard.SetText(this.lblBidsHelperLoadException.Text);
         }
+
+#if DEBUG
+        // Gets the build date and time (by reading the COFF header)
+        // http://stackoverflow.com/questions/1600962/displaying-the-build-date
+        // http://msdn.microsoft.com/en-us/library/ms680313
+#pragma warning disable 169
+#pragma warning disable 649
+        struct IMAGE_FILE_HEADER
+        {
+            public ushort Machine;
+            public ushort NumberOfSections;
+
+            public uint TimeDateStamp;
+            public uint PointerToSymbolTable;
+            public uint NumberOfSymbols;
+            public ushort SizeOfOptionalHeader;
+            public ushort Characteristics;
+        };
+#pragma warning restore 649
+#pragma warning restore 169
+
+        private static DateTime GetBuildDateTime(Assembly assembly)
+        {
+            if (System.IO.File.Exists(assembly.Location))
+            {
+                var buffer = new byte[Math.Max(System.Runtime.InteropServices.Marshal.SizeOf(typeof(IMAGE_FILE_HEADER)), 4)];
+                using (var fileStream = new System.IO.FileStream(assembly.Location, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                {
+                    fileStream.Position = 0x3C;
+                    fileStream.Read(buffer, 0, 4);
+                    fileStream.Position = BitConverter.ToUInt32(buffer, 0); // COFF header offset
+                    fileStream.Read(buffer, 0, 4); // "PE\0\0"
+                    fileStream.Read(buffer, 0, buffer.Length);
+                }
+                var pinnedBuffer = System.Runtime.InteropServices.GCHandle.Alloc(buffer, System.Runtime.InteropServices.GCHandleType.Pinned);
+                try
+                {
+                    var coffHeader = (IMAGE_FILE_HEADER)System.Runtime.InteropServices.Marshal.PtrToStructure(pinnedBuffer.AddrOfPinnedObject(), typeof(IMAGE_FILE_HEADER));
+
+                    return TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1) + new TimeSpan(coffHeader.TimeDateStamp * TimeSpan.TicksPerSecond));
+                }
+                finally
+                {
+                    pinnedBuffer.Free();
+                }
+            }
+            return new DateTime();
+        }
+#endif
     }
 }

@@ -25,6 +25,8 @@ namespace BIDSHelper
 
     public static class BIDSProjectKinds
     {
+        public static string SolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
+
         public static string SSAS = "{d2abab84-bf74-430a-b69e-9dc6d40dda17}";
 
 #if DENALI || SQL2014
