@@ -136,6 +136,10 @@ namespace BIDSHelper.SSIS.Biml
                 outputWindow.Clear();
                 outputWindow.ReportStatusMessage("Expanding BIML");
 
+                // Set status here as well as calling method, as that wasn't showing - Check and cleanup later
+                ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
+                ApplicationObject.StatusBar.Progress(true, "Generating SSIS Packages", 1, 3);
+
                 ValidationReporter validationReporter = BimlUtility.GetValidationReporter(bimlScriptPaths, project, projectDirectory, tempTargetDirectory);
 
                 // If we have errors show them, and finish

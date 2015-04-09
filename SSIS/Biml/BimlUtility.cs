@@ -42,6 +42,7 @@
 
         internal static ValidationReporter GetValidationReporter(List<string> bimlScriptPaths, Project project, string projectDirectory, string tempTargetDirectory)
         {
+            // ArgumentNullException - Value cannot be null. Parameter: input - Caused when using the 1.6 BIML engine version but 1.7 code, BidsHelperPhaseWorkflows xml file name mismatched. Biml vs Hadron 
 #if KATMAI
             SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
             ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008, SsisDeploymentModel.Package);
