@@ -28,7 +28,7 @@ namespace BIDSHelper
             trans.ChangeComponent(package);
             trans.Commit();
 #else
-            DesignUtils.MarkPackageDirty(package);
+            Microsoft.DataTransformationServices.Design.DesignUtils.MarkPackageDirty(package);
 #endif
         }
 
