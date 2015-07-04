@@ -56,8 +56,39 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private DtsPipelineTestDirector pipelineBreakdownTestDirector = null;
 
 #if SQL2014
-        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
-        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.4";
+        //instead of making this a constant, make it dependent on the deploy target
+        //private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
+        private static string DTSPATH_REGISTRY_PATH
+        {
+            get
+            {
+                if (SSISHelpers.LatestProjectTargetVersion == SSISHelpers.ProjectTargetVersion.SQLServer2012)
+                {
+                    return @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
+                }
+                else
+                {
+                    return @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
+                }
+            }
+        }
+
+        //instead of making this a constant, make it dependent on the deploy target
+        //private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.4";
+        private static string TEXT_LOG_PROVIDER_IDENTIFIER
+        {
+            get
+            {
+                if (SSISHelpers.LatestProjectTargetVersion == SSISHelpers.ProjectTargetVersion.SQLServer2012)
+                {
+                    return "DTS.LogProviderTextFile.3";
+                }
+                else
+                {
+                    return "DTS.LogProviderTextFile.4";
+                }
+            }
+        }
 #elif DENALI
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.3";
@@ -452,6 +483,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             //get setting that says whether to use 64-bit dtexec
             Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
             this.use64Bit = options.Run64BitRuntime;
+
+#if SQL2014
+            //refreshes the cached target version which is needed in GetPathToDtsExecutable below
+            SSISHelpers.ProjectTargetVersion? projectTargetVersion = SSISHelpers.GetProjectTargetVersion(this.projectItem.ContainingProject);
+#endif
 
             //get path to dtexec
             this.dtexecPath = GetPathToDtsExecutable("dtexec.exe", this.use64Bit);

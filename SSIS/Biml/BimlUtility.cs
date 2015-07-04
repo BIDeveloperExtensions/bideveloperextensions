@@ -49,7 +49,8 @@
 #elif DENALI
             ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2012, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
 #elif SQL2014
-            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2014, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
+            SsisVersion version = (SSISHelpers.GetProjectTargetVersion(project) == SSISHelpers.ProjectTargetVersion.SQLServer2012 ? SsisVersion.Ssis2012 : SsisVersion.Ssis2014);
+            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, version, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
 #else
             ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005, SsisDeploymentModel.Package);
 #endif

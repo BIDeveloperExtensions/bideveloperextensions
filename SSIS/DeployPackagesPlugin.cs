@@ -212,6 +212,11 @@ namespace BIDSHelper
                     doc.Load(sConfigFileName);
                 }
 
+#if SQL2014
+                //refreshes the cached target version which is needed in GetPathToDtsExecutable below
+                SSISHelpers.ProjectTargetVersion? projectTargetVersion = SSISHelpers.GetProjectTargetVersion(proj);
+#endif
+
                 IProjectConfiguration config = projectManager.ConfigurationManager.CurrentConfiguration;
                 DtsProjectExtendedConfigurationOptions newOptions = new DtsProjectExtendedConfigurationOptions();
                 LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
@@ -673,6 +678,7 @@ namespace BIDSHelper
         /// Immediately after closing the project properties dialog, it must be removed as it cannot be serialized with Microsoft's serialization code without causing problems.
         /// </summary>
         [DisplayableByPropertyPage(new Type[] { 
+            typeof(DtsGeneralPropertyPage),
             typeof(DataTransformationsBuildPropertyPage), 
             typeof(DataTransformationsDeploymentUtilityPropertyPage), 
             typeof(DebugPropertyPage), 
@@ -853,6 +859,20 @@ namespace BIDSHelper
                     }
                     else
                     {
+                        //AttributeCollection coll = base.GetAttributes();
+                        //Attribute[] attrs = new Attribute[coll.Count];
+                        //for (int i=0; i < coll.Count; i++)
+                        //{
+                        //    Attribute a = coll[i];
+                        //    attrs[i] = a;
+                        //    DisplayableByPropertyPageAttribute pageAttr = a as DisplayableByPropertyPageAttribute;
+                        //    if (pageAttr == null) continue;
+                        //    System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>(pageAttr.PropertyPageTypes);
+                        //    types.Add(typeof(DtsProjectExtendedDeployPropertyPage));
+                        //    DisplayableByPropertyPageAttribute pageAttrNew = new DisplayableByPropertyPageAttribute(types.ToArray());
+                        //    attrs[i] = pageAttrNew;
+                        //}
+                        //return new AttributeCollection(attrs);
                         return null;
                     }
                 }
