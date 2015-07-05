@@ -678,7 +678,9 @@ namespace BIDSHelper
         /// Immediately after closing the project properties dialog, it must be removed as it cannot be serialized with Microsoft's serialization code without causing problems.
         /// </summary>
         [DisplayableByPropertyPage(new Type[] { 
+#if SQL2014
             typeof(DtsGeneralPropertyPage),
+#endif
             typeof(DataTransformationsBuildPropertyPage), 
             typeof(DataTransformationsDeploymentUtilityPropertyPage), 
             typeof(DebugPropertyPage), 
