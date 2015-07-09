@@ -73,22 +73,8 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             }
         }
 
-        //instead of making this a constant, make it dependent on the deploy target
-        //private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.4";
-        private static string TEXT_LOG_PROVIDER_IDENTIFIER
-        {
-            get
-            {
-                if (SSISHelpers.LatestProjectTargetVersion == SSISHelpers.ProjectTargetVersion.SQLServer2012)
-                {
-                    return "DTS.LogProviderTextFile.3";
-                }
-                else
-                {
-                    return "DTS.LogProviderTextFile.4";
-                }
-            }
-        }
+        //it appears that when using the OneDesigner API to edit a package in downgraded SSIS2012 mode, you tell it to use a SSIS2014 (DTS.LogProviderTextFile.4) log provider and when it persists the package to a .dtsx file on disk it internally and automatically downgrades that to an SSIS2012 (DTS.LogProviderTextFile.3) log provider
+        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.4";
 #elif DENALI
         private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
         private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.3";
