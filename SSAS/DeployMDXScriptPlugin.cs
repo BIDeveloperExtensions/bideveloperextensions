@@ -132,7 +132,6 @@ namespace BIDSHelper
             {
                 //validate the script because deploying an invalid script makes cube unusable
                 Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);               
-
             }
             catch (Microsoft.AnalysisServices.Design.ScriptParsingFailed ex)
             {
@@ -167,12 +166,12 @@ namespace BIDSHelper
 
                 // extract deployment information
                 DeploymentSettings deploySet = new DeploymentSettings(projItem);
-
+                
                 // use xlst to create xmla alter command
                 XslCompiledTransform xslt = new XslCompiledTransform();
                 XmlReader xsltRdr;
                 XmlReader xrdr;
-
+                
                 // read xslt from embedded resource
                 xsltRdr = XmlReader.Create(new StringReader(BIDSHelper.Resources.Common.DeployMdxScript));
                 using ((xsltRdr))
@@ -287,6 +286,12 @@ namespace BIDSHelper
                                 svr.Execute(sbBackup.ToString());
                                 MessageBox.Show(ex.Message);
                             }
+                            finally
+                            {
+                                cmd.Dispose();
+                                cn.Close();
+                                cn.Dispose();
+                            }
                         }
                         catch (System.Exception ex)
                         {
@@ -306,6 +311,7 @@ namespace BIDSHelper
                             ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 5, 5);
                             // report any results back (status bar?)
                             svr.Disconnect();
+                            svr.Dispose();
                         }
                     }
                 }
