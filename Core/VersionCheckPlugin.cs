@@ -153,8 +153,24 @@ namespace BIDSHelper
                 System.Net.WebClient http = new System.Net.WebClient();
                 //http.Proxy = System.Net.WebProxy.GetDefaultProxy(); //works but is deprecated
                 http.Proxy = System.Net.WebRequest.GetSystemWebProxy(); //inherits the Internet Explorer proxy settings. Should help this version check work behind a proxy server.
-
-                MemoryStream ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
+                MemoryStream ms;
+                try
+                {
+                    ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
+                }
+                catch (System.Net.WebException wex)
+                {
+                    if (wex.Status == System.Net.WebExceptionStatus.ProtocolError) // this catches a 407 - Proxy authentication required error
+                    {
+                        // try again, but using the current user's windows credentials
+                        http.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                        ms = new MemoryStream(http.DownloadData(new Uri(CURRENT_VERSION_URL)));
+                    }
+                    else
+                    { 
+                        throw; 
+                    }
+                }
                 XmlReader reader = XmlReader.Create(ms);
                 XmlDocument doc = new XmlDocument();
                 doc.Load(reader);
