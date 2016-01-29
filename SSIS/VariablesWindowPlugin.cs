@@ -32,6 +32,8 @@ namespace BIDSHelper.SSIS
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ToolBarButton moveCopyButton;
         private ToolBarButton editExpressionButton;
+        private ToolBarButton findReferencesButton;
+        private ToolBarButton findUnusedButton;
         private static DlgGridControl grid;
         private static UserControl variablesToolWindowControl;
         private static IComponentChangeService changesvc;
@@ -132,13 +134,29 @@ namespace BIDSHelper.SSIS
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Common.Copy);
                     this.moveCopyButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
-                    //Edit Variable Expression button
+                    // Edit Variable Expression button
                     this.editExpressionButton = new ToolBarButton();
                     this.editExpressionButton.Style = ToolBarButtonStyle.PushButton;
                     this.editExpressionButton.ToolTipText = "Edit Variable Expression (BIDS Helper)";
                     toolbar.Buttons.Add(this.editExpressionButton);
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
                     this.editExpressionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+
+                    // Find References button
+                    this.findReferencesButton = new ToolBarButton();
+                    this.findReferencesButton.Style = ToolBarButtonStyle.PushButton;
+                    this.findReferencesButton.ToolTipText = "Find Variable References (BIDS Helper)";
+                    toolbar.Buttons.Add(this.findReferencesButton);
+                    toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindReferences);
+                    this.findReferencesButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+
+                    // Find Unused button
+                    this.findUnusedButton = new ToolBarButton();
+                    this.findUnusedButton.Style = ToolBarButtonStyle.PushButton;
+                    this.findUnusedButton.ToolTipText = "Find Variable References (BIDS Helper)";
+                    toolbar.Buttons.Add(this.findUnusedButton);
+                    toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
+                    this.findUnusedButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
                     toolbar.Wrappable = false;
@@ -178,6 +196,8 @@ namespace BIDSHelper.SSIS
                     this.moveCopyButton.ImageIndex = this.moveCopyButton.Parent.ImageList.Images.Count - 1;
                     this.editExpressionButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
                     this.editExpressionButton.ImageIndex = this.editExpressionButton.Parent.ImageList.Images.Count - 1;
+                    //this.findReferencesButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
+                    //this.findReferencesButton.ImageIndex = this.editExpressionButton.Parent.ImageList.Images.Count - 1;
                     System.Diagnostics.Debug.WriteLine("fixed variables windows button icons");
                 }
             }
@@ -307,9 +327,10 @@ namespace BIDSHelper.SSIS
         private void SetButtonEnabled()
         {
             List<Variable> variables = GetSelectedVariables();
-            this.moveCopyButton.Enabled = (variables.Count > 0);
-
-            this.editExpressionButton.Enabled = (variables.Count > 0);
+            bool enabled = (variables.Count > 0);
+            this.moveCopyButton.Enabled = enabled;
+            this.editExpressionButton.Enabled = enabled;
+            this.findReferencesButton.Enabled = enabled;
         }
 
         void toolbar_ButtonClick(object sender, ToolBarButtonClickEventArgs e)
@@ -318,9 +339,71 @@ namespace BIDSHelper.SSIS
                 MoveCopyButtonClick();
             else if (e.Button == this.editExpressionButton)
                 EditExpressionButtonClick();
+            else if (e.Button == this.findReferencesButton)
+                FindReferencesButtonClick();
+            else if (e.Button == this.findUnusedButton)
+                FindUnusedButtonClick();
         }
 
-        void EditExpressionButtonClick()
+        private void FindReferencesButtonClick()
+        {
+            try
+            {
+#if DENALI || SQL2014
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+#else
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+#endif
+
+                if (packageDesigner == null) return;
+
+                Package package = packageDesigner.Component as Package;
+                if (package == null) return;
+
+                int selectedRow;
+                int selectedCol;
+                grid.GetSelectedCell(out selectedRow, out selectedCol);
+
+                if (selectedRow < 0) return;
+
+                Variable variable = GetVariableForRow(selectedRow);
+
+                if (variable == null) return;
+
+                FindReferences dialog = new FindReferences();
+                dialog.Show(package, variable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
+            }
+        }
+
+        private void FindUnusedButtonClick()
+        {
+            try
+            {
+#if DENALI || SQL2014
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+#else
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+#endif
+
+                if (packageDesigner == null) return;
+
+                Package package = packageDesigner.Component as Package;
+                if (package == null) return;
+
+                FindUnusedVariables dialog = new FindUnusedVariables();
+                dialog.Show(package);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
+            }
+        }
+
+        private void EditExpressionButtonClick()
         {
             try
             {
@@ -383,7 +466,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        void MoveCopyButtonClick()
+       private void MoveCopyButtonClick()
         {
             try
             {

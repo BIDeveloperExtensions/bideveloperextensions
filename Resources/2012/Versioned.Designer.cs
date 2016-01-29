@@ -122,5 +122,25 @@ namespace BIDSHelper.Resources {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon VariableFindReferences {
+            get {
+                object obj = ResourceManager.GetObject("VariableFindReferences", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon VariableFindUnused {
+            get {
+                object obj = ResourceManager.GetObject("VariableFindUnused", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

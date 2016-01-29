@@ -31,6 +31,9 @@
         /// </summary>
         private static ComponentInfos controlInfos = new ComponentInfos();
 
+        private static bool componentInitialised = false;
+        private static object componentLock = new object();
+
         public static List<TaskHost> GetControlFlowObjects<T>(DtsContainer container)
         {
             List<TaskHost> returnItems = new List<TaskHost>();
@@ -73,21 +76,29 @@
         {
             get
             {
-                if (componentInfos.Count == 0)
+                lock (componentLock)
                 {
-                    Application application = new Application();
-                    PipelineComponentInfos pipelineComponentInfos = application.PipelineComponentInfos;
-
-                    foreach (PipelineComponentInfo pipelineComponentInfo in pipelineComponentInfos)
+                    if (!componentInitialised)
                     {
-                        if (pipelineComponentInfo.ID == ManagedComponentWrapper)
+                        if (componentInfos.Count == 0)
                         {
-                            componentInfos.Add(pipelineComponentInfo.CreationName, new ComponentInfo(pipelineComponentInfo));
+                            Application application = new Application();
+                            PipelineComponentInfos pipelineComponentInfos = application.PipelineComponentInfos;
+
+                            foreach (PipelineComponentInfo pipelineComponentInfo in pipelineComponentInfos)
+                            {
+                                if (pipelineComponentInfo.ID == ManagedComponentWrapper)
+                                {
+                                    componentInfos.Add(pipelineComponentInfo.CreationName, new ComponentInfo(pipelineComponentInfo));
+                                }
+                                else
+                                {
+                                    componentInfos.Add(pipelineComponentInfo.ID, new ComponentInfo(pipelineComponentInfo));
+                                }
+                            }
                         }
-                        else
-                        {
-                            componentInfos.Add(pipelineComponentInfo.ID, new ComponentInfo(pipelineComponentInfo));
-                        }
+
+                        componentInitialised = true;
                     }
                 }
 

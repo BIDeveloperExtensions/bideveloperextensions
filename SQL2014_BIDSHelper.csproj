@@ -72,12 +72,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Katmai|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DefineDebug>true</DefineDebug>
@@ -420,9 +414,7 @@
     <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.Designer.cs">
       <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SSAS\PCDimNaturalizer\ctlCheckedFancyListBox.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\ctlCheckedFancyListBox.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\frmASFlattener.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -494,6 +486,25 @@
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
+    <Compile Include="SSIS\FindReferences.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindReferences.Designer.cs">
+      <DependentUpon>FindReferences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindReferencesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindReferencesControl.Designer.cs">
+      <DependentUpon>FindReferencesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindUnusedVariables.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindUnusedVariables.Designer.cs">
+      <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindVariables.cs" />
     <Compile Include="SSIS\PackageHelper.cs">
     </Compile>
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
@@ -743,6 +754,8 @@
     <Content Include="Resources\2014\SourceComponent.ico" />
     <Content Include="Resources\2014\Variable.ico" />
     <None Include="Resources\DeployPerspectives.xslt" />
+    <Content Include="Resources\2014\VariableFindReferences.ico" />
+    <Content Include="Resources\2014\VariableFindUnused.ico" />
     <Content Include="Resources\DeployPerspectives.ico" />
     <Content Include="SetupScript\SQL2014CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
@@ -936,6 +949,16 @@
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindReferences.resx">
+      <DependentUpon>FindReferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindReferencesControl.resx">
+      <DependentUpon>FindReferencesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindUnusedVariables.resx">
+      <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
@@ -991,6 +1014,9 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "%25HOMEPATH%25\Documents\Visual Studio 2013\Addins\"</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Build\examples\" />

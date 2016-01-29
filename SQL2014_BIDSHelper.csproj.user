@@ -15,6 +15,6 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe</StartProgram>
-    <StartArguments>"c:\projects\Test SSIS 2014\Test SSIS 2014.sln"</StartArguments>
+    <StartArguments>"C:\Users\darre\Documents\Visual Studio 2013\Projects\SSIS Play SQL2014\SSIS Play SQL2014.sln"</StartArguments>
   </PropertyGroup>
 </Project>
