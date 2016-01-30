@@ -395,7 +395,17 @@ namespace BIDSHelper.SSIS
                 if (package == null) return;
 
                 FindUnusedVariables dialog = new FindUnusedVariables();
-                dialog.Show(package);
+                if (dialog.Show(package) == DialogResult.OK)
+                {
+                    // Dialog result OK indicates we have deleted one or more variables
+                    // Flag package as dirty
+                    SSISHelpers.MarkPackageDirty(package);
+
+                    // Refresh the grid
+                    variablesToolWindowControl.GetType().InvokeMember("FillGrid", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { });
+                    SetButtonEnabled();
+                    RefreshHighlights();
+                }
             }
             catch (Exception ex)
             {

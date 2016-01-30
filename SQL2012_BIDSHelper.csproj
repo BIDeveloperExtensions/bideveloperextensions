@@ -200,6 +200,10 @@
     <Reference Include="Microsoft.SQLServer.ManagedDTS, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
+    <Reference Include="Microsoft.SqlServer.SQLTask, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Program Files (x86)\Microsoft SQL Server\110\DTS\Tasks\Microsoft.SqlServer.SQLTask.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <SpecificVersion>True</SpecificVersion>
@@ -493,7 +497,27 @@
     <Compile Include="SSIS\DesignPracticesPlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
-    <Compile Include="SSIS\PackageHelper.cs" />
+    <Compile Include="SSIS\FindReferences.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindReferences.Designer.cs">
+      <DependentUpon>FindReferences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindReferencesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindReferencesControl.Designer.cs">
+      <DependentUpon>FindReferencesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindUnusedVariables.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindUnusedVariables.Designer.cs">
+      <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindVariables.cs" />
+    <Compile Include="SSIS\PackageHelper.cs">
+    </Compile>
     <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
     <Compile Include="SSIS\RelativePathsPlugin.cs" />
     <Compile Include="SSIS\AutoSortProjectFilesPlugin.cs" />
@@ -740,6 +764,8 @@
     <Content Include="Resources\2012\SourceComponent.ico" />
     <Content Include="Resources\2012\Variable.ico" />
     <None Include="Resources\DeployPerspectives.xslt" />
+    <Content Include="Resources\2014\VariableFindReferences.ico" />
+    <Content Include="Resources\2014\VariableFindUnused.ico" />
     <Content Include="Resources\DeployPerspectives.ico" />
     <Content Include="SetupScript\SQL2012CurrentReleaseVersion.xml" />
     <None Include="Resources\Edit.ico" />
@@ -932,6 +958,16 @@
     <EmbeddedResource Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.resx">
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindReferences.resx">
+      <DependentUpon>FindReferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindReferencesControl.resx">
+      <DependentUpon>FindReferencesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindUnusedVariables.resx">
+      <DependentUpon>FindUnusedVariables.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">

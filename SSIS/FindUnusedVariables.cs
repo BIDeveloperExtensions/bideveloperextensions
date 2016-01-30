@@ -26,11 +26,10 @@ namespace BIDSHelper.SSIS
             processPackage.WorkerReportsProgress = true;
             processPackage.WorkerSupportsCancellation = true;
             processPackage.DoWork += new DoWorkEventHandler(processPackage_DoWork);
-            processPackage.ProgressChanged += new ProgressChangedEventHandler(processPackage_ProgressChanged);
             processPackage.RunWorkerCompleted += new RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
         }
 
-        public void Show(Package package)
+        public DialogResult Show(Package package)
         {
             this.checkedListBox.Items.Clear();
 
@@ -53,7 +52,7 @@ namespace BIDSHelper.SSIS
             stopwatch = new System.Diagnostics.Stopwatch();
             processPackage.RunWorkerAsync(variables.ToArray());
 
-            this.Show();
+            return this.ShowDialog();
         }
         private void VariableFound(object sender, VariableFoundEventArgs e)
         {
@@ -67,13 +66,14 @@ namespace BIDSHelper.SSIS
                 match = match.Substring(1, match.Length - 2);
             }
 
-            if (!unusedVariablesList.Remove(match))
-            {
-                match = "::" + match;
-                match = unusedVariablesList.Find(v => v.EndsWith(match));
-                unusedVariablesList.Remove(match);
-            }
-            
+            // Remove it from our simpel list, for qualified names
+            if (unusedVariablesList.Remove(match))
+                return;
+
+            // Try unqualified matches, just check for variables ending in "::VariableName", skipping the namespace
+            match = "::" + match;
+            match = unusedVariablesList.Find(v => v.EndsWith(match));
+            unusedVariablesList.Remove(match);
         }
 
         #region BackgroundWorker Events
@@ -81,7 +81,7 @@ namespace BIDSHelper.SSIS
         private void processPackage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             stopwatch.Stop();
-            this.Text = stopwatch.ElapsedMilliseconds.ToString();
+            this.Text += (" " + stopwatch.ElapsedMilliseconds.ToString());
 
             this.checkedListBox.Items.Clear();
             this.checkedListBox.Items.AddRange(this.unusedVariablesList.ToArray());
@@ -93,13 +93,35 @@ namespace BIDSHelper.SSIS
             Variable[] variables = e.Argument as Variable[];
             finder.FindReferences(this.package, variables);
         }
-
-        private void processPackage_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            VariableFoundEventArgs info = (VariableFoundEventArgs)e.UserState;
-            //AddValue(info.Type, info.ContainerID, info.ObjectID, info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Value, info.Icon, info.IsExpression);
-        }
         #endregion
 
+        private void buttonDelete_Click(object sender, EventArgs e)
+        {
+            foreach (string variable in this.checkedListBox.SelectedItems)
+            {
+                package.Variables.Remove(variable);
+            }
+
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
+        }
+
+        private void checkedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            int count = this.checkedListBox.SelectedItems.Count;
+
+            if (e.NewValue == CheckState.Checked)
+                count++;
+            else
+                count--;
+
+            this.buttonDelete.Enabled = (count > 0);
+        }
     }
 }

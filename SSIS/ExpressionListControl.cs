@@ -83,8 +83,7 @@ namespace BIDSHelper.SSIS
                             row.Cells[expressionGrid.Columns["Expression"].Index].Value as string,
                             row.Cells[expressionGrid.Columns["Property"].Index].Value.ToString(),
                             row.Cells[expressionGrid.Columns["ContainerID"].Index].Value.ToString(),
-                            row.Cells[expressionGrid.Columns["ObjectID"].Index].Value.ToString(),
-                            row.Cells[expressionGrid.Columns["ObjectType"].Index].Value.ToString()));
+                            row.Cells[expressionGrid.Columns["ObjectID"].Index].Value.ToString()));
                 }
             }
             catch (Exception ex)
@@ -180,7 +179,7 @@ namespace BIDSHelper.SSIS
     
     public class EditExpressionSelectedEventArgs : EventArgs
     {
-        public EditExpressionSelectedEventArgs(Type type, string objectPath, string expression, string property, string containerID, string objectID, string objectType)
+        public EditExpressionSelectedEventArgs(Type type, string objectPath, string expression, string property, string containerID, string objectID)
         {
             this.type = type;
             this.containerID = containerID;
@@ -188,7 +187,6 @@ namespace BIDSHelper.SSIS
             this.expression = expression;
             this.property = property;
             this.objectID = objectID;
-            this.objectType = objectType;
         }
 
         private Type type;
@@ -197,7 +195,6 @@ namespace BIDSHelper.SSIS
         private string path;
         private string containerID; 
         private string objectID;
-        private string objectType;
 
         public Type Type
         {
@@ -224,10 +221,6 @@ namespace BIDSHelper.SSIS
         public string ObjectID
         {
             get { return this.objectID; }
-        }
-        public string ObjectType
-        {
-            get { return this.objectType; }
         }
     }
 }

@@ -173,7 +173,7 @@
             this.ClientSize = new System.Drawing.Size(887, 414);
             this.Controls.Add(this.expressionGrid);
             this.Name = "FindReferences";
-            this.Text = "FindReferences";
+            this.Text = "Find variable references";
             ((System.ComponentModel.ISupportInitialize)(this.expressionGrid)).EndInit();
             this.ResumeLayout(false);
 

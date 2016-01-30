@@ -47,16 +47,17 @@ namespace BIDSHelper.SSIS
 
         public void AddValue(Type type, string containerID, string objectID, string objectType, string objectPath, string objectName, string propertyName, string value, Icon icon, bool isExpression)
         {
+            // containerID, objectID, objectName are hidden columns.
             string[] newRow = { containerID, objectID, objectType, objectPath, objectName, propertyName, value };
             int index = expressionGrid.Rows.Add(newRow);
             DataGridViewRow row = expressionGrid.Rows[index];
             row.Tag = type;
             row.Cells["ObjectType"].Tag = icon;
 
-            if (!isExpression)
-            {
-                row.Cells["EditorColumn"].DetachEditingControl();
-            }
+            //if (!isExpression)
+            //{
+            //    row.Cells["EditorColumn"].DetachEditingControl();
+            //}
         }
 
         private void VariableFound(object sender, VariableFoundEventArgs e)
@@ -71,7 +72,7 @@ namespace BIDSHelper.SSIS
         {
             //expressionListWindow.StopProgressBar();
             stopwatch.Stop();
-            this.Text = stopwatch.ElapsedMilliseconds.ToString();
+            this.Text += (" " + stopwatch.ElapsedMilliseconds.ToString());
         }
 
         private void processPackage_DoWork(object sender, DoWorkEventArgs e)
