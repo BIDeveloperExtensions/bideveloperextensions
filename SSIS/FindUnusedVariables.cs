@@ -1,4 +1,5 @@
-﻿using Microsoft.SqlServer.Dts.Runtime;
+﻿using BIDSHelper.Core;
+using Microsoft.SqlServer.Dts.Runtime;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,11 +28,13 @@ namespace BIDSHelper.SSIS
             processPackage.WorkerSupportsCancellation = true;
             processPackage.DoWork += new DoWorkEventHandler(processPackage_DoWork);
             processPackage.RunWorkerCompleted += new RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
+
+            selectionList.SelectionChanged += new EventHandler<SelectionListSelectionChangedEventArgs>(selectionList_SelectionChanged);
         }
 
         public DialogResult Show(Package package)
         {
-            this.checkedListBox.Items.Clear();
+            this.selectionList.ClearItems();
 
             finder.VariableFound += new EventHandler<VariableFoundEventArgs>(VariableFound);
 
@@ -83,8 +86,8 @@ namespace BIDSHelper.SSIS
             stopwatch.Stop();
             this.Text += (" " + stopwatch.ElapsedMilliseconds.ToString());
 
-            this.checkedListBox.Items.Clear();
-            this.checkedListBox.Items.AddRange(this.unusedVariablesList.ToArray());
+            this.selectionList.ClearItems();
+            this.selectionList.AddRange(this.unusedVariablesList.ToArray());
         }
 
         private void processPackage_DoWork(object sender, DoWorkEventArgs e)
@@ -97,7 +100,7 @@ namespace BIDSHelper.SSIS
 
         private void buttonDelete_Click(object sender, EventArgs e)
         {
-            foreach (string variable in this.checkedListBox.SelectedItems)
+            foreach (string variable in this.selectionList.SelectedItems)
             {
                 package.Variables.Remove(variable);
             }
@@ -112,16 +115,9 @@ namespace BIDSHelper.SSIS
             this.Close();
         }
 
-        private void checkedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        private void selectionList_SelectionChanged(object sender, SelectionListSelectionChangedEventArgs e)
         {
-            int count = this.checkedListBox.SelectedItems.Count;
-
-            if (e.NewValue == CheckState.Checked)
-                count++;
-            else
-                count--;
-
-            this.buttonDelete.Enabled = (count > 0);
+            this.buttonDelete.Enabled = (e.SelectedItems > 0);
         }
     }
 }

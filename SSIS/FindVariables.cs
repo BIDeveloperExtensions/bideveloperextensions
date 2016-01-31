@@ -1,5 +1,6 @@
 ﻿using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
+using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
 using Microsoft.SqlServer.Dts.Tasks.ExecuteSQLTask;
 using System;
 using System.Collections.Generic;
@@ -187,8 +188,14 @@ namespace BIDSHelper.SSIS
                         switch (foundArgument.ObjectType)
                         {
                             case "ExecuteSQLTask":
-                                CheckExecuteSQLTask(taskHost.InnerObject as ExecuteSQLTask, foundArgument);
+                                CheckExecuteSQLTask(taskHost, foundArgument);
                                 break;
+                        }
+
+                        // TODO: Is this specific to 2014? Maybe use task creation name as standard way of differentiating tasks.
+                        if (taskHost.CreationName == "SSIS.ExecutePackageTask.4")
+                        {
+                            CheckExecutePackageTask(taskHost, foundArgument);
                         }
 
                         ScanProperties(propProvider, foundArgument);
@@ -579,8 +586,10 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        private void CheckExecuteSQLTask(ExecuteSQLTask task, VariableFoundEventArgs foundArgument)
+        private void CheckExecuteSQLTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
         {
+            ExecuteSQLTask task = taskHost.InnerObject as ExecuteSQLTask;
+
             foreach (IDTSParameterBinding binding in task.ParameterBindings)
             {
                 string match;
@@ -613,6 +622,31 @@ namespace BIDSHelper.SSIS
                 }
             }
         }
+
+        private void CheckExecutePackageTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
+        {
+            ExecutePackageTask task = taskHost.InnerObject as ExecutePackageTask;
+
+            // ParameterAssignments doesn't support foreach enumeration, so use for loop instead.
+            for (int i = 0; i < task.ParameterAssignments.Count; i++)
+            {
+                IDTSParameterAssignment assignment = task.ParameterAssignments[i];
+
+                string match;                
+                string value = assignment.BindedVariableOrParameterName;
+                if (!string.IsNullOrEmpty(value) && PropertyMatch(value, out match))
+                {
+                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
+                    info.ObjectPath = foundArgument.ObjectPath + ".ParameterAssignments[" + assignment.ParameterName + "]";
+                    info.PropertyName = assignment.ParameterName.ToString();
+                    info.Value = value;
+                    info.IsExpression = false;
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                }
+            }
+        }
+
     }
 
     public class VariableFoundEventArgs : EventArgs

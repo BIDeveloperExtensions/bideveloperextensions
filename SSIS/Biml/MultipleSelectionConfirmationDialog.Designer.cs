@@ -29,48 +29,22 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MultipleSelectionConfirmationDialog));
-            this.selectionCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.confirmationTextLabel = new System.Windows.Forms.Label();
-            this.selectAllCheckBox = new System.Windows.Forms.CheckBox();
             this.cancelButton = new System.Windows.Forms.Button();
             this.commitButton = new System.Windows.Forms.Button();
             this.helpButton = new System.Windows.Forms.Button();
+            this.selectionList = new BIDSHelper.Core.SelectionList();
             this.SuspendLayout();
-            // 
-            // selectionCheckedListBox
-            // 
-            this.selectionCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.selectionCheckedListBox.FormattingEnabled = true;
-            this.selectionCheckedListBox.Location = new System.Drawing.Point(12, 63);
-            this.selectionCheckedListBox.Name = "selectionCheckedListBox";
-            this.selectionCheckedListBox.Size = new System.Drawing.Size(625, 424);
-            this.selectionCheckedListBox.TabIndex = 0;
-            this.selectionCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.selectionCheckedListBox_ItemCheck);
             // 
             // confirmationTextLabel
             // 
-            this.confirmationTextLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.confirmationTextLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.confirmationTextLabel.Location = new System.Drawing.Point(12, 9);
             this.confirmationTextLabel.Name = "confirmationTextLabel";
             this.confirmationTextLabel.Size = new System.Drawing.Size(625, 28);
             this.confirmationTextLabel.TabIndex = 1;
             this.confirmationTextLabel.Text = "ConfirmationText";
-            // 
-            // selectAllCheckBox
-            // 
-            this.selectAllCheckBox.AutoSize = true;
-            this.selectAllCheckBox.Checked = true;
-            this.selectAllCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.selectAllCheckBox.Location = new System.Drawing.Point(15, 40);
-            this.selectAllCheckBox.Name = "selectAllCheckBox";
-            this.selectAllCheckBox.Size = new System.Drawing.Size(70, 17);
-            this.selectAllCheckBox.TabIndex = 2;
-            this.selectAllCheckBox.Text = "Select All";
-            this.selectAllCheckBox.UseVisualStyleBackColor = true;
-            this.selectAllCheckBox.CheckedChanged += new System.EventHandler(this.selectAllCheckBox_CheckedChanged);
             // 
             // cancelButton
             // 
@@ -93,7 +67,6 @@
             this.commitButton.TabIndex = 4;
             this.commitButton.Text = "Commit";
             this.commitButton.UseVisualStyleBackColor = true;
-            this.commitButton.Click += new System.EventHandler(this.commitButton_Click);
             // 
             // helpButton
             // 
@@ -106,6 +79,16 @@
             this.helpButton.UseVisualStyleBackColor = true;
             this.helpButton.Click += new System.EventHandler(this.helpButton_Click);
             // 
+            // selectionCheckedListBox
+            // 
+            this.selectionList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.selectionList.Location = new System.Drawing.Point(12, 63);
+            this.selectionList.Name = "selectionCheckedListBox";
+            this.selectionList.Size = new System.Drawing.Size(625, 424);
+            this.selectionList.TabIndex = 0;
+            // 
             // MultipleSelectionConfirmationDialog
             // 
             this.AcceptButton = this.commitButton;
@@ -116,9 +99,8 @@
             this.Controls.Add(this.helpButton);
             this.Controls.Add(this.commitButton);
             this.Controls.Add(this.cancelButton);
-            this.Controls.Add(this.selectAllCheckBox);
             this.Controls.Add(this.confirmationTextLabel);
-            this.Controls.Add(this.selectionCheckedListBox);
+            this.Controls.Add(this.selectionList);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MultipleSelectionConfirmationDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -129,12 +111,10 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.CheckedListBox selectionCheckedListBox;
         private System.Windows.Forms.Label confirmationTextLabel;
-        private System.Windows.Forms.CheckBox selectAllCheckBox;
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Button commitButton;
         private System.Windows.Forms.Button helpButton;
+        private BIDSHelper.Core.SelectionList selectionList;
     }
 }

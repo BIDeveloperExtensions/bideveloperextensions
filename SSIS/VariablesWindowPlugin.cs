@@ -20,7 +20,7 @@ namespace BIDSHelper.SSIS
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
     #endif
     
-    public class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
+    public partial class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
 #if SQL2014
         private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{826881A1-F158-483E-A118-8D5289CB6F1C}";//"{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
@@ -142,6 +142,7 @@ namespace BIDSHelper.SSIS
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
                     this.editExpressionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
+#if DENALI || SQL2014
                     // Find References button
                     this.findReferencesButton = new ToolBarButton();
                     this.findReferencesButton.Style = ToolBarButtonStyle.PushButton;
@@ -157,6 +158,7 @@ namespace BIDSHelper.SSIS
                     toolbar.Buttons.Add(this.findUnusedButton);
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
                     this.findUnusedButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
+#endif
 
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
                     toolbar.Wrappable = false;
@@ -196,8 +198,12 @@ namespace BIDSHelper.SSIS
                     this.moveCopyButton.ImageIndex = this.moveCopyButton.Parent.ImageList.Images.Count - 1;
                     this.editExpressionButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
                     this.editExpressionButton.ImageIndex = this.editExpressionButton.Parent.ImageList.Images.Count - 1;
-                    //this.findReferencesButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
-                    //this.findReferencesButton.ImageIndex = this.editExpressionButton.Parent.ImageList.Images.Count - 1;
+#if DENALI || SQL2014
+                    this.findReferencesButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindReferences);
+                    this.findReferencesButton.ImageIndex = this.findReferencesButton.Parent.ImageList.Images.Count - 1;
+                    this.findUnusedButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
+                    this.findUnusedButton.ImageIndex = this.findUnusedButton.Parent.ImageList.Images.Count - 1;
+#endif
                     System.Diagnostics.Debug.WriteLine("fixed variables windows button icons");
                 }
             }
@@ -339,79 +345,14 @@ namespace BIDSHelper.SSIS
                 MoveCopyButtonClick();
             else if (e.Button == this.editExpressionButton)
                 EditExpressionButtonClick();
+#if DENALI || SQL2014
             else if (e.Button == this.findReferencesButton)
                 FindReferencesButtonClick();
             else if (e.Button == this.findUnusedButton)
                 FindUnusedButtonClick();
-        }
-
-        private void FindReferencesButtonClick()
-        {
-            try
-            {
-#if DENALI || SQL2014
-                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
-#else
-                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
 #endif
-
-                if (packageDesigner == null) return;
-
-                Package package = packageDesigner.Component as Package;
-                if (package == null) return;
-
-                int selectedRow;
-                int selectedCol;
-                grid.GetSelectedCell(out selectedRow, out selectedCol);
-
-                if (selectedRow < 0) return;
-
-                Variable variable = GetVariableForRow(selectedRow);
-
-                if (variable == null) return;
-
-                FindReferences dialog = new FindReferences();
-                dialog.Show(package, variable);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
-            }
         }
 
-        private void FindUnusedButtonClick()
-        {
-            try
-            {
-#if DENALI || SQL2014
-                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
-#else
-                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
-#endif
-
-                if (packageDesigner == null) return;
-
-                Package package = packageDesigner.Component as Package;
-                if (package == null) return;
-
-                FindUnusedVariables dialog = new FindUnusedVariables();
-                if (dialog.Show(package) == DialogResult.OK)
-                {
-                    // Dialog result OK indicates we have deleted one or more variables
-                    // Flag package as dirty
-                    SSISHelpers.MarkPackageDirty(package);
-
-                    // Refresh the grid
-                    variablesToolWindowControl.GetType().InvokeMember("FillGrid", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { });
-                    SetButtonEnabled();
-                    RefreshHighlights();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
-            }
-        }
 
         private void EditExpressionButtonClick()
         {

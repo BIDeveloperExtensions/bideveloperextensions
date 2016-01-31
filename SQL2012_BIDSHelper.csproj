@@ -679,6 +679,7 @@
       <DependentUpon>SmartDiff.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\SmartDiffPlugin.cs" />
+    <Compile Include="SSIS\VariablesWindowPluginPartial.cs" />
     <Compile Include="SSRS\DeleteDatasetCachePlugin.cs" />
     <Compile Include="SSRS\ExpressionInfo.cs" />
     <Compile Include="SSRS\UnusedDatasetsPlugin.cs" />
