@@ -308,17 +308,17 @@ namespace BIDSHelper.SSIS
         {
             // string containerId, string objectId, string objectName, string path, string objectType
             // First check if we have a "FriendlyExpression". We use the value from FriendlyExpression, because it is CPET_NOTIFY
-            // The related Expression will always be CPET_NONE
+            // The related Expression will always be CPET_NONE, and less readable.
             bool friendlyExpressionValid = GetIsFriendlyExpression(properties);
 
             foreach (IDTSCustomProperty100 property in properties)
             {
+                string propertyName = property.Name;
                 string value = property.Value as string;
                 if (string.IsNullOrEmpty(value))
                     continue;
 
                 string match;
-                string propertyName = property.Name;
                 if (property.ExpressionType == DTSCustomPropertyExpressionType.CPET_NOTIFY)
                 {
                     // Check the expression string for our matching variable name
@@ -349,21 +349,7 @@ namespace BIDSHelper.SSIS
                         continue;
                     }
 
-                    // HACK - Check the property value, its it a matching variable name?
-                    // TODO: Removed this and add component specific logic
-
-
-                    if (PropertyMatch(value, out match))
-                    {
-                        VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                        info.ObjectPath = pathOverride;
-                        info.PropertyName = property.Name;
-                        info.Value = value;
-                        info.IsExpression = false;
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
-                    }
-
+                    PropertyMatch(foundArgument, pathOverride, propertyName, value);
                 }
             }
         }
@@ -470,43 +456,29 @@ namespace BIDSHelper.SSIS
                 {
                     continue;
                 }
-
-                // Check property XXXXXXXXX
-                String propertyName;
-                DTSPropertyKind propertyKind;
-                TypeCode propertyType;
-
-                propertyType = property.Type;
-                propertyName = property.Name;
-                if (property.PropertyKind != DTSPropertyKind.Other)
-                {
-                    propertyKind = property.PropertyKind;
-                }
+                
+                TypeCode propertyType = property.Type;
+                string propertyName = property.Name;
 
                 #region Check property value
                 string match;
                 if (property.Type == TypeCode.String && property.Get)
                 {
                     string value = property.GetValue(provider) as string;
-                    if (!string.IsNullOrEmpty(value) && PropertyMatch(value, out match))
+                    if (string.IsNullOrEmpty(value))
+                        continue;
+
+                    string pathOverride;
+                    if (property.Name.StartsWith("["))
                     {
-                        VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-
-                        if (property.Name.StartsWith("["))
-                        {
-                            info.ObjectPath = foundArgument.ObjectPath + ".Properties" + property.Name + "";
-                        }
-                        else
-                        {
-                            info.ObjectPath = foundArgument.ObjectPath + ".Properties[" + property.Name + "]";
-                        }
-
-                        info.PropertyName = property.Name;
-                        info.Value = value;
-                        info.IsExpression = false;
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
+                        pathOverride = foundArgument.ObjectPath + ".Properties" + property.Name + "";
                     }
+                    else
+                    {
+                        pathOverride = foundArgument.ObjectPath + ".Properties[" + property.Name + "]";
+                    }
+
+                    PropertyMatch(foundArgument, pathOverride, propertyName, value);
                 }
                 #endregion
 
@@ -555,6 +527,41 @@ namespace BIDSHelper.SSIS
 
             match = null;
             return false;
+        }
+
+        private void PropertyMatch(VariableFoundEventArgs foundArgument, string pathOverride, string propertyName, string value)
+        {
+            string match;
+            if (propertyName == "ReadOnlyVariables" || propertyName == "ReadWriteVariables")
+            {
+                // Comma delimited list of variable names, split and then search
+                foreach (string item in value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (PropertyMatch(item, out match))
+                    {
+                        VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
+                        info.ObjectPath = pathOverride;
+                        info.PropertyName = propertyName;
+                        info.Value = value;
+                        info.IsExpression = false;
+                        info.Match = match;
+                        OnRaiseVariableFound(info);
+                    }
+                }
+            }
+            else
+            {
+                if (PropertyMatch(value, out match))
+                {
+                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
+                    info.ObjectPath = pathOverride;
+                    info.PropertyName = propertyName;
+                    info.Value = value;
+                    info.IsExpression = false;
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                }
+            }
         }
 
         private bool PropertyMatch(string value, out string match)

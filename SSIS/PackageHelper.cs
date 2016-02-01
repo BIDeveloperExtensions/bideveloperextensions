@@ -12,7 +12,11 @@
         /// The specific type of managed component is identified by the UserComponentTypeName 
         /// custom property of the component.
         /// </summary>
-        public const string ManagedComponentWrapper = "{bf01d463-7089-41ee-8f05-0a6dc17ce633}";
+        public const string ManagedComponentWrapper = "{33D831DE-5DCF-48F0-B431-4D327B9E785D}";//{bf01d463-7089-41ee-8f05-0a6dc17ce633}";
+        
+
+        // Script Component ID
+        public const string ScriptComponentID = "Microsoft.SqlServer.Dts.Pipeline.ScriptComponentHost, Microsoft.SqlServer.TxScript, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
 
         public const string PackageCreationName = "Package";
         public const string EventHandlerCreationName = "EventHandler";
@@ -93,6 +97,13 @@
                                 }
                                 else
                                 {
+                                    ////if (pipelineComponentInfo.ID == ScriptComponentID)
+                                    ////{
+                                    ////    // For the script component on SQL 2014, PipelineComponentInfo shows an ID of Microsoft.SqlServer.Dts.Pipeline.ScriptComponentHost, Microsoft.SqlServer.TxScript, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91
+                                    ////    // When enumerating components in the pipeline the ComponentClassID is the GUID, not the creation name
+                                    ////    // COM CLSID vs COM ProgID vs assembly strong name, they all get mixed up sometimes.
+                                    ////    componentInfos.Add("{33D831DE-5DCF-48F0-B431-4D327B9E785D}", new ComponentInfo(pipelineComponentInfo));
+                                    ////}
                                     componentInfos.Add(pipelineComponentInfo.ID, new ComponentInfo(pipelineComponentInfo));
                                 }
                             }
@@ -241,7 +252,7 @@
         public static string GetComponentKey(IDTSComponentMetaData100 component)
         {
             string key = component.ComponentClassID;
-            if (component.ComponentClassID == ManagedComponentWrapper)
+            if (component.ComponentClassID.Equals(ManagedComponentWrapper, StringComparison.OrdinalIgnoreCase))
             {
                 key = component.CustomPropertyCollection["UserComponentTypeName"].Value.ToString();
             }
@@ -256,7 +267,7 @@
                 {
                     if (path.StartPoint.SynchronousInputID == 0)
                     {
-                        //This is the source component.
+                        // This is the source component.
                         return path.StartPoint.Component;
                     }
                     else
