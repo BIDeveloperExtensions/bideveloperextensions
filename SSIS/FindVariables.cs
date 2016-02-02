@@ -5,9 +5,6 @@ using Microsoft.SqlServer.Dts.Tasks.ExecuteSQLTask;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BIDSHelper.SSIS
 {
@@ -208,13 +205,7 @@ namespace BIDSHelper.SSIS
                     ForEachLoop loop = container as ForEachLoop;
                     if (loop != null)
                     {
-                        foundArgument.Type = typeof(ForEachLoop);
-                        ScanProperties(propProvider, foundArgument);
-
-                        VariableFoundEventArgs foundEnumerator = new VariableFoundEventArgs(foundArgument);
-                        foundEnumerator.ObjectPath = foundArgument.ObjectPath + "\\ForEachEnumerator.";
-                        foundEnumerator.Type = typeof(ForEachEnumerator);
-                        ScanProperties(propProvider, foundEnumerator);
+                        CheckForEachLoop(loop, foundArgument);
                     }
                     else
                     {
@@ -484,6 +475,11 @@ namespace BIDSHelper.SSIS
 
                 #region Check property expression
                 // Check expression
+
+                // TODO can we use IDTSPropertiesProviderEx.HasExpressions Property
+                //enumerator.HasExpressions
+
+
                 string expression = provider.GetExpression(property.Name);
                 if (expression == null)
                 {
@@ -646,6 +642,36 @@ namespace BIDSHelper.SSIS
                     VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
                     info.ObjectPath = foundArgument.ObjectPath + ".ParameterAssignments[" + assignment.ParameterName + "]";
                     info.PropertyName = assignment.ParameterName.ToString();
+                    info.Value = value;
+                    info.IsExpression = false;
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                }
+            }
+        }
+
+        private void CheckForEachLoop(ForEachLoop forEachLoop, VariableFoundEventArgs foundArgument)
+        {
+            // Check properties of loop itself
+            foundArgument.Type = typeof(ForEachLoop);
+            ScanProperties(forEachLoop, foundArgument);
+
+            // Check properties of enumerator
+            ForEachEnumeratorHost enumerator = forEachLoop.ForEachEnumerator;
+            VariableFoundEventArgs foundEnumerator = new VariableFoundEventArgs(foundArgument);
+            foundEnumerator.ObjectPath = foundArgument.ObjectPath + "\\" + foundEnumerator.Type.Name + ".";
+            foundEnumerator.Type = enumerator.GetType();
+            ScanProperties(enumerator, foundEnumerator);
+
+            foreach (ForEachVariableMapping mapping in forEachLoop.VariableMappings)
+            {
+                string match;
+                string value = mapping.VariableName;
+                if (!string.IsNullOrEmpty(value) && PropertyMatch(value, out match))
+                {
+                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
+                    info.ObjectPath = foundArgument.ObjectPath + ".VariableMappings[" + mapping.ValueIndex.ToString() + "]";
+                    info.PropertyName = mapping.ValueIndex.ToString();
                     info.Value = value;
                     info.IsExpression = false;
                     info.Match = match;

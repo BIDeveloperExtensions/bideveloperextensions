@@ -33,18 +33,19 @@
             this.buttonClose = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // checkedListBox
+            // selectionList
             // 
             this.selectionList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.selectionList.Location = new System.Drawing.Point(12, 12);
-            this.selectionList.Name = "checkedListBox";
+            this.selectionList.Name = "selectionList";
             this.selectionList.Size = new System.Drawing.Size(383, 199);
             this.selectionList.TabIndex = 0;
             // 
             // buttonDelete
             // 
+            this.buttonDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonDelete.Enabled = false;
             this.buttonDelete.Location = new System.Drawing.Point(12, 218);
             this.buttonDelete.Name = "buttonDelete";
@@ -56,6 +57,7 @@
             // 
             // buttonClose
             // 
+            this.buttonClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonClose.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.buttonClose.Location = new System.Drawing.Point(302, 218);
             this.buttonClose.Name = "buttonClose";
@@ -75,7 +77,9 @@
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.buttonDelete);
             this.Controls.Add(this.selectionList);
+            this.MinimizeBox = false;
             this.Name = "FindUnusedVariables";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Find unused variables";
             this.ResumeLayout(false);
 

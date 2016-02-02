@@ -3,11 +3,6 @@ using Microsoft.SqlServer.Dts.Runtime;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
@@ -45,7 +40,9 @@ namespace BIDSHelper.SSIS
             List<Variable> variables = new List<Variable>();
             foreach (Variable variable in package.Variables)
             {
-                if (!variable.SystemVariable)
+                // Exclude system variables, they cannot be removed so no point reporting them as unused
+                // Exclude Project parameters, they should not be removed since we only search a package, not the full project
+                if (!variable.SystemVariable && variable.Namespace != "$Project")
                 {
                     unusedVariablesList.Add(variable.QualifiedName);
                     variables.Add(variable);
