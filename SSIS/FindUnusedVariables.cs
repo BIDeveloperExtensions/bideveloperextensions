@@ -97,7 +97,7 @@ namespace BIDSHelper.SSIS
 
         private void buttonDelete_Click(object sender, EventArgs e)
         {
-            foreach (string variable in this.selectionList.SelectedItems)
+            foreach (string variable in this.selectionList.CheckedItems)
             {
                 package.Variables.Remove(variable);
             }

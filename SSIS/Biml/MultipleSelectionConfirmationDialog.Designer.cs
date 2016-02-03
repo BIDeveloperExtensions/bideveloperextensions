@@ -67,6 +67,7 @@
             this.commitButton.TabIndex = 4;
             this.commitButton.Text = "Commit";
             this.commitButton.UseVisualStyleBackColor = true;
+            this.commitButton.Click += new System.EventHandler(this.commitButton_Click);
             // 
             // helpButton
             // 
@@ -79,13 +80,13 @@
             this.helpButton.UseVisualStyleBackColor = true;
             this.helpButton.Click += new System.EventHandler(this.helpButton_Click);
             // 
-            // selectionCheckedListBox
+            // selectionList
             // 
             this.selectionList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.selectionList.Location = new System.Drawing.Point(12, 63);
-            this.selectionList.Name = "selectionCheckedListBox";
+            this.selectionList.Name = "selectionList";
             this.selectionList.Size = new System.Drawing.Size(625, 424);
             this.selectionList.TabIndex = 0;
             // 
@@ -106,7 +107,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Confirm Overwritten Items";
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

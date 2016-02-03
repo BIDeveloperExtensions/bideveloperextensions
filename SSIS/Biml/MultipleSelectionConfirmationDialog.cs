@@ -8,19 +8,16 @@ namespace BIDSHelper.SSIS.Biml
 {
     public partial class MultipleSelectionConfirmationDialog : Form
     {
-        private List<string> _itemsSource;
+        private List<string> itemsSource;
 
         public IEnumerable<string> SelectedFilePaths
         {
-            get
-            {
-                return this.selectionList.SelectedItems;
-            }
+            get; private set;
         }
 
         public MultipleSelectionConfirmationDialog(List<string> itemsSource, string projectDirectory, int safeCount)
         {
-            _itemsSource = itemsSource;
+            this.itemsSource = itemsSource;
             InitializeComponent();
             confirmationTextLabel.Text = string.Format(
                 CultureInfo.CurrentCulture,
@@ -36,6 +33,18 @@ namespace BIDSHelper.SSIS.Biml
         private void helpButton_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start(BIDSHelper.Resources.Common.BimlOverwriteConfirmationHelpUrl);
+        }
+
+        private void commitButton_Click(object sender, EventArgs e)
+        {
+            // Transalate profile file paths displayed in the selection list, back to temp file paths that we were supplied with
+            List<string> paths = new List<string>();
+            foreach (int selectedIndex in selectionList.CheckedIndices)
+            {
+                paths.Add(itemsSource[selectedIndex]);
+            }
+
+            this.SelectedFilePaths = paths;
         }
     }
 }

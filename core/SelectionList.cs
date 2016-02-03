@@ -35,7 +35,7 @@ namespace BIDSHelper.Core
                 row.Cells[0].Value = !currentState;
             }
 
-            UpateSelectAll();
+            UpateCheckedItems();
         }
 
         private void dataGridView_KeyPress(object sender, KeyPressEventArgs e)
@@ -53,7 +53,7 @@ namespace BIDSHelper.Core
                 row.Cells[0].Value = !currentState;
             }
 
-            UpateSelectAll();
+            UpateCheckedItems();
         }
 
         private void checkBoxSelectAll_CheckedChanged(object sender, EventArgs e)
@@ -72,12 +72,12 @@ namespace BIDSHelper.Core
             OnRaiseSelectionChanged(new SelectionListSelectionChangedEventArgs(this.checkedItems, this.totalItems));
         }
 
-        private void UpateSelectAll()
+        private void UpateCheckedItems()
         {
             checkChangedEnabled = false;
 
             int counter = 0;
-            // Enumerate rows to get reliable current state. Too many issues when trying to keep track via counters.
+            // Enumerate rows to get reliable current state. Too many issues when trying to keep track via counters, they are just used for event reporting after this check
             foreach (DataGridViewRow row in dataGridView.Rows)
             {
                 if (Convert.ToBoolean(row.Cells[0].Value))
@@ -88,22 +88,28 @@ namespace BIDSHelper.Core
 
             checkedItems = counter;
 
-            if (totalItems == checkedItems)
+            UpdateSelectAllCheckBox();
+
+            checkChangedEnabled = true;
+
+            OnRaiseSelectionChanged(new SelectionListSelectionChangedEventArgs(this.checkedItems, this.totalItems));
+        }
+
+        private void UpdateSelectAllCheckBox()
+        {
+            if (checkedItems == 0)
+            {
+                // No items checked, or no items at all as it is the first test
+                checkBoxSelectAll.CheckState = CheckState.Unchecked;
+            }
+            else if (totalItems == checkedItems)
             {
                 checkBoxSelectAll.CheckState = CheckState.Checked;
-            }
-            else if (checkedItems == 0)
-            {
-                checkBoxSelectAll.CheckState = CheckState.Unchecked;
             }
             else
             {
                 checkBoxSelectAll.CheckState = CheckState.Indeterminate;
             }
-
-            checkChangedEnabled = true;
-
-            OnRaiseSelectionChanged(new SelectionListSelectionChangedEventArgs(this.checkedItems, this.totalItems));
         }
 
         public void AddItem(string item)
@@ -116,6 +122,7 @@ namespace BIDSHelper.Core
             dataGridView.Rows.Add(selected, item);
             totalItems++;
             checkedItems += (selected ? 1 : 0);
+            UpdateSelectAllCheckBox();
         }
 
         public void AddRange(string[] items)
@@ -129,19 +136,42 @@ namespace BIDSHelper.Core
         public void ClearItems()
         {
             this.dataGridView.Rows.Clear();
+            totalItems = 0;
+            checkedItems = 0;
+            UpdateSelectAllCheckBox();
         }
 
-        public IEnumerable<string> SelectedItems
+        public IEnumerable<string> CheckedItems
         {
             get
             {
                 List<string> selectedItems = new List<string>();
-                foreach (DataGridViewRow row in dataGridView.SelectedRows)
+                foreach (DataGridViewRow row in dataGridView.Rows)
                 {
-                    selectedItems.Add(row.Cells[1].Value.ToString());
+                    if (Convert.ToBoolean(row.Cells[0].Value))
+                    {
+                        selectedItems.Add(row.Cells[1].Value.ToString());
+                    }
                 }
 
                 return selectedItems;
+            }
+        }
+
+        public IEnumerable<int> CheckedIndices
+        {
+            get
+            {
+                List<int> selectedIndices = new List<int>();
+                foreach (DataGridViewRow row in dataGridView.Rows)
+                {
+                    if (Convert.ToBoolean(row.Cells[0].Value))
+                    {
+                        selectedIndices.Add(row.Index);
+                    }
+                }
+
+                return selectedIndices;
             }
         }
 
