@@ -154,67 +154,76 @@ namespace BIDSHelper.SSIS
             if (propProvider is DtsContainer)
             {
                 DtsContainer container = (DtsContainer)propProvider;
-                string containerKey = PackageHelper.GetContainerKey(container);
 
                 VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
                 foundArgument.ContainerID = container.ID;
-                foundArgument.ObjectID = container.ID;
+                foundArgument.ObjectID = container.ID;                
                 
-                foundArgument.Icon = PackageHelper.ControlFlowInfos[containerKey].Icon;
                 foundArgument.ObjectPath = path;
+
+                string containerKey = PackageHelper.GetContainerKey(container);
+                foundArgument.Icon = PackageHelper.ControlFlowInfos[containerKey].Icon;
 
                 TaskHost taskHost = container as TaskHost;
                 if (taskHost != null)
                 {
-                    MainPipe pipeline = taskHost.InnerObject as MainPipe;
-                    if (pipeline != null)
-                    {
-                        foundArgument.ObjectType = ObjectTypeDataFlowTask;
-                        foundArgument.Type = typeof(MainPipe);
-                        //foundArgument.Icon = BIDSHelper.Resources.Versioned.DataFlow;
-
-                        ScanPipeline(pipeline, foundArgument);
-                        ScanProperties(propProvider, foundArgument);
-                    }
-                    else
-                    {
-                        foundArgument.Type = taskHost.InnerObject.GetType();
-                        foundArgument.ObjectType = foundArgument.Type.Name;
-
-                        // Task specific checks.
-                        switch (foundArgument.ObjectType)
-                        {
-                            case "ExecuteSQLTask":
-                                CheckExecuteSQLTask(taskHost, foundArgument);
-                                break;
-                        }
-
-                        // TODO: Is this specific to 2014? Maybe use task creation name as standard way of differentiating tasks.
-                        if (taskHost.CreationName == "SSIS.ExecutePackageTask.4")
-                        {
-                            CheckExecutePackageTask(taskHost, foundArgument);
-                        }
-
-                        ScanProperties(propProvider, foundArgument);
-                    }
+                    CheckTask(taskHost, foundArgument);
                 }
                 else
                 {
                     foundArgument.ObjectType = container.GetType().Name;
 
-                    ForEachLoop loop = container as ForEachLoop;
-                    if (loop != null)
+                    switch (foundArgument.ObjectType)
                     {
-                        CheckForEachLoop(loop, foundArgument);
-                    }
-                    else
-                    {
-                        foundArgument.Type = container.GetType();
-                        ScanProperties(propProvider, foundArgument);
+                        case "ForLoop" :
+                            CheckForLoop(propProvider, foundArgument);
+                            break;
+                        case "ForEachLoop":
+                            CheckForEachLoop(container as ForEachLoop, foundArgument);
+                            break;
+                        default:
+                            foundArgument.Type = container.GetType();
+                            ScanProperties(propProvider, foundArgument);
+                            break;
                     }
                 }
 
                 ScanVariables(container.Variables, foundArgument);
+            }
+        }
+
+        private void CheckTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
+        {
+            MainPipe pipeline = taskHost.InnerObject as MainPipe;
+            if (pipeline != null)
+            {
+                foundArgument.ObjectType = ObjectTypeDataFlowTask;
+                foundArgument.Type = typeof(MainPipe);
+                //foundArgument.Icon = BIDSHelper.Resources.Versioned.DataFlow;
+
+                ScanPipeline(pipeline, foundArgument);
+                ScanProperties(taskHost, foundArgument);
+            }
+            else
+            {
+                foundArgument.Type = taskHost.InnerObject.GetType();
+                foundArgument.ObjectType = foundArgument.Type.Name;
+
+                // Task specific checks.
+                switch (foundArgument.ObjectType)
+                {
+                    case "ExecuteSQLTask":
+                        CheckExecuteSQLTask(taskHost, foundArgument);
+                        break;
+                }
+
+                // TODO: Is this specific to 2014? Maybe use task creation name as standard way of differentiating tasks.
+                if (taskHost.CreationName == "SSIS.ExecutePackageTask.4")
+                {
+                    CheckExecutePackageTask(taskHost, foundArgument);
+                }
+
+                ScanProperties(taskHost, foundArgument);
             }
         }
 
@@ -680,7 +689,44 @@ namespace BIDSHelper.SSIS
             }
         }
 
+        private void CheckForLoop(IDTSPropertiesProvider forLoop, VariableFoundEventArgs foundArgument)
+        {
+            // Check regular properties of the loop for variables and regular property expressions 
+            foundArgument.Type = typeof(ForEachLoop);
+            ScanProperties(forLoop, foundArgument);
+
+            // Check explicit expression properties as expressions, missed if we are looking for literal variables.
+            DtsProperty property;
+
+            property = forLoop.Properties["AssignExpression"];
+            PropertyExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+
+            property = forLoop.Properties["EvalExpression"];
+            PropertyExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+
+            property = forLoop.Properties["InitExpression"];
+            PropertyExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+
+            
+
+        }
+
+        private void PropertyExpressionMatch(string propertyName, string expression, VariableFoundEventArgs foundArgument)
+        {
+            string match;
+            if (ExpressionMatch(expression, out match))
+            {
+                VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
+                info.ObjectPath = foundArgument.ObjectPath + ".Properties[" + propertyName + "]";
+                info.PropertyName = propertyName;
+                info.Value = expression;
+                info.IsExpression = true;
+                info.Match = match;
+                OnRaiseVariableFound(info);
+            }
+        }
     }
+
 
     public class VariableFoundEventArgs : EventArgs
     {
