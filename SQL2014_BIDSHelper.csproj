@@ -279,6 +279,7 @@
     <Compile Include="Core\CustomClass.cs" />
     <Compile Include="Core\CustomProperty.cs" />
     <Compile Include="Core\CustomPropertyDescriptor.cs" />
+    <Compile Include="Core\DataGridViewButtonDisableColumn.cs" />
     <Compile Include="Core\DirtyMonitoredDictionary.cs" />
     <Compile Include="Core\SelectionList.cs">
       <SubType>UserControl</SubType>
@@ -759,7 +760,6 @@
     <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
     <None Include="DLLs\Biml\BimlEngine.dll" />
     <None Include="Resources\NoIcon.ico" />
-    <None Include="Resources\Icon1.ico" />
     <None Include="DLLs\Biml\PostSharp.dll" />
     <Content Include="Resources\2014\DataFlow.ico" />
     <Content Include="Resources\2014\DestinationComponent.ico" />

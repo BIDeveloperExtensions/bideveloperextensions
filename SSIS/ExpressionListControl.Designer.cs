@@ -31,9 +31,12 @@ namespace BIDSHelper.SSIS
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExpressionListControl));
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.expressionGrid = new System.Windows.Forms.DataGridView();
+            this.toolStrip = new System.Windows.Forms.ToolStrip();
+            this.btnRefresh = new System.Windows.Forms.ToolStripButton();
+            this.toolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.ContainerID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectID = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectType = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -42,9 +45,6 @@ namespace BIDSHelper.SSIS
             this.Property = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Expression = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.EditorColumn = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.toolStrip = new System.Windows.Forms.ToolStrip();
-            this.btnRefresh = new System.Windows.Forms.ToolStripButton();
-            this.toolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.expressionGrid)).BeginInit();
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
@@ -100,77 +100,6 @@ namespace BIDSHelper.SSIS
             this.expressionGrid.TabIndex = 0;
             this.expressionGrid.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.expressionGrid_CellPainting);
             // 
-            // ContainerID
-            // 
-            this.ContainerID.Frozen = true;
-            this.ContainerID.HeaderText = "ContainerID";
-            this.ContainerID.Name = "ContainerID";
-            this.ContainerID.ReadOnly = true;
-            // 
-            // ObjectID
-            // 
-            this.ObjectID.Frozen = true;
-            this.ObjectID.HeaderText = "Object ID";
-            this.ObjectID.Name = "ObjectID";
-            this.ObjectID.ReadOnly = true;
-            // 
-            // ObjectType
-            // 
-            this.ObjectType.Frozen = true;
-            this.ObjectType.HeaderText = "Object Type";
-            this.ObjectType.Name = "ObjectType";
-            this.ObjectType.ReadOnly = true;
-            this.ObjectType.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            // 
-            // ObjectPath
-            // 
-            this.ObjectPath.Frozen = true;
-            this.ObjectPath.HeaderText = "Path";
-            this.ObjectPath.Name = "ObjectPath";
-            this.ObjectPath.ReadOnly = true;
-            this.ObjectPath.Width = 200;
-            // 
-            // ObjectName
-            // 
-            this.ObjectName.Frozen = true;
-            this.ObjectName.HeaderText = "Object Name";
-            this.ObjectName.Name = "ObjectName";
-            this.ObjectName.ReadOnly = true;
-            // 
-            // Property
-            // 
-            this.Property.Frozen = true;
-            this.Property.HeaderText = "Property";
-            this.Property.Name = "Property";
-            this.Property.ReadOnly = true;
-            this.Property.Width = 160;
-            // 
-            // Expression
-            // 
-            this.Expression.Frozen = true;
-            this.Expression.HeaderText = "Expression";
-            this.Expression.Name = "Expression";
-            this.Expression.ReadOnly = true;
-            this.Expression.Width = 200;
-            // 
-            // EditorColumn
-            // 
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.ButtonFace;
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.Format = "...";
-            dataGridViewCellStyle2.NullValue = "...";
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.ButtonFace;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.ControlText;
-            this.EditorColumn.DefaultCellStyle = dataGridViewCellStyle2;
-            this.EditorColumn.HeaderText = "";
-            this.EditorColumn.Name = "EditorColumn";
-            this.EditorColumn.ReadOnly = true;
-            this.EditorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.EditorColumn.Text = "...";
-            this.EditorColumn.ToolTipText = "Edit Expression";
-            this.EditorColumn.Width = 20;
-            // 
             // toolStrip
             // 
             this.toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -200,6 +129,73 @@ namespace BIDSHelper.SSIS
             this.toolStripProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.toolStripProgressBar.Visible = false;
             // 
+            // ContainerID
+            // 
+            this.ContainerID.Frozen = true;
+            this.ContainerID.HeaderText = "ContainerID";
+            this.ContainerID.Name = "ContainerID";
+            this.ContainerID.ReadOnly = true;
+            // 
+            // ObjectID
+            // 
+            this.ObjectID.Frozen = true;
+            this.ObjectID.HeaderText = "Object ID";
+            this.ObjectID.Name = "ObjectID";
+            this.ObjectID.ReadOnly = true;
+            // 
+            // ObjectType
+            // 
+            this.ObjectType.Frozen = true;
+            this.ObjectType.HeaderText = "Object Type";
+            this.ObjectType.Name = "ObjectType";
+            this.ObjectType.ReadOnly = true;
+            this.ObjectType.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            // 
+            // ObjectPath
+            // 
+            this.ObjectPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.ObjectPath.HeaderText = "Path";
+            this.ObjectPath.Name = "ObjectPath";
+            this.ObjectPath.ReadOnly = true;
+            // 
+            // ObjectName
+            // 
+            this.ObjectName.HeaderText = "Object Name";
+            this.ObjectName.Name = "ObjectName";
+            this.ObjectName.ReadOnly = true;
+            // 
+            // Property
+            // 
+            this.Property.HeaderText = "Property";
+            this.Property.Name = "Property";
+            this.Property.ReadOnly = true;
+            this.Property.Width = 160;
+            // 
+            // Expression
+            // 
+            this.Expression.HeaderText = "Expression";
+            this.Expression.Name = "Expression";
+            this.Expression.ReadOnly = true;
+            this.Expression.Width = 200;
+            // 
+            // EditorColumn
+            // 
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.ButtonFace;
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.Format = "...";
+            dataGridViewCellStyle2.NullValue = "...";
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.ButtonFace;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.ControlText;
+            this.EditorColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            this.EditorColumn.HeaderText = "";
+            this.EditorColumn.Name = "EditorColumn";
+            this.EditorColumn.ReadOnly = true;
+            this.EditorColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.EditorColumn.Text = "...";
+            this.EditorColumn.ToolTipText = "Edit Expression";
+            this.EditorColumn.Width = 20;
+            // 
             // ExpressionListControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -223,12 +219,12 @@ namespace BIDSHelper.SSIS
         private System.Windows.Forms.ToolStripButton btnRefresh;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar;
         private System.Windows.Forms.DataGridViewButtonColumn EditorColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ContainerID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectID;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectType;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectPath;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Property;
         private System.Windows.Forms.DataGridViewTextBoxColumn Expression;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Property;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectPath;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectType;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ObjectID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ContainerID;
     }
 }

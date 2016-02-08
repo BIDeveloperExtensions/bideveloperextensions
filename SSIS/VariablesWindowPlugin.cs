@@ -358,15 +358,7 @@ namespace BIDSHelper.SSIS
         {
             try
             {
-#if DENALI || SQL2014
-                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
-#else
-                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
-#endif
-
-                if (packageDesigner == null) return;
-
-                Package package = packageDesigner.Component as Package;
+                Package package = GetCurrentPackage();
                 if (package == null) return;
 
                 int selectedRow;
@@ -465,6 +457,20 @@ namespace BIDSHelper.SSIS
             {
                 MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private Package GetCurrentPackage()
+        {
+#if DENALI || SQL2014
+            packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+#else
+            packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
+#endif
+
+            if (packageDesigner == null) return null;
+
+            Package package = packageDesigner.Component as Package;
+            return package;
         }
 
         private List<Variable> GetSelectedVariables()

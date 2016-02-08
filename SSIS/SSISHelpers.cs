@@ -6,6 +6,17 @@ namespace BIDSHelper
 {
     public class SSISHelpers
     {
+
+#if SQL2014
+        public const string CreationNameIndex = "4";
+#elif DENALI
+        public const string CreationNameIndex = "3";
+#elif KATMAI
+        public const string CreationNameIndex = "2";
+#else
+        public const string CreationNameIndex = "1";
+#endif
+
         public enum SsisDesignerTabIndex
         {
             ControlFlow = 0,
@@ -19,6 +30,16 @@ namespace BIDSHelper
             PackageExplorer = 3
 #endif
         }
+
+        //this is only defined in the latest VS2013 OneDesigner, so it won't be available in older versions
+        public enum ProjectTargetVersion
+        {
+            LatestSQLServerVersion = 12,
+            SQLServer2012 = 11,
+            SQLServer2014 = 12
+        }
+
+        public static ProjectTargetVersion? LatestProjectTargetVersion = null;
 
         public static void MarkPackageDirty(Package package)
         {
@@ -46,16 +67,6 @@ namespace BIDSHelper
             return v.Namespace.StartsWith("$");
         }
 
-        //this is only defined in the latest VS2013 OneDesigner, so it won't be available in older versions
-        public enum ProjectTargetVersion
-        {
-            LatestSQLServerVersion = 12,
-            SQLServer2012 = 11,
-            SQLServer2014 = 12
-        }
-
-        public static ProjectTargetVersion? LatestProjectTargetVersion = null;
-
         /// <summary>
         /// Will return null if the TargetDeploymentVersion property isn't defined (i.e. we're using an older version of SSDTBI before that was introduced)
         /// </summary>
@@ -77,6 +88,89 @@ namespace BIDSHelper
                 LatestProjectTargetVersion = null;
                 return null;
             }
+        }
+
+        internal static DtsContainer FindContainer(DtsContainer component, string objectId)
+        {
+            //DtsContainer container = component as DtsContainer;
+
+            if (component == null)
+            {
+                return null;
+            }
+            else if (component.ID == objectId)
+            {
+                return component;
+            }
+
+            EventsProvider eventsProvider = component as EventsProvider;
+            if (eventsProvider != null)
+            {
+                foreach (DtsEventHandler eventhandler in eventsProvider.EventHandlers)
+                {
+                    DtsContainer container = FindContainer(eventhandler, objectId);
+                    if (container != null)
+                    {
+                        return container;
+                    }
+                }
+            }
+
+            IDTSSequence sequence = component as IDTSSequence;
+            if (sequence != null)
+            {
+                foreach (Executable executable in sequence.Executables)
+                {
+                    DtsContainer container = FindContainer((DtsContainer)executable, objectId);
+                    if (container != null)
+                    {
+                        return container;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        internal static Variable FindVariable(DtsContainer container, string objectID)
+        {
+            if (container != null)
+            {
+                if (container.Variables.Contains(objectID))
+                {
+                    return container.Variables[objectID];
+                }
+            }
+
+            return null;
+        }
+
+        internal static ConnectionManager FindConnectionManager(Package package, string objectID)
+        {
+            if (package.Connections.Contains(objectID))
+            {
+                return package.Connections[objectID];
+            }
+
+            return null;
+        }
+
+        internal static PrecedenceConstraint FindConstraint(DtsContainer container, string objectID)
+        {
+            IDTSSequence sequence = container as IDTSSequence;
+
+            if (sequence == null)
+            {
+                System.Diagnostics.Debug.Assert(false, "sequence cannot be found");
+                return null;
+            }
+
+            if (sequence.PrecedenceConstraints.Contains(objectID))
+            {
+                return sequence.PrecedenceConstraints[objectID];
+            }
+
+            return null;
         }
     }
 }

@@ -527,6 +527,10 @@ namespace BIDSHelper.SSIS
             {
                 ForEachEnumeratorHost forEachEnumerator = ((ForEachLoop)executable).ForEachEnumerator;
 
+                // Check the for each loop has been configured, else it won't have an enumerator yet
+                if (forEachEnumerator == null)
+                    return returnValue;
+
 #if !DENALI && !SQL2014 //has built-in expression highlighting
                 if (!returnValue)
                 {

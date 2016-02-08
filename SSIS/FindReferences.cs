@@ -1,4 +1,5 @@
-﻿using Microsoft.SqlServer.Dts.Runtime;
+﻿using BIDSHelper.Core;
+using Microsoft.SqlServer.Dts.Runtime;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -14,6 +15,8 @@ namespace BIDSHelper.SSIS
         private Package package;
         private Variable variable;
 
+        public event EventHandler<EditExpressionSelectedEventArgs> EditExpressionSelected;
+
         public FindReferences()
         {
             InitializeComponent();
@@ -22,6 +25,11 @@ namespace BIDSHelper.SSIS
             this.expressionGrid.Columns[0].Visible = false;
             this.expressionGrid.Columns[1].Visible = false;
             this.expressionGrid.Columns[4].Visible = false;
+            this.expressionGrid.Columns[5].Visible = false;
+            this.expressionGrid.Columns[0].Width = 0;
+            this.expressionGrid.Columns[1].Width = 0;
+            this.expressionGrid.Columns[4].Width = 0;
+            this.expressionGrid.Columns[5].Width = 0;
 
             processPackage = new BackgroundWorker();
             processPackage.WorkerReportsProgress = true;
@@ -29,6 +37,8 @@ namespace BIDSHelper.SSIS
             processPackage.DoWork += new DoWorkEventHandler(processPackage_DoWork);
             processPackage.ProgressChanged += new ProgressChangedEventHandler(processPackage_ProgressChanged);
             processPackage.RunWorkerCompleted += new RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
+
+            expressionGrid.CellContentClick += new DataGridViewCellEventHandler(expressionGrid_CellContentClick);
         }
 
         public void Show(Package package, Variable variable)
@@ -54,16 +64,31 @@ namespace BIDSHelper.SSIS
             row.Tag = type;
             row.Cells["ObjectType"].Tag = icon;
 
-            //if (!isExpression)
-            //{
-            //    row.Cells["EditorColumn"].DetachEditingControl();
-            //}
+            if (!isExpression)
+            {
+                DataGridViewButtonDisableCell buttonCell = (DataGridViewButtonDisableCell)row.Cells["EditorColumn"];
+                buttonCell.Enabled = false;
+            }
         }
 
         private void VariableFound(object sender, VariableFoundEventArgs e)
         {
             // Report variable found via BackGroundWorker to ensure we are thread safe when accessing the form control later on
             this.processPackage.ReportProgress(0, e);
+        }
+
+        protected virtual void OnRaiseEditExpressionSelected(EditExpressionSelectedEventArgs e)
+        {
+            // Make a temporary copy of the event to avoid possibility of
+            // a race condition if the last subscriber unsubscribes
+            // immediately after the null check and before the event is raised.
+            EventHandler<EditExpressionSelectedEventArgs> handler = EditExpressionSelected;
+
+            // Event will be null if there are no subscribers
+            if (handler != null)
+            {
+                handler(this, e);
+            }
         }
 
         #region BackgroundWorker Events
@@ -83,8 +108,8 @@ namespace BIDSHelper.SSIS
 
         private void processPackage_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            VariableFoundEventArgs info = (VariableFoundEventArgs)e.UserState;
-            AddValue(info.Type, info.ContainerID, info.ObjectID, info.ObjectType, info.ObjectPath, info.ObjectName, info.PropertyName, info.Value, info.Icon, info.IsExpression);
+            VariableFoundEventArgs variableFound = (VariableFoundEventArgs)e.UserState;
+            AddValue(variableFound.Type, variableFound.ContainerID, variableFound.ObjectID, variableFound.ObjectType, variableFound.ObjectPath, variableFound.ObjectName, variableFound.PropertyName, variableFound.Value, variableFound.Icon, variableFound.IsExpression);
         }
         #endregion
 
@@ -137,6 +162,34 @@ namespace BIDSHelper.SSIS
                 }
 
                 e.Handled = true;
+            }
+        }
+
+        private void expressionGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (expressionGrid.Columns[e.ColumnIndex] == this.EditorColumn)
+                {
+
+                    DataGridViewRow row = expressionGrid.Rows[e.RowIndex];
+                    DataGridViewButtonDisableCell cell = (DataGridViewButtonDisableCell)row.Cells[this.EditorColumn.Index];
+
+                    if (cell.Enabled)
+                    {
+                        OnRaiseEditExpressionSelected(
+                            new EditExpressionSelectedEventArgs(row.Tag as Type,
+                                row.Cells[expressionGrid.Columns["ObjectPath"].Index].Value.ToString(),
+                                row.Cells[expressionGrid.Columns["Expression"].Index].Value as string,
+                                row.Cells[expressionGrid.Columns["Property"].Index].Value.ToString(),
+                                row.Cells[expressionGrid.Columns["ContainerID"].Index].Value.ToString(),
+                                row.Cells[expressionGrid.Columns["ObjectID"].Index].Value.ToString()));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error occured while editing the expression: " + ex.Message);
             }
         }
 

@@ -11,6 +11,7 @@ using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.Win32;
 using System.Drawing;
+using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
 
 namespace BIDSHelper.SSIS
 {
@@ -135,12 +136,12 @@ namespace BIDSHelper.SSIS
                 PrecedenceConstraint constraint = null;
 
                 // Get the container
-                container = FindContainer(package, e.ContainerID);
+                container = SSISHelpers.FindContainer(package, e.ContainerID);
 
                 // Get the property details and variable objects for the editor
                 if (e.Type == typeof(Variable))
                 {
-                    variable = FindVariable(container, e.ObjectID);
+                    variable = SSISHelpers.FindVariable(container, e.ObjectID);
 
                     propertyName = "Value";
                     propertyType = System.Type.GetType("System." + variable.DataType.ToString());
@@ -150,7 +151,7 @@ namespace BIDSHelper.SSIS
                 }
                 else if (e.Type == typeof(PrecedenceConstraint))
                 {
-                    constraint = FindConstraint(container, e.ObjectID);
+                    constraint = SSISHelpers.FindConstraint(container, e.ObjectID);
                     
                     propertyName = "Expression";
                     propertyType = typeof(bool);
@@ -162,7 +163,7 @@ namespace BIDSHelper.SSIS
                 {
                     if (e.Type == typeof(ConnectionManager))
                     {
-                        propertiesProvider = FindConnectionManager(package, e.ObjectID) as IDTSPropertiesProvider;
+                        propertiesProvider = SSISHelpers.FindConnectionManager(package, e.ObjectID) as IDTSPropertiesProvider;
                     }
                     else if (e.Type == typeof(ForEachEnumerator))
                     {
@@ -510,24 +511,20 @@ namespace BIDSHelper.SSIS
                 string containerKey = PackageHelper.GetContainerKey(container);
                 string objectTypeName = container.GetType().Name;
 
-                if (container is TaskHost)
+                TaskHost taskHost = container as TaskHost;
+                if (taskHost != null)
                 {
-                    if (((TaskHost)container).InnerObject is MainPipe)
-                    {
-                        objectTypeName = typeof(MainPipe).Name; // Prevents it from saying COM Object
-                    }
-                    else
-                    {
-                        objectTypeName = ((TaskHost)container).InnerObject.GetType().Name;
-                    }
-
-                    ScanProperties(worker, path, typeof(TaskHost), objectTypeName, container.ID, container.ID, container.Name, propProvider, containerKey);
+                    objectTypeName = CheckTaskHost(taskHost, worker, path, container, containerKey);
                 }
                 else if (container is ForEachLoop)
                 {
                     ForEachLoop loop = container as ForEachLoop;
                     ScanProperties(worker, path, typeof(ForEachLoop), objectTypeName, container.ID, container.ID, container.Name, propProvider, containerKey);
-                    ScanProperties(worker, path + "\\ForEachEnumerator.", typeof(ForEachEnumerator), objectTypeName, container.ID, loop.ForEachEnumerator.ID, container.Name, loop.ForEachEnumerator, containerKey);
+                    if (loop.ForEachEnumerator != null)
+                    {
+                        // A For Each Loop that has not been configured yet will not have an enumerator, so ensure we check
+                        ScanProperties(worker, path + "\\ForEachEnumerator.", typeof(ForEachEnumerator), objectTypeName, container.ID, loop.ForEachEnumerator.ID, container.Name, loop.ForEachEnumerator, containerKey);
+                    }
                 }
                 else
                 {
@@ -536,6 +533,34 @@ namespace BIDSHelper.SSIS
 
                 ScanVariables(worker, path, objectTypeName, container.ID, container.Variables);
             }
+        }
+
+        private string CheckTaskHost(TaskHost taskHost, BackgroundWorker worker, string path, DtsContainer container, string containerKey)
+        {   
+            string objectTypeName = taskHost.InnerObject.GetType().Name;
+
+            // Task specific checks, split by native and managed
+            if (objectTypeName == "__ComObject")
+            {
+                // Native code tasks, can't use type name, so use creation name.
+                // Need to be wary of suffix, SSIS.ExecutePackageTask.3 for 2012, SSIS.ExecutePackageTask.4 for 2014 etc
+                if (taskHost.CreationName == string.Format("SSIS.ExecutePackageTask.{0}", SSISHelpers.CreationNameIndex))
+                {
+                    objectTypeName = "ExecutePackageTask";
+                }
+                else if (taskHost.CreationName == string.Format("SSIS.Pipeline.{0}", SSISHelpers.CreationNameIndex))
+                {
+                    objectTypeName = "DataFlowTask";
+                }
+                else
+                {
+                    objectTypeName = "**UnknownNativeTask**";
+                }
+            }
+
+            ScanProperties(worker, path, typeof(TaskHost), objectTypeName, container.ID, container.ID, container.Name, taskHost, containerKey);
+
+            return objectTypeName;
         }
 
         private void ScanPrecedenceConstraints(BackgroundWorker worker, string objectPath, string containerID, PrecedenceConstraints constraints)
@@ -655,89 +680,6 @@ namespace BIDSHelper.SSIS
                 }
                 catch { }
             }
-        }
-
-        private DtsContainer FindContainer(DtsContainer component, string objectId)
-        {
-            //DtsContainer container = component as DtsContainer;
-
-            if (component == null)
-            {
-                return null;
-            }
-            else if (component.ID == objectId)
-            {
-                return component;
-            }
-
-            EventsProvider eventsProvider = component as EventsProvider;
-            if (eventsProvider != null)
-            {
-                foreach (DtsEventHandler eventhandler in eventsProvider.EventHandlers)
-                {
-                    DtsContainer container = FindContainer(eventhandler, objectId);
-                    if (container != null)
-                    {
-                        return container;
-                    }
-                }
-            }
-
-            IDTSSequence sequence = component as IDTSSequence;
-            if (sequence != null)
-            {
-                foreach (Executable executable in sequence.Executables)
-                {
-                    DtsContainer container = FindContainer((DtsContainer)executable, objectId);
-                    if (container != null)
-                    {
-                        return container;
-                    }
-                }   
-            }
-
-            return null;
-        }
-
-        private Variable FindVariable(DtsContainer container, string objectID)
-        {
-            if (container != null)
-            {
-                if (container.Variables.Contains(objectID))
-                {
-                    return container.Variables[objectID];
-                }
-            }
-
-            return null;
-        }
-
-        private ConnectionManager FindConnectionManager(Package package, string objectID)
-        {
-            if (package.Connections.Contains(objectID))
-            {
-                return package.Connections[objectID];
-            }
-
-            return null;
-        }
-
-        private PrecedenceConstraint FindConstraint(DtsContainer container, string objectID)
-        {
-            IDTSSequence sequence = container as IDTSSequence;
-
-            if (sequence == null)
-            {
-                System.Diagnostics.Debug.Assert(false, "sequence cannot be found");
-                return null;
-            }
-
-            if (sequence.PrecedenceConstraints.Contains(objectID))
-            {
-                return sequence.PrecedenceConstraints[objectID];
-            }
-
-            return null;
         }
 
         private Package GetPackageFromContainer(DtsContainer container)

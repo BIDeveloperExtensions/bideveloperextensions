@@ -13,9 +13,11 @@ namespace BIDSHelper.SSIS
             InitializeComponent();
 
             // Hide internal columns - Do it here as easy to make visible when debugging
+            // Property (5) was previously shown, but it is redundent since we have the same information at the end of the path
             this.expressionGrid.Columns[0].Visible = false;
             this.expressionGrid.Columns[1].Visible = false;
             this.expressionGrid.Columns[4].Visible = false;
+            this.expressionGrid.Columns[5].Visible = false;
 
             StopProgressBar();
             btnRefresh.Image = (Image)BIDSHelper.Resources.Common.RefreshExpressions.ToBitmap();
@@ -69,7 +71,7 @@ namespace BIDSHelper.SSIS
             expressionGrid.Rows.Clear();
         }
 
-        void expressionGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void expressionGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             try
             {
@@ -175,8 +177,12 @@ namespace BIDSHelper.SSIS
             }
         }
 
+        private void expressionGrid_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
     }
-    
+
     public class EditExpressionSelectedEventArgs : EventArgs
     {
         public EditExpressionSelectedEventArgs(Type type, string objectPath, string expression, string property, string containerID, string objectID)

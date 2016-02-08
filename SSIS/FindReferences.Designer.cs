@@ -40,17 +40,16 @@
             this.ObjectName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Property = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Expression = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.EditorColumn = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.EditorColumn = new Core.DataGridViewButtonDisableColumn();
+            this.panel1 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.expressionGrid)).BeginInit();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // expressionGrid
             // 
             this.expressionGrid.AllowUserToAddRows = false;
             this.expressionGrid.AllowUserToDeleteRows = false;
-            this.expressionGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -77,7 +76,8 @@
             dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.expressionGrid.DefaultCellStyle = dataGridViewCellStyle3;
-            this.expressionGrid.Location = new System.Drawing.Point(12, 12);
+            this.expressionGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.expressionGrid.Location = new System.Drawing.Point(0, 0);
             this.expressionGrid.MultiSelect = false;
             this.expressionGrid.Name = "expressionGrid";
             this.expressionGrid.ReadOnly = true;
@@ -97,17 +97,21 @@
             // 
             // ContainerID
             // 
+            this.ContainerID.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.ContainerID.Frozen = true;
             this.ContainerID.HeaderText = "ContainerID";
             this.ContainerID.Name = "ContainerID";
             this.ContainerID.ReadOnly = true;
+            this.ContainerID.Width = 5;
             // 
             // ObjectID
             // 
+            this.ObjectID.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.ObjectID.Frozen = true;
             this.ObjectID.HeaderText = "Object ID";
             this.ObjectID.Name = "ObjectID";
             this.ObjectID.ReadOnly = true;
+            this.ObjectID.Width = 5;
             // 
             // ObjectType
             // 
@@ -119,30 +123,28 @@
             // 
             // ObjectPath
             // 
-            this.ObjectPath.Frozen = true;
+            this.ObjectPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.ObjectPath.HeaderText = "Path";
             this.ObjectPath.Name = "ObjectPath";
             this.ObjectPath.ReadOnly = true;
-            this.ObjectPath.Width = 200;
             // 
             // ObjectName
             // 
-            this.ObjectName.Frozen = true;
+            this.ObjectName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.ObjectName.HeaderText = "Object Name";
             this.ObjectName.Name = "ObjectName";
             this.ObjectName.ReadOnly = true;
+            this.ObjectName.Width = 5;
             // 
             // Property
             // 
-            this.Property.Frozen = true;
+            this.Property.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.Property.HeaderText = "Property";
             this.Property.Name = "Property";
             this.Property.ReadOnly = true;
-            this.Property.Width = 160;
             // 
             // Expression
             // 
-            this.Expression.Frozen = true;
             this.Expression.HeaderText = "Value";
             this.Expression.Name = "Expression";
             this.Expression.ReadOnly = true;
@@ -166,15 +168,24 @@
             this.EditorColumn.ToolTipText = "Edit Expression";
             this.EditorColumn.Width = 20;
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.expressionGrid);
+            this.panel1.Location = new System.Drawing.Point(12, 12);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(863, 390);
+            this.panel1.TabIndex = 2;
+            // 
             // FindReferences
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(887, 414);
-            this.Controls.Add(this.expressionGrid);
+            this.Controls.Add(this.panel1);
             this.Name = "FindReferences";
             this.Text = "Find variable references";
             ((System.ComponentModel.ISupportInitialize)(this.expressionGrid)).EndInit();
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -182,7 +193,7 @@
         #endregion
 
         private System.Windows.Forms.DataGridView expressionGrid;
-        private System.Windows.Forms.DataGridViewButtonColumn EditorColumn;
+        private Core.DataGridViewButtonDisableColumn EditorColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn Expression;
         private System.Windows.Forms.DataGridViewTextBoxColumn Property;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectName;
@@ -190,5 +201,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectType;
         private System.Windows.Forms.DataGridViewTextBoxColumn ObjectID;
         private System.Windows.Forms.DataGridViewTextBoxColumn ContainerID;
+        private System.Windows.Forms.Panel panel1;
     }
 }

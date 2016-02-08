@@ -204,6 +204,9 @@ namespace BIDSHelper.SSIS
                 ProjectItem pi = GotFocus.ProjectItem;
                 if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                if (win == null) // Happens with bad packages and flipping between XML and code, and on save. Not 100% clear, but caused stability issues
+                    return;
+
                 Package package = (Package)win.PropertiesLinkComponent;
 
                 //check whether we should abort because highlighting has been disabled for this window

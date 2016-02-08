@@ -16,6 +16,7 @@ namespace BIDSHelper.SSIS
         // Define string constants we use for specicific object types
         // Type of MainPipe
         private const string ObjectTypeDataFlowTask = "DataFlowTask";
+        private const string ObjectTypeExecutePackageTask = "ExecutePackageTask";
 
 
         public event EventHandler<VariableFoundEventArgs> VariableFound;
@@ -194,37 +195,63 @@ namespace BIDSHelper.SSIS
 
         private void CheckTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
         {
-            MainPipe pipeline = taskHost.InnerObject as MainPipe;
-            if (pipeline != null)
-            {
-                foundArgument.ObjectType = ObjectTypeDataFlowTask;
-                foundArgument.Type = typeof(MainPipe);
-                //foundArgument.Icon = BIDSHelper.Resources.Versioned.DataFlow;
+            foundArgument.Type = taskHost.InnerObject.GetType();
+            string typeName = foundArgument.Type.Name;
 
-                ScanPipeline(pipeline, foundArgument);
-                ScanProperties(taskHost, foundArgument);
+            // Set type, used in case of expression editor, if we get that far. Correct it later as required too
+            foundArgument.Type = taskHost.InnerObject.GetType();
+
+				
+            // Task specific checks, split by native and managed
+            if (typeName == "__ComObject")
+            {
+                // Native code tasks, can't use type name, so use creation name.
+                // Need to be wary of suffix, SSIS.ExecutePackageTask.3 for 2012, SSIS.ExecutePackageTask.4 for 2014 etc
+                if (taskHost.CreationName == string.Format("SSIS.{0}.{1}",  ObjectTypeExecutePackageTask, SSISHelpers.CreationNameIndex))
+                {
+                    foundArgument.Type = typeof(ExecutePackageTask);
+                    foundArgument.ObjectType = ObjectTypeExecutePackageTask;
+                    CheckExecutePackageTask(taskHost, foundArgument);
+                }
+                else if (taskHost.CreationName == string.Format("SSIS.Pipeline.{0}", SSISHelpers.CreationNameIndex))
+                {
+                    foundArgument.ObjectType = ObjectTypeDataFlowTask;
+                    foundArgument.Type = typeof(MainPipe);
+                    //foundArgument.Icon = BIDSHelper.Resources.Versioned.DataFlow;
+                    MainPipe pipeline = taskHost.InnerObject as MainPipe;
+                    ScanPipeline(pipeline, foundArgument);
+                }
+                else
+                {
+                    foundArgument.ObjectType = "**UnknownNativeTask**";
+                    System.Diagnostics.Debug.Assert(false, "Unrecognised native task - " + taskHost.CreationName);
+                }
             }
             else
             {
-                foundArgument.Type = taskHost.InnerObject.GetType();
-                foundArgument.ObjectType = foundArgument.Type.Name;
+                // Set type name, as it is correct for managed tasks
+                foundArgument.ObjectType = typeName;
 
-                // Task specific checks.
-                switch (foundArgument.ObjectType)
+                // For managed code tasks we can use type name. This means we don't have to have a 
+                // full reference to the task assembly, but any properties we access must be simple 
+                // ones accessible via IDTSPropertiesProvider, i.e. ExpressionTask. For more complex 
+                // properties such as ParameterBiningds on the ExecuteSQLTask we need the reference.
+                switch (typeName)
                 {
                     case "ExecuteSQLTask":
-                        CheckExecuteSQLTask(taskHost, foundArgument);
-                        break;
+	                    CheckExecuteSQLTask(taskHost, foundArgument);
+	                    break;
+                    case "ExpressionTask":
+	                    CheckExpressionTask(taskHost, foundArgument);
+	                    break;
+                    case "ExecutePackageTask":
+	                    CheckExecutePackageTask(taskHost, foundArgument);
+	                    break;
                 }
-
-                // TODO: Is this specific to 2014? Maybe use task creation name as standard way of differentiating tasks.
-                if (taskHost.CreationName == "SSIS.ExecutePackageTask.4")
-                {
-                    CheckExecutePackageTask(taskHost, foundArgument);
-                }
-
-                ScanProperties(taskHost, foundArgument);
             }
+
+            // Scan regular task properties and epressions
+            ScanProperties(taskHost, foundArgument);
         }
 
         private static bool GetIsFriendlyExpression(IDTSCustomPropertyCollection100 properties)
@@ -304,7 +331,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        private void ScanCustomPropertiesCollection(IDTSCustomPropertyCollection100 properties, VariableFoundEventArgs foundArgument, string pathOverride)
+        private void ScanCustomPropertiesCollection(IDTSCustomPropertyCollection100 properties, VariableFoundEventArgs foundArgument, string componentPath)
         {
             // string containerId, string objectId, string objectName, string path, string objectType
             // First check if we have a "FriendlyExpression". We use the value from FriendlyExpression, because it is CPET_NOTIFY
@@ -333,7 +360,7 @@ namespace BIDSHelper.SSIS
                         }
 
                         VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                        info.ObjectPath = pathOverride;
+                        info.ObjectPath = componentPath + ".Properties[" + propertyName + "]";
                         info.PropertyName = propertyName;
                         info.Value = value;
                         info.IsExpression = true;
@@ -347,6 +374,16 @@ namespace BIDSHelper.SSIS
                     if (property.Name == "Expression" && friendlyExpressionValid)
                     {
                         continue;
+                    }
+
+                    string pathOverride;
+                    if (propertyName.StartsWith("["))
+                    {
+                        pathOverride = componentPath + ".Properties" + propertyName + "";
+                    }
+                    else
+                    {
+                        pathOverride = componentPath + ".Properties[" + propertyName + "]";
                     }
 
                     PropertyMatch(foundArgument, pathOverride, propertyName, value);
@@ -449,6 +486,16 @@ namespace BIDSHelper.SSIS
 
             bool isPipeline = (foundArgument.ObjectType == ObjectTypeDataFlowTask);
 
+            // New 2012 + interface implemented by Package, Sequence, DtsEventHandler, ForLoop, ForEachLoop
+            // There are other objects that implement IDTSPropertiesProvider, and therefore support expressions, e.g. ConnectionManager, Variable
+            // However we can use it to skip objects that have no expressions set, by using HasExpressions property
+            bool hasExpressions = true;
+            IDTSPropertiesProviderEx providerEx = provider as IDTSPropertiesProviderEx;
+            if (providerEx != null)
+            {
+                hasExpressions = providerEx.HasExpressions;
+            }
+            
             foreach (DtsProperty property in provider.Properties)
             {
                 // Skip any expressuon properties on the Data Flow task, we deal with then in ScanPipeline explicitly
@@ -465,20 +512,21 @@ namespace BIDSHelper.SSIS
                 if (property.Type == TypeCode.String && property.Get)
                 {
                     string value = property.GetValue(provider) as string;
-                    if (string.IsNullOrEmpty(value))
-                        continue;
-
-                    string pathOverride;
-                    if (property.Name.StartsWith("["))
+                    if (!string.IsNullOrEmpty(value))
                     {
-                        pathOverride = foundArgument.ObjectPath + ".Properties" + property.Name + "";
-                    }
-                    else
-                    {
-                        pathOverride = foundArgument.ObjectPath + ".Properties[" + property.Name + "]";
-                    }
 
-                    PropertyMatch(foundArgument, pathOverride, propertyName, value);
+                        string pathOverride;
+                        if (property.Name.StartsWith("["))
+                        {
+                            pathOverride = foundArgument.ObjectPath + ".Properties" + property.Name + "";
+                        }
+                        else
+                        {
+                            pathOverride = foundArgument.ObjectPath + ".Properties[" + property.Name + "]";
+                        }
+
+                        PropertyMatch(foundArgument, pathOverride, propertyName, value);
+                    }
                 }
                 #endregion
 
@@ -486,8 +534,12 @@ namespace BIDSHelper.SSIS
                 // Check expression
 
                 // TODO can we use IDTSPropertiesProviderEx.HasExpressions Property
-                //enumerator.HasExpressions
+                //
 
+                //if (!hasExpressions)
+                //{
+                //    continue;
+                //}
 
                 string expression = provider.GetExpression(property.Name);
                 if (expression == null)
@@ -495,16 +547,19 @@ namespace BIDSHelper.SSIS
                     continue;
                 }
 
+                // Check this for a while, before we trust it, simce it is undocumented.
+                System.Diagnostics.Debug.Assert(hasExpressions, "HasExpressions was false, but we have an expression.");
+
                 if (ExpressionMatch(expression, out match))
                 {
                     VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
                     if (property.Name.StartsWith("["))
                     {
-                        info.ObjectPath = foundArgument.ObjectPath + ".Properties" + property.Name + "";
+                        info.ObjectPath = foundArgument.ObjectPath + ".PropertyExpression" + property.Name + "";
                     }
                     else
                     {
-                        info.ObjectPath = foundArgument.ObjectPath + ".Properties[" + property.Name + "]";
+                        info.ObjectPath = foundArgument.ObjectPath + ".PropertyExpression[" + property.Name + "]";
                     }
 
                     info.PropertyName = property.Name;
@@ -635,6 +690,15 @@ namespace BIDSHelper.SSIS
             }
         }
 
+        private void CheckExpressionTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
+        {
+            // Expression task has the Expression property which we need to treat as an expression rather than a literal value as we do for normal properties.
+            // Get the Expression value and run an expression matct test
+            DtsProperty property = taskHost.Properties["Expression"];
+            string expression = property.GetValue(taskHost).ToString();
+            PropertyAsExpressionMatch(property.Name, expression, foundArgument);
+        }
+
         private void CheckExecutePackageTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
         {
             ExecutePackageTask task = taskHost.InnerObject as ExecutePackageTask;
@@ -665,8 +729,11 @@ namespace BIDSHelper.SSIS
             foundArgument.Type = typeof(ForEachLoop);
             ScanProperties(forEachLoop, foundArgument);
 
-            // Check properties of enumerator
+            // Check properties of enumerator, when present
             ForEachEnumeratorHost enumerator = forEachLoop.ForEachEnumerator;
+            if (enumerator == null)
+                return;
+
             VariableFoundEventArgs foundEnumerator = new VariableFoundEventArgs(foundArgument);
             foundEnumerator.ObjectPath = foundArgument.ObjectPath + "\\" + foundEnumerator.Type.Name + ".";
             foundEnumerator.Type = enumerator.GetType();
@@ -699,19 +766,16 @@ namespace BIDSHelper.SSIS
             DtsProperty property;
 
             property = forLoop.Properties["AssignExpression"];
-            PropertyExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+            PropertyAsExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
 
             property = forLoop.Properties["EvalExpression"];
-            PropertyExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+            PropertyAsExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
 
             property = forLoop.Properties["InitExpression"];
-            PropertyExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
-
-            
-
+            PropertyAsExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
         }
 
-        private void PropertyExpressionMatch(string propertyName, string expression, VariableFoundEventArgs foundArgument)
+        private void PropertyAsExpressionMatch(string propertyName, string expression, VariableFoundEventArgs foundArgument)
         {
             string match;
             if (ExpressionMatch(expression, out match))
@@ -749,16 +813,16 @@ namespace BIDSHelper.SSIS
             this.Value = variableFoundEventArgs.Value;
         }
 
-        public Icon Icon;
-        public Type Type;
-        public bool IsExpression;
-        public string ContainerID;
-        public string Match;
-        public string ObjectID;
-        public string ObjectName;
-        public string ObjectPath;
-        public string ObjectType;
-        public string PropertyName;
-        public string Value;
+        public Icon Icon { get; set; }
+        public Type Type { get; set; }
+        public bool IsExpression { get; set; }
+        public string ContainerID { get; set; }
+        public string Match { get; set; }
+        public string ObjectID { get; set; }
+        public string ObjectName { get; set; }
+        public string ObjectPath { get; set; }
+        public string ObjectType { get; set; }
+        public string PropertyName { get; set; }
+        public string Value { get; set; }
     }
 }
