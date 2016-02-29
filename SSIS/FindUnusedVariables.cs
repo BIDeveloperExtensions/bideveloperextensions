@@ -14,9 +14,11 @@ namespace BIDSHelper.SSIS
         private FindVariables finder = new FindVariables();
         private Package package;
         private List<string> unusedVariablesList;
-
-        public FindUnusedVariables()
+        
+        public FindUnusedVariables(VariablesDisplayMode displayMode)
         {
+            this.DisplayMode = displayMode;
+
             InitializeComponent();
             processPackage = new BackgroundWorker();
             processPackage.WorkerReportsProgress = true;
@@ -24,12 +26,31 @@ namespace BIDSHelper.SSIS
             processPackage.DoWork += new DoWorkEventHandler(processPackage_DoWork);
             processPackage.RunWorkerCompleted += new RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
 
-            selectionList.SelectionChanged += new EventHandler<SelectionListSelectionChangedEventArgs>(selectionList_SelectionChanged);
+            if (displayMode == VariablesDisplayMode.Variables)
+            {
+                selectionList.SelectionChanged += new EventHandler<SelectionListSelectionChangedEventArgs>(selectionList_SelectionChanged);                
+            }
+            else
+            {
+                // Hide delete buttton, we don't support it for parameters (yet)
+                this.buttonDelete.Enabled = false;
+                this.buttonDelete.Visible = false;
+
+                selectionList.SelectionEnabled = false;
+                
+                // Change title
+                this.Text = "Find unused parameters";
+            }
+
+            this.Icon = BIDSHelper.Resources.Versioned.VariableFindUnused;
         }
+
+        public VariablesDisplayMode DisplayMode { get; private set; }
 
         public DialogResult Show(Package package)
         {
             this.selectionList.ClearItems();
+            this.progressBar.Visible = true;
 
             finder.VariableFound += new EventHandler<VariableFoundEventArgs>(VariableFound);
 
@@ -40,12 +61,24 @@ namespace BIDSHelper.SSIS
             List<Variable> variables = new List<Variable>();
             foreach (Variable variable in package.Variables)
             {
-                // Exclude system variables, they cannot be removed so no point reporting them as unused
-                // Exclude Project parameters, they should not be removed since we only search a package, not the full project
-                if (!variable.SystemVariable && variable.Namespace != "$Project")
+                if (DisplayMode == VariablesDisplayMode.Variables)
                 {
-                    unusedVariablesList.Add(variable.QualifiedName);
-                    variables.Add(variable);
+                    // Exclude system variables, they cannot be removed so no point reporting them as unused
+                    // Exclude Project and Package parameters when in Variables mode
+                    if (!variable.SystemVariable && variable.Namespace != "$Project" && variable.Namespace != "$Package")
+                    {
+                        unusedVariablesList.Add(variable.QualifiedName);
+                        variables.Add(variable);
+                    }
+                }
+                else
+                {
+                    // Restrict to parameters, for now both types
+                    if (variable.Namespace == "$Project" || variable.Namespace == "$Package")
+                    {
+                        unusedVariablesList.Add(variable.QualifiedName);
+                        variables.Add(variable);
+                    }
                 }
             }
 
@@ -80,9 +113,11 @@ namespace BIDSHelper.SSIS
 
         private void processPackage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            this.progressBar.Visible = false;
             stopwatch.Stop();
-            this.Text += (" " + stopwatch.ElapsedMilliseconds.ToString());
-
+#if DEBUG
+            this.Text = string.Format("{0} ({1})", this.Text, stopwatch.ElapsedMilliseconds);
+#endif
             this.selectionList.ClearItems();
             this.selectionList.AddRange(this.unusedVariablesList.ToArray());
         }
@@ -90,6 +125,7 @@ namespace BIDSHelper.SSIS
         private void processPackage_DoWork(object sender, DoWorkEventArgs e)
         {
             stopwatch.Start();
+
             Variable[] variables = e.Argument as Variable[];
             finder.FindReferences(this.package, variables);
         }

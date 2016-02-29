@@ -224,6 +224,8 @@
         {
             string containerKey = container.CreationName;
 
+            string typeName = container.GetType().Name;
+
             if (container is Package)
             {
                 containerKey = PackageHelper.PackageCreationName;
@@ -247,6 +249,39 @@
 
             return containerKey;
         }
+
+        /////// <summary>
+        /////// Gets a friendly type name for the task. For managed tasks the type name will work, but for native code tasks we need to avoid "__ComObject".
+        /////// </summary>
+        /////// <param name="container">The container.</param>
+        /////// <returns>The container key</returns>
+        ////public static string GetTaskFriendlyName(TaskHost taskHost)
+        ////{
+        ////    string containerKey = container.CreationName;
+
+        ////    if (container is Package)
+        ////    {
+        ////        containerKey = PackageHelper.PackageCreationName;
+        ////    }
+        ////    else if (container is DtsEventHandler)
+        ////    {
+        ////        containerKey = PackageHelper.EventHandlerCreationName;
+        ////    }
+        ////    else if (container is Sequence)
+        ////    {
+        ////        containerKey = PackageHelper.SequenceCreationName;
+        ////    }
+        ////    else if (container is ForLoop)
+        ////    {
+        ////        containerKey = PackageHelper.ForLoopCreationName;
+        ////    }
+        ////    else if (container is ForEachLoop)
+        ////    {
+        ////        containerKey = PackageHelper.ForEachLoopCreationName;
+        ////    }
+
+        ////    return containerKey;
+        ////}
 
 #if KATMAI || DENALI || SQL2014
         public static string GetComponentKey(IDTSComponentMetaData100 component)

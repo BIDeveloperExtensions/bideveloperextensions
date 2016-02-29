@@ -39,6 +39,8 @@ namespace BIDSHelper.SSIS
             processPackage.RunWorkerCompleted += new RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
 
             expressionGrid.CellContentClick += new DataGridViewCellEventHandler(expressionGrid_CellContentClick);
+
+            this.Icon = BIDSHelper.Resources.Versioned.VariableFindReferences;
         }
 
         public void Show(Package package, Variable variable)
@@ -48,6 +50,22 @@ namespace BIDSHelper.SSIS
 
             this.package = package;
             this.variable = variable;
+
+            stopwatch = new System.Diagnostics.Stopwatch();
+            processPackage.RunWorkerAsync();
+
+            this.Show();
+        }
+
+        public void Show(Package package, Parameter parameter)
+        {
+
+            finder.VariableFound += new EventHandler<VariableFoundEventArgs>(VariableFound);
+
+            this.package = package;
+
+            // Get the Variable object that is the same as the Parameter. A parameter is also an item in the Variables collection.
+            this.variable = package.Variables[parameter.ID];
 
             stopwatch = new System.Diagnostics.Stopwatch();
             processPackage.RunWorkerAsync();

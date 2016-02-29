@@ -28,20 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.selectionList = new BIDSHelper.Core.SelectionList();
             this.buttonDelete = new System.Windows.Forms.Button();
             this.buttonClose = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.selectionList = new BIDSHelper.Core.SelectionList();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // selectionList
-            // 
-            this.selectionList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.selectionList.Location = new System.Drawing.Point(12, 12);
-            this.selectionList.Name = "selectionList";
-            this.selectionList.Size = new System.Drawing.Size(383, 199);
-            this.selectionList.TabIndex = 0;
             // 
             // buttonDelete
             // 
@@ -67,6 +60,32 @@
             this.buttonClose.UseVisualStyleBackColor = true;
             this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.selectionList);
+            this.panel1.Controls.Add(this.progressBar);
+            this.panel1.Location = new System.Drawing.Point(12, 12);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(383, 199);
+            this.panel1.TabIndex = 3;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.progressBar.Location = new System.Drawing.Point(0, 189);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(383, 10);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar.TabIndex = 0;
+            // 
+            // selectionList
+            // 
+            this.selectionList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.selectionList.Location = new System.Drawing.Point(0, 0);
+            this.selectionList.Name = "selectionList";
+            this.selectionList.Size = new System.Drawing.Size(383, 189);
+            this.selectionList.TabIndex = 0;
+            // 
             // FindUnusedVariables
             // 
             this.AcceptButton = this.buttonClose;
@@ -74,13 +93,14 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonClose;
             this.ClientSize = new System.Drawing.Size(407, 261);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.buttonDelete);
-            this.Controls.Add(this.selectionList);
             this.MinimizeBox = false;
             this.Name = "FindUnusedVariables";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Find unused variables";
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -90,5 +110,7 @@
         private BIDSHelper.Core.SelectionList selectionList;
         private System.Windows.Forms.Button buttonDelete;
         private System.Windows.Forms.Button buttonClose;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ProgressBar progressBar;
     }
 }

@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {
-    // Using a partial class to help separate these methods, as easier to not include the filc:\users\darre\documents\visual studio 2015\Projects\CheckedListPlay\CheckedListPlay\SelectionList.cse in < SQL 2012 projects.
+    // Using a partial class to help separate these methods, as easier to not include the file in SQL 2012+ projects.
     public partial class VariablesWindowPlugin
     {
         private void FindReferencesButtonClick()
@@ -250,7 +250,7 @@ namespace BIDSHelper.SSIS
                 Package package = packageDesigner.Component as Package;
                 if (package == null) return;
 
-                FindUnusedVariables dialog = new FindUnusedVariables();
+                FindUnusedVariables dialog = new FindUnusedVariables(VariablesDisplayMode.Variables);
                 if (dialog.Show(package) == DialogResult.OK)
                 {
                     // Dialog result OK indicates we have deleted one or more variables

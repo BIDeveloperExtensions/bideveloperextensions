@@ -534,6 +534,7 @@
     <Compile Include="SSIS\VariablesMove.Designer.cs">
       <DependentUpon>VariablesMove.cs</DependentUpon>
     </Compile>
+    <Compile Include="SSIS\ParametersWindowPlugin.cs" />
     <Compile Include="SSIS\VariablesWindowPlugin.cs" />
     <Compile Include="SSIS\PipelineComponentPerformanceBreakdownPlugin.cs" />
     <Compile Include="SSIS\DeployPackagesPlugin.cs" />

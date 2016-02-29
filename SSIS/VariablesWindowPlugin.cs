@@ -22,12 +22,15 @@ namespace BIDSHelper.SSIS
     
     public partial class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
+        /// <summary>
+        /// TODO: Make thks a base class, and inherit for variables and parameters window controls
+        /// </summary>
 #if SQL2014
-        private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{826881A1-F158-483E-A118-8D5289CB6F1C}";//"{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
+        internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{826881A1-F158-483E-A118-8D5289CB6F1C}";
 #elif DENALI
-        private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{41C287E9-BCD9-4D20-8D38-B6FD9CFB73C9}";
+        internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{41C287E9-BCD9-4D20-8D38-B6FD9CFB73C9}";
 #else
-        private const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
+        internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{587B69DC-A87E-42B6-B92A-714016B29C6D}";
 #endif
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ToolBarButton moveCopyButton;

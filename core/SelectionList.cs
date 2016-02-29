@@ -24,6 +24,9 @@ namespace BIDSHelper.Core
 
         private void dataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (!this.SelectionEnabled)
+                return;
+
             DataGridView grid = sender as DataGridView;
 
             // Get current cell state
@@ -40,6 +43,9 @@ namespace BIDSHelper.Core
 
         private void dataGridView_KeyPress(object sender, KeyPressEventArgs e)
         {
+            if (!this.SelectionEnabled)
+                return;
+
             if (e.KeyChar != ' ')
             {
                 return;
@@ -119,10 +125,17 @@ namespace BIDSHelper.Core
 
         public void AddItem(string item, bool selected)
         {
-            dataGridView.Rows.Add(selected, item);
-            totalItems++;
-            checkedItems += (selected ? 1 : 0);
-            UpdateSelectAllCheckBox();
+            if (this.SelectionEnabled)
+            {
+                dataGridView.Rows.Add(selected, item);
+                totalItems++;
+                checkedItems += (selected ? 1 : 0);
+                UpdateSelectAllCheckBox();
+            }
+            else
+            {
+                dataGridView.Rows.Add(CheckState.Indeterminate, item);
+            }
         }
 
         public void AddRange(string[] items)
@@ -172,6 +185,24 @@ namespace BIDSHelper.Core
                 }
 
                 return selectedIndices;
+            }
+        }
+
+        public bool SelectionEnabled
+        {
+            get
+            {
+                return this.panelSelectAll.Visible;
+            }
+            set
+            {
+                CheckState state = (value ? CheckState.Unchecked : CheckState.Indeterminate);
+                foreach (DataGridViewRow row in dataGridView.Rows)
+                {
+                    row.Cells[0].Value = state;
+                }
+
+                this.panelSelectAll.Visible = value;
             }
         }
 
