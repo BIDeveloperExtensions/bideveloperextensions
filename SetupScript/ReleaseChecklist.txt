@@ -1,0 +1,29 @@
+Doing a release of BIDSHelper
+=============================
+
+1. Update Version number in the following files:
+   a. AssemblyInfo.cs               (Assembly and File versions)
+   b. BIDSHelper.Addin              (AboutBox details)
+   c. BIDSHelper2008.Addin          (AboutBox details)
+   d. BIDSHelper2012.Addin          (AboutBox details)
+   e. BIDSHelper2014.Addin          (AboutBox details)
+   f. SetupScript\BIDSHelperSetup.nsi     ($PRODUCT_VERSION variable)
+   g. SetupScript\BIDSHelperSetup2008.nsi ($PRODUCT_VERSION variable)
+   h. SetupScript\BIDSHelperSetup2012.nsi ($PRODUCT_VERSION variable)
+   i. SetupScript\BIDSHelperSetup2014.nsi ($PRODUCT_VERSION variable)
+
+2. Exclude any files still being worked on from the solution
+
+3. Build the Solution, or just check in and TeamCity will build the next release the next night.
+
+4. Build the install
+
+5. Label the file in the SCC system with the release version number
+
+6. Add the files back that were excluded from the project in step 2.
+
+7. After the next release is posted on the BIDS Helper website, then update the following files to trigger a notification there's a new version available:
+   SQL2005CurrentReleaseVersion.xml
+   SQL2008CurrentReleaseVersion.xml
+   SQL2012CurrentReleaseVersion.xml
+   SQL2014CurrentReleaseVersion.xml

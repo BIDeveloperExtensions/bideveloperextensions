@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="DummyDataSource">
+      <ConnectionProperties>
+        <ConnectString />
+        <DataProvider>SQL</DataProvider>
+      </ConnectionProperties>
+      <rd:DataSourceID>c232fccb-f69b-4e70-9bc0-f3ebcde782d2</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <BottomMargin>0.8cm</BottomMargin>
+  <RightMargin>0.8cm</RightMargin>
+  <PageWidth>27.9cm</PageWidth>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>8.5in</InteractiveWidth>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <Body>
+    <ReportItems>
+      <List Name="list1">
+        <ReportItems>
+          <Image Name="image1">
+            <Sizing>FitProportional</Sizing>
+            <MIMEType>image/jpeg</MIMEType>
+            <Source>Database</Source>
+            <Style />
+            <Value>=System.Convert.FromBase64String(Fields!ImageBase64.Value)</Value>
+          </Image>
+        </ReportItems>
+        <DataSetName>VisualizeAttributeLatticeImageForReport</DataSetName>
+        <Width>10.25in</Width>
+        <Grouping Name="list1_Details_Group">
+          <PageBreakAtEnd>true</PageBreakAtEnd>
+          <GroupExpressions>
+            <GroupExpression>=Fields!DimensionName.Value</GroupExpression>
+          </GroupExpressions>
+        </Grouping>
+      </List>
+    </ReportItems>
+    <Height>7.25in</Height>
+  </Body>
+  <rd:ReportID>7eb0e3d4-6eb4-4175-bd01-659d543d02ba</rd:ReportID>
+  <LeftMargin>0.8cm</LeftMargin>
+  <DataSets>
+    <DataSet Name="VisualizeAttributeLatticeImageForReport">
+      <rd:DataSetInfo>
+        <rd:ObjectDataSourceType>VisualizeAttributeLatticeImageForReport, BIDSHelper, Version=0.9.2699.39758, Culture=neutral, PublicKeyToken=null</rd:ObjectDataSourceType>
+        <rd:TableName>VisualizeAttributeLatticeImageForReport</rd:TableName>
+      </rd:DataSetInfo>
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandText />
+        <DataSourceName>DummyDataSource</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="DimensionName">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>DimensionName</DataField>
+        </Field>
+        <Field Name="ImageBase64">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>ImageBase64</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <Code />
+  <Width>10.34375in</Width>
+  <InteractiveHeight>11in</InteractiveHeight>
+  <PageFooter>
+    <ReportItems>
+      <Textbox Name="textbox3">
+        <rd:DefaultName>textbox3</rd:DefaultName>
+        <ZIndex>1</ZIndex>
+        <Width>8.88889cm</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Value>="Printed: " &amp; Now()</Value>
+      </Textbox>
+      <Textbox Name="textbox1">
+        <Left>19.92063cm</Left>
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <Style>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Value>="Page " &amp; Globals!PageNumber &amp; " of " &amp; Globals!TotalPages</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>0.63492cm</Height>
+    <PrintOnLastPage>true</PrintOnLastPage>
+    <PrintOnFirstPage>true</PrintOnFirstPage>
+    <Style>
+      <BorderStyle>
+        <Top>Solid</Top>
+      </BorderStyle>
+      <BorderColor>
+        <Default>DarkGray</Default>
+      </BorderColor>
+    </Style>
+  </PageFooter>
+  <TopMargin>0.8cm</TopMargin>
+  <PageHeight>21cm</PageHeight>
+</Report>

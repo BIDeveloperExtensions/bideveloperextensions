@@ -1,0 +1,10 @@
+﻿<Window x:Class="BIDSHelper.SSAS.TabularDisplayFolderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BIDS Helper Tabular Display Folders" Height="387" Width="759" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <DataGrid AutoGenerateColumns="True" Name="dataGrid1" CanUserReorderColumns="False" Margin="18,12,17,34" MaxColumnWidth="400" MinColumnWidth="100" />
+        <Button Content="OK" Margin="0,0,108,6" Name="btnOK" HorizontalAlignment="Right" Width="75" Height="23" VerticalAlignment="Bottom" IsDefault="True" Click="btnOK_Click" />
+        <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="0,0,17,6" Name="btnCancel" VerticalAlignment="Bottom" Width="75" IsCancel="True" Click="btnCancel_Click" />
+    </Grid>
+</Window>
