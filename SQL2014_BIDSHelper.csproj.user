@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ReferencePath>C:\Program Files (x86)\Microsoft SQL Server\120\Tools\binn\VSShell\Common7\IDE\;C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies;C:\Program Files\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies;C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies;c:\Program Files\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model;c:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model</ReferencePath>
+    <ProjectView>ShowAllFiles</ProjectView>
+    <PublishUrlHistory />
+    <InstallUrlHistory />
+    <SupportUrlHistory />
+    <UpdateUrlHistory />
+    <BootstrapperUrlHistory />
+    <ErrorReportUrlHistory />
+    <FallbackCulture>en-US</FallbackCulture>
+    <VerifyUploadedFiles>false</VerifyUploadedFiles>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\devenv.exe</StartProgram>
+    <StartArguments>"C:\Users\darre\Documents\Visual Studio 2013\Projects\SSIS Play SQL2014\SSIS Play SQL2014.sln"</StartArguments>
+  </PropertyGroup>
+</Project>
