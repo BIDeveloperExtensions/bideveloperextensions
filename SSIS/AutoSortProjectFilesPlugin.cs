@@ -94,32 +94,32 @@ namespace BIDSHelper
 
         private void ProcessHierarchyItem(UIHierarchyItem hierarchyItem)
         {
-            for (var i = 1; i <= hierarchyItem.UIHierarchyItems.Count; i++)
+            System.Diagnostics.Debug.WriteLine(hierarchyItem.Name);
+
+            // Check if it is a Project, skip if not (Solution folders are a type of project too)
+            var project = hierarchyItem.Object as Project;
+            if (project != null)
             {
-                // Get the child item in the solution or folder
-                var projectItem = hierarchyItem.UIHierarchyItems.Item(i);
-
-                // Check if it is a Project, skip if not (Solution folders are a type of project too)
-                var project = projectItem.Object as Project;
-                if (project == null)
-                {
-                    continue;
-                }
-
                 // Check if it is a SSIS Project, process if it is
                 if (project.Kind == BIDSProjectKinds.SSIS)
                 {
-                    ProcessProject(projectItem);
+                    ProcessProject(hierarchyItem);
+                    return;
                 }
-                else if (project.Kind == BIDSProjectKinds.SolutionFolder)
-                {
-                    ProcessHierarchyItem(projectItem);
-                }
+            }
+
+            // Loop through child items. N.B. Collection index is 1 based, how quaint.
+            for (var i = 1; i <= hierarchyItem.UIHierarchyItems.Count; i++)
+            {
+                var childItem = hierarchyItem.UIHierarchyItems.Item(i);
+                ProcessHierarchyItem(childItem);
             }
         }
 
         private void ProcessProject(UIHierarchyItem projectItem)
         {
+            System.Diagnostics.Debug.WriteLine(string.Format("Sorting SSIS Project {0}", projectItem.Name));
+
             for (var i = 1; i <= projectItem.UIHierarchyItems.Count; i++)
             {
                 // Get a project folder, although not all items will be folders, e.g. connections and parameters
