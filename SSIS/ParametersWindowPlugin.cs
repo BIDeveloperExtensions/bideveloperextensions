@@ -266,7 +266,7 @@ namespace BIDSHelper.SSIS
                     Parameter parameter = GetParameterForRow(selectedRow);
                     if (parameter == null) return;
 
-                    FindReferences dialog = new FindReferences();
+                    FindVariableReferences dialog = new FindVariableReferences();
                     dialog.Show(package, parameter);
                 }
                 catch (Exception ex)

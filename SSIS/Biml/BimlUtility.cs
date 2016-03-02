@@ -113,14 +113,26 @@
                 builder.AppendFormat("Schema {0}. ", item.SchemaName);
             }
 
-            if (item.Exception != null)
-            {
-                // Just show the exception type name, which can help indicate the type of issue, e.g. invalid XML vs invalid BIML
-                // We don't want the full Exception as it is confusing and makes you think something has gone wrong.
-                builder.AppendFormat("Exception type: {0}", item.Exception.GetType().Name);
-            }
+            ParseException(item.Exception, ref builder);
 
             return builder.ToString().TrimEnd();
+        }
+
+        private static void ParseException(System.Exception exception, ref StringBuilder builder)
+        {
+            if (exception == null)
+            {
+                return;
+            }
+
+            // Changed my mind!!!
+            //// Just show the exception type name, which can help indicate the type of issue, e.g. invalid XML vs invalid BIML
+            //// We don't want the full Exception as it is confusing and makes you think something has gone wrong.
+            //builder.AppendFormat("Exception type: {0}", item.Exception.GetType().Name);
+
+            builder.AppendFormat("\tException type: {0}, Message: {1}\r\n", exception.GetType().Name, exception.Message);
+
+            ParseException(exception.InnerException, ref builder);
         }
 
         private static void GetMessageString(string input, ref StringBuilder builder)

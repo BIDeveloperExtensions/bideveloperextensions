@@ -34,8 +34,8 @@ namespace BIDSHelper.SSIS
 
                 if (variable == null) return;
 
-                FindReferences dialog = new FindReferences();
-                dialog.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(findReferences_EditExpressionSelected);
+                FindVariableReferences dialog = new FindVariableReferences();
+                //dialog.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(findReferences_EditExpressionSelected);
 
                 dialog.Show(package, variable);
             }

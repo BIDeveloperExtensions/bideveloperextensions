@@ -4,20 +4,9 @@
     using System.Collections.Generic;
     using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
     using Microsoft.SqlServer.Dts.Runtime;
-
+    using System.Runtime.InteropServices;
     internal class PackageHelper
     {
-        /// <summary>
-        /// All managed components in the data flow share the same wrapper, identified by this GUID.
-        /// The specific type of managed component is identified by the UserComponentTypeName 
-        /// custom property of the component.
-        /// </summary>
-        public const string ManagedComponentWrapper = "{33D831DE-5DCF-48F0-B431-4D327B9E785D}";//{bf01d463-7089-41ee-8f05-0a6dc17ce633}";
-        
-
-        // Script Component ID
-        public const string ScriptComponentID = "Microsoft.SqlServer.Dts.Pipeline.ScriptComponentHost, Microsoft.SqlServer.TxScript, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
-
         public const string PackageCreationName = "Package";
         public const string EventHandlerCreationName = "EventHandler";
         public const string ConnectionCreationName = "Connection";
@@ -26,17 +15,54 @@
         public const string ForEachLoopCreationName = "ForEachLoop";
 
         /// <summary>
-        /// Private field for ComponentInfos property
+        /// Private field for the ComponentInfos property
         /// </summary>
         private static ComponentInfos componentInfos = new ComponentInfos();
 
         /// <summary>
-        /// Private field for ComponentInfos property
+        /// Private field for the ComponentInfos property
         /// </summary>
         private static ComponentInfos controlInfos = new ComponentInfos();
 
+        /// <summary>
+        /// Indicates if the ComponentInfos propertry has been initialied or not, prevents repeating the expensive component search
+        /// </summary>
         private static bool componentInitialised = false;
+
+        /// <summary>
+        /// Object used for locking
+        /// </summary>
         private static object componentLock = new object();
+
+        /// <summary>
+        /// Private field for the ManagedComponentWrapper property
+        /// </summary>
+        private static string managedComponentWrapper;
+
+        /// <summary>
+        /// All managed components in the data flow share the same wrapper, identified by this GUID.
+        /// The specific type of managed component is identified by the UserComponentTypeName custom property of the component.
+        /// </summary>
+        public static string ManagedComponentWrapper
+        {
+            get
+            {
+                if (managedComponentWrapper == null)
+                {
+                    // This value changed unexpectedly
+                    // SQL2014 - {33D831DE-5DCF-48F0-B431-4D327B9E785D}
+                    // SQL2005 - {BF01D463-7089-41EE-8F05-0A6DC17CE633}
+                    // See documentation https://technet.microsoft.com/nl-nl/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.90).aspx
+
+                    // To prevent future issues, we will get it from the object itself.
+                    GuidAttribute attribute = (GuidAttribute)Attribute.GetCustomAttribute(typeof(CManagedComponentWrapperClass), typeof(GuidAttribute));
+                    managedComponentWrapper = attribute.Value;                    
+                }
+
+                return managedComponentWrapper;
+            }
+        }
+
 
         public static List<TaskHost> GetControlFlowObjects<T>(DtsContainer container)
         {
@@ -97,6 +123,8 @@
                                 }
                                 else
                                 {
+                                    // Script Component ID
+                                    ////public const string ScriptComponentID = "Microsoft.SqlServer.Dts.Pipeline.ScriptComponentHost, Microsoft.SqlServer.TxScript, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
                                     ////if (pipelineComponentInfo.ID == ScriptComponentID)
                                     ////{
                                     ////    // For the script component on SQL 2014, PipelineComponentInfo shows an ID of Microsoft.SqlServer.Dts.Pipeline.ScriptComponentHost, Microsoft.SqlServer.TxScript, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91
@@ -145,11 +173,15 @@
                     }
 
                     // Special containers, see GetCreationName usage
+                    // TODO:  Consider switching to Microsoft.DataTransformationServices.Design.SharedIcons instead of supplying our own, but is that available in all SQL versions, or just 2014?
                     controlInfos.Add(PackageCreationName, new ComponentInfo(BIDSHelper.Resources.Common.Package));
                     controlInfos.Add(EventHandlerCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.Event));
                     controlInfos.Add(SequenceCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.Sequence));
+                    controlInfos.Add("STOCK:" + SequenceCreationName.ToUpper(), new ComponentInfo(BIDSHelper.Resources.Versioned.Sequence));
                     controlInfos.Add(ForLoopCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.ForLoop));
+                    controlInfos.Add("STOCK:" + ForLoopCreationName.ToUpper(), new ComponentInfo(BIDSHelper.Resources.Versioned.ForLoop));
                     controlInfos.Add(ForEachLoopCreationName, new ComponentInfo(BIDSHelper.Resources.Versioned.ForEachLoop));
+                    controlInfos.Add("STOCK:" + ForEachLoopCreationName.ToUpper(), new ComponentInfo(BIDSHelper.Resources.Versioned.ForEachLoop));
 
                     // Connections - Cannot get them as with components - Attribute pattern is broken, only used by third
                     // parties. The Connection toolbox doesn't use it so MS haven't attributed their connections. 
