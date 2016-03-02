@@ -1,0 +1,1069 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D0A64DAC-84C6-4F6A-A406-A08355738A45}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <StartupObject>
+    </StartupObject>
+    <AssemblyName>BIDSHelper</AssemblyName>
+    <RootNamespace>BIDSHelper</RootNamespace>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <ApplicationIcon>BIDSHelper.ico</ApplicationIcon>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>BIDSHelper.snk</AssemblyOriginatorKeyFile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <IncrementalBuild>true</IncrementalBuild>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>
+    </DocumentationFile>
+    <NoWarn>1591</NoWarn>
+    <DefineConstants>DEBUG;SQL2014</DefineConstants>
+    <DebugType>full</DebugType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <IncrementalBuild>false</IncrementalBuild>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DefineConstants>SQL2014</DefineConstants>
+    <NoWarn>1591</NoWarn>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Katmai|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Katmai\</OutputPath>
+    <DefineConstants>DEBUG;KATMAI</DefineConstants>
+    <NoWarn>1591</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="ExpressionEditor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\SQL2014\ExpressionEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.BackEnd">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Common.FrontEnd">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.Common.FrontEnd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Controls, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Design, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>c:\Program Files\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE\Microsoft.AnalysisServices.Design.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.MPFProjectBase, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Project, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.VSHost, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.VSHost.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DataTransformationServices.Controls, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>.\Microsoft.DataTransformationServices.Controls.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DataTransformationServices.Design, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.DataTransformationServices.Design.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DataTransformationServices.VsIntegration, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DataWarehouse, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.DataWarehouse.VsIntegration, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Windows\assembly\GAC_MSIL\Microsoft.ReportViewer.Common\12.0.0.0__89845dcd8080cc91\Microsoft.ReportViewer.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Windows\assembly\GAC_MSIL\Microsoft.ReportViewer.WinForms\12.0.0.0__89845dcd8080cc91\Microsoft.ReportViewer.WinForms.DLL</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.DlgGrid, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>.\Microsoft.SqlServer.DlgGrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.DTSPipelineWrap, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.SQLServer.DTSRuntimeWrap, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ExecPackageTaskWrap, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.SqlServer.ExecPackageTaskWrap\v4.0_12.0.0.0__89845dcd8080cc91\Microsoft.SqlServer.ExecPackageTaskWrap.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Graph, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.Graph.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.IntegrationServices.Design, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 12.0\Common7\IDE\PrivateAssemblies\Microsoft.SqlServer.IntegrationServices.Design.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.IntegrationServices.Graph, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.SQLServer.ManagedDTS, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SQLTask, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Program Files (x86)\Microsoft SQL Server\120\DTS\Tasks\Microsoft.SqlServer.SQLTask.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="msddsp, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>DLLs\SQL2014\msddsp.dll</HintPath>
+    </Reference>
+    <Reference Include="PostSharp, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b13fd38b8f9c99d7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\Biml\PostSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.GridControl, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Dts.Design, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Data" />
+    <Import Include="System.Diagnostics" />
+    <Compile Include="Core\BIDSHelperPreferencesPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\BIDSHelperPreferencesPage.Designer.cs">
+      <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\CustomClass.cs" />
+    <Compile Include="Core\CustomProperty.cs" />
+    <Compile Include="Core\CustomPropertyDescriptor.cs" />
+    <Compile Include="Core\DataGridViewButtonDisableColumn.cs" />
+    <Compile Include="Core\DirtyMonitoredDictionary.cs" />
+    <Compile Include="Core\SelectionList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\SelectionList.Designer.cs">
+      <DependentUpon>SelectionList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\VisualStudioHelpers.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\2014\Versioned.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Versioned.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\Common.Designer.cs">
+      <DependentUpon>Common.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SSAS\DeployPerspectivesPlugin.cs" />
+    <Compile Include="SSAS\DeleteUnusedIndexesPlugin.cs" />
+    <Compile Include="SSAS\DuplicateRole.cs" />
+    <Compile Include="SSAS\DeleteUnusedIndexesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\DeleteUnusedIndexesForm.designer.cs">
+      <DependentUpon>DeleteUnusedIndexesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\M2MMatrixCompressionForm.Designer.cs">
+      <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
+    <Compile Include="SSAS\MDXHelper.cs" />
+    <Compile Include="SSAS\RolesReportPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.Designer.cs">
+      <DependentUpon>TabularAnnotationWorkaroundForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularSyncDescriptionsPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslationsAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularDisplayFolderPlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularDisplayFoldersAnnotation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml.cs">
+      <DependentUpon>TabularDisplayFolderWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularHideMemberIfAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\ITabularOnPreBuildAnnotationCheck.cs" />
+    <Compile Include="SSAS\Tabular\TabularPreBuildPlugin.cs" />
+    <Compile Include="SSAS\Tabular\ERDiagramActionBase.cs" />
+    <Compile Include="SSAS\Tabular\TabularHideMemberIfPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularActionsEditorForm.Designer.cs">
+      <DependentUpon>TabularActionsEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularHelpers.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsEditorPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularTranslationsEditorPlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularTranslationsEditorWindow.xaml.cs">
+      <DependentUpon>TabularTranslationsEditorWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSIS\Adorners\BIDSHelperConfigurationAdorner.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\VersionCheckNotificationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Core\VersionCheckNotificationForm.Designer.cs">
+      <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\VersionCheckPlugin.cs" />
+    <Compile Include="Core\BIDSHelperOptionsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\BIDSHelperOptionsPage.Designer.cs">
+      <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\BIDSHelperWindowActivatedPluginBase.cs" />
+    <Compile Include="Core\Constants.cs" />
+    <Compile Include="Core\BIDSHelperOptionsVersionCheckPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\BIDSHelperOptionsVersionCheckPage.Designer.cs">
+      <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\ImageToPictureDispConverter.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Core\IWindowActivatedPlugin.cs" />
+    <Compile Include="Core\ReportViewerForm.Designer.cs" />
+    <Compile Include="SSAS\AggManager\AggregationPerformance.cs" />
+    <Compile Include="SSAS\AggManager\AggregationPerformanceProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\AggregationPerformanceProgress.Designer.cs">
+      <DependentUpon>AggregationPerformanceProgress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmExportTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmExportTable.Designer.cs">
+      <DependentUpon>frmExportTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\PrinterFriendlyAggs.cs" />
+    <Compile Include="SSAS\AggManager\SearchSimilarAggs.cs" />
+    <Compile Include="SSAS\SyncDescriptionsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\SyncDescriptionsForm.Designer.cs">
+      <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\NonDefaultPropertiesPlugin.cs" />
+    <Compile Include="SSAS\DataTypeDiscrepancyCheckForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\DataTypeDiscrepancyCheckForm.Designer.cs">
+      <DependentUpon>DataTypeDiscrepancyCheckForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\DataTypeDiscrepancyCheckPlugin.cs" />
+    <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.Designer.cs">
+      <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\ctlCheckedFancyListBox.cs" />
+    <Compile Include="SSAS\PCDimNaturalizer\frmASFlattener.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmASFlattener.Designer.cs">
+      <DependentUpon>frmASFlattener.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmASFlattenerOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmASFlattenerOptions.Designer.cs">
+      <DependentUpon>frmASFlattenerOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattener.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattener.designer.cs">
+      <DependentUpon>frmSQLFlattener.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.designer.cs">
+      <DependentUpon>frmSQLFlattenerOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizerPlugin.cs" />
+    <Compile Include="SSAS\PCDimNaturalizer\PCDimNaturalizer.cs" />
+    <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
+    <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlAddNewFilePlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlCheckForErrorsPlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlExpandPlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlFeaturePluginBase.cs" />
+    <Compile Include="SSIS\Biml\BimlUtility.cs" />
+    <Compile Include="SSIS\Biml\BimlValidationListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\BimlValidationListForm.Designer.cs">
+      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.Designer.cs">
+      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\HelpWithBimlPlugin.cs" />
+    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.Designer.cs">
+      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\ProjectConnectionManagerInfo.cs" />
+    <Compile Include="SSIS\ComponentInfo.cs">
+    </Compile>
+    <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.Designer.cs">
+      <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DataFlowPerformancePractices.cs" />
+    <Compile Include="SSIS\DesignPracticesPlugin.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
+    <Compile Include="SSIS\FindReferences.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindReferences.Designer.cs">
+      <DependentUpon>FindReferences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindReferencesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindReferencesControl.Designer.cs">
+      <DependentUpon>FindReferencesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindUnusedVariables.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindUnusedVariables.Designer.cs">
+      <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindVariables.cs" />
+    <Compile Include="SSIS\PackageHelper.cs">
+    </Compile>
+    <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
+    <Compile Include="SSIS\RelativePathsPlugin.cs" />
+    <Compile Include="SSIS\AutoSortProjectFilesPlugin.cs" />
+    <Compile Include="SSIS\SSISHelpers.cs" />
+    <Compile Include="SSIS\VariablesMove.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\VariablesMove.Designer.cs">
+      <DependentUpon>VariablesMove.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\ParametersWindowPlugin.cs" />
+    <Compile Include="SSIS\VariablesWindowPlugin.cs" />
+    <Compile Include="SSIS\PipelineComponentPerformanceBreakdownPlugin.cs" />
+    <Compile Include="SSIS\DeployPackagesPlugin.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsGanttGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsObjectPerformance.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsPerformanceLogEventParser.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsPipelineTestDirector.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsStatisticsGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsStatisticsTrendGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsTextLogFileLoader.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\LineageIdReplacer.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\PerformanceTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\ResetGuidsPlugin.cs" />
+    <Compile Include="SSIS\SortProjectFilesPlugin.cs" />
+    <Compile Include="SSIS\PerformanceVisualizationPlugin.cs" />
+    <Compile Include="SSIS\PackageConfigurationLoader.cs" />
+    <Compile Include="SSAS\AggManager\frmTraceTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmTraceTable.Designer.cs">
+      <DependentUpon>frmTraceTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmDeleteUnusedAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmDeleteUnusedAggs.Designer.cs">
+      <DependentUpon>frmDeleteUnusedAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\EditAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\EditAggs.Designer.cs">
+      <DependentUpon>EditAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmAddPartitions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmAddPartitions.Designer.cs">
+      <DependentUpon>frmAddPartitions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmInput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmInput.Designer.cs">
+      <DependentUpon>frmInput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmMain.Designer.cs">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmPartitionsAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmPartitionsAggs.Designer.cs">
+      <DependentUpon>frmPartitionsAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmQueryLog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmQueryLog.Designer.cs">
+      <DependentUpon>frmQueryLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmSaveToFile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmSaveToFile.Designer.cs">
+      <DependentUpon>frmSaveToFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\Properties\Resources.Designer.cs" />
+    <Compile Include="SSAS\AggManager\Properties\Settings.Designer.cs" />
+    <Compile Include="SSAS\AggManager\Settings.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\ValidateAggs.cs" />
+    <Compile Include="SSAS\AggregationManagerPlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Core\BIDSHelperPluginBase.cs">
+    </Compile>
+    <Compile Include="SSAS\CalcHelpersPlugin.cs" />
+    <Compile Include="Connect.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SSAS\DeployAggDesignsPlugin.cs" />
+    <Compile Include="SSAS\DeployMDXScriptPlugin.cs" />
+    <Compile Include="SSAS\DeploymentSettings.cs" />
+    <Compile Include="SSAS\DimensionHealthCheckPlugin.cs" />
+    <Compile Include="SSAS\DimensionOptimizationReportPlugin.cs" />
+    <Compile Include="SSAS\EstimatedCountsPlugin.cs" />
+    <Compile Include="SSAS\ExtraPropertiesPlugin.cs" />
+    <Compile Include="SSAS\MeasureGroupHealthCheckForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\MeasureGroupHealthCheckForm.Designer.cs">
+      <DependentUpon>MeasureGroupHealthCheckForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\MeasureGroupHealthCheckPlugin.cs" />
+    <Compile Include="SSAS\PrinterFriendlyDimensionUsage.cs" />
+    <Compile Include="SSAS\PrinterFriendlyDimensionUsagePlugin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Core\ReportViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\TriStatePerspectivesPlugin.cs" />
+    <Compile Include="SSAS\UnusedColumnsPlugin.cs" />
+    <Compile Include="SSAS\VisualizeAttributeLattice.cs" />
+    <Compile Include="SSAS\VisualizeAttributeLatticeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\VisualizeAttributeLatticeForm.Designer.cs">
+      <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\VisualizeAttributeLatticePlugin.cs" />
+    <Compile Include="SSIS\FixedWidthColumnsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FixedWidthColumnsForm.Designer.cs">
+      <DependentUpon>FixedWidthColumnsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FixedWidthColumnsPlugin.cs" />
+    <Compile Include="SSIS\dtsConfigFormatterPlugin.cs" />
+    <Compile Include="SSIS\ExpressionHighlighterPlugin.cs" />
+    <Compile Include="SSIS\ExpressionListControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\ExpressionListControl.Designer.cs">
+      <DependentUpon>ExpressionListControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\ExpressionListPlugin.cs" />
+    <Compile Include="SSIS\HighlightingToDo.cs" />
+    <Compile Include="SSIS\SmartDiff.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\SmartDiff.Designer.cs">
+      <DependentUpon>SmartDiff.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\SmartDiffPlugin.cs" />
+    <Compile Include="SSIS\VariablesWindowPluginPartial.cs" />
+    <Compile Include="SSRS\DeleteDatasetCachePlugin.cs" />
+    <Compile Include="SSRS\ExpressionInfo.cs" />
+    <Compile Include="SSRS\UnusedDatasetsPlugin.cs" />
+    <COMReference Include="EnvDTE">
+      <Lcid>0</Lcid>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>8</VersionMajor>
+      <Guid>{80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2}</Guid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="EnvDTE80">
+      <Lcid>0</Lcid>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>8</VersionMajor>
+      <Guid>{1A31287A-4D7D-413E-8E32-3B374931BD89}</Guid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="Microsoft.VisualStudio.CommandBars">
+      <Lcid>0</Lcid>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>8</VersionMajor>
+      <Guid>{1CBA492E-7263-47BB-87FE-639000619B15}</Guid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="stdole">
+      <Lcid>0</Lcid>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>2</VersionMajor>
+      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <None Include="DLLs\Biml\Biml.xsd">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Properties\DataSources\Microsoft.AnalysisServices.ReportParameter.datasource" />
+    <None Include="Properties\DataSources\TabularActionsEditorPlugin.DrillthroughColumn.datasource" />
+    <None Include="Resources\DeployAggDesigns.xslt" />
+    <None Include="Resources\DeployAggDesigns.ico" />
+    <None Include="Resources\ExpressionListIcon.ico" />
+    <None Include="DLLs\SQL2014\msddsp.dll" />
+    <None Include="Resources\performance.ico" />
+    <None Include="Resources\arrowDown.bmp" />
+    <None Include="Resources\arrowFlat.bmp" />
+    <None Include="Resources\arrowUp.bmp" />
+    <None Include="Resources\MinusSign.ico" />
+    <None Include="Resources\Package.ico" />
+    <None Include="Resources\Path.ico" />
+    <None Include="Resources\PlusSign.ico" />
+    <None Include="Resources\End.ico" />
+    <None Include="Resources\Copy.ico" />
+    <None Include="Resources\SmartDiffSSRS.xslt" />
+    <None Include="BIDS Helper xcopy deploy readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Content Include="BIDSHelper2014.AddIn" />
+    <Content Include="Build\Readme.txt" />
+    <None Include="Resources\M2MIcon.ico" />
+    <None Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
+    <CodeAnalysisDictionary Include="CustomDictionary.xml" />
+    <None Include="DLLs\SQL2014\ExpressionEditor.dll" />
+    <None Include="Resources\Connection.ico" />
+    <None Include="Resources\Function.ico" />
+    <None Include="Resources\Biml.ico" />
+    <None Include="Resources\BimlFile.ico" />
+    <None Include="Resources\Question.ico" />
+    <None Include="Resources\CheckBiml.ico" />
+    <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
+    <None Include="DLLs\Biml\BimlEngine.dll" />
+    <None Include="Resources\NoIcon.ico" />
+    <None Include="DLLs\Biml\PostSharp.dll" />
+    <Content Include="Resources\2014\DataFlow.ico" />
+    <Content Include="Resources\2014\DestinationComponent.ico" />
+    <Content Include="Resources\2014\EditVariable.ico" />
+    <Content Include="Resources\2014\Event.ico" />
+    <Content Include="Resources\2014\ForEachLoop.ico" />
+    <Content Include="Resources\2014\ForLoop.ico" />
+    <Content Include="Resources\2014\Sequence.ico" />
+    <Content Include="Resources\2014\SourceComponent.ico" />
+    <Content Include="Resources\2014\Variable.ico" />
+    <None Include="Resources\DeployPerspectives.xslt" />
+    <Content Include="Resources\2014\VariableFindReferences.ico" />
+    <Content Include="Resources\2014\VariableFindUnused.ico" />
+    <Content Include="Resources\DeployPerspectives.ico" />
+    <Content Include="SetupScript\SQL2014CurrentReleaseVersion.xml" />
+    <None Include="Resources\Edit.ico" />
+    <None Include="Resources\Process Progress1052856.bmp" />
+    <None Include="Resources\process progress1704108.bmp" />
+    <None Include="Resources\Process Progress464342.gif" />
+    <None Include="Resources\RefreshExpressions.ico" />
+    <None Include="Resources\SmartDiffDtsx.xslt" />
+    <None Include="Resources\SmartDiffSSAS.xslt" />
+    <None Include="Resources\SmallBlueDiamond.ico" />
+    <None Include="Resources\TaskSmall.ico" />
+    <None Include="Resources\TreeViewTab.ico" />
+    <None Include="Resources\Run.ico" />
+    <Content Include="SetupScript\ReleaseChecklist.txt" />
+    <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Checked.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Connected.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Cube.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Database.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Dimension.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Disconnected.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Folder.ico" />
+    <Content Include="SSAS\AggManager\Graphics\m2mDimension.ico" />
+    <Content Include="SSAS\AggManager\Graphics\MeasureGroup.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Partition.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Unchecked.ico" />
+    <EmbeddedResource Include="BIDSHelper.ico" />
+    <EmbeddedResource Include="Core\BIDSHelperOptionsPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\BIDSHelperOptionsVersionCheckPage.resx">
+      <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\BIDSHelperPreferencesPage.resx">
+      <DependentUpon>BIDSHelperPreferencesPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\VersionCheckNotificationForm.resx">
+      <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\2014\Versioned.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <CustomToolNamespace>BIDSHelper.Resources</CustomToolNamespace>
+      <LastGenOutput>Versioned.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\BIDSHelper.ico" />
+    <None Include="Resources\DeployMdxScript.ico" />
+    <Content Include="SetupScript\BIDSHelper2008.bmp" />
+    <Content Include="SetupScript\BIDSHelperHeader.bmp" />
+    <None Include="Resources\stop.ico" />
+    <None Include="Resources\EstimatedCounts.ico" />
+    <None Include="Resources\EditAggregations.ico" />
+    <EmbeddedResource Include="Resources\Common.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Common.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\AggregationPerformance.rdlc" />
+    <EmbeddedResource Include="SSAS\AggManager\AggregationPerformanceProgress.resx">
+      <DependentUpon>AggregationPerformanceProgress.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmExportTable.resx">
+      <DependentUpon>frmExportTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\PrinterFriendlyAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\AggManager\frmTraceTable.resx">
+      <DependentUpon>frmTraceTable.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmDeleteUnusedAggs.resx">
+      <DependentUpon>frmDeleteUnusedAggs.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\EditAggs.resx">
+      <DependentUpon>EditAggs.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmAddPartitions.resx">
+      <DependentUpon>frmAddPartitions.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmInput.resx">
+      <DependentUpon>frmInput.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmMain.resx">
+      <DependentUpon>frmMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmPartitionsAggs.resx">
+      <DependentUpon>frmPartitionsAggs.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmQueryLog.resx">
+      <DependentUpon>frmQueryLog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmSaveToFile.resx">
+      <DependentUpon>frmSaveToFile.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\Properties\Resources.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="Resources\DeployMdxScript.xslt" />
+    <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\DeleteUnusedIndexesForm.resx">
+      <DependentUpon>DeleteUnusedIndexesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsageBusMatrix.rdlc" />
+    <EmbeddedResource Include="SSAS\M2MMatrixCompressionForm.resx">
+      <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\RolesReport.rdlc" />
+    <EmbeddedResource Include="SSAS\SyncDescriptionsForm.resx">
+      <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\DataTypeDiscrepancyCheckForm.resx">
+      <DependentUpon>DataTypeDiscrepancyCheckForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\DimensionOptimization.rdlc" />
+    <EmbeddedResource Include="SSAS\NonDefaultProperties.rdlc" />
+    <EmbeddedResource Include="SSAS\NonDefaultPropertiesSelectionForm.resx">
+      <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmASFlattener.resx">
+      <DependentUpon>frmASFlattener.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmASFlattenerOptions.resx">
+      <DependentUpon>frmASFlattenerOptions.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmProgress.resx">
+      <DependentUpon>frmProgress.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmSQLFlattener.resx">
+      <DependentUpon>frmSQLFlattener.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmSQLFlattenerOptions.resx">
+      <DependentUpon>frmSQLFlattenerOptions.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.resx">
+      <DependentUpon>TabularAnnotationWorkaroundForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\Tabular\TabularActionsEditorForm.resx">
+      <DependentUpon>TabularActionsEditorForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />
+    <EmbeddedResource Include="SSAS\UnusedColumns.rdlc" />
+    <EmbeddedResource Include="SSAS\MeasureGroupHealthCheckForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MeasureGroupHealthCheckForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\VisualizeAttributeLattice.rdlc" />
+    <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsage.rdlc" />
+    <EmbeddedResource Include="Core\ReportViewerForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ReportViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\VisualizeAttributeLatticeForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\BimlValidationListForm.resx">
+      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\FrameworkVersionAlertDialog.resx">
+      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\MultipleSelectionConfirmationDialog.resx">
+      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.resx">
+      <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindReferences.resx">
+      <DependentUpon>FindReferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindReferencesControl.resx">
+      <DependentUpon>FindReferencesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindUnusedVariables.resx">
+      <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
+    <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
+      <DependentUpon>ExpressionListControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FixedWidthColumnsForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>FixedWidthColumnsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\SmartDiff.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SmartDiff.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\VariablesMove.resx">
+      <DependentUpon>VariablesMove.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSRS\UsedDatasets.rdlc" />
+    <EmbeddedResource Include="SSRS\UnusedDatasets.rdlc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BIDSHelper.snk" />
+    <None Include="Build\Build_BIDSHelper.ps1" />
+    <None Include="Build\default.ps1" />
+    <None Include="Build\psake.ps1" />
+    <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+AggregationPerformance.datasource" />
+    <None Include="Properties\DataSources\AggManager.AggregationPerformanceTester+MissingAggregationPerformance.datasource" />
+    <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+Agg.datasource" />
+    <None Include="Properties\DataSources\AggManager.PrinterFriendlyAggs+AggDimension.datasource" />
+    <None Include="Properties\DataSources\AggManager.SearchSimilarAggs+SimilarAgg.datasource" />
+    <None Include="Properties\DataSources\AggManager.ValidateAggs+AggValidationWarning.datasource" />
+    <None Include="Properties\DataSources\BIDSHelper.SSRS.UsedRsDataSets+RsDataSetUsage.datasource" />
+    <None Include="Properties\DataSources\DataTypeDiscrepancyCheckPlugin.DataTypeDiscrepancy.datasource" />
+    <None Include="Properties\DataSources\DimensionOptimizationReportPlugin.DimensionOptimizations.datasource" />
+    <None Include="Properties\DataSources\DimensionUsage.datasource" />
+    <None Include="Properties\DataSources\M2MMatrixCompressionPlugin.M2MMatrixCompressionStat.datasource" />
+    <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureDataTypeOption.datasource" />
+    <None Include="Properties\DataSources\MeasureGroupHealthCheckPlugin.MeasureHealthCheckResult.datasource" />
+    <None Include="Properties\DataSources\NonDefaultPropertiesPlugin.NonDefaultProperty.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleCubeInfo.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleDataSourceInfo.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleDimensionInfo.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleMemberInfo.datasource" />
+    <None Include="Properties\DataSources\RolesReportPlugin.RoleMiningInfo.datasource" />
+    <None Include="Properties\DataSources\SortablePackagePropertiesPlugin.PackageProperties.datasource" />
+    <None Include="Properties\DataSources\UnusedColumnsPlugin.UnusedColumn.datasource" />
+    <None Include="Properties\DataSources\UnusedColumnsPlugin.UsedColumn.datasource" />
+    <None Include="Properties\DataSources\VisualizeAttributeLatticeImageForReport.datasource" />
+    <None Include="SSAS\AggManager\Properties\Settings.settings" />
+    <None Include="SetupScript\BIDSHelperSetup2014.nsi" />
+    <None Include="SetupScript\License.rtf" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "%25HOMEPATH%25\Documents\Visual Studio 2013\Addins\"</PostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Build\examples\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SSAS\Tabular\TabularTranslationsEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+</Project>
