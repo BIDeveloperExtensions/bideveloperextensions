@@ -77,11 +77,12 @@ namespace BIDSHelper
                     return;
                 }
 
-                var solution = solExplorer.UIHierarchyItems.Item(1).Object as SolutionClass;
-                if (solution == null)
-                {
-                    return;
-                }
+                // TODO: Try on other versions? Removed this test, as never succeeds on SQL2012 on VS2012
+                //var solution = rootItem.Object as SolutionClass;
+                //if (solution == null)
+                //{
+                //    return;
+                //}
 
                 ProcessHierarchyItem(rootItem);
             }
