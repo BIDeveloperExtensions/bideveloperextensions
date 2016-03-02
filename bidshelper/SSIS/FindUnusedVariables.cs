@@ -127,7 +127,7 @@ namespace BIDSHelper.SSIS
             stopwatch.Start();
 
             Variable[] variables = e.Argument as Variable[];
-            finder.FindReferences(this.package, variables);
+            finder.FindReferences(this.package, variables, null);
         }
         #endregion
 

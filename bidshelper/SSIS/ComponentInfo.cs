@@ -16,46 +16,65 @@
         private static unsafe extern int DestroyIcon(IntPtr hIcon);
 
         private DTSPipelineComponentType componentType;
-        private string id;
-        private string name;
-        private string creationName;
-        private Icon icon;
 
         public ComponentInfo(PipelineComponentInfo componentInfo)
         {
             this.componentType = componentInfo.ComponentType;
-            this.id = componentInfo.ID;
-            this.name = componentInfo.Name;
-            this.creationName = componentInfo.CreationName;
-        }
+            this.ID = componentInfo.ID;
+            this.Name = componentInfo.Name;
+            this.CreationName = componentInfo.CreationName;
 
-        public ComponentInfo(TaskInfo componentInfo)
-        {
-            this.id = componentInfo.ID;
-            this.name = componentInfo.Name;
-            this.creationName = componentInfo.CreationName;
-
-            Assembly assembly = ComponentInfo.GetComponentAssembly(componentInfo);
+            Assembly assembly = GetComponentAssembly(componentInfo);
 
             if (assembly != null)
             {
                 Stream iconStream = assembly.GetManifestResourceStream(componentInfo.IconResource);
                 if (iconStream != null)
                 {
-                    this.icon = new Icon(iconStream, new Size(16, 16));
+                    this.Icon = new Icon(iconStream, new Size(16, 16));
                 }
             }
             else
             {
                 int index = 0;
                 Int32.TryParse(componentInfo.IconResource, out index);
-                this.icon = ExtractIcon(componentInfo.IconFile, index, false);
+                this.Icon = ExtractIcon(componentInfo.IconFile, index, false);
             }
 
             // Ensure we always have an icon
-            if (this.icon == null)
+            if (this.Icon == null)
             {
-                this.icon = BIDSHelper.Resources.Common.NoIcon;
+                this.Icon = BIDSHelper.Resources.Common.NoIcon;
+            }
+        }
+
+        public ComponentInfo(TaskInfo componentInfo)
+        {
+            this.ID = componentInfo.ID;
+            this.Name = componentInfo.Name;
+            this.CreationName = componentInfo.CreationName;
+
+            Assembly assembly = GetComponentAssembly(componentInfo);
+
+            if (assembly != null)
+            {
+                Stream iconStream = assembly.GetManifestResourceStream(componentInfo.IconResource);
+                if (iconStream != null)
+                {
+                    this.Icon = new Icon(iconStream, new Size(16, 16));
+                }
+            }
+            else
+            {
+                int index = 0;
+                Int32.TryParse(componentInfo.IconResource, out index);
+                this.Icon = ExtractIcon(componentInfo.IconFile, index, false);
+            }
+
+            // Ensure we always have an icon
+            if (this.Icon == null)
+            {
+                this.Icon = BIDSHelper.Resources.Common.NoIcon;
             }
         }
 
@@ -68,11 +87,11 @@
         {
             if (icon.Height > 16)
             {
-                this.icon = new Icon(icon, new Size(16, 16));
+                this.Icon = new Icon(icon, new Size(16, 16));
             }
             else
             {
-                this.icon = icon;
+                this.Icon = icon;
             }
         }
 
@@ -154,27 +173,27 @@
         
         public DTSPipelineComponentType ComponentType
         {
-            get { return this.componentType; }
+            get; private set;
         }
 
         public string ID
         {
-            get { return this.id; }
+            get; private set;
         }
 
         public string Name
         {
-            get { return this.name; }
+            get; private set;
         }
 
         public string CreationName
         {
-            get { return this.creationName; }
+            get; private set;
         }
 
         public Icon Icon
         {
-            get { return this.icon; }
+            get; private set;
         }
     }
 }
