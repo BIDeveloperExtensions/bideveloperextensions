@@ -172,30 +172,30 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        private int GetControlFlowImageIndex(string creationName)
+        private int GetControlFlowImageIndex(string key)
         {
             if (treeView == null)
                 return -1;
 
-            int imageIndex = treeView.ImageList.Images.IndexOfKey(creationName);
+            int imageIndex = treeView.ImageList.Images.IndexOfKey(key);
             if (imageIndex == -1)
             {
-                AddImageListItem(creationName, PackageHelper.ControlFlowInfos[creationName].Icon);
+                AddImageListItem(key, PackageHelper.ControlFlowInfos[key].Icon);
                 imageIndex = treeView.ImageList.Images.Count - 1;
             }
 
             return imageIndex;
         }
 
-        private int GetComponentImageIndex(string creationName)
+        private int GetComponentImageIndex(string key)
         {
             if (treeView == null)
                 return -1;
 
-            int imageIndex = treeView.ImageList.Images.IndexOfKey(creationName);
+            int imageIndex = treeView.ImageList.Images.IndexOfKey(key);
             if (imageIndex == -1)
             {
-                AddImageListItem(creationName, PackageHelper.ComponentInfos[creationName].Icon);
+                AddImageListItem(key, PackageHelper.ComponentInfos[key].Icon);
                 imageIndex = treeView.ImageList.Images.Count - 1;
             }
 
@@ -250,7 +250,6 @@ namespace BIDSHelper.SSIS
                 return;
             }
 
-
             Package package = component as Package;
             if (package != null)
             {
@@ -266,7 +265,7 @@ namespace BIDSHelper.SSIS
 
                 if (package == null)
                 {
-                    int imageIndex = GetControlFlowImageIndex(container.CreationName);
+                    int imageIndex = GetControlFlowImageIndex(containerKey);
                     parentNode = AddNode(parentNode, container.Name, imageIndex, component);
                     taskHost = container as TaskHost;
                 }
@@ -289,6 +288,7 @@ namespace BIDSHelper.SSIS
                 }
                 else
                 {
+                    // Package, Event Handlers etc
                     ScanProperties(container as IDTSPropertiesProvider, parentNode);
                 }
 
@@ -305,13 +305,10 @@ namespace BIDSHelper.SSIS
             EventsProvider eventsProvider = component as EventsProvider;
             if (eventsProvider != null)
             {
-                TreeNode eventHandlers = AddFolder("EventHandlers", parentNode);
-                int imageIndex = GetControlFlowImageIndex(PackageHelper.EventHandlerCreationName);
-
+                TreeNode eventsNode = AddFolder("EventHandlers", parentNode);
                 foreach (DtsEventHandler eventhandler in eventsProvider.EventHandlers)
                 {
-                    TreeNode node = AddNode(parentNode, eventhandler.Name, imageIndex, eventhandler);
-                    ProcessObject(eventhandler, node);
+                    ProcessObject(eventhandler, eventsNode);
                 }
             }
 
@@ -329,9 +326,7 @@ namespace BIDSHelper.SSIS
                 return;
 
             if (this.CancellationPending)
-            {
                 return;
-            }
 
             foreach (Executable executable in sequence.Executables)
             {
@@ -341,7 +336,8 @@ namespace BIDSHelper.SSIS
 
         private void CheckConnectionManagers(Package package, TreeNode parentNode)
         {
-            if (this.CancellationPending) return;
+            if (this.CancellationPending)
+                return;
 
             TreeNode folder = AddFolder("Connections", parentNode);
 
@@ -382,15 +378,10 @@ namespace BIDSHelper.SSIS
                 // Need to be wary of suffix, SSIS.ExecutePackageTask.3 for 2012, SSIS.ExecutePackageTask.4 for 2014 etc
                 if (creatioName == string.Format("SSIS.{0}.{1}",  ObjectTypeExecutePackageTask, SSISHelpers.CreationNameIndex))
                 {
-                    //foundArgument.Type = typeof(ExecutePackageTask);
-                    //foundArgument.ObjectType = ObjectTypeExecutePackageTask;
                     CheckExecutePackageTask(taskHost, parent);
                 }
                 else if (creatioName == string.Format("SSIS.Pipeline.{0}", SSISHelpers.CreationNameIndex))
                 {
-                    //foundArgument.ObjectType = ObjectTypeDataFlowTask;
-                    //foundArgument.Type = typeof(MainPipe);
-                    //foundArgument.Icon = BIDSHelper.Resources.Versioned.DataFlow;
                     MainPipe pipeline = taskHost.InnerObject as MainPipe;
                     ScanPipeline(pipeline, parent);
                 }
@@ -705,7 +696,7 @@ namespace BIDSHelper.SSIS
                     VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
                     foundArgument.Match = match;
                     OnRaiseVariableFound(foundArgument);
-                    AddNode(expressions, "Expression", GetImageIndex(IconKeyVariableExpression), new PropertyExpression(propertyName, expression, PackageHelper.GetTypeFromTypeCode(property.Type)), true);
+                    AddNode(expressions, propertyName, GetImageIndex(IconKeyVariableExpression), new PropertyExpression(propertyName, expression, PackageHelper.GetTypeFromTypeCode(property.Type)), true);
                 }
                 #endregion
 
@@ -924,17 +915,7 @@ namespace BIDSHelper.SSIS
 
         public VariableFoundEventArgs(VariableFoundEventArgs variableFoundEventArgs)
         {
-            //this.Icon = variableFoundEventArgs.Icon;
-            //this.Type = variableFoundEventArgs.Type;
-            //this.IsExpression = variableFoundEventArgs.IsExpression;
-            //this.ContainerID = variableFoundEventArgs.ContainerID;
             this.Match = variableFoundEventArgs.Match;
-            //this.ObjectID = variableFoundEventArgs.ObjectID;
-            //this.ObjectName = variableFoundEventArgs.ObjectName;
-            //this.ObjectPath = variableFoundEventArgs.ObjectPath;
-            //this.ObjectType = variableFoundEventArgs.ObjectType;
-            //this.PropertyName = variableFoundEventArgs.PropertyName;
-            //this.Value = variableFoundEventArgs.Value;
         }
 
         public string Match { get; set; }
@@ -949,10 +930,10 @@ namespace BIDSHelper.SSIS
             this.Type = type;
         }
 
-        [ParenthesizePropertyName(), Browsable(true), Category("General")]
+        [ParenthesizePropertyName(), Browsable(true), Category("General"), Description("The name of the property hosting the expression.")]
         public string PropertyName { get; private set; }
 
-        [Category("General")]
+        [Category("General"), Description("The expression text for the property expression.")]
         public object Expression { get; private set; }
 
         [Category("General")]
@@ -963,7 +944,7 @@ namespace BIDSHelper.SSIS
     public class PropertyInfo
     {
         // We don't need an IDTSCustomProperty100 version because that already does a good job of displaying both the property information AND the value.
-        // DtsProper doesn't include the value, hence we use thso wrapper for teh TreeView tag object
+        // DtsProperty doesn't include the value, hence we use this wrapper for the TreeView tag object
 
         public PropertyInfo(DtsProperty property, object value)
         {
@@ -974,19 +955,19 @@ namespace BIDSHelper.SSIS
             this.Set = property.Set;
         }
 
-        [ParenthesizePropertyName(), Browsable(true), Category("General")]
+        [ParenthesizePropertyName(), Browsable(true), Category("General"), Description("The name of the property which contains the reference.")]
         public string Name { get; private set; }
 
-        [Category("General")]
+        [Category("Accessors"), Description("Indicates whether the property value can be read.")]
         public bool Get { get; private set; }
 
-        [Category("General")]
+        [Category("Accessors"), Description("Indicates whether the property value is changeable.")]
         public bool Set { get; private set; }
 
-        [Category("General")]
+        [Category("General"), Description("THe property value, including the reference.")]
         public object Value { get; private set; }
 
-        [Category("General")]
+        [Category("General"), Description("The data type of the property value.")]
         public Type Type { get; private set; }
     }
 }

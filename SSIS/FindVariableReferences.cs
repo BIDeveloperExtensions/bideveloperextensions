@@ -14,6 +14,7 @@ namespace BIDSHelper.SSIS
         private FindVariables finder = new FindVariables();
         private Package package;
         private Variable variable;
+        private bool parameterMode;
 
         public FindVariableReferences()
         {
@@ -30,10 +31,15 @@ namespace BIDSHelper.SSIS
 
         public void Show(Package package, Variable variable)
         {
-            this.progressBar.Visible = true;
+            if (parameterMode)
+                this.Text = string.Format("Find parameter references - {0}", variable.QualifiedName);
+            else
+                this.Text = string.Format("Find variable references - {0}", variable.QualifiedName);
 
             this.package = package;
             this.variable = variable;
+
+            this.progressBar.Visible = true;
 
             InitializeTreeView();
 
@@ -45,8 +51,11 @@ namespace BIDSHelper.SSIS
 
         public void Show(Package package, Parameter parameter)
         {
+            parameterMode = true;
+
             // Get the Variable object that is the same as the Parameter. A parameter is also an item in the Variables collection.
             Variable variable = package.Variables[parameter.ID];
+           
             this.Show(package, variable);
         }
 
