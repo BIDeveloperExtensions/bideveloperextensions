@@ -50,6 +50,8 @@ namespace BIDSHelper.SSIS
         public DialogResult Show(Package package)
         {
             this.selectionList.ClearItems();
+
+            this.progressBar.MarqueeAnimationSpeed = 20;
             this.progressBar.Visible = true;
 
             finder.VariableFound += new EventHandler<VariableFoundEventArgs>(VariableFound);

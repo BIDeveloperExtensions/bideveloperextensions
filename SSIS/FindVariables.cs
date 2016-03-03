@@ -87,9 +87,14 @@ namespace BIDSHelper.SSIS
                 int imageIndex = GetControlFlowImageIndex(PackageHelper.PackageCreationName);
                 TreeNode packageNode = new TreeNode(package.Name, imageIndex, imageIndex);
                 packageNode.Tag = package;
-                AddRootNode(packageNode);
 
                 ProcessObject(package, packageNode);
+
+                // Hide nodes that don't have any matches
+                PruneNodes(packageNode);
+
+                // Add node graph to tree view
+                AddRootNode(packageNode);
             }
             else
             {
@@ -99,6 +104,23 @@ namespace BIDSHelper.SSIS
 
             // Reset cancel pending in case we have cancelled, as about to exit, so no longer pending
             this.CancellationPending = false;
+        }
+
+        private void PruneNodes(TreeNode parent)
+        {
+            for (int index = parent.Nodes.Count - 1; index >= 0; index--)
+            {
+                TreeNode node = parent.Nodes[index];
+
+                if (node.IsExpanded || node.Checked)
+                {
+                    PruneNodes(node);
+                }
+                else
+                {
+                    node.Remove();
+                }
+            }
         }
 
         delegate void AddRootNodeCallback(TreeNode node);

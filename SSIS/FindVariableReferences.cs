@@ -39,6 +39,7 @@ namespace BIDSHelper.SSIS
             this.package = package;
             this.variable = variable;
 
+            this.progressBar.MarqueeAnimationSpeed = 20;
             this.progressBar.Visible = true;
 
             InitializeTreeView();
@@ -62,7 +63,6 @@ namespace BIDSHelper.SSIS
         private void InitializeTreeView()
         {
             this.treeView.Nodes.Clear();
-            this.treeView.SuspendLayout();
             this.treeView.Enabled = false;
         }
 
@@ -72,35 +72,16 @@ namespace BIDSHelper.SSIS
             this.processPackage.ReportProgress(0, e);
         }
 
-        private void PruneNodes(TreeNode parent)
-        {
-            for (int index = parent.Nodes.Count -1; index >= 0; index--)
-            {
-                TreeNode node = parent.Nodes[index];
-
-                if (node.IsExpanded || node.Checked)
-                {
-                    PruneNodes(node);
-                }
-                else
-                {
-                    node.Remove();
-                }
-            }
-        }
-
         #region BackgroundWorker Events
 
         private void processPackage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             TreeNode parent = this.treeView.Nodes[0];
-            PruneNodes(parent);
 
             stopwatch.Stop();
             this.Text += (" " + stopwatch.ElapsedMilliseconds.ToString());
 
             this.treeView.Enabled = true;            
-            this.treeView.ResumeLayout();
 
             this.progressBar.Visible = false;
         }
@@ -120,6 +101,11 @@ namespace BIDSHelper.SSIS
         private void SetPropertyGrid(TreeNode node)
         {
             propertyGrid.SelectedObject = node.Tag;
+        }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

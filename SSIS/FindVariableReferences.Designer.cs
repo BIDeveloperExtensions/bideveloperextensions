@@ -35,6 +35,7 @@
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.propertyGrid = new System.Windows.Forms.PropertyGrid();
             this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
@@ -64,7 +65,7 @@
             // splitContainer.Panel2
             // 
             this.splitContainer.Panel2.Controls.Add(this.propertyGrid);
-            this.splitContainer.Size = new System.Drawing.Size(863, 390);
+            this.splitContainer.Size = new System.Drawing.Size(863, 380);
             this.splitContainer.SplitterDistance = 555;
             this.splitContainer.TabIndex = 1;
             // 
@@ -76,7 +77,7 @@
             this.treeView.Location = new System.Drawing.Point(0, 0);
             this.treeView.Name = "treeView";
             this.treeView.SelectedImageIndex = 0;
-            this.treeView.Size = new System.Drawing.Size(555, 390);
+            this.treeView.Size = new System.Drawing.Size(555, 380);
             this.treeView.TabIndex = 0;
             this.treeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseClick);
             // 
@@ -91,8 +92,9 @@
             this.propertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.propertyGrid.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(304, 390);
+            this.propertyGrid.Size = new System.Drawing.Size(304, 380);
             this.propertyGrid.TabIndex = 0;
+            this.progressBar.MarqueeAnimationSpeed = 200;
             // 
             // progressBar
             // 
@@ -103,11 +105,25 @@
             this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.progressBar.TabIndex = 2;
             // 
+            // buttonClose
+            // 
+            this.buttonClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonClose.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.buttonClose.Location = new System.Drawing.Point(786, 421);
+            this.buttonClose.Name = "buttonClose";
+            this.buttonClose.Size = new System.Drawing.Size(89, 23);
+            this.buttonClose.TabIndex = 3;
+            this.buttonClose.Text = "&Close";
+            this.buttonClose.UseVisualStyleBackColor = true;
+            this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
+            // 
             // FindVariableReferences
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(887, 414);
+            this.CancelButton = this.buttonClose;
+            this.ClientSize = new System.Drawing.Size(887, 456);
+            this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.panelMain);
             this.Name = "FindVariableReferences";
             this.Text = "Find variable references";
@@ -127,5 +143,6 @@
         private System.Windows.Forms.SplitContainer splitContainer;
         private System.Windows.Forms.PropertyGrid propertyGrid;
         private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.Button buttonClose;
     }
 }
