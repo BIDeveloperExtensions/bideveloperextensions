@@ -35,34 +35,21 @@
         private static object componentLock = new object();
 
         /// <summary>
-        /// Private field for the ManagedComponentWrapper property
-        /// </summary>
-        private static string managedComponentWrapper;
-
-        /// <summary>
         /// All managed components in the data flow share the same wrapper, identified by this GUID.
         /// The specific type of managed component is identified by the UserComponentTypeName custom property of the component.
+        /// The GUID is documented in teh class Syntax section - https://technet.microsoft.com/en-gb/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.105).aspx
         /// </summary>
-        public static string ManagedComponentWrapper
-        {
-            get
-            {
-                if (managedComponentWrapper == null)
-                {
-                    // This value changed unexpectedly
-                    // SQL2014 - {33D831DE-5DCF-48F0-B431-4D327B9E785D}
-                    // SQL2005 - {BF01D463-7089-41EE-8F05-0A6DC17CE633}
-                    // See documentation https://technet.microsoft.com/nl-nl/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.90).aspx
-
-                    // To prevent future issues, we will get it from the object itself.
-                    GuidAttribute attribute = (GuidAttribute)Attribute.GetCustomAttribute(typeof(CManagedComponentWrapperClass), typeof(GuidAttribute));
-                    managedComponentWrapper = attribute.Value;                    
-                }
-
-                return managedComponentWrapper;
-            }
-        }
-
+#if SQL2016
+        public const string ManagedComponentWrapper = "{4F885D04-B578-47B7-94A0-DE9C7DA25EE2}";
+#elif SQL2014
+        public const string ManagedComponentWrapper = "{33D831DE-5DCF-48F0-B431-4D327B9E785D}";
+#elif DENALI
+        public const string ManagedComponentWrapper = "{2E42D45B-F83C-400F-8D77-61DDE6A7DF29}"
+#elif KATMAI
+        public const string ManagedComponentWrapper = "{874F7595-FB5F-40FF-96AF-FBFF8250E3EF}"
+#else
+        public const string ManagedComponentWrapper = "{BF01D463-7089-41EE-8F05-0A6DC17CE633}"
+#endif
 
         public static List<TaskHost> GetControlFlowObjects<T>(DtsContainer container)
         {
@@ -123,16 +110,13 @@
                                 }
                                 else
                                 {
-                                    // Script Component ID
-                                    ////public const string ScriptComponentID = "Microsoft.SqlServer.Dts.Pipeline.ScriptComponentHost, Microsoft.SqlServer.TxScript, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91";
-                                    ////if (pipelineComponentInfo.ID == ScriptComponentID)
-                                    ////{
-                                    ////    // For the script component on SQL 2014, PipelineComponentInfo shows an ID of Microsoft.SqlServer.Dts.Pipeline.ScriptComponentHost, Microsoft.SqlServer.TxScript, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91
-                                    ////    // When enumerating components in the pipeline the ComponentClassID is the GUID, not the creation name
-                                    ////    // COM CLSID vs COM ProgID vs assembly strong name, they all get mixed up sometimes.
-                                    ////    componentInfos.Add("{33D831DE-5DCF-48F0-B431-4D327B9E785D}", new ComponentInfo(pipelineComponentInfo));
-                                    ////}
-                                    componentInfos.Add(pipelineComponentInfo.ID, new ComponentInfo(pipelineComponentInfo));
+                                    componentInfos.Add(pipelineComponentInfo.CreationName, new ComponentInfo(pipelineComponentInfo));
+
+                                    // Add both the creation name and the component GUID to ensure we get a match
+                                    if (pipelineComponentInfo.CreationName != pipelineComponentInfo.ID)
+                                    {
+                                        componentInfos.Add(pipelineComponentInfo.ID, new ComponentInfo(pipelineComponentInfo));
+                                    }                                    
                                 }
                             }
                         }
