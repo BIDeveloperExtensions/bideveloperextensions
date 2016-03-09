@@ -37,18 +37,18 @@
         /// <summary>
         /// All managed components in the data flow share the same wrapper, identified by this GUID.
         /// The specific type of managed component is identified by the UserComponentTypeName custom property of the component.
-        /// The GUID is documented in teh class Syntax section - https://technet.microsoft.com/en-gb/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.105).aspx
+        /// The GUID is documented in the class Syntax section - https://technet.microsoft.com/en-gb/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.105).aspx
         /// </summary>
 #if SQL2016
         public const string ManagedComponentWrapper = "{4F885D04-B578-47B7-94A0-DE9C7DA25EE2}";
 #elif SQL2014
         public const string ManagedComponentWrapper = "{33D831DE-5DCF-48F0-B431-4D327B9E785D}";
 #elif DENALI
-        public const string ManagedComponentWrapper = "{2E42D45B-F83C-400F-8D77-61DDE6A7DF29}"
+        public const string ManagedComponentWrapper = "{2E42D45B-F83C-400F-8D77-61DDE6A7DF29}";
 #elif KATMAI
-        public const string ManagedComponentWrapper = "{874F7595-FB5F-40FF-96AF-FBFF8250E3EF}"
+        public const string ManagedComponentWrapper = "{874F7595-FB5F-40FF-96AF-FBFF8250E3EF}";
 #else
-        public const string ManagedComponentWrapper = "{BF01D463-7089-41EE-8F05-0A6DC17CE633}"
+        public const string ManagedComponentWrapper = "{BF01D463-7089-41EE-8F05-0A6DC17CE633}";
 #endif
 
         public static List<TaskHost> GetControlFlowObjects<T>(DtsContainer container)

@@ -10,7 +10,9 @@ namespace BIDSHelper.SSIS
     public partial class FindVariableReferences : Form
     {
         private BackgroundWorker processPackage = null;
+#if DEBUG
         private System.Diagnostics.Stopwatch stopwatch;
+#endif
         private FindVariables finder = new FindVariables();
         private Package package;
         private Variable variable;
@@ -43,8 +45,9 @@ namespace BIDSHelper.SSIS
             this.progressBar.Visible = true;
 
             InitializeTreeView();
-
+#if DEBUG
             stopwatch = new System.Diagnostics.Stopwatch();
+#endif
             processPackage.RunWorkerAsync();
 
             this.Show();
@@ -78,9 +81,10 @@ namespace BIDSHelper.SSIS
         {
             TreeNode parent = this.treeView.Nodes[0];
 
+#if DEBUG
             stopwatch.Stop();
             this.Text += (" " + stopwatch.ElapsedMilliseconds.ToString());
-
+#endif
             this.treeView.Enabled = true;            
 
             this.progressBar.Visible = false;
@@ -88,7 +92,9 @@ namespace BIDSHelper.SSIS
 
         private void processPackage_DoWork(object sender, DoWorkEventArgs e)
         {
-            stopwatch.Start();            
+#if DEBUG
+            stopwatch.Start();
+#endif
             finder.FindReferences(this.package, this.variable, this.treeView);
         }
         #endregion

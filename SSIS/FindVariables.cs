@@ -13,6 +13,10 @@ namespace BIDSHelper.SSIS
 {
     internal class FindVariables
     {
+        private string[] expressionMatches = null;
+        private string[] properytMatches = null;
+        private TreeView treeView;
+
         public const string IconKeyFolder = "Folder";
         public const string IconKeyProperties = "Properties";
         public const string IconKeyInput = "Input";
@@ -23,20 +27,14 @@ namespace BIDSHelper.SSIS
         public const string IconKeyVariableExpression = "VariableExpression";
         public const string IconKeyProperty = "Property";
         public const string IconKeyPropertyExpression = "PropertyExpression";
-        
-        private string[] expressionMatches = null;
-        private string[] properytMatches = null;
-
-        // Define string constants we use for specicific object types
-        // Type of MainPipe
-        private const string ObjectTypeDataFlowTask = "DataFlowTask";
-        private const string ObjectTypeExecutePackageTask = "ExecutePackageTask";
-
-        private TreeView treeView;
 
         public event EventHandler<VariableFoundEventArgs> VariableFound;
 
-        public bool CancellationPending { get; private set; }
+        public bool CancellationPending
+        {
+            get;
+            private set;
+        }
 
         public bool Cancel()
         {
@@ -48,7 +46,7 @@ namespace BIDSHelper.SSIS
             this.CancellationPending = true;
             return true;
         }
-
+        
         public void FindReferences(Package package, Variable variable, TreeView treeView)
         {
             FindReferences(package, new Variable[] { variable }, treeView);
@@ -108,6 +106,8 @@ namespace BIDSHelper.SSIS
 
         private void PruneNodes(TreeNode parent)
         {
+            // Removed tree nodes that don't relate to any variable.
+            // For a variable "found" node, we set the Checked property to true, so remove branches where the leaf is not Checked
             for (int index = parent.Nodes.Count - 1; index >= 0; index--)
             {
                 TreeNode node = parent.Nodes[index];
@@ -123,7 +123,8 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        delegate void AddRootNodeCallback(TreeNode node);
+        private delegate void AddRootNodeCallback(TreeNode node);
+        private delegate void AddNodeCallback(TreeNode treeView, TreeNode node);
 
         private void AddRootNode(TreeNode node)
         {
@@ -140,8 +141,6 @@ namespace BIDSHelper.SSIS
                 this.treeView.Nodes.Add(node);
             }
         }
-
-        delegate void AddNodeCallback(TreeNode treeView, TreeNode node);
 
         private TreeNode AddNode(TreeNode parentNode, string text, int imageIndex, object tag)
         {
@@ -162,7 +161,6 @@ namespace BIDSHelper.SSIS
 
             return node;
         }
-
 
         private void AddNodeSafe(TreeNode parentNode, TreeNode childNode)
         {
@@ -217,7 +215,15 @@ namespace BIDSHelper.SSIS
             int imageIndex = treeView.ImageList.Images.IndexOfKey(key);
             if (imageIndex == -1)
             {
-                AddImageListItem(key, PackageHelper.ComponentInfos[key].Icon);
+                if (PackageHelper.ComponentInfos.ContainsKey(key))
+                {
+                    AddImageListItem(key, PackageHelper.ComponentInfos[key].Icon);
+                }
+                else
+                {
+                    // TODO: HACK: This really shouldn't happen. All components shoudl be enumerated in PackageHelper and therefore exist in PackageHelper.ComponentInfos. Why do some not show up? Wrong key?
+                    AddImageListItem(key, BIDSHelper.Resources.Common.NoIcon);
+                }
                 imageIndex = treeView.ImageList.Images.Count - 1;
             }
 
@@ -398,7 +404,7 @@ namespace BIDSHelper.SSIS
 
                 // Native code tasks, can't use type name, so use creation name.
                 // Need to be wary of suffix, SSIS.ExecutePackageTask.3 for 2012, SSIS.ExecutePackageTask.4 for 2014 etc
-                if (creatioName == string.Format("SSIS.{0}.{1}",  ObjectTypeExecutePackageTask, SSISHelpers.CreationNameIndex))
+                if (creatioName == string.Format("SSIS.ExecutePackageTask.{0}",  SSISHelpers.CreationNameIndex))
                 {
                     CheckExecutePackageTask(taskHost, parent);
                 }
@@ -417,7 +423,7 @@ namespace BIDSHelper.SSIS
                 // For managed code tasks we can use type name. This means we don't have to have a 
                 // full reference to the task assembly, but any properties we access must be simple 
                 // ones accessible via IDTSPropertiesProvider, i.e. ExpressionTask. For more complex 
-                // properties such as ParameterBiningds on the ExecuteSQLTask we need the reference.
+                // properties such as ParameterBindings on the ExecuteSQLTask we need the reference.
                 switch (typeName)
                 {
                     case "ExecuteSQLTask":
@@ -463,8 +469,8 @@ namespace BIDSHelper.SSIS
         {
             TreeNode folder = AddFolder("Components", parent);
 
-            // Careful if trying to use //Parallel.ForEach(pipeline.ComponentMetaDataCollection.OfType<IDTSComponentMetaData100>(), componentMetadata =>
-            // Causes issues with two threads using the same common foundArgument. Need to clone it first.
+            // TODO: Revisit using Parallel for each to see if we can speed this up for large packages.
+            // Parallel.ForEach(pipeline.ComponentMetaDataCollection.OfType<IDTSComponentMetaData100>(), componentMetadata =>
             foreach (IDTSComponentMetaData100 componentMetaData in pipeline.ComponentMetaDataCollection)
             {
                 string componentKey = PackageHelper.GetComponentKey(componentMetaData);
@@ -492,7 +498,7 @@ namespace BIDSHelper.SSIS
                 foreach (IDTSOutput100 output in componentMetaData.OutputCollection)
                 {
                     TreeNode node = AddNode(componentNode, "Output [" + output.Name + "]", GetImageIndex(IconKeyOutput), output);
-                    ScanCustomPropertiesCollection(output.CustomPropertyCollection, componentNode);
+                    ScanCustomPropertiesCollection(output.CustomPropertyCollection, node);
 
                     TreeNode columnsNode = AddFolder("Output Columns", node);
                     foreach (IDTSOutputColumn100 column in output.OutputColumnCollection)
@@ -502,20 +508,11 @@ namespace BIDSHelper.SSIS
                     }
                 }
                 #endregion
-
-                // Derived Column Transformation
-                if (componentKey == "{18E9A11B-7393-47C5-9D47-687BE04A6B09}")
-                {
-                    // Component specific logic - TBC
-                    // Most seems to be covered by columns, as that is where the expressions are stored.
-                }
-                
             }
         }
 
         private void ScanCustomPropertiesCollection(IDTSCustomPropertyCollection100 properties, TreeNode parent)
         {
-            // string containerId, string objectId, string objectName, string path, string objectType
             // First check if we have a "FriendlyExpression". We use the value from FriendlyExpression, because it is CPET_NOTIFY
             // The related Expression will always be CPET_NONE, and less readable.
             bool friendlyExpressionValid = GetIsFriendlyExpression(properties);
@@ -560,7 +557,6 @@ namespace BIDSHelper.SSIS
                         VariableFoundEventArgs info = new VariableFoundEventArgs();
                         info.Match = match;
                         OnRaiseVariableFound(info);
-                        // new PropertyInfo(
                         AddNode(parent, propertyName, GetImageIndex(IconKeyProperty), property, true);
                     }
                 }
@@ -578,8 +574,6 @@ namespace BIDSHelper.SSIS
 
             foreach (PrecedenceConstraint constraint in constraints)
             {
-                // Check properties
-
                 // Check expressions
                 if (constraint.EvalOp == DTSPrecedenceEvalOp.Constraint)
                 {
@@ -600,7 +594,6 @@ namespace BIDSHelper.SSIS
                     info.Match = match;
                     OnRaiseVariableFound(info);
                     AddNode(constraintsNode, "Expression", GetImageIndex(IconKeyPrecedenceConstraint), constraint, true);
-                    //AddNode(constraintsNode, "Expression", GetImageIndex(IconKeyPrecedenceConstraint), new PropertyExpression(propertyName, expression, PackageHelper.GetTypeFromTypeCode(property.Type)), true);
                 }
             }
         }
@@ -617,38 +610,26 @@ namespace BIDSHelper.SSIS
 
             foreach (Variable variable in variables)
             {
-                try
+                if (!variable.EvaluateAsExpression)
                 {
-                    if (!variable.EvaluateAsExpression)
-                    {
-                        continue;
-                    }
-
-                    // Check path to ensure variable is parented by current scope 
-                    // only, not by child containers that inherit the variable
-                    if (!variable.GetPackagePath().StartsWith(currentPath + ".Variables["))
-                    {
-                        continue;
-                    }
-
-                    string match;
-                    if (ExpressionMatch(variable.Expression, out match))
-                    {
-                        VariableFoundEventArgs info = new VariableFoundEventArgs();
-                        //info.ObjectID = variable.ID;
-                        //info.ObjectPath = foundArgument.ObjectPath + ".Variables[" + variable.QualifiedName + "]";
-                        //info.ObjectType = variable.GetType().Name;
-                        //info.PropertyName = variable.QualifiedName;
-                        //info.Value = variable.Expression;
-                        //info.IsExpression = variable.EvaluateAsExpression;
-                        //info.Icon = BIDSHelper.Resources.Versioned.Variable;
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
-                        AddNode(variablesFolder, variable.QualifiedName, imageIndex, variable, true);
-                        //AddNode(expressions, "Expression", GetImageIndex(IconKeyProperti1es), new PropertyExpression(propertyName, expression, PackageHelper.GetTypeFromTypeCode(property.Type)), true);
-                    }
+                    continue;
                 }
-                catch { }
+
+                // Check path to ensure variable is parented by current scope 
+                // only, not by child containers that inherit the variable
+                if (!variable.GetPackagePath().StartsWith(currentPath + ".Variables["))
+                {
+                    continue;
+                }
+
+                string match;
+                if (ExpressionMatch(variable.Expression, out match))
+                {
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                    AddNode(variablesFolder, variable.QualifiedName, imageIndex, variable, true);
+                }
             }
         }
 
@@ -662,8 +643,6 @@ namespace BIDSHelper.SSIS
             TreeNode properties = AddFolder("Properties", parent);
             TreeNode expressions = AddFolder("PropertyExpressions", parent);
 
-            //bool isPipeline = (foundArgument.ObjectType == ObjectTypeDataFlowTask);
-
             // New 2012 + interface implemented by Package, Sequence, DtsEventHandler, ForLoop, ForEachLoop
             // There are other objects that implement IDTSPropertiesProvider, and therefore support expressions, e.g. ConnectionManager, Variable
             // However we can use it to skip objects that have no expressions set, by using HasExpressions property
@@ -676,12 +655,6 @@ namespace BIDSHelper.SSIS
             
             foreach (DtsProperty property in provider.Properties)
             {
-                // Skip any expressuon properties on the Data Flow task, we deal with then in ScanPipeline explicitly
-                if (property.Name.StartsWith("["))
-                {
-                    continue;
-                }
-                
                 TypeCode propertyType = property.Type;
                 string propertyName = property.Name;
 
@@ -727,7 +700,6 @@ namespace BIDSHelper.SSIS
 
         private bool ExpressionMatch(string expression, out string match)
         {
-            //return this.expressionMatches.Any(expression.Contains);
             foreach (string test in this.expressionMatches)
             {
                 if (expression.Contains(test))
@@ -833,7 +805,7 @@ namespace BIDSHelper.SSIS
         private void CheckExpressionTask(TaskHost taskHost, TreeNode parent)
         {
             // Expression task has the Expression property which we need to treat as an expression rather than a literal value as we do for normal properties.
-            // Get the Expression value and run an expression matct test
+            // Get the Expression value and run an expression match test
             DtsProperty property = taskHost.Properties["Expression"];
             string expression = property.GetValue(taskHost).ToString();
             PropertyAsExpressionMatch(property, expression, parent);
@@ -845,7 +817,7 @@ namespace BIDSHelper.SSIS
 
             TreeNode parameterAssignments = AddFolder("ParameterAssignments", parent);
 
-            // ParameterAssignments doesn't support foreach enumeration, so use for loop instead.
+            // IDTSParameterAssignment doesn't support foreach enumeration, so use for loop instead.
             for (int i = 0; i < task.ParameterAssignments.Count; i++)
             {
                 IDTSParameterAssignment assignment = task.ParameterAssignments[i];
@@ -865,17 +837,17 @@ namespace BIDSHelper.SSIS
         private void CheckForEachLoop(ForEachLoop forEachLoop, TreeNode parent)
         {
             // Check properties of loop itself
-            //foundArgument.Type = typeof(ForEachLoop);
             ScanProperties(forEachLoop, parent);
 
             // Check properties of enumerator, when present
             ForEachEnumeratorHost enumerator = forEachLoop.ForEachEnumerator;
-            if (enumerator == null)
-                return;
+            if (enumerator != null)
+            {
+                TreeNode enumeratorFolder = AddFolder(enumerator.GetType().Name, parent);
+                ScanProperties(enumerator, enumeratorFolder);
+            }
 
-            TreeNode enumeratorFolder = AddFolder(enumerator.GetType().Name, parent);
-            ScanProperties(enumerator, enumeratorFolder);
-
+            // Check the (output) variable mappings
             TreeNode variableMappings = AddFolder("VariableMappings", parent);
             foreach (ForEachVariableMapping mapping in forEachLoop.VariableMappings)
             {
@@ -896,9 +868,9 @@ namespace BIDSHelper.SSIS
             // Check regular properties of the loop for variables and regular property expressions 
             ScanProperties(forLoop, parent);
 
-            // Check explicit expression properties as expressions, missed if we are looking for literal variables.
             DtsProperty property;
 
+            // Check explicit expression properties as expressions, missed if we are looking for literal variables.
             property = forLoop.Properties["AssignExpression"];
             PropertyAsExpressionMatch(property, property.GetValue(forLoop).ToString(), parent);
 
@@ -943,6 +915,10 @@ namespace BIDSHelper.SSIS
         public string Match { get; set; }
     }
 
+    /// <summary>
+    /// Display class for property expressions, used to pass information back to UI. 
+    /// This object assigned to the tree node, and is shown in the property grid when the node is selected.
+    /// </summary>
     public class PropertyExpression
     {
         public PropertyExpression(string name, string expression, Type type)
@@ -962,12 +938,15 @@ namespace BIDSHelper.SSIS
         public Type Type { get; private set; }
     }
 
+    /// <summary>
+    /// Display class for container/task/event properties, in other words those that use DtsProperty via IDTSPropertiesProvider. Used to pass information back to UI. 
+    /// This object assigned to the tree node, and is shown in the property grid when the node is selected.
+    /// We don't need one for IDTSCustomProperty100 properties, because that already does a good job of displaying both the property information AND the value.
+    /// DtsProperty doesn't include the value, hence we use this wrapper for the TreeView tag object
+    /// </summary>
     [DisplayName("Property")]
     public class PropertyInfo
     {
-        // We don't need an IDTSCustomProperty100 version because that already does a good job of displaying both the property information AND the value.
-        // DtsProperty doesn't include the value, hence we use this wrapper for the TreeView tag object
-
         public PropertyInfo(DtsProperty property, object value)
         {
             this.Name = property.Name;
