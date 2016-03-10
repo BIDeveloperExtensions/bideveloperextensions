@@ -14,12 +14,13 @@ namespace BIDSHelper.SSIS
     using Microsoft.SqlServer.Dts.Design;
     using Microsoft.SqlServer.Management.UI.Grid;
 
-    #if KATMAI || DENALI || SQL2014
+#if KATMAI || DENALI || SQL2014
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
-    #else
+    using System.Reflection;
+#else
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
-    #endif
-    
+#endif
+
     public partial class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
         /// <summary>
@@ -125,6 +126,23 @@ namespace BIDSHelper.SSIS
                     // If buttons already added, no need to do it again so exit 
                     if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
 
+#if DENALI || SQL2014
+                    // When you clock the edit expression ellipsis button in the variables grid, we want to use our own expression editor, not the MS one.
+                    // The following section removes their event handler and adds our own
+                    // Get the type of the variables grid, and get the MouseButtonClicked clicked event info
+                    // Then get the private dlgGridControl1_MouseButtonClicked event handler method, and get an instance delegate
+                    Type gridType = grid.GetType();
+                    System.Reflection.EventInfo eventInfo = gridType.GetEvent("MouseButtonClicked");
+                    Type handlerType = eventInfo.EventHandlerType;
+                    MethodInfo legacyMethod = variablesToolWindowControl.GetType().GetMethod("dlgGridControl1_MouseButtonClicked", BindingFlags.NonPublic | BindingFlags.Instance);
+                    Delegate del = Delegate.CreateDelegate(handlerType, variablesToolWindowControl, legacyMethod, false);
+
+                    // Finally remove the interal MS event handler from the event, and add our own
+                    eventInfo.RemoveEventHandler(grid, del);
+                    grid.MouseButtonClicked += grid_MouseButtonClicked;
+#endif
+
+                    // Now build tool bar buttons and add them
                     ToolBarButton separator = new ToolBarButton();
                     separator.Style = ToolBarButtonStyle.Separator;
                     toolbar.Buttons.Add(separator);
@@ -177,6 +195,16 @@ namespace BIDSHelper.SSIS
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void grid_MouseButtonClicked(object sender, MouseButtonClickedEventArgs args)
+        {
+            // Fragile, as relies on hardcoded index. We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
+            if (args.Button == MouseButtons.Left && args.ColumnIndex == 6)
+            {
+                // Dumbass, the args.RowIndex is a long, but all the grid methods that accept a row index are int!
+                EditExpressionButtonClick((int)args.RowIndex, args.ColumnIndex);
             }
         }
 
@@ -359,14 +387,19 @@ namespace BIDSHelper.SSIS
 
         private void EditExpressionButtonClick()
         {
+            int selectedRow;
+            int selectedCol;
+            grid.GetSelectedCell(out selectedRow, out selectedCol);
+
+            EditExpressionButtonClick(selectedRow, selectedCol);
+        }
+
+        private void EditExpressionButtonClick(int selectedRow, int selectedCol)
+        {
             try
             {
                 Package package = GetCurrentPackage();
                 if (package == null) return;
-
-                int selectedRow;
-                int selectedCol;
-                grid.GetSelectedCell(out selectedRow, out selectedCol);
 
                 if (selectedRow < 0) return;
 

@@ -670,7 +670,7 @@ namespace BIDSHelper.SSIS
                             VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
                             foundArgument.Match = match;
                             OnRaiseVariableFound(foundArgument);
-                            AddNode(properties, propertyName, GetImageIndex(IconKeyProperty), new PropertyInfo(property, value), true);
+                            AddNode(properties, propertyName, GetImageIndex(IconKeyProperty), new DisplayProperty(property, value), true);
                         }
                     }
                 }
@@ -894,7 +894,7 @@ namespace BIDSHelper.SSIS
                 {
                     TreeNode propertiesNode = parent.Nodes["Properties"];
                     System.Diagnostics.Debug.Assert(!(parent != null && propertiesNode == null), "Properties node doesn't exist when it should already. We will lose this property match. Find the Properties node.");
-                    AddNode(propertiesNode, property.Name, GetImageIndex(IconKeyVariableExpression), new PropertyInfo(property, expression), true);
+                    AddNode(propertiesNode, property.Name, GetImageIndex(IconKeyVariableExpression), new DisplayProperty(property, expression), true);
                 }
             }
         }
@@ -945,9 +945,9 @@ namespace BIDSHelper.SSIS
     /// DtsProperty doesn't include the value, hence we use this wrapper for the TreeView tag object
     /// </summary>
     [DisplayName("Property")]
-    public class PropertyInfo
+    public class DisplayProperty
     {
-        public PropertyInfo(DtsProperty property, object value)
+        public DisplayProperty(DtsProperty property, object value)
         {
             this.Name = property.Name;
             this.Value = value;
