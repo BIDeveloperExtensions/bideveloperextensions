@@ -14,6 +14,7 @@ namespace BIDSHelper.Core
         private int totalItems;
         private int checkedItems;
         private bool checkChangedEnabled = true;
+        private bool selectionEnabled = true;
 
         public event EventHandler<SelectionListSelectionChangedEventArgs> SelectionChanged;
 
@@ -192,7 +193,7 @@ namespace BIDSHelper.Core
         {
             get
             {
-                return this.panelSelectAll.Visible;
+                return selectionEnabled;
             }
             set
             {
@@ -203,6 +204,7 @@ namespace BIDSHelper.Core
                 }
 
                 this.panelSelectAll.Visible = value;
+                selectionEnabled = value;
             }
         }
 
