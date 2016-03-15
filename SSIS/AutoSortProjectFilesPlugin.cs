@@ -66,6 +66,7 @@ namespace BIDSHelper
             try
             {
                 var solExplorer = ApplicationObject.ToolWindows.SolutionExplorer;
+
                 if (solExplorer.UIHierarchyItems.Count != 1)
                 {
                     return;
@@ -88,13 +89,17 @@ namespace BIDSHelper
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                ShowErrorMessageBox(ex.ToString(), "AutoSortProjectFilesPlugin.SolutionOpened");
             }
         }
 
         private void ProcessHierarchyItem(UIHierarchyItem hierarchyItem)
         {
-            System.Diagnostics.Debug.WriteLine(hierarchyItem.Name);
+            if (hierarchyItem == null)
+                return;
+
+            // This may be helpfull for testing, but VSTA (e.g. Script Task) will still invoke this and the Name property is not implemented, so don't leave in for release
+            //System.Diagnostics.Debug.WriteLine(hierarchyItem.Name);
 
             // Check if it is a Project, skip if not (Solution folders are a type of project too)
             var project = hierarchyItem.Object as Project;
