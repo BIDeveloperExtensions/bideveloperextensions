@@ -593,6 +593,22 @@ namespace BIDSHelper
             }
             return proj;
         }
+
+        protected void ShowErrorMessageBox(string message)
+        {
+            ShowErrorMessageBox(message, null);
+        }
+
+        protected void ShowErrorMessageBox(string message, string captionSuffix)
+        {
+            string caption = DefaultMessageBoxCaption;
+            if (string.IsNullOrEmpty(captionSuffix))
+            {
+                caption = string.Format("{0} - {1}", DefaultMessageBoxCaption, captionSuffix);
+            }
+
+            MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
 }
