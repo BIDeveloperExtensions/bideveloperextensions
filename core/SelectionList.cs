@@ -121,14 +121,26 @@ namespace BIDSHelper.Core
 
         public void AddItem(string item)
         {
-            AddItem(item, false);
+            AddItem(item, false, false);
         }
 
-        public void AddItem(string item, bool selected)
+        public void AddItem(string item, bool selected, bool highlighted)
         {
             if (this.SelectionEnabled)
             {
-                dataGridView.Rows.Add(selected, item);
+                // Add new row
+                int index = dataGridView.Rows.Add(selected, item);
+
+                // Set text to italic if "highlighted"
+                if (highlighted)
+                {
+                    DataGridViewCell cell = dataGridView.Rows[index].Cells[1];
+                    DataGridViewCellStyle style = cell.Style.Clone();
+                    style.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+                    cell.Style = style;
+                }
+
+                // Update selection checkbox stuff
                 totalItems++;
                 checkedItems += (selected ? 1 : 0);
                 UpdateSelectAllCheckBox();
@@ -143,7 +155,7 @@ namespace BIDSHelper.Core
         {
             foreach (string item in items)
             {
-                AddItem(item, false);
+                AddItem(item, false, false);
             }
         }
 
