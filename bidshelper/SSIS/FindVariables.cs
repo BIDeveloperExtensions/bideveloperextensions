@@ -869,16 +869,29 @@ namespace BIDSHelper.SSIS
             ScanProperties(forLoop, parent);
 
             DtsProperty property;
+            object propertyValue;
 
             // Check explicit expression properties as expressions, missed if we are looking for literal variables.
             property = forLoop.Properties["AssignExpression"];
-            PropertyAsExpressionMatch(property, property.GetValue(forLoop).ToString(), parent);
+            propertyValue = property.GetValue(forLoop);
+            if (propertyValue != null)
+            {
+                PropertyAsExpressionMatch(property, propertyValue.ToString(), parent);
+            }
 
             property = forLoop.Properties["EvalExpression"];
-            PropertyAsExpressionMatch(property, property.GetValue(forLoop).ToString(), parent);
+            propertyValue = property.GetValue(forLoop);
+            if (propertyValue != null)
+            {
+                PropertyAsExpressionMatch(property, propertyValue.ToString(), parent);
+            }
 
             property = forLoop.Properties["InitExpression"];
-            PropertyAsExpressionMatch(property, property.GetValue(forLoop).ToString(), parent);
+            propertyValue = property.GetValue(forLoop);
+            if (propertyValue != null)
+            {
+                PropertyAsExpressionMatch(property, propertyValue.ToString(), parent);
+            }
         }
 
         private void PropertyAsExpressionMatch(DtsProperty property, string expression, TreeNode parent)

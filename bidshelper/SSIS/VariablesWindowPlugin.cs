@@ -127,7 +127,7 @@ namespace BIDSHelper.SSIS
                     if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
 
 #if DENALI || SQL2014
-                    // When you clock the edit expression ellipsis button in the variables grid, we want to use our own expression editor, not the MS one.
+                    // When you click the edit expression ellipsis button in the variables grid, we want to use our own expression editor, not the MS one.
                     // The following section removes their event handler and adds our own
                     // Get the type of the variables grid, and get the MouseButtonClicked clicked event info
                     // Then get the private dlgGridControl1_MouseButtonClicked event handler method, and get an instance delegate
@@ -175,7 +175,7 @@ namespace BIDSHelper.SSIS
                     // Find Unused button
                     this.findUnusedButton = new ToolBarButton();
                     this.findUnusedButton.Style = ToolBarButtonStyle.PushButton;
-                    this.findUnusedButton.ToolTipText = "Find Variable References (BIDS Helper)";
+                    this.findUnusedButton.ToolTipText = "Find Unused Variables (BIDS Helper)";
                     toolbar.Buttons.Add(this.findUnusedButton);
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
                     this.findUnusedButton.ImageIndex = toolbar.ImageList.Images.Count - 1;

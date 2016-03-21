@@ -45,6 +45,9 @@
             // 
             // panelMain
             // 
+            this.panelMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelMain.Controls.Add(this.splitContainer);
             this.panelMain.Controls.Add(this.progressBar);
             this.panelMain.Location = new System.Drawing.Point(12, 12);
@@ -94,12 +97,12 @@
             this.propertyGrid.Name = "propertyGrid";
             this.propertyGrid.Size = new System.Drawing.Size(304, 380);
             this.propertyGrid.TabIndex = 0;
-            this.progressBar.MarqueeAnimationSpeed = 200;
             // 
             // progressBar
             // 
             this.progressBar.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.progressBar.Location = new System.Drawing.Point(0, 380);
+            this.progressBar.MarqueeAnimationSpeed = 200;
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(863, 10);
             this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;

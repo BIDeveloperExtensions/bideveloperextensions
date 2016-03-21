@@ -65,6 +65,8 @@ namespace BIDSHelper.SSIS
 
                 // We want the DtsPackageView, an EditorWindow, Microsoft.DataTransformationServices.Design.DtsPackageView
                 EditorWindow editorWindow = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                if (editorWindow == null)
+                    return;
 
                 if (editorWindow.Tag == null)
                 {
@@ -72,7 +74,7 @@ namespace BIDSHelper.SSIS
                 }
                 else
                 {
-                    // Safety check to see if anyoine else is using the Tag on the DtsPackageView
+                    // Safety check to see if anyone else is using the Tag on the DtsPackageView
                     ParametersWindowManager manager = editorWindow.Tag as ParametersWindowManager;
                     if (manager == null)
                     {
@@ -221,7 +223,7 @@ namespace BIDSHelper.SSIS
                 // Find Unused button
                 this.findUnusedButton = new ToolBarButton();
                 this.findUnusedButton.Style = ToolBarButtonStyle.PushButton;
-                this.findUnusedButton.ToolTipText = "Find Parameter References (BIDS Helper)";
+                this.findUnusedButton.ToolTipText = "Find Unused Parameters (BIDS Helper)";
                 toolbar.Buttons.Add(this.findUnusedButton);
                 toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
                 this.findUnusedButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
