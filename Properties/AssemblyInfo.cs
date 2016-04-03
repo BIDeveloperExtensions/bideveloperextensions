@@ -1,3 +1,4 @@
+using BidsHelper.Core;
 using System;
 using System.Reflection;
 using System.Resources;
@@ -10,8 +11,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("1.7.0.1")]
-[assembly: AssemblyFileVersion("1.7.0.1")]
+[assembly: AssemblyVersion(VersionInfo.Version)]
+[assembly: AssemblyFileVersion(VersionInfo.Version)]
 
 [assembly: ComVisible(true)]
 [assembly: CLSCompliant(false)]

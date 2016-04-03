@@ -17,6 +17,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 //using Microsoft.Win32;
 using System.Reflection;
 using BIDSHelper.Core;
+using BidsHelper.Core;
+using BIDSHelper.Core.VsIntegration;
 //using BidsHelper.Core;
 
 namespace BIDSHelper
@@ -39,13 +41,15 @@ namespace BIDSHelper
     /// </para>
     /// </remarks>
     //[ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
-    //[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
+    [InstalledProductRegistration("#110", "#112", VersionInfo.Version, IconResourceID = 400)] // Info on this package for Help/About
     [Guid(BIDSHelperPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideOptionPage(typeof(BIDSHelperOptionsDialog), "BIDS Helper", "General", 0, 0, true)]
+    [ProvideOptionPage(typeof(BIDSHelperOptionsFeatures), "BIDS Helper", "Features", 0, 0, true)]
+    //[ProvideOptionPage(typeof(BIDSHelperOptionsPreferences), "BIDS Helper", "Preferences", 0, 0, true)]
+    [ProvideOptionPage(typeof(BIDSHelperOptionsVersion), "BIDS Helper", "Version", 0, 0, true)]
     public sealed class BIDSHelperPackage : Package, IVsDebuggerEvents
     {
         /// <summary>
@@ -87,7 +91,8 @@ namespace BIDSHelper
                 //_addInInstance = (AddIn)addInInst;
 
                 //_applicationObject.StatusBar.Text = "Loading BIDSHelper (" + this.GetType().Assembly.GetName().Version.ToString() + ")...";
-
+                
+                StatusBar = new Core.VsIntegration.StatusBar(this);
                 //_debuggerEvents = _applicationObject.Events.DebuggerEvents;
                 //_debuggerEvents.OnEnterBreakMode += new _dispDebuggerEvents_OnEnterBreakModeEventHandler(_debuggerEvents_OnEnterBreakMode);
                 //_debuggerEvents.OnEnterDesignMode += new _dispDebuggerEvents_OnEnterDesignModeEventHandler(_debuggerEvents_OnEnterDesignMode);
@@ -107,7 +112,7 @@ namespace BIDSHelper
                         Type[] @params = { typeof(Package)} ;
                         //System.Reflection.ConstructorInfo con;
                         //con = t.GetConstructor(@params);
-                        var initMethod = t.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
+                        var initMethod = t.GetMethod("Initialize",BindingFlags.Static | BindingFlags.Public);
 
                         if (initMethod == null)
                         {
@@ -163,6 +168,8 @@ namespace BIDSHelper
             throw new NotImplementedException();
         }
 
+
+
         public static Exception AddInLoadException = null;
         private uint debugEventCookie;
 
@@ -185,6 +192,8 @@ namespace BIDSHelper
         {
             get { return addins; }
         }
+
+        public StatusBar StatusBar { get; private set; }
 
         #endregion
     }

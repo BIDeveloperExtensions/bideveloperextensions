@@ -1,26 +1,59 @@
-using Extensibility;
-using EnvDTE;
-using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Xml.Xsl;
-using System.Text;
-using System.Windows.Forms;
+﻿//------------------------------------------------------------------------------
+// <copyright file="DeployMdxScript.cs" company="Company">
+//     Copyright (c) Company.  All rights reserved.
+// </copyright>
+//------------------------------------------------------------------------------
+
+using System;
+using Microsoft.VisualStudio.Shell;
 using System.IO;
-using System.Resources;
-
+using System.Windows.Forms;
+using EnvDTE;
+using System.Xml.Xsl;
+using System.Xml;
+using System.Text;
 using Microsoft.AnalysisServices;
+using EnvDTE80;
 using Microsoft.AnalysisServices.AdomdClient;
+using BIDSHelper.Core;
+using BIDSHelper.Core.VsIntegration;
 
-
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
-    public class DeployMDXScriptPlugin : BIDSHelperPluginBase
+    /// <summary>
+    /// Command handler
+    /// </summary>
+    internal sealed class DeployMdxScript:BIDSHelperPluginBase
     {
+        /// <summary>
+        /// Command ID.
+        /// </summary>
+        public const int CommandId = 0x0100;
 
-        public DeployMDXScriptPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        /// <summary>
+        /// Command menu group (command set GUID).
+        /// </summary>
+        public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeployMdxScript"/> class.
+        /// Adds our command handlers for menu (commands must exist in the command table file)
+        /// </summary>
+        /// <param name="package">Owner package, not null.</param>
+        private DeployMdxScript(BIDSHelperPackage package):base(package)
         {
+            CreateMenu(CommandSet, CommandId);
+            Extension = ".cube";
+        }
+
+
+        /// <summary>
+        /// Gets the instance of the command.
+        /// </summary>
+        public static DeployMdxScript Instance
+        {
+            get;
+            private set;
         }
 
         public override string ShortName
@@ -34,11 +67,6 @@ namespace BIDSHelper
             {
                 return "Deploy the MDX Script for a cube";
             }
-        }
-
-        public override int Bitmap
-        {
-            get { return 2605; }
         }
 
         public override string ButtonText
@@ -79,32 +107,50 @@ namespace BIDSHelper
         }
 
         /// <summary>
+        /// Initializes the singleton instance of the command.
+        /// </summary>
+        /// <param name="package">Owner package, not null.</param>
+        public static void Initialize(BIDSHelperPackage package)
+        {
+            if (Instance == null) Instance = new DeployMdxScript(package);
+        }
+
+
+
+        // =======================================================================================================
+
+
+        /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                bool bFoundRightItem = false;
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                foreach (UIHierarchyItem hierItem in ((System.Array)solExplorer.SelectedItems))
-                {
-                    if (hierItem.Name.ToLower().EndsWith(".cube")) //checking the file extension is adequate because this feature is not needed for in online mode (when live connected to the server)
-                        bFoundRightItem = true;
-                    else
-                        return false;
-                }
-                return bFoundRightItem;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        bool bFoundRightItem = false;
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        foreach (UIHierarchyItem hierItem in ((System.Array)solExplorer.SelectedItems))
+        //        {
+        //            if (hierItem.Name.ToLower().EndsWith(".cube")) //checking the file extension is adequate because this feature is not needed for in online mode (when live connected to the server)
+        //                bFoundRightItem = true;
+        //            else
+        //                return false;
+        //        }
+        //        return bFoundRightItem;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
-
+        /// <summary>
+        /// This function is the callback used to execute the command when the menu item is clicked.
+        /// See the constructor to see how the menu item is associated with this function using
+        /// OleMenuCommandService service and MenuCommand class.
+        /// </summary>
         public override void Exec()
         {
             try
@@ -125,13 +171,13 @@ namespace BIDSHelper
             }
         }
 
-        public static void DeployScript(ProjectItem projItem, DTE2 ApplicationObject)
+        public void DeployScript(ProjectItem projItem, DTE2 ApplicationObject)
         {
             Microsoft.AnalysisServices.Cube oCube = (Microsoft.AnalysisServices.Cube)projItem.Object;
             try
             {
                 //validate the script because deploying an invalid script makes cube unusable
-                Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);               
+                Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);
             }
             catch (Microsoft.AnalysisServices.Design.ScriptParsingFailed ex)
             {
@@ -148,30 +194,30 @@ namespace BIDSHelper
 
             try
             {
-                ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
-                ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 1, 5);
-
+                
+                StatusBar.Animate(true, VsStatusBarAnimations.SBAI_Build);
+                StatusBar.Progress(true, "Deploy MDX Script", 1, 5);
                 
                 // Check if the file is read-only (and probably checked in to a source control system)
                 // before attempting to save. (issue: 10327 )
                 FileAttributes fa = System.IO.File.GetAttributes(projItem.get_FileNames(1));
-                if ((fa & FileAttributes.ReadOnly) != FileAttributes.ReadOnly )
+                if ((fa & FileAttributes.ReadOnly) != FileAttributes.ReadOnly)
                 {
                     //TODO - can I check and maybe prompt before saving?
                     //Save the cube
                     projItem.Save("");
                 }
-
-                ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 2, 5);
+                StatusBar.Progress(true, "Deploy MDX Script", 2, 5);
 
                 // extract deployment information
                 DeploymentSettings deploySet = new DeploymentSettings(projItem);
-                
+
                 // use xlst to create xmla alter command
                 XslCompiledTransform xslt = new XslCompiledTransform();
                 XmlReader xsltRdr;
                 XmlReader xrdr;
-                
+                //uint pdwCookie;
+
                 // read xslt from embedded resource
                 xsltRdr = XmlReader.Create(new StringReader(BIDSHelper.Resources.Common.DeployMdxScript));
                 using ((xsltRdr))
@@ -181,18 +227,16 @@ namespace BIDSHelper
                     using (xrdr)
                     {
 
-
-                        
-                        ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 3, 5);
+                        StatusBar.Progress(true, "Deploy MDX Script", 3, 5);
                         // Connect to Analysis Services
                         Microsoft.AnalysisServices.Server svr = new Microsoft.AnalysisServices.Server();
                         svr.Connect(deploySet.TargetServer);
-                        ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 4, 5);
+                        StatusBar.Progress(true, "Deploy MDX Script", 4, 5);
                         // execute the xmla
                         try
                         {
                             Microsoft.AnalysisServices.Scripter scr = new Microsoft.AnalysisServices.Scripter();
-                            
+
                             // Build up the Alter MdxScript command using XSLT against the .cube file
                             XslCompiledTransform xslta = new XslCompiledTransform();
                             StringBuilder sb = new StringBuilder();
@@ -219,7 +263,7 @@ namespace BIDSHelper
                             xwSet.ConformanceLevel = ConformanceLevel.Fragment;
                             xwSet.OmitXmlDeclaration = true;
                             xwSet.Indent = true;
-                            XmlWriter xwScript = XmlWriter.Create(sbBackup,xwSet);
+                            XmlWriter xwScript = XmlWriter.Create(sbBackup, xwSet);
 
                             Cube oServerCube = targetDB.Cubes.Find(oCube.ID);
                             if (oServerCube == null)
@@ -249,23 +293,23 @@ namespace BIDSHelper
                             }
                             else
                             {
-                                    StringBuilder sbErr = new StringBuilder();
-                                for (int iRC = 0; iRC < xmlaRC.Count;iRC ++)
+                                StringBuilder sbErr = new StringBuilder();
+                                for (int iRC = 0; iRC < xmlaRC.Count; iRC++)
                                 {
                                     for (int iMsg = 0; iMsg < xmlaRC[iRC].Messages.Count; iMsg++)
                                     {
                                         sbErr.AppendLine(xmlaRC[iRC].Messages[iMsg].Description);
                                     }
                                 }
-                                MessageBox.Show(sbErr.ToString(),"BIDSHelper - Deploy MDX Script" );
+                                MessageBox.Show(sbErr.ToString(), "BIDSHelper - Deploy MDX Script");
                             }
 
-                            
+
                             // Test the MDX Script
                             AdomdConnection cn = new AdomdConnection("Data Source=" + deploySet.TargetServer + ";Initial Catalog=" + deploySet.TargetDatabase);
                             cn.Open();
                             AdomdCommand cmd = cn.CreateCommand();
-                            string qry = "SELECT {} ON 0 FROM [" + oCube.Name +"];";
+                            string qry = "SELECT {} ON 0 FROM [" + oCube.Name + "];";
                             cmd.CommandText = qry;
                             try
                             {
@@ -295,11 +339,11 @@ namespace BIDSHelper
                         }
                         catch (System.Exception ex)
                         {
-                            if (MessageBox.Show("The following error occured while trying to deploy the MDX Script\r\n" 
-                                                + ex.Message 
+                            if (MessageBox.Show("The following error occured while trying to deploy the MDX Script\r\n"
+                                                + ex.Message
                                                 + "\r\n\r\nDo you want to see a stack trace?"
-                                            ,"BIDSHelper - Deploy MDX Script"
-                                            , MessageBoxButtons.YesNo 
+                                            , "BIDSHelper - Deploy MDX Script"
+                                            , MessageBoxButtons.YesNo
                                             , MessageBoxIcon.Error
                                             , MessageBoxDefaultButton.Button2) == DialogResult.Yes)
                             {
@@ -308,7 +352,7 @@ namespace BIDSHelper
                         }
                         finally
                         {
-                            ApplicationObject.StatusBar.Progress(true, "Deploying MdxScript", 5, 5);
+                            StatusBar.Progress(true, "Deploy MDX Script", 5, 5);
                             // report any results back (status bar?)
                             svr.Disconnect();
                             svr.Dispose();
@@ -318,8 +362,8 @@ namespace BIDSHelper
             }
             finally
             {
-                ApplicationObject.StatusBar.Animate(false, vsStatusAnimation.vsStatusAnimationDeploy);
-                ApplicationObject.StatusBar.Progress(false, "Deploying MdxScript", 5, 5);
+                StatusBar.Animate(false, VsStatusBarAnimations.SBAI_Build);
+                StatusBar.Progress(false, "Deploy MDX Script", 5, 5);
             }
         }
 
