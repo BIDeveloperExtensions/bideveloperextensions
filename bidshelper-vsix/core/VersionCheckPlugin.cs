@@ -7,7 +7,7 @@ namespace BIDSHelper
     using EnvDTE;
     using EnvDTE80;
     using Microsoft.Win32;
-
+    using Core;
     public class VersionCheckPlugin : BIDSHelperPluginBase
     {
 
@@ -36,7 +36,7 @@ namespace BIDSHelper
         private BackgroundWorker worker = new BackgroundWorker();
         private Core.VersionCheckNotificationForm versionCheckForm;
 
-        public static VersionCheckPlugin VersionCheckPluginInstance;
+        public static VersionCheckPlugin Instance { get; private set; }
 
         /// <summary>
         /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
@@ -49,9 +49,9 @@ namespace BIDSHelper
         /// <param name="con">The connect object.</param>
         /// <param name="appObject">The application object.</param>
         /// <param name="addinInstance">The add-in instance.</param>
-        public VersionCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
+        private VersionCheckPlugin(BIDSHelperPackage package) : base(package)
         {
-            VersionCheckPluginInstance = this;
+            //Instance = this;
 
             if (this.Enabled && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
@@ -62,6 +62,11 @@ namespace BIDSHelper
                 worker.DoWork += new DoWorkEventHandler(worker_DoWork);
                 worker.RunWorkerAsync();
             }
+        }
+
+        public static void Initialize(BIDSHelperPackage package)
+        {
+            if (Instance == null) Instance = new VersionCheckPlugin(package);
         }
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
@@ -101,7 +106,7 @@ namespace BIDSHelper
             }
             set
             {
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + this.ShortName;
+                string path = BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + this.ShortName;
                 RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
                 if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
                 settingKey.SetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, value, RegistryValueKind.String);
@@ -125,7 +130,7 @@ namespace BIDSHelper
             }
             set
             {
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + this.ShortName;
+                string path = BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + this.ShortName;
                 RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
                 if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
                 settingKey.SetValue(REGISTRY_DISMISSED_VERSION_SETTING_NAME, value, RegistryValueKind.String);
@@ -216,10 +221,10 @@ namespace BIDSHelper
             get { return "VersionCheckPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; }
+        //}
 
         public override string ButtonText
         {
@@ -231,10 +236,10 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return string.Empty; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return string.Empty; }
+        //}
 
         /// <summary>
         /// Gets the Url of the online help page for this plug-in.
