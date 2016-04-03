@@ -66,20 +66,38 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BidsHelperPackage.cs" />
-    <Compile Include="Core\BIDSHelperOptionsDialog.cs">
+    <Compile Include="Core\IWindowActivatedPlugin.cs" />
+    <Compile Include="Core\Options\BIDSHelperOptionsVersion.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Core\BIDSHelperOptionsPageOld.cs">
+    <Compile Include="Core\Options\BIDSHelperOptionsFeatures.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Core\Options\BIDSHelperOptionsPage.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Core\BIDSHelperOptionsPageOld.Designer.cs">
-      <DependentUpon>BIDSHelperOptionsPageOld.cs</DependentUpon>
+    <Compile Include="Core\Options\BIDSHelperOptionsPage.Designer.cs">
+      <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\BIDSHelperPluginBase.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\CustomClass.cs" />
     <Compile Include="Core\CustomProperty.cs" />
     <Compile Include="Core\CustomPropertyDescriptor.cs" />
+    <Compile Include="Core\Options\BIDSHelperOptionsVersionCheckPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\Options\BIDSHelperOptionsVersionCheckPage.Designer.cs">
+      <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\VersionCheckNotificationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Core\VersionCheckNotificationForm.Designer.cs">
+      <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Core\VersionCheckPlugin.cs" />
+    <Compile Include="Core\VersionInfo.cs" />
     <Compile Include="Core\VsIntegration\enums.cs" />
     <Compile Include="Core\VsIntegration\StatusBar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -91,11 +109,6 @@
     </Compile>
     <Compile Include="SSAS\DeployMDXScriptPlugin.cs" />
     <Compile Include="SSAS\DeploymentSettings.cs" />
-    <Compile Include="VSPackage.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>VSPackage.resx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
@@ -265,8 +278,14 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <EmbeddedResource Include="Core\BIDSHelperOptionsPageOld.resx">
-      <DependentUpon>BIDSHelperOptionsPageOld.cs</DependentUpon>
+    <EmbeddedResource Include="Core\Options\BIDSHelperOptionsPage.resx">
+      <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\Options\BIDSHelperOptionsVersionCheckPage.resx">
+      <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Core\VersionCheckNotificationForm.resx">
+      <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Common.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -276,8 +295,6 @@
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
       <SubType>Designer</SubType>
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>VSPackage.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
