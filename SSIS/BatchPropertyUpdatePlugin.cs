@@ -219,7 +219,7 @@ namespace BIDSHelper
                 string propIndex = GetSubStringBetween(firstPart, "[", "]");
 
                 DtsProperty prop = propProv.Properties[propIndex];
-                if (dtsObject is Variable)
+                if (dtsObject is Variable && prop.Name == "Value")
                 {
                     Variable var = (Variable)dtsObject;
                     prop.SetValue(dtsObject, Convert.ChangeType(value, var.DataType));
