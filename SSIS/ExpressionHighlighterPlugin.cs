@@ -1237,17 +1237,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        public static Type GetPrivateType(Type publicTypeInSameAssembly, string FullName)
-        {
-            foreach (Type t in System.Reflection.Assembly.GetAssembly(publicTypeInSameAssembly).GetTypes())
-            {
-                if (t.FullName == FullName)
-                {
-                    return t;
-                }
-            }
-            return null;
-        }
+
         #endregion
 
         #region Standard Plugin Overrides

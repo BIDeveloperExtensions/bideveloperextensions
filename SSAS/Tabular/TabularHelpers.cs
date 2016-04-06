@@ -1,12 +1,7 @@
 using System;
-using Extensibility;
 using EnvDTE;
-using EnvDTE80;
 using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
-using System.Windows.Forms;
-using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 
 namespace BIDSHelper
@@ -42,9 +37,9 @@ namespace BIDSHelper
             return ((Microsoft.VisualStudio.Project.ProjectNode)((((Microsoft.VisualStudio.Project.Automation.OAProjectItem<Microsoft.VisualStudio.Project.FileNode>)(hierItem.Object)).ContainingProject).Object)).Site;
         }
 
-        public static IServiceProvider GetTabularServiceProviderFromActiveWindow()
+        public static IServiceProvider GetTabularServiceProviderFromActiveWindow(BIDSHelperPackage package)
         {
-            return GetTabularServiceProviderFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+            return GetTabularServiceProviderFromProjectItem(package.DTE2.ActiveWindow.ProjectItem, false);
         }
 
         public static IServiceProvider GetTabularServiceProviderFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
@@ -61,9 +56,10 @@ namespace BIDSHelper
             return host.Sandbox;
         }
 
-        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromActiveWindow()
+        //TODO - replace these methods?
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromActiveWindow(BIDSHelperPackage package)
         {
-            return GetTabularSandboxFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+            return GetTabularSandboxFromProjectItem(package.DTE2.ActiveWindow.ProjectItem, false);
         }
 
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
@@ -81,10 +77,10 @@ namespace BIDSHelper
             return host.Editor;
         }
 
-        public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromActiveWindow()
-        {
-            return GetTabularSandboxEditorFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
-        }
+        //public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromActiveWindow()
+        //{
+        //    return GetTabularSandboxEditorFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+        //}
 
         public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
         {

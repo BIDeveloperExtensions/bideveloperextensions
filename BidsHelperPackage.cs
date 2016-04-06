@@ -5,24 +5,28 @@
 //------------------------------------------------------------------------------
 
 using System;
-//using System.ComponentModel.Design;
-//using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
-//using Microsoft.VisualStudio;
-//using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-//using Microsoft.Win32;
 using System.Reflection;
 using BIDSHelper.Core;
 using BidsHelper.Core;
 using BIDSHelper.Core.VsIntegration;
-//using BidsHelper.Core;
+using System.Linq;
+using Microsoft.VisualStudio;
+using BIDSHelper.Core.Logger;
 
 namespace BIDSHelper
 {
+
+    public enum enumIDEMode
+    {
+        Design = 1,
+        Debug = 2,
+        Run = 3
+    }
+
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
@@ -40,8 +44,8 @@ namespace BIDSHelper
     /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
     /// </para>
     /// </remarks>
-    //[ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
+    [ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
+    //[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", VersionInfo.Version, IconResourceID = 400)] // Info on this package for Help/About
     [Guid(BIDSHelperPackage.PackageGuidString)]
@@ -58,8 +62,10 @@ namespace BIDSHelper
         public const string PackageGuidString = "d3474f10-475f-4a9d-84f6-85bc892ad3b6";
         public const string REGISTRY_BASE_PATH = "SOFTWARE\\BIDS Helper";
 
-        private static System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> addins = new System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase>();
-        
+
+        private static System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> plugins = new System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase>();
+        private enumIDEMode _ideMode = enumIDEMode.Design;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BidsHelperPackage"/> class.
         /// </summary>
@@ -81,7 +87,12 @@ namespace BIDSHelper
         {
             base.Initialize();
 
-
+#if OUTPUT_LOGGER
+            Logger = new Core.Logger.OutputLogger(this);
+#else
+            Logger = new Core.Logger.NullLogger();
+#endif
+            Logger.Info("BIDSHelper Package Initialize Starting");
             string sAddInTypeName = string.Empty;
             try
             {
@@ -91,40 +102,42 @@ namespace BIDSHelper
                 //_addInInstance = (AddIn)addInInst;
 
                 //_applicationObject.StatusBar.Text = "Loading BIDSHelper (" + this.GetType().Assembly.GetName().Version.ToString() + ")...";
-                
-                StatusBar = new Core.VsIntegration.StatusBar(this);
+
+                this.StatusBar = new Core.VsIntegration.StatusBar(this);
+                StatusBar.Text = "Loading BIDSHelper (" + this.GetType().Assembly.GetName().Version.ToString() + ")...";
+                this.VsShell = (IVsShell)this.GetService(typeof(SVsShell));
+                this.DTE2 = this.GetService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)) as EnvDTE80.DTE2;
+
                 //_debuggerEvents = _applicationObject.Events.DebuggerEvents;
                 //_debuggerEvents.OnEnterBreakMode += new _dispDebuggerEvents_OnEnterBreakModeEventHandler(_debuggerEvents_OnEnterBreakMode);
                 //_debuggerEvents.OnEnterDesignMode += new _dispDebuggerEvents_OnEnterDesignModeEventHandler(_debuggerEvents_OnEnterDesignMode);
                 //_debuggerEvents.OnEnterRunMode += new _dispDebuggerEvents_OnEnterRunModeEventHandler(_debuggerEvents_OnEnterRunMode);
                 DebuggerService.AdviseDebuggerEvents(this, out debugEventCookie);
-                
+
 
                 foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
                 {
-                    if (typeof(BIDSHelperPluginBase).IsAssignableFrom(t)
-                        && (!object.ReferenceEquals(t, typeof(BIDSHelperPluginBase)))
+                    if (//typeof(IBIDSHelperPlugin).IsAssignableFrom(t.GetType())
+                        t.GetInterfaces().Contains(typeof(IBIDSHelperPlugin))
+                        && (!object.ReferenceEquals(t, typeof(IBIDSHelperPlugin)))
                         && (!t.IsAbstract))
                     {
                         sAddInTypeName = t.Name;
-                        
-                        BIDSHelperPluginBase feature;
-                        Type[] @params = { typeof(Package)} ;
-                        //System.Reflection.ConstructorInfo con;
-                        //con = t.GetConstructor(@params);
-                        var initMethod = t.GetMethod("Initialize",BindingFlags.Static | BindingFlags.Public);
+                        Logger.Verbose(string.Format("Loading Plugin: {0}", sAddInTypeName));
 
-                        if (initMethod == null)
+                        BIDSHelperPluginBase feature;
+                        Type[] @params = { typeof(BIDSHelperPackage) };
+                        System.Reflection.ConstructorInfo con;
+
+                        con = t.GetConstructor(@params);
+
+                        if (con == null)
                         {
                             System.Windows.Forms.MessageBox.Show("Problem loading type " + t.Name + ". No constructor found.");
                             continue;
                         }
-
-                        var instanceProp = t.GetProperty("Instance");
-                        initMethod.Invoke(null, new object[] { this });
-                        feature = (BIDSHelperPluginBase)instanceProp.GetValue(null, null);
-
-                        Plugins.Add(feature.FeatureName, feature);
+                        feature = (BIDSHelperPluginBase)con.Invoke(new object[] { this });
+                        Plugins.Add(feature.FullName, feature);
                     }
                 }
 
@@ -152,20 +165,60 @@ namespace BIDSHelper
             }
             finally
             {
-                //TODO - fix these commented lines
-                //    _applicationObject.StatusBar.Clear();
+                StatusBar.Clear();
             }
-
-
-
-
-//            DeployMdxScript.Initialize(this);
 
         }
 
-        public int OnModeChange(DBGMODE dbgmodeNew)
+
+#if DENALI
+        //this isn't necessary in VS2013 apparently
+        System.Reflection.Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            throw new NotImplementedException();
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
+                if (args.Name.StartsWith("Microsoft.AnalysisServices.VSHost,"))
+                {
+                    //this occurs in SSDTBI from SQL2012 in VS2012... apparently they added a .11 to the end of the assembly name
+                    return Assembly.Load("Microsoft.AnalysisServices.VSHost.11, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
+                }
+                else if (args.Name.StartsWith("Microsoft.AnalysisServices.MPFProjectBase,"))
+                {
+                    //this occurs in SSDTBI from SQL2012 in VS2012... apparently they added a .11 to the end of the assembly name
+                    return Assembly.Load("Microsoft.AnalysisServices.MPFProjectBase.11, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show("Problem during AssemblyResolve in BIDS Helper:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper");
+                return null;
+            }
+        }
+#endif
+
+        public int OnModeChange(DBGMODE mode)
+        {
+            mode = mode & ~DBGMODE.DBGMODE_EncMask;
+
+            switch (mode)
+            {
+                case DBGMODE.DBGMODE_Design:
+                    _ideMode = enumIDEMode.Design;
+                    break;
+                case DBGMODE.DBGMODE_Break:
+                    _ideMode = enumIDEMode.Debug;
+                    break;
+                case DBGMODE.DBGMODE_Run:
+                    _ideMode = enumIDEMode.Run;
+                    break;
+            }
+
+            return VSConstants.S_OK;
         }
 
 
@@ -190,11 +243,50 @@ namespace BIDSHelper
 
         public static System.Collections.Generic.Dictionary<string, BIDSHelperPluginBase> Plugins
         {
-            get { return addins; }
+            get { return plugins; }
         }
 
         public StatusBar StatusBar { get; private set; }
+        public EnvDTE80.DTE2 DTE2 { get; private set; }
+        public IVsShell VsShell { get; private set; }
 
-        #endregion
+        public enumIDEMode IdeMode { get { return _ideMode; } }
+#endregion
+
+        public ILog Logger { get; private set; }
+
+        public void OutputString( string text)
+        {
+            const int VISIBLE = 1;
+            const int DO_NOT_CLEAR_WITH_SOLUTION = 0;
+            Guid guidBidsHelperDebugPane = new Guid("50C4E395-4E87-48BC-9BAC-7C4CD065F6E8");
+            Guid guidPane = guidBidsHelperDebugPane;
+
+            IVsOutputWindow outputWindow;
+            IVsOutputWindowPane outputWindowPane = null;
+            int hr;
+
+            // Get the output window
+            outputWindow = base.GetService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+
+            // The General pane is not created by default. We must force its creation
+            //if (guidPane == Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid)
+            //{
+                hr = outputWindow.CreatePane(guidPane, "BIDS Helper Debug", VISIBLE, DO_NOT_CLEAR_WITH_SOLUTION);
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
+            //}
+
+            // Get the pane
+            hr = outputWindow.GetPane(guidPane, out outputWindowPane);
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
+
+            // Output the text
+            if (outputWindowPane != null)
+            {
+                outputWindowPane.Activate();
+                outputWindowPane.OutputString(text);
+            }
+        }
+
     }
 }

@@ -1,14 +1,11 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using System.Data;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -19,8 +16,8 @@ namespace BIDSHelper
         private Cube cube;
 
         #region Standard Plugin Overrides
-        public TabularDisplayFolderPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TabularDisplayFolderPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
@@ -29,10 +26,10 @@ namespace BIDSHelper
             get { return "TabularDisplayFolders"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 2116; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 2116; }
+        //}
 
         public override string ButtonText
         {
@@ -44,20 +41,20 @@ namespace BIDSHelper
             get { return "Tabular Display Folders"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Item"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -65,7 +62,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASTabular; }
         }
 
         /// <summary>

@@ -219,8 +219,8 @@ namespace AggManager
                                     DateTime dt = Convert.ToDateTime(reader[sDateColumnName]);
                                     if (dtMin > dt) dtMin = dt;
                                     if (dtMax < dt) dtMax = dt;
-                                    long iSecondsDiff = Microsoft.VisualBasic.DateAndTime.DateDiff(Microsoft.VisualBasic.DateInterval.Second, dtMin, dtMax, Microsoft.VisualBasic.FirstDayOfWeek.System, Microsoft.VisualBasic.FirstWeekOfYear.Jan1);
-                                    this.dtTraceStarted = Microsoft.VisualBasic.DateAndTime.DateAdd(Microsoft.VisualBasic.DateInterval.Second, -iSecondsDiff, DateTime.Now);
+                                    long iSecondsDiff = (long)(dtMax - dtMin).TotalSeconds;// Microsoft.VisualBasic.DateAndTime.DateDiff(Microsoft.VisualBasic.DateInterval.Second, dtMin, dtMax, Microsoft.VisualBasic.FirstDayOfWeek.System, Microsoft.VisualBasic.FirstWeekOfYear.Jan1);
+                                    this.dtTraceStarted = DateTime.Now.AddSeconds(-iSecondsDiff); // Microsoft.VisualBasic.DateAndTime.DateAdd(Microsoft.VisualBasic.DateInterval.Second, -iSecondsDiff, DateTime.Now);
                                 }
                                 timer1_Tick(null, null);
                                 Application.DoEvents();
@@ -494,7 +494,7 @@ namespace AggManager
         {
             this.lblAggHits.Text = this.iAggHits.ToString("g");
             this.lblQueries.Text = this.iQueries.ToString("g");
-            this.lblTraceDuration.Text = FormatSeconds(Microsoft.VisualBasic.DateAndTime.DateDiff(Microsoft.VisualBasic.DateInterval.Second, this.dtTraceStarted, DateTime.Now, Microsoft.VisualBasic.FirstDayOfWeek.System, Microsoft.VisualBasic.FirstWeekOfYear.Jan1));
+            this.lblTraceDuration.Text = FormatSeconds((long)(DateTime.Now - dtTraceStarted).TotalSeconds);// Microsoft.VisualBasic.DateAndTime.DateDiff(Microsoft.VisualBasic.DateInterval.Second, this.dtTraceStarted, DateTime.Now, Microsoft.VisualBasic.FirstDayOfWeek.System, Microsoft.VisualBasic.FirstWeekOfYear.Jan1));
             this.lblAggHits.Refresh();
             this.lblQueries.Refresh();
             this.lblTraceDuration.Refresh();
