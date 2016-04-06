@@ -32,7 +32,7 @@
     <ProjectGuid>{0828F434-598D-4E5B-983A-9FAD3BFDE857}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BidsHelper</RootNamespace>
+    <RootNamespace>BIDSHelper</RootNamespace>
     <AssemblyName>BidsHelper</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
@@ -47,13 +47,14 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DENALI OUTPUT_LOGGER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CopyVsixExtensionFiles>True</CopyVsixExtensionFiles>
     <DeployExtension>False</DeployExtension>
     <CopyVsixExtensionLocation>C:\Users\c950497\AppData\Local\Microsoft\VisualStudio\11.0Exp\Extensions\BidsHelperExp</CopyVsixExtensionLocation>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -66,7 +67,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BidsHelperPackage.cs" />
+    <Compile Include="Core\BIDSHelperBuildEventPluginBase.cs" />
+    <Compile Include="Core\BIDSHelperWindowActivatedPluginBase.cs" />
+    <Compile Include="Core\CommandList.cs" />
+    <Compile Include="Core\DirtyMonitoredDictionary.cs" />
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
+    <Compile Include="Core\Logger\NullLogger.cs" />
+    <Compile Include="Core\Logger\OutputLogger.cs" />
     <Compile Include="Core\Options\BIDSHelperOptionsVersion.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -90,6 +97,12 @@
     <Compile Include="Core\Options\BIDSHelperOptionsVersionCheckPage.Designer.cs">
       <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Core\ReportViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Core\ReportViewerForm.Designer.cs">
+      <DependentUpon>ReportViewerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Core\VersionCheckNotificationForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -98,8 +111,10 @@
     </Compile>
     <Compile Include="Core\VersionCheckPlugin.cs" />
     <Compile Include="Core\VersionInfo.cs" />
+    <Compile Include="Core\VisualStudioHelpers.cs" />
     <Compile Include="Core\VsIntegration\enums.cs" />
     <Compile Include="Core\VsIntegration\StatusBar.cs" />
+    <Compile Include="IBIDSHelperPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Common.Designer.cs">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -107,8 +122,129 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Common.resx</DependentUpon>
     </Compile>
+    <Compile Include="SSAS\AggManager\AggregationPerformance.cs" />
+    <Compile Include="SSAS\AggManager\AggregationPerformanceProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\AggregationPerformanceProgress.Designer.cs">
+      <DependentUpon>AggregationPerformanceProgress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\EditAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\EditAggs.Designer.cs">
+      <DependentUpon>EditAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmAddPartitions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmAddPartitions.Designer.cs">
+      <DependentUpon>frmAddPartitions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmDeleteUnusedAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmDeleteUnusedAggs.Designer.cs">
+      <DependentUpon>frmDeleteUnusedAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmExportTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmExportTable.Designer.cs">
+      <DependentUpon>frmExportTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmInput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmInput.Designer.cs">
+      <DependentUpon>frmInput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmMain.Designer.cs">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmPartitionsAggs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmPartitionsAggs.Designer.cs">
+      <DependentUpon>frmPartitionsAggs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmQueryLog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmQueryLog.Designer.cs">
+      <DependentUpon>frmQueryLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmSaveToFile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmSaveToFile.Designer.cs">
+      <DependentUpon>frmSaveToFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmTraceTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\AggManager\frmTraceTable.Designer.cs">
+      <DependentUpon>frmTraceTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\AggManager\PrinterFriendlyAggs.cs" />
+    <Compile Include="SSAS\AggManager\Properties\Resources.Designer.cs" />
+    <Compile Include="SSAS\AggManager\Properties\Settings.Designer.cs" />
+    <Compile Include="SSAS\AggManager\SearchSimilarAggs.cs" />
+    <Compile Include="SSAS\AggManager\Settings.cs" />
+    <Compile Include="SSAS\AggManager\ValidateAggs.cs" />
+    <Compile Include="SSAS\AggregationManagerPlugin.cs" />
+    <Compile Include="SSAS\CalcHelpersPlugin.cs" />
     <Compile Include="SSAS\DeployMDXScriptPlugin.cs" />
     <Compile Include="SSAS\DeploymentSettings.cs" />
+    <Compile Include="Core\Logger\ILog.cs" />
+    <Compile Include="SSAS\PrinterFriendlyDimensionUsage.cs" />
+    <Compile Include="SSAS\PrinterFriendlyDimensionUsagePlugin.cs" />
+    <Compile Include="SSAS\SyncDescriptionsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\SyncDescriptionsForm.Designer.cs">
+      <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSAS\Tabular\ERDiagramActionBase.cs" />
+    <Compile Include="SSAS\Tabular\ITabularOnPreBuildAnnotationCheck.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularActionsEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularActionsEditorForm.Designer.cs">
+      <DependentUpon>TabularActionsEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularActionsEditorPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.Designer.cs">
+      <DependentUpon>TabularAnnotationWorkaroundForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularAnnotationWorkaroundPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolder.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolderPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFoldersAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml.cs">
+      <DependentUpon>TabularDisplayFolderWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\Tabular\TabularHelpers.cs" />
+    <Compile Include="SSAS\Tabular\TabularHideMemberIfAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularHideMemberIfPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularPreBuildPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularrDeployDatabasePlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularSyncDescriptionsPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslation.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslationsAnnotation.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslationsEditorPlugin.cs" />
+    <Compile Include="SSAS\Tabular\TabularTranslationsEditorWindow.xaml.cs">
+      <DependentUpon>TabularTranslationsEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\TriStatePerspectivesPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
@@ -116,8 +252,26 @@
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
+    <None Include="SSAS\AggManager\Properties\Settings.settings" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BIDSHelper.ico" />
+    <Content Include="DLLs\SQL2012\ExpressionEditor.dll" />
+    <Content Include="DLLs\SQL2012\msddsp.dll" />
+    <Content Include="Resources\Icons\Index_8287_16x.png" />
+    <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Checked.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Connected.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Cube.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Database.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Dimension.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Disconnected.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Folder.ico" />
+    <Content Include="SSAS\AggManager\Graphics\m2mDimension.ico" />
+    <Content Include="SSAS\AggManager\Graphics\MeasureGroup.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Partition.ico" />
+    <Content Include="SSAS\AggManager\Graphics\Unchecked.ico" />
     <VSCTCompile Include="BidsHelperPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
@@ -142,10 +296,32 @@
     <Reference Include="Microsoft.AnalysisServices">
       <HintPath>..\..\..\Data\Microsoft.AnalysisServices.DLL</HintPath>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.BackEnd">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Common.FrontEnd">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.Common.FrontEnd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.DlgGrid, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>.\Microsoft.SqlServer.DlgGrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.DTSPipelineWrap, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.SQLServer.DTSRuntimeWrap, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\Data\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Controls">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Controls.DLL</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Design">
       <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\PrivateAssemblies\Microsoft.AnalysisServices.Design.DLL</HintPath>
@@ -260,6 +436,23 @@
       <HintPath>..\packages\Microsoft.VisualStudio.Validation.14.0.50702\lib\net45\Microsoft.VisualStudio.Validation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.SqlServer.GridControl, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.VSHost, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.VSHost.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.MPFProjectBase, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\Business Intelligence Semantic Model\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <!--<HintPath>..\..\..\Windows\assembly\GAC_MSIL\Microsoft.ReportViewer.Common\11.0.0.0__89845dcd8080cc91\Microsoft.ReportViewer.Common.dll</HintPath>-->
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <!--<HintPath>..\..\..\Windows\assembly\GAC_MSIL\Microsoft.ReportViewer.WinForms\11.0.0.0__89845dcd8080cc91\Microsoft.ReportViewer.WinForms.DLL</HintPath>-->
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -276,7 +469,16 @@
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Page Include="SSAS\Tabular\TabularDisplayFolderWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SSAS\Tabular\TabularTranslationsEditorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Core\Options\BIDSHelperOptionsPage.resx">
       <DependentUpon>BIDSHelperOptionsPage.cs</DependentUpon>
@@ -284,12 +486,64 @@
     <EmbeddedResource Include="Core\Options\BIDSHelperOptionsVersionCheckPage.resx">
       <DependentUpon>BIDSHelperOptionsVersionCheckPage.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Core\ReportViewerForm.resx">
+      <DependentUpon>ReportViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Core\VersionCheckNotificationForm.resx">
       <DependentUpon>VersionCheckNotificationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Common.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Common.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\AggregationPerformance.rdlc" />
+    <EmbeddedResource Include="SSAS\AggManager\AggregationPerformanceProgress.resx">
+      <DependentUpon>AggregationPerformanceProgress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\EditAggs.resx">
+      <DependentUpon>EditAggs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmAddPartitions.resx">
+      <DependentUpon>frmAddPartitions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmDeleteUnusedAggs.resx">
+      <DependentUpon>frmDeleteUnusedAggs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmExportTable.resx">
+      <DependentUpon>frmExportTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmInput.resx">
+      <DependentUpon>frmInput.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmMain.resx">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmPartitionsAggs.resx">
+      <DependentUpon>frmPartitionsAggs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmQueryLog.resx">
+      <DependentUpon>frmQueryLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmSaveToFile.resx">
+      <DependentUpon>frmSaveToFile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\frmTraceTable.resx">
+      <DependentUpon>frmTraceTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\AggManager\PrinterFriendlyAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\AggManager\Properties\Resources.resx" />
+    <EmbeddedResource Include="SSAS\AggManager\SearchSimilarAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\AggManager\ValidateAggs.rdlc" />
+    <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsage.rdlc" />
+    <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsageBusMatrix.rdlc" />
+    <EmbeddedResource Include="SSAS\SyncDescriptionsForm.resx">
+      <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\Tabular\TabularActionsEditorForm.resx">
+      <DependentUpon>TabularActionsEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.resx">
+      <DependentUpon>TabularAnnotationWorkaroundForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
@@ -316,7 +570,20 @@
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
+  -->
+  <!--
+  <ItemGroup>
+    <Files Include="File1.cs;File2.cs;File3.cs" />
+  </ItemGroup>
+  
+  
   <Target Name="AfterBuild">
+      <Touch
+          Files="$(LOCALAPPDATA)\Microsoft\VisualStudio\11.0Exp\Extensions\extensions.configurationchanged">
+        <Output
+            TaskParameter="TouchedFiles"
+            ItemName="FilesTouched"/>
+      </Touch>
   </Target>
   -->
 </Project>

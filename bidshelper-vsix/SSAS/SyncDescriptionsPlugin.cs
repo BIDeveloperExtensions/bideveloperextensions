@@ -1,21 +1,19 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.Data;
 using System.ComponentModel.Design;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
     public class SyncDescriptionsPlugin : BIDSHelperPluginBase
     {
-        public SyncDescriptionsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public SyncDescriptionsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
@@ -24,10 +22,10 @@ namespace BIDSHelper
             get { return "SyncDescriptionsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 223; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 223; }
+        //}
 
         public override string ButtonText
         {
@@ -47,10 +45,10 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -58,7 +56,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -247,7 +245,7 @@ namespace BIDSHelper
                         DataSet dsExtendedProperties = new DataSet();
                         openedDataSourceConnection.Fill(dsExtendedProperties, sql);
 
-                        BIDSHelper.SSAS.SyncDescriptionsForm form = new BIDSHelper.SSAS.SyncDescriptionsForm();
+                        SSAS.SyncDescriptionsForm form = new SSAS.SyncDescriptionsForm();
                         form.cmbDescriptionProperty.DataSource = dsExtendedProperties.Tables[0];
                         form.cmbDescriptionProperty.DisplayMember = "Name";
                         form.cmbDescriptionProperty.ValueMember = "Name";

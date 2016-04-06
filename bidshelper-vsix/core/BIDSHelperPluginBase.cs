@@ -17,12 +17,15 @@ using System.Threading.Tasks;
 using BIDSHelper;
 using System.Windows;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
+using System.Reflection;
+
 
 namespace BIDSHelper.Core
 {
 
-    public abstract class BIDSHelperPluginBase
+    public abstract class BIDSHelperPluginBase:IBIDSHelperPlugin
     {
+        private const string BASE_NAME = "BIDSHelperPackage.";
         private const string DefaultMessageBoxCaption = "BIDS Helper";
         private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
         private bool isEnabled;
@@ -35,10 +38,22 @@ namespace BIDSHelper.Core
             }
             this.package = (BIDSHelperPackage)package;
             StatusBar = package.StatusBar;
+            if (Enabled)
+            {
+                OnEnable();
+            }
         }
+
+        public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
 
         //=================================================================================
         public virtual bool DisplayCommand(UIHierarchyItem item) { return false; }
+
+        internal WindowEvents GetWindowEvents()
+        {
+            return package.DTE2.Events.WindowEvents;    
+        }
+
         public virtual bool DisplayCommand(FileInfo file) { return string.Compare( file.Extension ,Extension, true) == 0 ; }
         public bool DisplayCommand() {
             var f = GetSelectedFile();
@@ -127,7 +142,7 @@ namespace BIDSHelper.Core
                         regKey.DeleteValue("Enabled");
                         regKey.Close();
                         // TODO - is this needed ??
-                        //OnEnable();
+                        OnEnable();
                     }
                     else
                     {
@@ -135,14 +150,45 @@ namespace BIDSHelper.Core
                         regKey.SetValue("Enabled", isEnabled, RegistryValueKind.DWord);
                         regKey.Close();
                         // TODO - is this needed ??
-                        //OnDisable();
+                        OnDisable();
                     }
 
                 }
             }
         }
 
-#endregion
+        public enumIDEMode IdeMode
+        {
+            get
+            {
+                return package.IdeMode;
+            }
+        }
+
+        public virtual void OnEnable() { }
+        public virtual void OnDisable() { }
+
+        #endregion
+
+        //private static readonly object instanceLock = new object();
+        //private static T instance;
+        //public static T Instance { get { return instance; } }
+        //public static T GetInstance(BIDSHelperPackage package)
+        //{
+        //    lock(instanceLock)
+        //    {
+        //        if (instance == null)
+        //        {
+        //            //Instance = (T)Activator.CreateInstance(typeof(T), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, new object[] { package },null);
+        //            Type type = typeof(T);
+        //            ConstructorInfo c = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
+        //                                    null, new Type[] { typeof(BIDSHelperPackage) }, null);
+
+        //            instance = (T)c.Invoke(new Object[] { package });
+        //        }
+        //    }
+        //    return Instance;
+        //}
 
         /// <summary>
         /// Gets the CodePlex help page URL.
@@ -211,13 +257,30 @@ namespace BIDSHelper.Core
             }
         }
 
+        public static string BaseName
+        {
+            get { return BASE_NAME; }
+        }
+
+        public string CommandName
+        {
+            get { return BASE_NAME + this.GetType().Name; }
+        }
 
         public string PluginRegistryPath
         {
             get { return BIDSHelperPackage.PluginRegistryPath(this.GetType()); }
         }
 
-
+        /// <summary>
+        /// Gets the fully qualified name of the plug-in.
+        /// </summary>
+        /// <value>The full name.</value>
+        /// <remarks>The full name is built from the short name, and is used to unqiuely identify a plug-in, e.g. BIDSHelper.Connect.MyCleverPlugin.</remarks>
+        public string FullName
+        {
+            get { return BASE_NAME + this.GetType().Name; } //this.ShortName; }
+        }
 
 
         public VsIntegration.StatusBar StatusBar { get; private set;}
@@ -276,12 +339,17 @@ namespace BIDSHelper.Core
             }
         }
 
-        protected IVsStatusbar StatusBarService
-        { get { return (IVsStatusbar)ServiceProvider.GetService(typeof(SVsStatusbar)); } }
+        //protected IVsStatusbar StatusBarService { get; private set; }
+//        { get { return (IVsStatusbar)ServiceProvider.GetService(typeof(SVsStatusbar)); } }
 
 
-        protected IVsShell VSShellService
-        { get { return (IVsShell)ServiceProvider.GetService(typeof(SVsShell)); } }
+        protected IVsShell VSShellService { get { return package.VsShell; } }
+//        { get { return (IVsShell)ServiceProvider.GetService(typeof(SVsShell)); } }
+
+        protected DTE2 DTE2Service { get { return package.DTE2; } }
+//        { get { EnvDTE80.DTE2 dte = this.GetService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)) as EnvDTE80.DTE2; } }
+
+
 
         protected string RegistryRoot
         {
@@ -456,5 +524,16 @@ namespace BIDSHelper.Core
             return new FileInfo(itemFullPath);
         }
 
+        public static Type GetPrivateType(Type publicTypeInSameAssembly, string FullName)
+        {
+            foreach (Type t in System.Reflection.Assembly.GetAssembly(publicTypeInSameAssembly).GetTypes())
+            {
+                if (t.FullName == FullName)
+                {
+                    return t;
+                }
+            }
+            return null;
+        }
     }
 }

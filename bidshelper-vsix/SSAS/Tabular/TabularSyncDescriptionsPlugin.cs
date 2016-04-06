@@ -1,24 +1,19 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using Microsoft.AnalysisServices.Common;
 using System.Linq;
-using System.Linq.Expressions;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class TabularSyncDescriptionsPlugin : BIDSHelperWindowActivatedPluginBase
     {
         #region Standard Plugin Overrides
-        public TabularSyncDescriptionsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TabularSyncDescriptionsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
@@ -27,10 +22,10 @@ namespace BIDSHelper
             get { return "TabularSyncDescriptionsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 144; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 144; }
+        //}
 
         public override string ButtonText
         {
@@ -42,20 +37,20 @@ namespace BIDSHelper
             get { return "Tabular Sync Descriptions"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Item"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -63,7 +58,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASTabular; }
         }
 
         /// <summary>
@@ -237,9 +232,9 @@ namespace BIDSHelper
             {
                 try
                 {
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow();
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow(_plugin.package);
                     if (sandbox == null) throw new Exception("Can't get Sandbox!");
-                    IServiceProvider provider = TabularHelpers.GetTabularServiceProviderFromActiveWindow();
+                    IServiceProvider provider = TabularHelpers.GetTabularServiceProviderFromActiveWindow(_plugin.package);
 
                     foreach (IDiagramNode node in actionInstance.Targets.OfType<IDiagramNode>())
                     {

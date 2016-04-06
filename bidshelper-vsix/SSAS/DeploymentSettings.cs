@@ -1,6 +1,6 @@
 using System;
 using System.Xml;
-using Extensibility;
+//using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.IO;

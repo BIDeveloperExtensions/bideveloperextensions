@@ -1,28 +1,26 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using Microsoft.AnalysisServices.Common;
 using Microsoft.DataWarehouse.Design;
+using BIDSHelper.Core;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace BIDSHelper
 {
-    public class TabularPreBuildPlugin : BIDSHelperPluginBase
+    public class TabularPreBuildPlugin : BIDSHelperBuildEventPluginBase
     {
         private EnvDTE.BuildEvents _buildEvents;
 
         #region Standard Plugin Overrides
-        public TabularPreBuildPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TabularPreBuildPlugin(BIDSHelperPackage package)
+            : base(package)
         {
-            _buildEvents = appObject.Events.BuildEvents;
-            _buildEvents.OnBuildBegin += new _dispBuildEvents_OnBuildBeginEventHandler(BuildEvents_OnBuildBegin);
+            //_buildEvents = appObject.Events.BuildEvents;
+            //_buildEvents.OnBuildBegin += new _dispBuildEvents_OnBuildBeginEventHandler(BuildEvents_OnBuildBegin);
         }
 
         public override string ShortName
@@ -30,10 +28,10 @@ namespace BIDSHelper
             get { return "TabularPreBuild"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 144; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 144; }
+        //}
 
         public override string ButtonText
         {
@@ -45,20 +43,20 @@ namespace BIDSHelper
             get { return "Tabular Pre-Build"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Item"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -66,7 +64,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASTabular; }
         }
 
         /// <summary>
@@ -92,11 +90,14 @@ namespace BIDSHelper
         #endregion
 
 
+        public override void Exec()
+        {
+        }
 
-        private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
+        internal override void OnUpdateConfigBegin(IVsHierarchy pHierProj, VSSOLNBUILDUPDATEFLAGS dwAction, ref int pfCancel)
         {
             if (!this.Enabled) return;
-            if (Action == vsBuildAction.vsBuildActionClean) return;
+            if (dwAction ==  VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN) return;
 
             foreach (UIHierarchyItem hierItem in VisualStudioHelpers.GetAllItemsFromSolutionExplorer(this.ApplicationObject.ToolWindows.SolutionExplorer))
             {
@@ -106,7 +107,7 @@ namespace BIDSHelper
                     if (sandbox != null)
                     {
                         List<BIDSHelperPluginBase> checks = new List<BIDSHelperPluginBase>();
-                        foreach (BIDSHelperPluginBase plugin in Connect.Plugins.Values)
+                        foreach (BIDSHelperPluginBase plugin in BIDSHelperPackage.Plugins.Values)
                         {
                             Type t = plugin.GetType();
                             if (plugin is ITabularOnPreBuildAnnotationCheck
@@ -145,10 +146,5 @@ namespace BIDSHelper
                 }
             }
         }
-
-        public override void Exec()
-        {
-        }
-    
     }
 }

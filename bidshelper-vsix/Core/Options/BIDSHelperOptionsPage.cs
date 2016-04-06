@@ -38,7 +38,7 @@ namespace BIDSHelper.Core
             // Enumerate plug-ins and create a dynamic properties
             // Must also check for unique features
             CustomClass featuresHost = new CustomClass();
-            foreach (BIDSHelperPluginBase plugin in BIDSHelperPackage.Plugins.Values)
+            foreach (IBIDSHelperPlugin plugin in BIDSHelperPackage.Plugins.Values)
             {
                 CustomProperty parent = featuresHost.Find(plugin.FeatureName);
                 if (parent == null)
@@ -136,7 +136,7 @@ namespace BIDSHelper.Core
                         {
                             if (property.Name == item.Label)
                             {
-                                BIDSHelperPluginBase plugin = property.Plugin;
+                                IBIDSHelperPlugin plugin = property.Plugin;
                                 string helpUrl = plugin.HelpUrl;
                                 if (!string.IsNullOrEmpty(helpUrl))
                                 {
@@ -161,7 +161,7 @@ namespace BIDSHelper.Core
         /// <summary>
         /// Called when the form is closed with OK.
         /// </summary>
-        void OnOK()
+        public void Apply()
         {
             // Get dynamic properties collection
             CustomClass featuresHost = propertyGridFeatures.SelectedObject as CustomClass;

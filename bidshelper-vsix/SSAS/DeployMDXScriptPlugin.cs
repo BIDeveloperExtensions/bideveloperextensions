@@ -23,7 +23,7 @@ namespace BIDSHelper.SSAS
     /// <summary>
     /// Command handler
     /// </summary>
-    internal sealed class DeployMdxScript:BIDSHelperPluginBase
+    internal sealed class DeployMdxScriptPlugin : BIDSHelperPluginBase
     {
         /// <summary>
         /// Command ID.
@@ -33,28 +33,21 @@ namespace BIDSHelper.SSAS
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
+
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeployMdxScript"/> class.
+        /// Initializes a new instance of the <see cref="DeployMdxScriptPlugin"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        private DeployMdxScript(BIDSHelperPackage package):base(package)
+        public DeployMdxScriptPlugin(BIDSHelperPackage package) : base(package)
         {
+            Instance = this;
             CreateMenu(CommandSet, CommandId);
             Extension = ".cube";
         }
 
-
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
-        public static DeployMdxScript Instance
-        {
-            get;
-            private set;
-        }
+        public static DeployMdxScriptPlugin Instance {get; private set;}
 
         public override string ShortName
         {
@@ -94,7 +87,7 @@ namespace BIDSHelper.SSAS
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -110,10 +103,10 @@ namespace BIDSHelper.SSAS
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static void Initialize(BIDSHelperPackage package)
-        {
-            if (Instance == null) Instance = new DeployMdxScript(package);
-        }
+        //public static void Initialize(BIDSHelperPackage package)
+        //{
+        //    if (Instance == null) Instance = new DeployMdxScript(package);
+        //}
 
 
 

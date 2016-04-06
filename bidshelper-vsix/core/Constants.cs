@@ -49,7 +49,8 @@ namespace BIDSHelper
     public enum BIDSFeatureCategories
     {
         General,
-        SSAS,
+        SSASMulti,
+        SSASTabular,
         SSIS,
         SSRS
     }

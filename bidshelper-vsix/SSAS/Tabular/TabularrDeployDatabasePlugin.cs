@@ -1,28 +1,23 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
 using Microsoft.AnalysisServices.BackEnd;
-using Microsoft.VisualStudio.CommandBars;
-using System.Xml.Xsl;
 using System.Text;
 using System.Windows.Forms;
-using System.IO;
-using System.Resources;
-
 using Microsoft.AnalysisServices;
-using Microsoft.AnalysisServices.AdomdClient;
-
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
     public class TabularDeployDatabasePlugin : BIDSHelperPluginBase
     {
 
-        public TabularDeployDatabasePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TabularDeployDatabasePlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateMenu(CommandSet, (int)CommandList.TabularDeployDatabaseId);
+            Extension = ".biml";
         }
 
         public override string ShortName
@@ -38,10 +33,10 @@ namespace BIDSHelper
             }
         }
 
-        public override int Bitmap
-        {
-            get { return 2605; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 2605; }
+        //}
 
         public override string ButtonText
         {
@@ -68,7 +63,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASTabular; }
         }
 
         /// <summary>
@@ -85,24 +80,24 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //            return false;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (!(hierItem.Object is ProjectItem)) return false;
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                return (sFileName.EndsWith(".bim"));
-            }
-            catch
-            {
-            }
-            return false;
-        }
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        if (!(hierItem.Object is ProjectItem)) return false;
+        //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+        //        return (sFileName.EndsWith(".bim"));
+        //    }
+        //    catch
+        //    {
+        //    }
+        //    return false;
+        //}
 
 
         public override void Exec()
