@@ -4,6 +4,7 @@ using System.Text;
 using EnvDTE;
 using EnvDTE80;
 using System.Runtime.InteropServices;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -22,16 +23,16 @@ namespace BIDSHelper
         private WindowEvents windowEvents;
 
                 #region "Constructors"
-        public BIDSHelperWindowActivatedPluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public BIDSHelperWindowActivatedPluginBase(BIDSHelperPackage package)
+            : base(package)
         {
             
         }
 
-        public BIDSHelperWindowActivatedPluginBase()
-        {
+        //public BIDSHelperWindowActivatedPluginBase()
+        //{
 
-        }
+        //}
         #endregion
 
         public virtual bool ShouldHookWindowCreated
@@ -49,6 +50,7 @@ namespace BIDSHelper
 
         public void HookWindowActivation()
         {
+            package.Logger.Info("BIDSHelperWindowActivatedPluginBase HookWindowActivation fired");
             windowEvents = base.GetWindowEvents();
             if (ShouldHookWindowActivated)
                 windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
@@ -100,6 +102,7 @@ namespace BIDSHelper
         }
         public override void OnEnable()
         {
+            package.Logger.Info("BIDSHelperWindowActivatedPluginBase OnEnable fired");
             base.OnEnable();
             this.HookWindowActivation();
             // force OnWindowActivate to fire

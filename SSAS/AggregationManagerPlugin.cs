@@ -1,4 +1,4 @@
-using Extensibility;
+
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
@@ -6,15 +6,17 @@ using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
     public class AggregationManagerPlugin : BIDSHelperPluginBase
     {
-        public AggregationManagerPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public AggregationManagerPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateMenu(CommandSet, (int)CommandList.AggregationManagerId);
+            Extension = ".cube";
         }
 
         public override string ShortName
@@ -22,10 +24,10 @@ namespace BIDSHelper
             get { return "AggregationManager"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 3984; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 3984; }
+        //}
 
         public override string ButtonText
         {
@@ -37,10 +39,10 @@ namespace BIDSHelper
             get { return "Allows for manually editing aggregation designs"; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         public override string FeatureName
         {
@@ -53,7 +55,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>

@@ -1,9 +1,6 @@
-using Extensibility;
+//using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
@@ -11,8 +8,9 @@ using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
 using System;
 using Microsoft.Win32;
+using BIDSHelper.SSAS;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class CalcHelpersPlugin : BIDSHelperWindowActivatedPluginBase
     {
@@ -26,8 +24,8 @@ namespace BIDSHelper
         private const string REGISTRY_EXTENDED_PATH = "CalcHelpersPlugin";
         private const string REGISTRY_SCRIPT_VIEW_SETTING_NAME = "CalcScriptDefaultView";
 
-        public CalcHelpersPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public CalcHelpersPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
@@ -95,6 +93,7 @@ namespace BIDSHelper
         {
             try
             {
+                package.Logger.Info("CalcHelpersPlugin OnWindowActivated Fired");
                 if (GotFocus == null) return;
                 IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
@@ -149,7 +148,7 @@ namespace BIDSHelper
                                     if (pi.Name.ToLower().EndsWith(".cube")) //only show feature if we're in offline mode
                                     {
                                         // TODO - does not disable if Deploy plugin is disabled after the button has been added
-                                        if (Connect.Plugins[DeployMDXScriptPlugin.BaseName + typeof(DeployMDXScriptPlugin).Name].Enabled)
+                                        if (BIDSHelperPackage.Plugins[DeployMdxScriptPlugin.BaseName + typeof(DeployMdxScriptPlugin).Name].Enabled)
                                         {
                                             newDeployMdxScriptButton = new ToolBarButton();
                                             newDeployMdxScriptButton.ToolTipText = "Deploy MDX Script (BIDS Helper)";
@@ -197,7 +196,9 @@ namespace BIDSHelper
                     }
                 }
             }
-            catch { }
+            catch (Exception ex){
+                package.Logger.Error("CalcHelpersPlugin Exception: " + ex.Message);
+            }
         }
 
         private void DeployMdxScript()
@@ -210,7 +211,7 @@ namespace BIDSHelper
             if (win.SelectedView.MenuItemCommandID.ID == 12899)
             //if (win.SelectedView.Caption == "Calculations")
             {
-                DeployMDXScriptPlugin.DeployScript(pi, this.ApplicationObject);
+                DeployMdxScriptPlugin.Instance.DeployScript(pi, this.ApplicationObject);
             }
         }
 
@@ -488,10 +489,10 @@ namespace BIDSHelper
             get { return "CalcHelpers"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; }
+        //}
 
         public override string ButtonText
         {
@@ -503,10 +504,10 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
+        //public override string MenuName
+        //{
+        //    get { return string.Empty; } //no need to have a menu command
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -514,7 +515,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>

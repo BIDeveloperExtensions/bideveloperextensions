@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using Microsoft.AnalysisServices.Common;
 using System.ComponentModel;
+using BIDSHelper.Core;
 
 namespace BIDSHelper.SSAS.Tabular
 {
     //this is the base class for a context menu item in the Tabular diagram editor
     internal abstract class ERDiagramActionBase : DiagramActionBasic
     {
-        private static Type TYPE_DIAGRAM_ACTION_INSTANCE = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(typeof(Microsoft.AnalysisServices.Common.IDiagramActionInstance), "Microsoft.AnalysisServices.Common.DiagramActionInstance");
+        private static Type TYPE_DIAGRAM_ACTION_INSTANCE = BIDSHelperPluginBase.GetPrivateType(typeof(Microsoft.AnalysisServices.Common.IDiagramActionInstance), "Microsoft.AnalysisServices.Common.DiagramActionInstance");
 
         // Fields
         private ERDiagram erDiagram;

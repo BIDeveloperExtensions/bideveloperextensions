@@ -1,20 +1,19 @@
-using Extensibility;
+
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
+using BIDSHelper.Core;
 
-
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class PrinterFriendlyDimensionUsagePlugin : BIDSHelperPluginBase
     {
-        public PrinterFriendlyDimensionUsagePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public PrinterFriendlyDimensionUsagePlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateMenu(CommandSet, (int)CommandList.PrinterFriendlyDimensionUsageId);
+            Extension = ".cube";
         }
 
         public override string ShortName
@@ -22,10 +21,10 @@ namespace BIDSHelper
             get { return "PrinterFriendlyDimensionUsage"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 3983; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 3983; }
+        //}
 
         public override string ButtonText
         {
@@ -42,10 +41,10 @@ namespace BIDSHelper
             get { return "Displays a Printer Friendly version of the DimensionUsage tab"; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -53,7 +52,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>

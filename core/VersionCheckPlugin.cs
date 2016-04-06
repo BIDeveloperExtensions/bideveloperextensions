@@ -49,9 +49,9 @@ namespace BIDSHelper
         /// <param name="con">The connect object.</param>
         /// <param name="appObject">The application object.</param>
         /// <param name="addinInstance">The add-in instance.</param>
-        private VersionCheckPlugin(BIDSHelperPackage package) : base(package)
+        public VersionCheckPlugin(BIDSHelperPackage package) : base(package)
         {
-            //Instance = this;
+            Instance = this;
 
             if (this.Enabled && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
@@ -62,11 +62,6 @@ namespace BIDSHelper
                 worker.DoWork += new DoWorkEventHandler(worker_DoWork);
                 worker.RunWorkerAsync();
             }
-        }
-
-        public static void Initialize(BIDSHelperPackage package)
-        {
-            if (Instance == null) Instance = new VersionCheckPlugin(package);
         }
 
         private void worker_DoWork(object sender, DoWorkEventArgs e)
@@ -235,11 +230,6 @@ namespace BIDSHelper
         {
             get { return string.Empty; }
         }
-
-        //public override string MenuName
-        //{
-        //    get { return string.Empty; }
-        //}
 
         /// <summary>
         /// Gets the Url of the online help page for this plug-in.
