@@ -56,7 +56,7 @@ namespace BIDSHelper.Core
 
                 if (BIDSHelperPackage.AddInLoadException != null)
                 {
-                    this.lblBidsHelperLoadException.Text = string.Format("BIDS Helper encountered an error when Visual Studio started:\r\n{0}\r\n{ 1} "
+                    this.lblBidsHelperLoadException.Text = string.Format("BIDS Helper encountered an error when Visual Studio started:\r\n{0}\r\n{1}"
                         , BIDSHelperPackage.AddInLoadException.Message
                         , BIDSHelperPackage.AddInLoadException.StackTrace);
 
