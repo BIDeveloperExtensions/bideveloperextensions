@@ -372,7 +372,7 @@ namespace BIDSHelper.SSAS
                             transaction1.Cancel();
                         if (exception1 != CheckoutException.Canceled)
                         {
-                            throw exception1;
+                            throw;
                         }
                     }
                     finally

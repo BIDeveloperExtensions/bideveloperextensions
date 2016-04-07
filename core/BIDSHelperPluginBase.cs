@@ -1,23 +1,16 @@
 ﻿using EnvDTE;
 using EnvDTE80;
-using Microsoft.DataWarehouse.VsIntegration.Shell.Project.ComponentModel;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using BIDSHelper;
 using System.Windows;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
-using System.Reflection;
 
 
 namespace BIDSHelper.Core
@@ -30,6 +23,9 @@ namespace BIDSHelper.Core
         private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
         private bool isEnabled;
         private bool isEnabledCached = false;
+        public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
+
+        #region Constructor
         public BIDSHelperPluginBase(BIDSHelperPackage package)
         {
             if (package == null)
@@ -43,23 +39,24 @@ namespace BIDSHelper.Core
                 OnEnable();
             }
         }
+        #endregion
 
-        public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
 
+        #region Virtual/Abstract Methods
         //=================================================================================
+
         public virtual bool DisplayCommand(UIHierarchyItem item) { return false; }
 
-        internal WindowEvents GetWindowEvents()
-        {
-            return package.DTE2.Events.WindowEvents;    
+        public virtual bool DisplayCommand(FileInfo file)
+        { return string.Compare( file.Extension ,Extension, true) == 0 ;
         }
 
-        public virtual bool DisplayCommand(FileInfo file) { return string.Compare( file.Extension ,Extension, true) == 0 ; }
         public bool DisplayCommand() {
             var f = GetSelectedFile();
             return DisplayCommand(f);
         }
         public abstract void Exec();
+        #endregion
 
         protected string Extension { get; set; }
 
@@ -112,6 +109,31 @@ namespace BIDSHelper.Core
             // Override this property if you need a different value
             get { return this.GetCodePlexHelpUrl(this.FeatureName); }
         }
+
+        /// <summary>
+        /// Gets the button or command text, as displayed on the menu button.
+        /// </summary>
+        /// <value>The button text.</value>
+        /// <remarks>This is the first level of friendly naming.</remarks>
+        public abstract string ButtonText
+        {
+            get;
+        }
+        /// <summary>
+        /// Gets the feature name as displayed in the enabled features list, previously known as the friendly name.
+        /// </summary>
+        /// <value>The feature name.</value>
+        /// <remarks>
+        ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
+        ///     The feature name is the default page title used for by the HelpUrl.
+        ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
+        /// </remarks>
+        public virtual string FeatureName
+        {
+            get { return this.ButtonText; }
+        }
+
+        #endregion
 
         public bool Enabled
         {
@@ -168,27 +190,8 @@ namespace BIDSHelper.Core
         public virtual void OnEnable() { }
         public virtual void OnDisable() { }
 
-        #endregion
 
-        //private static readonly object instanceLock = new object();
-        //private static T instance;
-        //public static T Instance { get { return instance; } }
-        //public static T GetInstance(BIDSHelperPackage package)
-        //{
-        //    lock(instanceLock)
-        //    {
-        //        if (instance == null)
-        //        {
-        //            //Instance = (T)Activator.CreateInstance(typeof(T), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, new object[] { package },null);
-        //            Type type = typeof(T);
-        //            ConstructorInfo c = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
-        //                                    null, new Type[] { typeof(BIDSHelperPackage) }, null);
 
-        //            instance = (T)c.Invoke(new Object[] { package });
-        //        }
-        //    }
-        //    return Instance;
-        //}
 
         /// <summary>
         /// Gets the CodePlex help page URL.
@@ -202,30 +205,8 @@ namespace BIDSHelper.Core
             return string.Format(CultureInfo.InvariantCulture, DefaultUrlFormat, wikiTitle);
         }
 
-        /// <summary>
-        /// Gets the button or command text, as displayed on the menu button.
-        /// </summary>
-        /// <value>The button text.</value>
-        /// <remarks>This is the first level of friendly naming.</remarks>
-        public abstract string ButtonText
-        {
-            get;
-        }
 
-        /// <summary>
-        /// Gets the feature name as displayed in the enabled features list, previously known as the friendly name.
-        /// </summary>
-        /// <value>The feature name.</value>
-        /// <remarks>
-        ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
-        ///     The feature name is the default page title used for by the HelpUrl.
-        ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
-        /// </remarks>
-        public virtual string FeatureName
-        {
-            get { return this.ButtonText; }
-        }
-
+        
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance. 
         /// </summary>
@@ -285,40 +266,14 @@ namespace BIDSHelper.Core
 
         public VsIntegration.StatusBar StatusBar { get; private set;}
 
-        protected virtual void OnMenuBeforeQueryStatus(object sender, EventArgs e)
-        {
-            // get the menu that fired the event
-            var menuCommand = sender as OleMenuCommand;
-            if (menuCommand != null)
-            {
-                // start by assuming that the menu will not be shown
-                menuCommand.Visible = false;
-                menuCommand.Enabled = false;
-
-                var selectedFileInfo = GetSelectedFile();
-
-                //var proj = ((IVsProject)hierarchy);
-
-                // then check if the file is named '.cube'
-                bool showMenu = DisplayCommand(selectedFileInfo);
-
-                // TODO - check if this plugin is enabled
-
-                // if not leave the menu hidden
-                if (!showMenu) return;
-
-                menuCommand.Visible = true;
-                menuCommand.Enabled = true;
-            }
-        }
-        
         
 
-            /// <summary>
-            /// VS Package that provides this command, not null.
-            /// </summary>
+        /// <summary>
+        /// VS Package that provides this command, not null.
+        /// </summary>
         internal readonly BIDSHelperPackage package;
 
+        #region Service References
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
@@ -339,17 +294,11 @@ namespace BIDSHelper.Core
             }
         }
 
-        //protected IVsStatusbar StatusBarService { get; private set; }
-//        { get { return (IVsStatusbar)ServiceProvider.GetService(typeof(SVsStatusbar)); } }
-
-
         protected IVsShell VSShellService { get { return package.VsShell; } }
-//        { get { return (IVsShell)ServiceProvider.GetService(typeof(SVsShell)); } }
 
         protected DTE2 DTE2Service { get { return package.DTE2; } }
-//        { get { EnvDTE80.DTE2 dte = this.GetService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)) as EnvDTE80.DTE2; } }
-
-
+        
+        #endregion
 
         protected string RegistryRoot
         {
@@ -360,13 +309,7 @@ namespace BIDSHelper.Core
                 }
         }
 
-
-        internal DTE2 ApplicationObject
-        {
-            get
-            { return  Package.GetGlobalService(typeof(DTE)) as DTE2; }
-        }
-
+        #region Menu Methods
         public void CreateMenu(Guid commandSet, int commandId)
         {
             OleMenuCommandService commandService = this.MenuCommandService;
@@ -383,10 +326,49 @@ namespace BIDSHelper.Core
             }
         }
 
+        protected virtual void OnMenuBeforeQueryStatus(object sender, EventArgs e)
+        {
+
+            // get the menu that fired the event
+            var menuCommand = sender as OleMenuCommand;
+            if (menuCommand != null)
+            {
+                // start by assuming that the menu will not be shown
+                menuCommand.Visible = false;
+                menuCommand.Enabled = false;
+
+                // leave the menu invisible and disabled if the current feature is not enabled
+                if (!Enabled) return;
+
+                var selectedFileInfo = GetSelectedFile();
+
+                // then check if the file is named '.cube'
+                bool showMenu = DisplayCommand(selectedFileInfo);
+
+                // if not leave the menu hidden
+                if (!showMenu) return;
+
+                menuCommand.Visible = true;
+                menuCommand.Enabled = true;
+            }
+        }
+
         private void MenuItemCallback(object sender, EventArgs e)
         {
             this.Exec();
         }
+#endregion
+
+        internal DTE2 ApplicationObject
+        {
+            get { return  Package.GetGlobalService(typeof(DTE)) as DTE2; }
+        }
+
+        internal WindowEvents GetWindowEvents()
+        {
+            return package.DTE2.Events.WindowEvents;
+        }
+
 
         public static bool IsSingleProjectItemSelection(out IVsHierarchy hierarchy, out uint itemid)
         {

@@ -3,12 +3,13 @@
     using System;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
-    
+    using System.Runtime.InteropServices;
     /// <summary>
     /// Custom class that hosts dynamic properties, <see cref="BIDSHelper.Core.CustomProperty"/>
-	/// </summary>
+    /// </summary>
     /// <remarks>Code adapted from http://stackoverflow.com/questions/313822/how-to-modify-propertygrid-at-runtime-add-remove-property-and-dynamic-types-enum</remarks>
-	public class CustomClass : Collection<CustomProperty>, ICustomTypeDescriptor
+    [ComVisible(false)]
+    public class CustomClass : Collection<CustomProperty>, ICustomTypeDescriptor
 	{
         /// <summary>
         /// Check if a property of the specified ame already exists in collection.

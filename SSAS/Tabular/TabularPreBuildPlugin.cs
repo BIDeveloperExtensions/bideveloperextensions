@@ -13,7 +13,6 @@ namespace BIDSHelper
 {
     public class TabularPreBuildPlugin : BIDSHelperBuildEventPluginBase
     {
-        private EnvDTE.BuildEvents _buildEvents;
 
         #region Standard Plugin Overrides
         public TabularPreBuildPlugin(BIDSHelperPackage package)

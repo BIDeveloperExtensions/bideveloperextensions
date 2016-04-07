@@ -17,6 +17,10 @@
             {
                 components.Dispose();
             }
+            if (disposing && (_mtx != null))
+            {
+                _mtx.Dispose();
+            }
             base.Dispose(disposing);
         }
 

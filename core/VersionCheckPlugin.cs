@@ -8,7 +8,7 @@ namespace BIDSHelper
     using EnvDTE80;
     using Microsoft.Win32;
     using Core;
-    public class VersionCheckPlugin : BIDSHelperPluginBase
+    public class VersionCheckPlugin : BIDSHelperPluginBase, IDisposable
     {
 
 #if SQL2014
@@ -266,6 +266,19 @@ namespace BIDSHelper
         public override void Exec()
         {
             // Nothing required
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            this.Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (worker != null) worker.Dispose();
+            if (versionCheckForm != null) versionCheckForm.Dispose();
+
         }
     }
 

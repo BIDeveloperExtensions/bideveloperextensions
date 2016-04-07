@@ -87,8 +87,9 @@ namespace BIDSHelper
         {
             base.Initialize();
 
-#if OUTPUT_LOGGER
+#if DEBUG
             Logger = new Core.Logger.OutputLogger(this);
+            Logger.LogLevel = LogLevels.Verbose;
 #else
             Logger = new Core.Logger.NullLogger();
 #endif
@@ -96,26 +97,14 @@ namespace BIDSHelper
             string sAddInTypeName = string.Empty;
             try
             {
-                //TODO - fix these commented lines
-
-                //_applicationObject = (DTE2)application;
-                //_addInInstance = (AddIn)addInInst;
-
-                //_applicationObject.StatusBar.Text = "Loading BIDSHelper (" + this.GetType().Assembly.GetName().Version.ToString() + ")...";
-
-                this.StatusBar = new Core.VsIntegration.StatusBar(this);
+                StatusBar = new Core.VsIntegration.StatusBar(this);
                 StatusBar.Text = "Loading BIDSHelper (" + this.GetType().Assembly.GetName().Version.ToString() + ")...";
-                this.VsShell = (IVsShell)this.GetService(typeof(SVsShell));
-                this.DTE2 = this.GetService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)) as EnvDTE80.DTE2;
+                VsShell = (IVsShell)this.GetService(typeof(SVsShell));
+                DTE2 = this.GetService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)) as EnvDTE80.DTE2;
 
-                //_debuggerEvents = _applicationObject.Events.DebuggerEvents;
-                //_debuggerEvents.OnEnterBreakMode += new _dispDebuggerEvents_OnEnterBreakModeEventHandler(_debuggerEvents_OnEnterBreakMode);
-                //_debuggerEvents.OnEnterDesignMode += new _dispDebuggerEvents_OnEnterDesignModeEventHandler(_debuggerEvents_OnEnterDesignMode);
-                //_debuggerEvents.OnEnterRunMode += new _dispDebuggerEvents_OnEnterRunModeEventHandler(_debuggerEvents_OnEnterRunMode);
                 DebuggerService.AdviseDebuggerEvents(this, out debugEventCookie);
 
-
-                foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
+                foreach (Type t in Assembly.GetExecutingAssembly().GetTypes())
                 {
                     if (//typeof(IBIDSHelperPlugin).IsAssignableFrom(t.GetType())
                         t.GetInterfaces().Contains(typeof(IBIDSHelperPlugin))
@@ -155,11 +144,13 @@ namespace BIDSHelper
                 if (string.IsNullOrEmpty(sAddInTypeName))
                 {
                     AddInLoadException = ex;
+                    Logger.Exception("Problem loading BIDS Helper", ex);
                     //System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message + "\r\n" + ex.StackTrace);
                 }
                 else
                 {
                     AddInLoadException = new Exception("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace, ex);
+                    Logger.Exception("Problem loading BIDS Helper. Problem type was " + sAddInTypeName , ex);
                     //System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
@@ -255,7 +246,7 @@ namespace BIDSHelper
 
         public ILog Logger { get; private set; }
 
-        public void OutputString( string text)
+        public void OutputString(string text)
         {
             const int VISIBLE = 1;
             const int DO_NOT_CLEAR_WITH_SOLUTION = 0;
@@ -272,7 +263,7 @@ namespace BIDSHelper
             // The General pane is not created by default. We must force its creation
             //if (guidPane == Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid)
             //{
-                hr = outputWindow.CreatePane(guidPane, "BIDS Helper Debug", VISIBLE, DO_NOT_CLEAR_WITH_SOLUTION);
+                hr = outputWindow.CreatePane(guidPane, "BIDS Helper", VISIBLE, DO_NOT_CLEAR_WITH_SOLUTION);
                 Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
             //}
 
