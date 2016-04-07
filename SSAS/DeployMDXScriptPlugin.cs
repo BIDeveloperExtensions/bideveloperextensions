@@ -327,7 +327,6 @@ namespace BIDSHelper.SSAS
                             {
                                 cmd.Dispose();
                                 cn.Close();
-                                cn.Dispose();
                             }
                         }
                         catch (System.Exception ex)

@@ -55,6 +55,7 @@
     <CopyVsixExtensionLocation>C:\Users\c950497\AppData\Local\Microsoft\VisualStudio\11.0Exp\Extensions\BidsHelperExp</CopyVsixExtensionLocation>
     <Prefer32Bit>false</Prefer32Bit>
     <PlatformTarget>x86</PlatformTarget>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -72,6 +73,7 @@
     <Compile Include="Core\CommandList.cs" />
     <Compile Include="Core\DirtyMonitoredDictionary.cs" />
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
+    <Compile Include="Core\Logger\LogLevels.cs" />
     <Compile Include="Core\Logger\NullLogger.cs" />
     <Compile Include="Core\Logger\OutputLogger.cs" />
     <Compile Include="Core\Options\BIDSHelperOptionsVersion.cs">

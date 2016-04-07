@@ -590,13 +590,11 @@ namespace AggManager
                 if (MessageBox.Show("Are you sure you want to cancel without saving changes?", "Save Changes", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
                     this.Close();
-                    this.Dispose();
                 }
             }
             else
             {
                 this.Close();
-                this.Dispose();
             }
 
         }
