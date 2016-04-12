@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.Data;
 using System.ComponentModel.Design;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -21,9 +20,10 @@ namespace BIDSHelper
         private static EnvDTE.Window toolWin;
 #endif
 
-        public DimensionHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DimensionHealthCheckPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.DimensionHealthCheckId, typeof(Dimension));
         }
 
         public override string ShortName
@@ -31,12 +31,12 @@ namespace BIDSHelper
             get { return "DimensionHealthCheck"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 4380; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 4380; }
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Dimension Health Check"; }
         }
@@ -46,10 +46,10 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -57,7 +57,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -74,22 +74,22 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //            return false;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                return (((ProjectItem)hierItem.Object).Object is Dimension);
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        return (((ProjectItem)hierItem.Object).Object is Dimension);
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
 
         public override void Exec()

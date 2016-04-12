@@ -1,19 +1,14 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-using Microsoft.Win32;
 using System.ComponentModel;
 using System.Drawing.Design;
 using System.Windows.Forms.Design;
 using System.ComponentModel.Design;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class ExtraPropertiesPlugin : BIDSHelperWindowActivatedPluginBase
     {
@@ -21,23 +16,16 @@ namespace BIDSHelper
 //        private const string REGISTRY_EXTENDED_PATH = "ExtraPropertiesPlugin";
         //private const string REGISTRY_SETTING_NAME = "InEffect";
 
-        public ExtraPropertiesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public ExtraPropertiesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
 
         }
 
-        public override bool ShouldHookWindowCreated
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool ShouldHookWindowCreated { get { return true; } }
 
         public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
-
             try
             {
                 ConfigureProjectItemExtraProperties(GotFocus.ProjectItem);
@@ -207,12 +195,12 @@ namespace BIDSHelper
             get { return "ExtraProperties"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; }
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Show Extra Properties"; }
         }
@@ -221,21 +209,12 @@ namespace BIDSHelper
         {
             get { return string.Empty; }
         }
+        
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return false; }
-        }
-
-        public override string MenuName
-        {
-            get { return string.Empty; }
-        }
-
-        public override bool Checked
-        {
-            get { return bInEffect; }
-        }
+        //public override bool Checked
+        //{
+        //    get { return bInEffect; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -243,7 +222,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -254,13 +233,6 @@ namespace BIDSHelper
         {
             get { return "Exposes hidden properties on several Analysis Services objects, such as the Annotations property. It also provides a better UI for editing descriptions on Analysis Services objects."; }
         }
-
-        //Determines if the command should be displayed or not.
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
-
 
         public override void OnEnable()
         {

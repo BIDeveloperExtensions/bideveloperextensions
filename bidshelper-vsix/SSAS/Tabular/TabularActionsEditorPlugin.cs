@@ -16,6 +16,7 @@ namespace BIDSHelper
         public TabularActionsEditorPlugin(BIDSHelperPackage package)
             : base(package)
         {
+            CreateContextMenu(CommandList.TabularActionsEditorId, ".bim");
         }
 
         public override string ShortName
@@ -28,31 +29,17 @@ namespace BIDSHelper
         //    get { return 144; }
         //}
 
-        public override string ButtonText
-        {
-            get { return "Tabular Actions Editor..."; }
-        }
-
         public override string FeatureName
         {
             get { return "Tabular Actions Editor"; }
         }
-
-        //public override string MenuName
-        //{
-        //    get { return "Item"; }
-        //}
-
+        
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        //public override bool ShouldPositionAtEnd
-        //{
-        //    get { return true; }
-        //}
-
+        
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
@@ -70,30 +57,7 @@ namespace BIDSHelper
         {
             get { return "Provides a UI for editing actions such as drillthrough actions or report actions in Tabular models."; }
         }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (!(hierItem.Object is ProjectItem)) return false;
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                return (sFileName.EndsWith(".bim"));
-            }
-            catch
-            {
-            }
-            return false;
-        }
+        
         #endregion
 
         public override void Exec()
@@ -103,7 +67,7 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                 ExecSandbox(sandbox);
             }
             catch (System.Exception ex)

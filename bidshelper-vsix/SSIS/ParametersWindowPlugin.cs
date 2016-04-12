@@ -328,10 +328,5 @@ namespace BIDSHelper.SSIS
         }
     }
 
-    public enum VariablesDisplayMode
-    {
-        Variables,
-        PackageParameters,
-        ProjectParameters
-    }
+
 }

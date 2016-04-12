@@ -49,11 +49,22 @@ namespace BIDSHelper
             return ((Microsoft.VisualStudio.Project.ProjectNode)((project.ContainingProject).Object)).Site;
         }
 
-        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(Core.BIDSHelperPluginBase plugin, bool openIfNotOpen)
         {
-            Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
-            if (host == null) return null;
-            return host.Sandbox;
+            UIHierarchy solExplorer = plugin.ApplicationObject.ToolWindows.SolutionExplorer;
+            if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                return null;
+
+            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            if (!(hierItem.Object is ProjectItem)) return null;
+            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            if (sFileName.EndsWith(".bim"))
+            {
+                Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
+                if (host == null) return null;
+                return host.Sandbox;
+            }
+            return null;
         }
 
         //TODO - replace these methods?

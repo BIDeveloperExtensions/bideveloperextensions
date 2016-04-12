@@ -15,6 +15,7 @@ namespace BIDSHelper
         public SyncDescriptionsPlugin(BIDSHelperPackage package)
             : base(package)
         {
+            CreateContextMenu(CommandList.SyncDescriptionsId, typeof(Dimension));
         }
 
         public override string ShortName
@@ -27,10 +28,6 @@ namespace BIDSHelper
         //    get { return 223; }
         //}
 
-        public override string ButtonText
-        {
-            get { return "Sync Descriptions..."; }
-        }
 
         public override string FeatureName
         {
@@ -67,36 +64,6 @@ namespace BIDSHelper
         {
             get { return "Sync descriptions from extended properties on SQL Sever tables to your dimensions."; }
         }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length == 0)
-                    return false;
-
-                foreach (object selectedItem in ((System.Array)solExplorer.SelectedItems))
-                {
-                    UIHierarchyItem hierItem = ((UIHierarchyItem)selectedItem);
-                    if (!(((ProjectItem)hierItem.Object).Object is Dimension))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
 
         public override void Exec()
         {

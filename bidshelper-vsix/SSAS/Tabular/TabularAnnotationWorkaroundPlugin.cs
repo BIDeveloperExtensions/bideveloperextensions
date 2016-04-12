@@ -21,6 +21,7 @@ namespace BIDSHelper
         public TabularAnnotationWorkaroundPlugin(BIDSHelperPackage package)
             : base(package)
         {
+            CreateContextMenu(CommandList.TabularAnnotationsWorkaroundId);
         }
 
         public override string ShortName
@@ -33,10 +34,6 @@ namespace BIDSHelper
         //    get { return 2116; }
         //}
 
-        public override string ButtonText
-        {
-            get { return "Tabular Annotation Workaround..."; }
-        }
 
         public override string FeatureName
         {
@@ -81,25 +78,15 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
 #if DENALI
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (!(hierItem.Object is ProjectItem)) return false;
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                if (sFileName.EndsWith(".bim"))
+                if (TabularHelpers.GetTabularSandboxFromBimFile(this, false) == null)
                 {
-                    if (TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false) == null)
-                    {
-                        return true; //.bim file is closed so show this menu item
-                    }
-                }
+                    return true; //.bim file is closed so show this menu item
+                }   
             }
             catch
             {

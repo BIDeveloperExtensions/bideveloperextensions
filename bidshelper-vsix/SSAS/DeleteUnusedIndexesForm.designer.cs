@@ -1,4 +1,4 @@
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     partial class DeleteUnusedIndexesForm
     {

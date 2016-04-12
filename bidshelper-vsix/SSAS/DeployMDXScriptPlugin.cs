@@ -25,15 +25,6 @@ namespace BIDSHelper.SSAS
     /// </summary>
     internal sealed class DeployMdxScriptPlugin : BIDSHelperPluginBase
     {
-        /// <summary>
-        /// Command ID.
-        /// </summary>
-        public const int CommandId = 0x0100;
-
-        /// <summary>
-        /// Command menu group (command set GUID).
-        /// </summary>
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeployMdxScriptPlugin"/> class.
@@ -43,8 +34,7 @@ namespace BIDSHelper.SSAS
         public DeployMdxScriptPlugin(BIDSHelperPackage package) : base(package)
         {
             Instance = this;
-            CreateMenu(CommandSet, CommandId);
-            Extension = ".cube";
+            CreateContextMenu(CommandList.DeployMdxScriptId,".cube");
         }
 
         public static DeployMdxScriptPlugin Instance {get; private set;}
@@ -60,11 +50,6 @@ namespace BIDSHelper.SSAS
             {
                 return "Deploy the MDX Script for a cube";
             }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Deploy MDX Script"; }
         }
 
         public override string ToolTip

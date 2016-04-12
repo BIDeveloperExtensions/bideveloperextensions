@@ -12,8 +12,7 @@ namespace BIDSHelper.SSAS
         public PrinterFriendlyDimensionUsagePlugin(BIDSHelperPackage package)
             : base(package)
         {
-            CreateMenu(CommandSet, (int)CommandList.PrinterFriendlyDimensionUsageId);
-            Extension = ".cube";
+            CreateContextMenu(CommandList.PrinterFriendlyDimensionUsageId, new string[] { ".cube", ".bim" } );
         }
 
         public override string ShortName
@@ -25,11 +24,6 @@ namespace BIDSHelper.SSAS
         //{
         //    get { return 3983; }
         //}
-
-        public override string ButtonText
-        {
-            get { return "Printer Friendly Dimension Usage..."; }
-        }
 
         public override string FeatureName
         {
@@ -69,28 +63,28 @@ namespace BIDSHelper.SSAS
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //            return false;
                 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                if (sFileName.EndsWith(".bim"))
-                {
-                    return true;
-                }
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+        //        if (sFileName.EndsWith(".bim"))
+        //        {
+        //            return true;
+        //        }
 
-                return (((ProjectItem)hierItem.Object).Object is Cube);
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //        return (((ProjectItem)hierItem.Object).Object is Cube);
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
 
         public override void Exec()
@@ -117,7 +111,7 @@ namespace BIDSHelper.SSAS
                 else if (sFileName.EndsWith(".bim"))
                 {
 #if DENALI || SQL2014
-                    sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                    sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                     cub = sandbox.Cube;
                     bIsTabular = true;
                     Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Measures;

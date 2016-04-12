@@ -4,10 +4,7 @@ using System.ComponentModel.Design;
 using System.Globalization;
 using System.Windows.Forms;
 using EnvDTE;
-using EnvDTE80;
-using Microsoft.DataWarehouse.Controls;
 using Microsoft.DataWarehouse.Design;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.Win32;
 using System.Drawing;
@@ -23,13 +20,15 @@ namespace BIDSHelper.SSIS
         
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ExpressionListControl expressionListWindow = null;
-        private Window toolWindow = null;
+        //private Window toolWindow = null;
         private EditorWindow win = null;
         private IDesignerHost designer = null;
         private BackgroundWorker processPackage = null;
+        private Guid guidToolWindow = new Guid("6679390F-A712-40EA-8729-E2184A1436BF");
 
-        public ExpressionListPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
+        public ExpressionListPlugin(BIDSHelperPackage package) : base(package)
         {
+            CreateContextMenu(Core.CommandList.ExpressionListId, new Guid(BIDSProjectKinds.SSIS));
         }
 
         public override bool ShouldHookWindowCreated
@@ -47,14 +46,14 @@ namespace BIDSHelper.SSIS
             base.OnDisable();
 
             // Hide the tool window
-            toolWindow.Visible = false;    
+            ToolWindowVisible = false;    
         }
 
         public override void OnEnable()
         {
             base.OnEnable();
-
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
+            // TODO - should we be using the base class property to get the registry key??
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
             bool windowIsVisible = false;
             if (rk != null)
             {
@@ -69,17 +68,16 @@ namespace BIDSHelper.SSIS
             processPackage.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(processPackage_ProgressChanged);
             processPackage.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
 
-            object programmableObject = null;
-
             //This guid must be unique for each different tool window,
             // but you may use the same guid for the same tool window.
             //This guid can be used for indexing the windows collection,
             // for example: applicationObject.Windows.Item(guidstr)
-            String guidstr = "{6679390F-A712-40EA-8729-E2184A1436BF}";
+
             EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)this.ApplicationObject.Windows;
             System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-            toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.SSIS.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
-            expressionListWindow = (ExpressionListControl)programmableObject;
+            //toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.SSIS.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
+            CreateToolWindow("Expressions", guidToolWindow, typeof(ExpressionListControl));
+            expressionListWindow = (ExpressionListControl)ToolWindowUserControl;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);
 
@@ -88,8 +86,9 @@ namespace BIDSHelper.SSIS
             // during testing, otherwise we get some strange behaviour with this
             IntPtr icon = BIDSHelper.Resources.Common.ExpressionListIcon.ToBitmap().GetHbitmap();
 
+            // TODO - need to set the toolwindow icon
 #if KATMAI || DENALI || SQL2014
-            toolWindow.SetTabPicture(icon.ToInt32()); 
+           // toolWindow.SetTabPicture(icon.ToInt32()); 
 #else
             toolWindow.SetTabPicture(icon); 
 #endif
@@ -698,40 +697,36 @@ namespace BIDSHelper.SSIS
             get { return "ExpressionList"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 6; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 6; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Expression List (BIDS Helper)"; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Expression List (BIDS Helper)"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
-        public override string MenuName
-        {
-            get { return "Other Windows"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Other Windows"; }
+        //}
 
         public override string FeatureName
         {
             get { return "Expression List"; }
         }
 
-        public override bool Checked
-        {
-            get { return toolWindow.Visible; }
-        }
+        //public override bool Checked
+        //{
+        //    get { return toolWindow.Visible; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -751,49 +746,54 @@ namespace BIDSHelper.SSIS
             get { return "Provides a tool window listing expressions defined in a package, making it easy to review and manage expressions. Editing uses the integrated advanced expression editor."; }
         }
 
-        public override bool AddCommandToMultipleMenus
-        {
-            get { return false; } //the Other Windows menu is nested under other menus, so this Add to multiple menus logic won't work here
-        }
+        //public override bool AddCommandToMultipleMenus
+        //{
+        //    get { return false; } //the Other Windows menu is nested under other menus, so this Add to multiple menus logic won't work here
+        //}
 
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                if (toolWindow.Visible) return true;
-                if (this.ApplicationObject.Solution == null) return false;
-                foreach (EnvDTE.Project p in this.ApplicationObject.Solution.Projects)
-                {
-                    if (p.Kind == BIDSProjectKinds.SSIS) return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //public override bool ShouldDisplayCommand()
+        //{
+        //    try
+        //    {
+        //        // TODO - do I need to add a ProjectKind overload to CreateContextMenu
+        //        if (ToolWindowVisible) return true;
+        //        if (this.ApplicationObject.Solution == null) return false;
+        //        foreach (EnvDTE.Project p in this.ApplicationObject.Solution.Projects)
+        //        {
+        //            if (p.Kind == BIDSProjectKinds.SSIS) return true;
+        //        }
+        //        return false;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
         public override void Exec()
         {
             try
             {
-                toolWindow.Visible = !toolWindow.Visible;
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
+                Checked = !Checked;
+                ToolWindowVisible = Checked;
+                //toolWindow.Visible = !toolWindow.Visible;
+                // TODO - should this be using the registry property from the base class??
+                string path = BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
                 RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
                 if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-                settingKey.SetValue(REGISTRY_SETTING_NAME, toolWindow.Visible, RegistryValueKind.DWord);
+                settingKey.SetValue(REGISTRY_SETTING_NAME, Checked, RegistryValueKind.DWord);
                 settingKey.Close();
                 expressionListWindow.ClearResults();
             }
             catch (Exception e)
             {
                 System.Windows.Forms.MessageBox.Show("The Expression List could not be toggled. Error: " + e.Message);
+                this.package.Logger.Exception("The Expression List could not be toggled.", e);
             }
         }
 
