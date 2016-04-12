@@ -10,43 +10,22 @@ namespace BIDSHelper.Core
     using EnvDTE;
     using BIDSHelper.SSIS;
     
-    public partial class BIDSHelperPreferencesPage : UserControl, EnvDTE.IDTToolsOptionsPage
+    public partial class BIDSHelperPreferencesPage : UserControl
     {
         public BIDSHelperPreferencesPage()
         {
             InitializeComponent();
         }
 
-
         #region IDTToolsOptionsPage Members
 
-
-        void IDTToolsOptionsPage.GetProperties(ref object PropertiesObject)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
-
-
-        void IDTToolsOptionsPage.OnAfterCreated(DTE DTEObject)
+        public void Initialize()
         {
             this.Width = 395; //392
             this.Height = 290;
 
-#if DENALI || SQL2014
-            if (Connect.Application.Version.CompareTo("11.") == 1 || Connect.Application.Version.CompareTo("12.") == 1)
-            {
-                lblTFS.Text = "Visual Studio Built-in";
-                lblVSS.Text = string.Empty;
-            }
-            else
-            {
-                lblTFS.Text = "TFS: " + (SmartDiffPlugin.TFSInstalled ? "Installed" : "Not Installed");
-                lblVSS.Text = "VSS: " + (SmartDiffPlugin.VSSInstalled ? "Installed" : "Not Installed");
-            }
-#else
-            lblTFS.Text = "TFS: " + (SmartDiffPlugin.TFSInstalled ? "Installed" : "Not Installed");
-            lblVSS.Text = "VSS: " + (SmartDiffPlugin.VSSInstalled ? "Installed" : "Not Installed");
-#endif
+            lblTFS.Text = "Visual Studio Built-in";
+            lblVSS.Text = string.Empty;
 
 
             if (string.IsNullOrEmpty(SmartDiffPlugin.CustomDiffViewer))
@@ -67,17 +46,8 @@ namespace BIDSHelper.Core
             txtFreeSpaceFactor.Text = MeasureGroupHealthCheckPlugin.FreeSpaceFactor.ToString();
         }
 
-        void IDTToolsOptionsPage.OnCancel()
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
 
-        void IDTToolsOptionsPage.OnHelp()
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
-
-        void IDTToolsOptionsPage.OnOK()
+        public void Apply()
         {
             try
             {

@@ -29,20 +29,10 @@ namespace BIDSHelper
         //    get { return 144; }
         //}
 
-        public override string ButtonText
-        {
-            get { return "Tabular HideMemberIf..."; }
-        }
-
         public override string FeatureName
         {
             get { return "Tabular HideMemberIf"; }
         }
-
-        //public override string MenuName
-        //{
-        //    get { return "Item"; }
-        //}
 
         public override string ToolTip
         {
@@ -70,16 +60,6 @@ namespace BIDSHelper
         public override string FeatureDescription
         {
             get { return "Provides a UI for setting the HideMemberIf property of a level in a hierarchy for Tabular models."; }
-        }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
         }
 
         public override bool ShouldHookWindowCreated

@@ -15,8 +15,7 @@ namespace BIDSHelper
         public AggregationManagerPlugin(BIDSHelperPackage package)
             : base(package)
         {
-            CreateMenu(CommandSet, (int)CommandList.AggregationManagerId);
-            Extension = ".cube";
+            CreateContextMenu(CommandList.AggregationManagerId, typeof(Cube));
         }
 
         public override string ShortName
@@ -29,7 +28,7 @@ namespace BIDSHelper
         //    get { return 3984; }
         //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Edit Aggregations..."; }
         }
@@ -37,16 +36,6 @@ namespace BIDSHelper
         public override string ToolTip
         {
             get { return "Allows for manually editing aggregation designs"; }
-        }
-
-        //public override bool ShouldPositionAtEnd
-        //{
-        //    get { return true; }
-        //}
-
-        public override string FeatureName
-        {
-            get { return "Aggregation Manager"; }
         }
 
         /// <summary>
@@ -65,28 +54,6 @@ namespace BIDSHelper
         public override string FeatureDescription
         {
             get { return "Provides an advanced interface for manually editing and managing aggregations."; }
-        }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                return (((ProjectItem)hierItem.Object).Object is Cube);
-            }
-            catch
-            {
-                return false;
-            }
         }
 
 

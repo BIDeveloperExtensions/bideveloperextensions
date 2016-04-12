@@ -44,7 +44,7 @@ namespace BIDSHelper.SSIS
         private static ComponentDesigner packageDesigner;
         private static bool bSkipHighlighting = false;
 
-        public VariablesWindowPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
+        public VariablesWindowPlugin(BIDSHelperPackage package):base(package)
         {
         }
 
@@ -834,25 +834,12 @@ namespace BIDSHelper.SSIS
             get { return "VariablesWindowPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "SSIS Variables Window Extensions"; }
-        }
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
 
         /// <summary>
         /// Gets the name of the friendly name of the plug-in.
@@ -880,16 +867,6 @@ namespace BIDSHelper.SSIS
         public override string FeatureDescription
         {
             get { return "Extended features for the Variables window. Move or copy a variable between scopes in a package, expression and configuration highlighting of the variables and the advanced expression editor."; }
-        }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
         }
 
 

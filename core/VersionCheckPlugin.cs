@@ -221,7 +221,7 @@ namespace BIDSHelper
         //    get { return 0; }
         //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "BIDS Helper Version Notification"; }
         }
@@ -258,10 +258,6 @@ namespace BIDSHelper
             get { return "Get notified when a new BIDS Helper version is released. A balloon and icon will appear in the system tray, which will link to the download page for the new release."; }
         }
 
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
 
         public override void Exec()
         {

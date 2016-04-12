@@ -16,8 +16,7 @@ namespace BIDSHelper
         public TabularDeployDatabasePlugin(BIDSHelperPackage package)
             : base(package)
         {
-            CreateMenu(CommandSet, (int)CommandList.TabularDeployDatabaseId);
-            Extension = ".biml";
+            CreateContextMenu(CommandList.TabularDeployDatabaseId, ".bim");
         }
 
         public override string ShortName
@@ -37,11 +36,6 @@ namespace BIDSHelper
         //{
         //    get { return 2605; }
         //}
-
-        public override string ButtonText
-        {
-            get { return "Deploy Tabular Database"; }
-        }
 
         public override string ToolTip
         {
@@ -107,7 +101,7 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-                var sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                var sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
 
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
@@ -124,14 +118,14 @@ namespace BIDSHelper
         {
             //sandbox.
             // extract deployment information
-                DeploymentSettings deploySet = new DeploymentSettings(projItem);
+            DeploymentSettings deploySet = new DeploymentSettings(projItem);
 
-                        ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 3, 5);
-                        // Connect to Analysis Services
-                        Microsoft.AnalysisServices.Server svr = new Microsoft.AnalysisServices.Server();
-                        svr.Connect(deploySet.TargetServer);
-                        ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 4, 5);
-                        // execute the xmla
+            ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 3, 5);
+            // Connect to Analysis Services
+            Microsoft.AnalysisServices.Server svr = new Microsoft.AnalysisServices.Server();
+            svr.Connect(deploySet.TargetServer);
+            ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 4, 5);
+            // execute the xmla
             try
             {
                 Microsoft.AnalysisServices.Scripter scr = new Microsoft.AnalysisServices.Scripter();
@@ -172,6 +166,7 @@ namespace BIDSHelper
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString(), "BIDSHelper - Deploy Tabular Database - Exception");
+                package.Logger.Exception("Deploy Tabular Database Failed", ex);
             }
         }
 

@@ -494,7 +494,7 @@ namespace BIDSHelper.SSAS
         //    get { return 0; }
         //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Calculation Helpers"; }
         }
@@ -526,17 +526,6 @@ namespace BIDSHelper.SSAS
         {
             get { return "Extends the Calculations tab of the cube editor, including an enhanced Calculation Properties dialog."; }
         }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
-
 
         public override void Exec()
         {

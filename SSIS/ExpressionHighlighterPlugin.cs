@@ -40,8 +40,8 @@ namespace BIDSHelper.SSIS
         private Dictionary<EditorWindow, DateTime> mostRecentDDSRefresh = new Dictionary<EditorWindow, DateTime>();
         private DateTime mostRecentComponentEvent = DateTime.MinValue;
 
-        public ExpressionHighlighterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public ExpressionHighlighterPlugin(BIDSHelperPackage package)
+            : base(package)
         {
             workerToDos.WorkerReportsProgress = false;
             workerToDos.WorkerSupportsCancellation = true;
@@ -57,7 +57,8 @@ namespace BIDSHelper.SSIS
             get
             {
                 int iColor = ExpressionColorDefault.ToArgb();
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin)));
+                
                 if (rk != null)
                 {
                     iColor = (int)rk.GetValue(REGISTRY_EXPRESSION_COLOR_SETTING_NAME, iColor);
@@ -67,8 +68,9 @@ namespace BIDSHelper.SSIS
             }
             set
             {
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                string regPath = BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin));
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(regPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(regPath);
                 settingKey.SetValue(REGISTRY_EXPRESSION_COLOR_SETTING_NAME, value.ToArgb(), RegistryValueKind.DWord);
                 settingKey.Close();
                 HighlightingToDo.expressionColor = value;
@@ -81,7 +83,7 @@ namespace BIDSHelper.SSIS
             get
             {
                 int iColor = ConfigurationColorDefault.ToArgb();
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin)));
                 if (rk != null)
                 {
                     iColor = (int)rk.GetValue(REGISTRY_CONFIGURATION_COLOR_SETTING_NAME, iColor);
@@ -91,8 +93,9 @@ namespace BIDSHelper.SSIS
             }
             set
             {
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                string regPath = BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin));
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(regPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(regPath);
                 settingKey.SetValue(REGISTRY_CONFIGURATION_COLOR_SETTING_NAME, value.ToArgb(), RegistryValueKind.DWord);
                 settingKey.Close();
                 HighlightingToDo.configurationColor = value;
@@ -1246,25 +1249,12 @@ namespace BIDSHelper.SSIS
             get { return "ExpressionHighlighterPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Expression Highlighter"; }
-        }
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
 
         /// <summary>
         /// Gets the name of the friendly name of the plug-in.
@@ -1294,15 +1284,7 @@ namespace BIDSHelper.SSIS
             get { return "Highlight objects in your SSIS Packages that have configurations or expressions applied making them easy to identify."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false; //no menu item
-        }
+        
 
         public override void Exec()
         {
