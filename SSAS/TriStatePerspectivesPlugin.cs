@@ -522,7 +522,7 @@ namespace BIDSHelper
         //    get { return 0; }
         //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Tri-State Perspectives"; }
         }
@@ -554,17 +554,6 @@ namespace BIDSHelper
         {
             get { return "An addition to the Perspectives tab of the cube designer, which highlights any measure groups or dimensions in which not all visible children are part of the perspective."; }
         }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
-
 
         public override void Exec()
         {

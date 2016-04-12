@@ -1,15 +1,13 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
 using System.Xml.Xsl;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using Microsoft.Win32;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -19,10 +17,12 @@ namespace BIDSHelper
         private static System.Collections.Generic.Dictionary<string, string> _dictPasswords = new System.Collections.Generic.Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
         private const string REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME = "CustomDiffViewer";
 
-        public SmartDiffPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public SmartDiffPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            // TODO - should we get this property without using the ApplicationObject
             _VisualStudioRegistryPath = this.ApplicationObject.RegistryRoot;
+            CreateContextMenu(CommandList.SmartDiffId, BI_FILE_EXTENSIONS);
         }
 
         public override string ShortName
@@ -30,15 +30,15 @@ namespace BIDSHelper
             get { return "SmartDiff"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 1836; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 1836; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Smart Diff..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Smart Diff..."; }
+        //}
 
         public override string FeatureName
         {
@@ -59,10 +59,6 @@ namespace BIDSHelper
             get { return "Compare differences between two versions of a file, including those in source control. Works across the BI stack including Packages, Cubes, Dimensions, Data Sources and Reports."; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -77,43 +73,46 @@ namespace BIDSHelper
         private string[] SSAS_FILE_EXTENSIONS = { ".dim", ".cube", ".dmm", ".dsv", ".bim" };
         private string[] SSRS_FILE_EXTENSIONS = { ".rdl", ".rdlc" };
 
+        private string[] BI_FILE_EXTENSIONS = { ".dtsx", ".dim", ".cube", ".dmm", ".dsv", ".bim", ".rdl", ".rdlc" };
+
+
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //            return false;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                foreach (string extension in DTS_FILE_EXTENSIONS)
-                {
-                    if (sFileName.EndsWith(extension))
-                        return true;
-                }
-                foreach (string extension in SSAS_FILE_EXTENSIONS)
-                {
-                    if (sFileName.EndsWith(extension))
-                        return true;
-                }
-                foreach (string extension in SSRS_FILE_EXTENSIONS)
-                {
-                    if (sFileName.EndsWith(extension))
-                        return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+        //        foreach (string extension in DTS_FILE_EXTENSIONS)
+        //        {
+        //            if (sFileName.EndsWith(extension))
+        //                return true;
+        //        }
+        //        foreach (string extension in SSAS_FILE_EXTENSIONS)
+        //        {
+        //            if (sFileName.EndsWith(extension))
+        //                return true;
+        //        }
+        //        foreach (string extension in SSRS_FILE_EXTENSIONS)
+        //        {
+        //            if (sFileName.EndsWith(extension))
+        //                return true;
+        //        }
+        //        return false;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
         public static string PROVIDER_NAME_SOURCESAFE = "MSSCCI:Microsoft Visual SourceSafe";
         public static string PROVIDER_NAME_TFS = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
@@ -828,7 +827,7 @@ namespace BIDSHelper
             get
             {
                 string sCustomDiffViewer = null;
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(SmartDiffPlugin)));
                 if (rk != null)
                 {
                     sCustomDiffViewer = (string)rk.GetValue(REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME, null);
@@ -838,8 +837,9 @@ namespace BIDSHelper
             }
             set
             {
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                var regPath = BIDSHelperPackage.PluginRegistryPath(typeof(SmartDiffPlugin));
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(regPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(regPath);
                 if (value == null)
                 {
                     settingKey.DeleteValue(REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME, false);

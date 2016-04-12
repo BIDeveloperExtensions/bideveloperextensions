@@ -29,7 +29,23 @@ namespace BIDSHelper.Core.VsIntegration
 
         public void Clear()
         {
-            StatusBarService.Clear();
+            int hr = StatusBarService.Clear();
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
+        }
+
+        public string Text
+        {
+            get {
+                string text = string.Empty;
+                int hr = StatusBarService.GetText(out text);
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
+                return text;
+            }
+            set {
+                int hr = StatusBarService.SetText(value);
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
+
+            }
         }
     }
 }

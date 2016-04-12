@@ -11,7 +11,7 @@ using System.Data.SqlClient;
 using System.ComponentModel.Design;
 
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public partial class DeleteUnusedIndexesForm : Form
     {

@@ -19,6 +19,7 @@ namespace BIDSHelper
         public TabularTranslationsEditorPlugin(BIDSHelperPackage package)
             : base(package)
         {
+            CreateContextMenu(CommandList.TabularTranslationsEditorId, ".bim");
         }
 
         public override string ShortName
@@ -31,10 +32,7 @@ namespace BIDSHelper
         //    get { return 3621; }
         //}
 
-        public override string ButtonText
-        {
-            get { return "Tabular Translations Editor..."; }
-        }
+
 
         public override string FeatureName
         {
@@ -74,29 +72,7 @@ namespace BIDSHelper
             get { return "Provides a UI for editing translations of metadata (not data) in Tabular models."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (!(hierItem.Object is ProjectItem)) return false;
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                return (sFileName.EndsWith(".bim"));
-            }
-            catch
-            {
-            }
-            return false;
-        }
+        
         #endregion
 
 
@@ -104,10 +80,8 @@ namespace BIDSHelper
         {
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
 
                 ExecInternal(false);

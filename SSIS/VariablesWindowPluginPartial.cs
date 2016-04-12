@@ -1,4 +1,5 @@
-﻿using Microsoft.SqlServer.Dts.Runtime;
+﻿using BIDSHelper.Core;
+using Microsoft.SqlServer.Dts.Runtime;
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;

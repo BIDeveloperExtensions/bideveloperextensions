@@ -1,13 +1,11 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using Microsoft.AnalysisServices;
+using BIDSHelper.Core;
 using BIDSHelper;
 
 namespace PCDimNaturalizer
@@ -15,9 +13,10 @@ namespace PCDimNaturalizer
     public class PCDimNaturalizerPlugin : BIDSHelperPluginBase
     {
         #region Standard Plugin Overrides
-        public PCDimNaturalizerPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public PCDimNaturalizerPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.PCDimNaturalizerId);
         }
 
         public override string ShortName
@@ -25,15 +24,11 @@ namespace PCDimNaturalizer
             get { return "PCDimNaturalizer"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 688; } //or 2010
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 688; } //or 2010
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Naturalize Parent-Child Dimension..."; }
-        }
 
         public override string FeatureName
         {
@@ -45,10 +40,6 @@ namespace PCDimNaturalizer
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -56,7 +47,7 @@ namespace PCDimNaturalizer
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -73,7 +64,7 @@ namespace PCDimNaturalizer
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {

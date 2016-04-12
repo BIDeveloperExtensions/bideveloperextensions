@@ -32,10 +32,6 @@ namespace BIDSHelper
         //    get { return 144; }
         //}
 
-        public override string ButtonText
-        {
-            get { return "Tabular Pre-Build..."; }
-        }
 
         public override string FeatureName
         {
@@ -75,19 +71,7 @@ namespace BIDSHelper
             get { return "Hooks the pre-build event in Visual Studio in order to restore some BIDS Helper customizations to the Tabular model if they have been lost."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
-
-
         #endregion
-
 
         public override void Exec()
         {
@@ -102,7 +86,7 @@ namespace BIDSHelper
             {
                 if (hierItem.Name != null && hierItem.Name.ToLower().EndsWith(".bim"))
                 {
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false);
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
                     if (sandbox != null)
                     {
                         List<BIDSHelperPluginBase> checks = new List<BIDSHelperPluginBase>();

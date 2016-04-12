@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
@@ -13,6 +11,7 @@ using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
 using Microsoft.Win32;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -20,9 +19,10 @@ namespace BIDSHelper
     {
         private const System.Reflection.BindingFlags getfieldflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
 
-        public MeasureGroupHealthCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public MeasureGroupHealthCheckPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.MeasureGroupHealthCheckId);
         }
 
         private static string REGISTRY_FREE_SPACE_FACTOR_SETTING_NAME = "FreeSpaceFactor";
@@ -35,7 +35,7 @@ namespace BIDSHelper
                 if (_FreeSpaceFactor == null)
                 {
                     int i = FreeSpaceFactorDefault;
-                    RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                    RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(SmartDiffPlugin)));
                     if (rk != null)
                     {
                         i = (int)rk.GetValue(REGISTRY_FREE_SPACE_FACTOR_SETTING_NAME, i);
@@ -50,8 +50,9 @@ namespace BIDSHelper
             }
             set
             {
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                var regPath = BIDSHelperPackage.PluginRegistryPath(typeof(SmartDiffPlugin));
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(regPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(regPath);
                 settingKey.SetValue(REGISTRY_FREE_SPACE_FACTOR_SETTING_NAME, value, RegistryValueKind.DWord);
                 settingKey.Close();
                 _FreeSpaceFactor = value;
@@ -63,30 +64,31 @@ namespace BIDSHelper
             get { return "MeasureGroupHealthCheck"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 4380; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 4380; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Measure Group Health Check"; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Measure Group Health Check"; }
+        //}
 
-        public override string ToolTip
-        {
-            get { return string.Empty; /*doesn't show anywhere*/ }
-        }
+        //public override string ToolTip
+        //{
+        //    get { return string.Empty; /*doesn't show anywhere*/ }
+        //}
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
-        public override string MenuName
-        {
-            get { return "Measures"; }
-        }
+// TODO - figure out how to hook the "Measures" menu
+        //public override string MenuName
+        //{
+        //    get { return "Measures"; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -94,7 +96,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -106,12 +108,28 @@ namespace BIDSHelper
             get { return "Allows you to check various indications of measure group health."; }
         }
 
+        public override string ToolTip
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override string FeatureName
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {

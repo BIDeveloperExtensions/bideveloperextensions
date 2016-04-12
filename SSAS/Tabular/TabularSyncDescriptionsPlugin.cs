@@ -17,20 +17,10 @@ namespace BIDSHelper.SSAS
         {
         }
 
-        public override string ShortName
-        {
-            get { return "TabularSyncDescriptionsPlugin"; }
-        }
-
         //public override int Bitmap
         //{
         //    get { return 144; }
         //}
-
-        public override string ButtonText
-        {
-            get { return "Sync Descriptions..."; }
-        }
 
         public override string FeatureName
         {
@@ -68,16 +58,6 @@ namespace BIDSHelper.SSAS
         public override string FeatureDescription
         {
             get { return "Sync descriptions from extended properties on SQL Sever tables to your model table."; }
-        }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
         }
 
         public override bool ShouldHookWindowCreated

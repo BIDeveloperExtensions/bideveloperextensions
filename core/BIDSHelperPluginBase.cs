@@ -11,23 +11,29 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
-
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace BIDSHelper.Core
 {
 
-    public abstract class BIDSHelperPluginBase:IBIDSHelperPlugin
+    public abstract class BIDSHelperPluginBase : IBIDSHelperPlugin
     {
         private const string BASE_NAME = "BIDSHelperPackage.";
-        private const string DefaultMessageBoxCaption = "BIDS Helper";
+        protected const string DefaultMessageBoxCaption = "BIDS Helper";
         private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
         private bool isEnabled;
         private bool isEnabledCached = false;
         public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
+        private IVsWindowFrame m_windowFrame = null;
+        private UserControl m_userControl;
+        private OleMenuCommand m_menuItem = null;
+        private Guid m_ProjectKind = Guid.Empty;
 
         #region Constructor
         public BIDSHelperPluginBase(BIDSHelperPackage package)
         {
+            Extensions = new List<string>();
             if (package == null)
             {
                 throw new ArgumentNullException("package");
@@ -45,22 +51,100 @@ namespace BIDSHelper.Core
         #region Virtual/Abstract Methods
         //=================================================================================
 
-        public virtual bool DisplayCommand(UIHierarchyItem item) { return false; }
+        //public virtual bool DisplayCommand(UIHierarchyItem item) { return false; }
 
-        public virtual bool DisplayCommand(FileInfo file)
-        { return string.Compare( file.Extension ,Extension, true) == 0 ;
-        }
 
-        public bool DisplayCommand() {
-            var f = GetSelectedFile();
-            return DisplayCommand(f);
-        }
+
+        /// <summary>
+        /// This virtual method gives you a chance to override the displaying of a menu command
+        /// to cater for any special pre-requisite of the command
+        /// </summary>
+        public virtual bool ShouldDisplayCommand() { return true; }
+
         public abstract void Exec();
         #endregion
 
-        protected string Extension { get; set; }
+        #region Properties
+        protected List<string> Extensions { get; private set; }
+
+        public enumIDEMode IdeMode { get { return package.IdeMode; } }
+
+        public VsIntegration.StatusBar StatusBar { get; private set; }
+
+        public Type AssociatedObjectType { get; private set; }
+
+        #endregion
 
         //=================================================================================
+
+        #region Dynamic Command Visibility
+        internal bool DisplayCommand(FileInfo file)
+        {
+            return Extensions.Contains(file.Extension.ToLower());
+        }
+
+        internal bool DisplayCommandInternal()
+        {
+            if (Enabled)
+            {
+
+                if (Extensions.Count > 0)
+                {
+                    var f = GetSelectedFile();
+                    return DisplayCommand(f);
+                }
+                else if (m_ProjectKind != Guid.Empty)
+                {
+                    return DisplayCommand(m_ProjectKind);
+                }
+                else if (AssociatedObjectType != null)
+                {
+                    return DisplayCommand(AssociatedObjectType);
+                }
+                else {
+                    package.Logger.Verbose("Calling virtual ShouldDisplayCommand to see if we should be displaying this command " + this.GetType().Name);
+                    ShouldDisplayCommand();
+                }
+            }
+            return false;
+        }
+
+        internal bool DisplayCommand(Guid projectKind)
+        {
+            try
+            {
+                // TODO - do I need to add a ProjectKind overload to CreateContextMenu
+                //if (ToolWindowVisible) return true;
+                if (this.ApplicationObject.Solution == null) return false;
+                foreach (EnvDTE.Project p in this.ApplicationObject.Solution.Projects)
+                {
+                    if (p.Kind == projectKind.ToString("B")) return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        internal bool DisplayCommand(Type objectType)
+        {
+            try
+            {
+                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+                if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                    return false;
+
+                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                return (((ProjectItem)hierItem.Object).Object.GetType() == objectType);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        #endregion
 
         #region Options Page Properties
         /// <summary>
@@ -68,25 +152,16 @@ namespace BIDSHelper.Core
         /// </summary>
         /// <value>The feature category.</value>
         /// <remarks>The feature category is used to organise features into SSIS, SSAS, SSRS or Common.</remarks>
-        public abstract BIDSFeatureCategories FeatureCategory
-        {
-            get;
-        }
+        public abstract BIDSFeatureCategories FeatureCategory { get; }
 
-        public abstract string ToolTip
-        {
-            get;
-        }
+        public abstract string ToolTip { get; }
 
         /// <summary>
         /// Gets the short name, the unique internal plug-in name
         /// </summary>
         /// <value>The short name.</value>
         /// <remarks>The short name uniquely identiofies the plug-in within BIDS Helper. It is used to derive the full name, which is unique within all Visual Studio commands.</remarks>
-        public abstract string ShortName
-        {
-            get;
-        }
+        public virtual string ShortName { get { return this.GetType().Name; } }
 
         /// <summary>
         /// Gets the full description used for the features options dialog.
@@ -115,10 +190,11 @@ namespace BIDSHelper.Core
         /// </summary>
         /// <value>The button text.</value>
         /// <remarks>This is the first level of friendly naming.</remarks>
-        public abstract string ButtonText
-        {
-            get;
-        }
+        //public abstract string ButtonText
+        //{
+        //    get;
+        //}
+
         /// <summary>
         /// Gets the feature name as displayed in the enabled features list, previously known as the friendly name.
         /// </summary>
@@ -128,13 +204,11 @@ namespace BIDSHelper.Core
         ///     The feature name is the default page title used for by the HelpUrl.
         ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
         /// </remarks>
-        public virtual string FeatureName
-        {
-            get { return this.ButtonText; }
-        }
+        public abstract string FeatureName { get; }
 
         #endregion
 
+        #region Enable / Disable
         public bool Enabled
         {
             get
@@ -179,17 +253,12 @@ namespace BIDSHelper.Core
             }
         }
 
-        public enumIDEMode IdeMode
-        {
-            get
-            {
-                return package.IdeMode;
-            }
-        }
+
 
         public virtual void OnEnable() { }
         public virtual void OnDisable() { }
 
+        #endregion
 
 
 
@@ -206,7 +275,7 @@ namespace BIDSHelper.Core
         }
 
 
-        
+
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance. 
         /// </summary>
@@ -234,7 +303,7 @@ namespace BIDSHelper.Core
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
+                System.Windows.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
             }
         }
 
@@ -253,6 +322,14 @@ namespace BIDSHelper.Core
             get { return BIDSHelperPackage.PluginRegistryPath(this.GetType()); }
         }
 
+        //public static string StaticPluginRegistryPath
+        //{
+        //    get
+        //    {
+        //        return BIDSHelperPackage.PluginRegistryPath(new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().DeclaringType);
+        //    }
+        //}
+
         /// <summary>
         /// Gets the fully qualified name of the plug-in.
         /// </summary>
@@ -264,9 +341,9 @@ namespace BIDSHelper.Core
         }
 
 
-        public VsIntegration.StatusBar StatusBar { get; private set;}
 
-        
+
+
 
         /// <summary>
         /// VS Package that provides this command, not null.
@@ -297,7 +374,7 @@ namespace BIDSHelper.Core
         protected IVsShell VSShellService { get { return package.VsShell; } }
 
         protected DTE2 DTE2Service { get { return package.DTE2; } }
-        
+
         #endregion
 
         protected string RegistryRoot
@@ -306,11 +383,71 @@ namespace BIDSHelper.Core
                 object regRoot;
                 VSShellService.GetProperty((int)__VSSPROPID.VSSPROPID_VirtualRegistryRoot, out regRoot);
                 return (string)regRoot;
-                }
+            }
         }
 
         #region Menu Methods
-        public void CreateMenu(Guid commandSet, int commandId)
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// When only passing a CommandId you need to override ShouldDisplayCommand
+        /// if you need dynamic visibility for the menu command.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        public void CreateContextMenu(CommandList commandId)
+        {
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display for files with this extension (eg ".cube")</param>
+        public void CreateContextMenu(CommandList commandId, string extension)
+        {
+            Extensions.Add(extension);
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display if projects matching the guid from BIDSHelperProjectKinds is in the current solution</param>
+        public void CreateContextMenu(CommandList commandId, Guid projectKind)
+        {
+            m_ProjectKind = projectKind;
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display for files that match one of the entries in this array of extensions (eg ".cube")</param>
+        public void CreateContextMenu(CommandList commandId, string[] extensions)
+        {
+            Extensions.AddRange(extensions);
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display for files where the associated object is of this type</param>
+        public void CreateContextMenu(CommandList commandId, Type associatedObjectType)
+        {
+            AssociatedObjectType = associatedObjectType;
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        internal void CreateMenu(Guid commandSet, int commandId)
         {
             OleMenuCommandService commandService = this.MenuCommandService;
             if (commandService != null)
@@ -319,10 +456,10 @@ namespace BIDSHelper.Core
                 //var menuItem = new MenuCommand(this.MenuItemCallback, menuCommandID);
 
                 // AND REPLACE IT WITH A DIFFERENT TYPE
-                var menuItem = new OleMenuCommand(MenuItemCallback, menuCommandID);
-                menuItem.BeforeQueryStatus += OnMenuBeforeQueryStatus;
+                m_menuItem = new OleMenuCommand(MenuItemCallback, menuCommandID);
+                m_menuItem.BeforeQueryStatus += OnMenuBeforeQueryStatus;
 
-                commandService.AddCommand(menuItem);
+                commandService.AddCommand(m_menuItem);
             }
         }
 
@@ -340,10 +477,12 @@ namespace BIDSHelper.Core
                 // leave the menu invisible and disabled if the current feature is not enabled
                 if (!Enabled) return;
 
-                var selectedFileInfo = GetSelectedFile();
+                //var selectedFileInfo = GetSelectedFile();
 
-                // then check if the file is named '.cube'
-                bool showMenu = DisplayCommand(selectedFileInfo);
+                //// then check if the file is named '.cube'
+                //bool showMenu = DisplayCommand(selectedFileInfo);
+
+                bool showMenu = DisplayCommandInternal();
 
                 // if not leave the menu hidden
                 if (!showMenu) return;
@@ -357,7 +496,90 @@ namespace BIDSHelper.Core
         {
             this.Exec();
         }
-#endregion
+        #endregion
+
+        #region ToolWindow Methods
+
+        protected bool Checked { get; set; }
+
+        protected bool ToolWindowVisible
+        {
+            get {
+                if (m_windowFrame == null) return false;
+                return m_windowFrame.IsVisible() != 0;
+            }
+            set {
+                if (m_windowFrame == null) return; // TODO - show we throw and error or even create the window here??
+                if (value) ShowToolWindow();
+                else HideToolWindow();
+            }
+        }
+
+        private void HideToolWindow() {
+            if (m_windowFrame == null) return;
+            m_windowFrame.Hide();
+            m_menuItem.Checked = false;
+        }
+
+        private void ShowToolWindow()
+        {
+            
+            if (m_windowFrame == null) 
+            {
+                //TODO - throw error here??
+                return;
+            }
+            m_windowFrame.Show();
+            m_menuItem.Checked = true;
+        }
+
+        public void SetToolWindowIcon(int icon)
+        {
+            // TODO - set tool window icon
+            //m_windowFrame.SetProperty(__VSFPROPID.VSFPROPID_BitmapResource,  )
+        }
+
+        protected UserControl ToolWindowUserControl { get { return m_userControl; } }
+
+        protected void  CreateToolWindow(string caption, Guid guid, Type controlType)
+        {
+            const int TOOL_WINDOW_INSTANCE_ID = 0; // Single-instance toolwindow
+
+            IVsUIShell uiShell;
+            //Guid toolWindowPersistenceGuid;
+            Guid guidNull = Guid.Empty;
+            int[] position = new int[1];
+            int result;
+            IVsWindowFrame windowFrame = null;
+            try {
+                uiShell = (IVsUIShell)package.ServiceProvider.GetService(typeof(SVsUIShell));
+
+                //toolWindowPersistenceGuid = new Guid(guid);
+
+                m_userControl = (UserControl)Activator.CreateInstance(controlType);
+
+                //m_windowFrame.SetProperty(__VSFPROPID.VSFPROPID_BitmapResource, )
+
+                // TODO: Initialize m_userControl if required adding a method like:
+                //    internal void Initialize(VSPackageToolWindowPackage package)
+                // and pass this instance of the package:
+                //    m_userControl.Initialize(this);
+
+                result = uiShell.CreateToolWindow((uint)__VSCREATETOOLWIN.CTW_fInitNew,
+                      TOOL_WINDOW_INSTANCE_ID, m_userControl, ref guidNull, ref guid,
+                      ref guidNull, null, caption, position, out windowFrame);
+
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(result);
+
+                m_windowFrame = windowFrame;
+            }
+            catch (Exception ex)
+            {
+                this.package.Logger.Exception("Error Creating ToolWindow", ex);
+            }
+        }
+
+        #endregion
 
         internal DTE2 ApplicationObject
         {
@@ -369,7 +591,7 @@ namespace BIDSHelper.Core
             return package.DTE2.Events.WindowEvents;
         }
 
-
+        #region Solution Explorer Helpers
         public static bool IsSingleProjectItemSelection(out IVsHierarchy hierarchy, out uint itemid)
         {
             hierarchy = null;
@@ -505,6 +727,9 @@ namespace BIDSHelper.Core
             
             return new FileInfo(itemFullPath);
         }
+        #endregion
+
+        #region Static Methods
 
         public static Type GetPrivateType(Type publicTypeInSameAssembly, string FullName)
         {
@@ -517,5 +742,6 @@ namespace BIDSHelper.Core
             }
             return null;
         }
+        #endregion
     }
 }

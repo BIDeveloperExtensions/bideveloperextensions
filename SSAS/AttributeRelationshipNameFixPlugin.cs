@@ -1,23 +1,19 @@
 using System;
-using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-using System.Data;
-using System.ComponentModel.Design;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class AttributeRelationshipNameFixPlugin : BIDSHelperPluginBase
     {
         
-        public AttributeRelationshipNameFixPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public AttributeRelationshipNameFixPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.AttributeRelationshipFixId, ".dim");
         }
 
         public override string ShortName
@@ -25,12 +21,12 @@ namespace BIDSHelper
             get { return "AttributeRelationshipNameFix"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 4380; } // TODO - choose new bitmap
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 4380; } // TODO - choose new bitmap
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Attribute Relationship Name Fix"; }
         }
@@ -40,10 +36,6 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -51,7 +43,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -62,29 +54,6 @@ namespace BIDSHelper
         {
             get { return "Will synchronise the attribute relationship name with the attribute id to fix the warnings caused by renaming attributes without renaming the relationships."; }
         }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                var hierItem = ((UIHierarchyItem)((Array)solExplorer.SelectedItems).GetValue(0));
-                return (((ProjectItem)hierItem.Object).Object is Dimension);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
 
         public override void Exec()
         {
