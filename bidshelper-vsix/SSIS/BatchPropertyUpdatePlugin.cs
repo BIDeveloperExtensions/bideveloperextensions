@@ -1,8 +1,6 @@
 using System.Windows.Forms;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Text;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using System;
@@ -10,8 +8,9 @@ using Microsoft.SqlServer.Dts.Runtime;
 using wrap = Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     /// <summary>
     /// SSIS plugin that supports updating a property across multiple packages
@@ -20,9 +19,10 @@ namespace BIDSHelper
     {
         private IComponentChangeService changesvc;
 
-        public BatchPropertyUpdatePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public BatchPropertyUpdatePlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.BatchPropertyUpdateId);
         }
 
         public override string ShortName
@@ -30,12 +30,12 @@ namespace BIDSHelper
             get { return "BatchPropertyUpdatePlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 313; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 313; }
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Batch Property Update"; }
         }
@@ -44,12 +44,7 @@ namespace BIDSHelper
         {
             get { return string.Empty; }
         }
-
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
-
+        
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
@@ -68,7 +63,7 @@ namespace BIDSHelper
             get { return "Find and Replace for properties across multiple packages. Update property values using the /SET syntax."; }
         }
 
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             //return false;
 

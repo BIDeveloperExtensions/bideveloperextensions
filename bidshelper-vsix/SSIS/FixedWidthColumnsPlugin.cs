@@ -1,31 +1,24 @@
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
 using System;
-using Microsoft.Win32;
-using MSDDS;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Security;
 using wrap = Microsoft.SqlServer.Dts.Runtime.Wrapper;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class FixedWidthColumnsPlugin : BIDSHelperPluginBase
     {
 
-        public FixedWidthColumnsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public FixedWidthColumnsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.FixedWidthColumnsId);
         }
 
 
@@ -34,15 +27,10 @@ namespace BIDSHelper
             get { return "FixedWidthColumnsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 636; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Create Fixed Width Columns..."; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 636; }
+        //}
 
         public override string FeatureName
         {
@@ -54,15 +42,10 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return "Connection"; }
-        }
-
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Connection"; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -87,7 +70,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {

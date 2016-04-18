@@ -1,22 +1,20 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using System.Data;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class UnusedColumnsPlugin : BIDSHelperPluginBase
     {
-        public UnusedColumnsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public UnusedColumnsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.UnusedColumnsReportId);
         }
 
         public override string ShortName
@@ -24,25 +22,25 @@ namespace BIDSHelper
             get { return "UnusedColumns"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 543; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 543; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Unused Columns Report..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Unused Columns Report..."; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         public override string FeatureName
         {
@@ -64,7 +62,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -81,7 +79,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {
@@ -113,33 +111,31 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
-
+                DsvColumnResult results = null;
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
 
                 if (sFileName.EndsWith(".bim"))
                 {
-#if DENALI || SQL2014
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                     foreach (DataSourceView o in sandbox.Database.DataSourceViews)
                     {
-                        IterateDsvColumns(o);
+                        results = DsvHelpers.IterateDsvColumns(o);
                     }
-#endif
                 }
                 else
                 {
                     DataSourceView dsv = (DataSourceView)projItem.Object;
-                    IterateDsvColumns(dsv);
+                    results = DsvHelpers.IterateDsvColumns(dsv);
                 }
 
-                if (unusedColumns.Count == 0)
+                if (results.UnusedColumns.Count == 0)
                 {
                     MessageBox.Show("There are no unused columns.", "BIDS Helper - Unused Columns Report");
                     return;
                 }
 
                 ReportViewerForm frm = new ReportViewerForm();
-                frm.ReportBindingSource.DataSource = unusedColumns.Values;
+                frm.ReportBindingSource.DataSource = results.UnusedColumns.Values;
                 frm.Report = "SSAS.UnusedColumns.rdlc";
                 Microsoft.Reporting.WinForms.ReportDataSource reportDataSource1 = new Microsoft.Reporting.WinForms.ReportDataSource();
                 reportDataSource1.Name = "BIDSHelper_UnusedColumn";
@@ -157,133 +153,12 @@ namespace BIDSHelper
             }
         }
 
-        protected Dictionary<string, UnusedColumn> unusedColumns = new Dictionary<string, UnusedColumn>();
-        protected List<UsedColumn> usedColumns = new List<UsedColumn>();
-        private DataSourceView m_dsv;
+        //protected Dictionary<string, UnusedColumn> unusedColumns = new Dictionary<string, UnusedColumn>();
+        //protected List<UsedColumn> usedColumns = new List<UsedColumn>();
+        //private DataSourceView m_dsv;
 
-        protected void IterateDsvColumns(DataSourceView dsv)
-        {
-            m_dsv = dsv;
+        
 
-            //add all DSV columns to a list
-            unusedColumns.Clear();
-            usedColumns.Clear();
-            foreach (DataTable t in dsv.Schema.Tables)
-            {
-                foreach (DataColumn c in t.Columns)
-                {
-                    unusedColumns.Add("[" + t.TableName + "].[" + c.ColumnName + "]", new UnusedColumn(c, dsv));
-                }
-            }
-
-            //remove columns that are used in dimensions
-            foreach (Dimension dim in dsv.Parent.Dimensions)
-            {
-                if (dim.DataSourceView != null && dim.DataSourceView.ID == dsv.ID)
-                {
-                    foreach (DimensionAttribute attr in dim.Attributes)
-                    {
-                        foreach (DataItem di in attr.KeyColumns)
-                        {
-                            ProcessDataItemInLists(di, "Dimension Attribute Key");
-                        }
-                        ProcessDataItemInLists(attr.NameColumn, "Dimension Attribute Name");
-                        ProcessDataItemInLists(attr.ValueColumn, "Dimension Attribute Value");
-                        ProcessDataItemInLists(attr.UnaryOperatorColumn, "Dimension Attribute Unary Operator");
-                        ProcessDataItemInLists(attr.SkippedLevelsColumn, "Dimension Attribute Skipped Levels");
-                        ProcessDataItemInLists(attr.CustomRollupColumn, "Dimension Attribute Custom Rollup");
-                        ProcessDataItemInLists(attr.CustomRollupPropertiesColumn, "Dimension Attribute Custom Rollup Properties");
-                        foreach (AttributeTranslation tran in attr.Translations)
-                        {
-                            ProcessDataItemInLists(tran.CaptionColumn, "Dimension Attribute Translation");
-
-                        }
-                    }
-                }
-            }
-
-            foreach (Cube cube in dsv.Parent.Cubes)
-            {
-                if (cube.DataSourceView != null && cube.DataSourceView.ID == dsv.ID)
-                {
-                    foreach (MeasureGroup mg in cube.MeasureGroups)
-                    {
-                        //remove columns that are used in measures
-                        foreach (Measure m in mg.Measures)
-                        {
-                            ProcessDataItemInLists(m.Source, "Measure");
-                        }
-
-                        //remove columns that are used in dimension relationships
-                        foreach (MeasureGroupDimension mgdim in mg.Dimensions)
-                        {
-                            if (mgdim is ManyToManyMeasureGroupDimension)
-                            {
-                                //no columns to remove
-                            }
-                            else if (mgdim is DataMiningMeasureGroupDimension)
-                            {
-                                //no columns to remove
-                            }
-                            else if (mgdim is RegularMeasureGroupDimension)
-                            {
-                                //Degenerate dimensions and Reference dimensions
-                                RegularMeasureGroupDimension regMDdim = (RegularMeasureGroupDimension)mgdim;
-                                foreach (MeasureGroupAttribute mga in regMDdim.Attributes)
-                                {
-                                    if (mga.Type == MeasureGroupAttributeType.Granularity)
-                                    {
-                                        foreach (DataItem di3 in mga.KeyColumns)
-                                        {
-                                            ProcessDataItemInLists(di3, "Fact Table Dimension Key");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            //remove mining structure columns
-            foreach (MiningStructure structure in dsv.Parent.MiningStructures)
-            {
-                if (structure.DataSourceView != null && structure.DataSourceView.ID == dsv.ID)
-                    RecurseMiningStructureColumnsAndProcessDataItemInLists(structure.Columns);
-            }
-        }
-
-        private void ProcessDataItemInLists(DataItem di, string usageType)
-        {
-            if (di == null) return;
-            ColumnBinding cb = di.Source as ColumnBinding;
-            if (cb == null) return;
-            string sColUniqueName = "[" + cb.TableID + "].[" + cb.ColumnID + "]";
-            if (unusedColumns.ContainsKey(sColUniqueName))
-                unusedColumns.Remove(sColUniqueName);
-            usedColumns.Add(new UsedColumn(di, cb, m_dsv, usageType, di.Parent.FriendlyPath));
-        }
-
-        private void RecurseMiningStructureColumnsAndProcessDataItemInLists(MiningStructureColumnCollection cols)
-        {
-            foreach (MiningStructureColumn col in cols)
-            {
-                if (col is ScalarMiningStructureColumn)
-                {
-                    ScalarMiningStructureColumn scalar = (ScalarMiningStructureColumn)col;
-                    foreach (DataItem di in scalar.KeyColumns)
-                    {
-                        ProcessDataItemInLists(di, "Mining Structure Column Key");
-                    }
-                    ProcessDataItemInLists(scalar.NameColumn, "Mining Structure Column Name");
-                }
-                else if (col is TableMiningStructureColumn)
-                {
-                    TableMiningStructureColumn tblCol = (TableMiningStructureColumn)col;
-                    RecurseMiningStructureColumnsAndProcessDataItemInLists(tblCol.Columns);
-                }
-            }
-        }
 
         public class UnusedColumn
         {
@@ -425,11 +300,12 @@ namespace BIDSHelper
         }
     }
 
-    public class UsedColumnsPlugin : UnusedColumnsPlugin
+    public class UsedColumnsPlugin : BIDSHelperPluginBase
     {
-        public UsedColumnsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public UsedColumnsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.UsedColumnsReportId);
         }
 
         public override string ShortName
@@ -437,15 +313,15 @@ namespace BIDSHelper
             get { return "UsedColumns"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 723; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 723; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Used Columns Report..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Used Columns Report..."; }
+        //}
 
         public override string FeatureName
         {
@@ -461,6 +337,22 @@ namespace BIDSHelper
             get { return "This report lists all columns in the DSV which are used in dimensions, cubes, or mining structures. This report can be used for proof reading the setup of your cube or for documentation."; }
         }
 
+        public override BIDSFeatureCategories FeatureCategory
+        {
+            get
+            {
+                return BIDSFeatureCategories.SSASMulti;
+            }
+        }
+
+        public override string ToolTip
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
         public override void Exec()
         {
             try
@@ -469,10 +361,10 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
                 DataSourceView dsv = (DataSourceView)projItem.Object;
-                IterateDsvColumns(dsv);
+                DsvColumnResult results = DsvHelpers.IterateDsvColumns(dsv);
 
                 ReportViewerForm frm = new ReportViewerForm();
-                frm.ReportBindingSource.DataSource = usedColumns;
+                frm.ReportBindingSource.DataSource = results.UsedColumns;
                 frm.Report = "SSAS.UsedColumns.rdlc";
                 Microsoft.Reporting.WinForms.ReportDataSource reportDataSource1 = new Microsoft.Reporting.WinForms.ReportDataSource();
                 reportDataSource1.Name = "BIDSHelper_UsedColumn";

@@ -28,6 +28,19 @@ namespace BIDSHelper.Core
         DimensionHealthCheckId          = 0x0111,
         DeleteUnusedIndexesId           = 0x0112,
         DuplicateRoleId                 = 0x0113,
-        DimensionOptimizationReportId   = 0x0114
+        DimensionOptimizationReportId   = 0x0114,
+        RolesReportPluginId             = 0x0115,
+        NonDefaultPropertiesReportId    = 0x0116,
+        UnusedColumnsReportId           = 0x0117,
+        UsedColumnsReportId             = 0x0118,
+        VisualizeAttributeLatticeId     = 0x0119,
+        BatchPropertyUpdateId           = 0x011A,
+        PerformanceVisualizationId      = 0x011B,
+        DesignPracticeScannerId         = 0x011C,
+        AddNewBimlFileId                = 0x011D,
+        ExpandBimlFileId                = 0x011E,
+        LearnMoreAboutBimlId            = 0x011F,
+        CheckBimlForErrorsId            = 0x0120,
+        FixedWidthColumnsId             = 0x0121
     }
 }

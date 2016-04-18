@@ -103,7 +103,7 @@ namespace BIDSHelper.Core
                 }
                 else {
                     package.Logger.Verbose("Calling virtual ShouldDisplayCommand to see if we should be displaying this command " + this.GetType().Name);
-                    ShouldDisplayCommand();
+                    return ShouldDisplayCommand();
                 }
             }
             return false;
@@ -717,6 +717,23 @@ namespace BIDSHelper.Core
                 }
             }
         }
+
+        protected Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetSelectedProjectReference()
+        {
+            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = hierItem.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+
+            // if a project is in a folder the UIHierarchy object appears to return a project 
+            // wrapped in a ProjectItem so we need to unwrap it to get to the project.
+            if (proj == null && hierItem.Object is ProjectItem)
+            {
+                var pi = (ProjectItem)hierItem.Object;
+                proj = pi.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+            }
+            return proj;
+        }
+
         public FileInfo GetSelectedFile()
         {
             IVsHierarchy hierarchy;

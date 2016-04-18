@@ -9,42 +9,39 @@ namespace BIDSHelper.SSIS.Biml
 {
     public class BimlAddNewFilePlugin : BimlFeaturePluginBase
     {
-        public BimlAddNewFilePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public BimlAddNewFilePlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            //TODO -create menu
         }
 
         public override string ShortName
         {
             get { return "BimlAddNewFilePlugin"; }
         }
+        
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override System.Drawing.Icon CustomMenuIcon
+        //{
+        //    get { return BIDSHelper.Resources.Common.BimlFile; }
+        //}
 
-        public override System.Drawing.Icon CustomMenuIcon
-        {
-            get { return BIDSHelper.Resources.Common.BimlFile; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Add New Biml File"; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Add New Biml File"; }
+        //}
 
         public override string ToolTip
         {
             get { return "Add a new Biml file to your project."; }
         }
 
-        public override string MenuName
-        {
-            get { return "Project,Project Node"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Project,Project Node"; }
+        //}
 
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             if (((System.Array)solExplorer.SelectedItems).Length == 1)

@@ -19,8 +19,8 @@ namespace BIDSHelper.SSIS
         //TODO: may be needed if we decide to capture the ActiveViewChanged event... see TODO below on this topic
         //private System.Collections.Generic.List<string> windowHandlesFixedPartitionsView = new System.Collections.Generic.List<string>();
 
-        public dtsConfigFormatterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public dtsConfigFormatterPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         
         }
@@ -180,13 +180,9 @@ namespace BIDSHelper.SSIS
         {
             get { return "dtsConfigFormatterPlugin"; }
         }
+        
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "dtsConfig Formatter"; }
         }
@@ -195,11 +191,7 @@ namespace BIDSHelper.SSIS
         {
             get { return string.Empty; }
         }
-
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
+        
 
         /// <summary>
         /// Gets the Url of the online help page for this plug-in.
@@ -228,17 +220,6 @@ namespace BIDSHelper.SSIS
         {
             get { return "Automatically applies easy to read formatting to your dtsConfig files as they are opened."; }
         }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
-
 
         public override void Exec()
         {

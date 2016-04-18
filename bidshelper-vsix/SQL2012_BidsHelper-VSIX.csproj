@@ -245,9 +245,17 @@
     <Compile Include="SSAS\DeployPerspectivesPlugin.cs" />
     <Compile Include="SSAS\DimensionHealthCheckPlugin.cs" />
     <Compile Include="SSAS\DimensionOptimizationReportPlugin.cs" />
+    <Compile Include="SSAS\DsvHelpers.cs" />
     <Compile Include="SSAS\DuplicateRole.cs" />
     <Compile Include="SSAS\EstimatedCountsPlugin.cs" />
     <Compile Include="SSAS\ExtraPropertiesPlugin.cs" />
+    <Compile Include="SSAS\M2MMatrixCompressionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\M2MMatrixCompressionForm.Designer.cs">
+      <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\M2MMatrixCompressionPlugin.cs" />
     <Compile Include="SSAS\MDXHelper.cs" />
     <Compile Include="SSAS\MeasureGroupHealthCheckForm.cs">
       <SubType>Form</SubType>
@@ -256,6 +264,13 @@
       <DependentUpon>MeasureGroupHealthCheckForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\MeasureGroupHealthCheckPlugin.cs" />
+    <Compile Include="SSAS\NonDefaultPropertiesPlugin.cs" />
+    <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\NonDefaultPropertiesSelectionForm.Designer.cs">
+      <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SSAS\PCDimNaturalizer\ctlCheckedFancyListBox.cs" />
     <Compile Include="SSAS\PCDimNaturalizer\frmASFlattener.cs">
       <SubType>Form</SubType>
@@ -289,6 +304,7 @@
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSAS\PrinterFriendlyDimensionUsage.cs" />
     <Compile Include="SSAS\PrinterFriendlyDimensionUsagePlugin.cs" />
+    <Compile Include="SSAS\RolesReportPlugin.cs" />
     <Compile Include="SSAS\SyncDescriptionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -332,8 +348,64 @@
       <DependentUpon>TabularTranslationsEditorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SSAS\TriStatePerspectivesPlugin.cs" />
+    <Compile Include="SSAS\UnusedColumnsPlugin.cs" />
+    <Compile Include="SSAS\VisualizeAttributeLattice.cs" />
+    <Compile Include="SSAS\VisualizeAttributeLatticeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSAS\VisualizeAttributeLatticeForm.Designer.cs">
+      <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSAS\VisualizeAttributeLatticePlugin.cs" />
     <Compile Include="SSIS\Adorners\BIDSHelperConfigurationAdorner.cs" />
+    <Compile Include="SSIS\AutoSortProjectFilesPlugin.cs" />
+    <Compile Include="SSIS\BatchPropertyUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\BatchPropertyUpdateForm.Designer.cs">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlAddNewFilePlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlCheckForErrorsPlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlExpandPlugin.cs" />
+    <Compile Include="SSIS\Biml\BimlFeaturePluginBase.cs" />
+    <Compile Include="SSIS\Biml\BimlUtility.cs" />
+    <Compile Include="SSIS\Biml\BimlValidationListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\BimlValidationListForm.Designer.cs">
+      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.Designer.cs">
+      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\HelpWithBimlPlugin.cs" />
+    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.Designer.cs">
+      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\Biml\ProjectConnectionManagerInfo.cs" />
     <Compile Include="SSIS\ComponentInfo.cs" />
+    <Compile Include="SSIS\DeployPackagesPlugin.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DataFlowPerformancePractices.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractice.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignPractices.cs" />
+    <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.Designer.cs">
+      <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\DesignPracticesPlugin.cs" />
+    <Compile Include="SSIS\dtsConfigFormatterPlugin.cs" />
     <Compile Include="SSIS\ExpressionHighlighterPlugin.cs" />
     <Compile Include="SSIS\ExpressionListControl.cs">
       <SubType>UserControl</SubType>
@@ -361,9 +433,37 @@
       <DependentUpon>FindUnusedVariables.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\FindVariables.cs" />
+    <Compile Include="SSIS\FixedWidthColumnsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FixedWidthColumnsForm.Designer.cs">
+      <DependentUpon>FixedWidthColumnsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FixedWidthColumnsPlugin.cs" />
     <Compile Include="SSIS\HighlightingToDo.cs" />
     <Compile Include="SSIS\PackageConfigurationLoader.cs" />
     <Compile Include="SSIS\PackageHelper.cs" />
+    <Compile Include="SSIS\PerformanceVisualizationPlugin.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsGanttGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsObjectPerformance.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsPerformanceLogEventParser.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsPipelineTestDirector.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\DtsStatisticsGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsStatisticsTrendGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SSIS\PerformanceVisualization\DtsTextLogFileLoader.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\LineageIdReplacer.cs" />
+    <Compile Include="SSIS\PerformanceVisualization\PerformanceTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="SSIS\SmartDiff.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -404,17 +504,48 @@
     <Content Include="Resources\2012\Variable.ico" />
     <Content Include="Resources\2012\VariableFindReferences.ico" />
     <Content Include="Resources\2012\VariableFindUnused.ico" />
+    <Content Include="Resources\arrowDown.bmp" />
+    <Content Include="Resources\arrowFlat.bmp" />
+    <Content Include="Resources\arrowUp.bmp" />
     <Content Include="Resources\BIDSHelperIcons.png" />
+    <Content Include="Resources\Biml.ico" />
+    <Content Include="Resources\BimlFile.ico" />
+    <Content Include="Resources\CheckBiml.ico" />
+    <Content Include="Resources\Connection.ico" />
+    <Content Include="Resources\Copy.ico" />
     <Content Include="Resources\DeployAggDesigns.ico" />
     <Content Include="Resources\DeployAggDesigns.xslt" />
     <Content Include="Resources\DeployMdxScript.ico" />
     <Content Include="Resources\DeployPerspectives.ico" />
     <Content Include="Resources\DeployPerspectives.xslt" />
+    <Content Include="Resources\Edit.ico" />
+    <Content Include="Resources\EditAggregations.ico" />
+    <Content Include="Resources\End.ico" />
+    <Content Include="Resources\EstimatedCounts.ico" />
+    <Content Include="Resources\ExpressionListIcon.ico" />
+    <Content Include="Resources\Function.ico" />
     <Content Include="Resources\Icons\Index_8287_16x.png" />
+    <Content Include="Resources\M2MIcon.ico" />
+    <Content Include="Resources\MinusSign.ico" />
+    <Content Include="Resources\NoIcon.ico" />
+    <Content Include="Resources\Package.ico" />
+    <Content Include="Resources\Path.ico" />
     <Content Include="Resources\performance.ico" />
+    <Content Include="Resources\PlusSign.ico" />
+    <Content Include="Resources\PrinterFriendlyDimensionUsageIcon.ico" />
+    <Content Include="Resources\Process Progress1052856.bmp" />
+    <Content Include="Resources\process progress1704108.bmp" />
+    <Content Include="Resources\Process Progress464342.gif" />
+    <Content Include="Resources\Question.ico" />
+    <Content Include="Resources\RefreshExpressions.ico" />
+    <Content Include="Resources\Run.ico" />
+    <Content Include="Resources\SmallBlueDiamond.ico" />
     <Content Include="Resources\SmartDiffDtsx.xslt" />
     <Content Include="Resources\SmartDiffSSAS.xslt" />
     <Content Include="Resources\SmartDiffSSRS.xslt" />
+    <Content Include="Resources\stop.ico" />
+    <Content Include="Resources\TaskSmall.ico" />
+    <Content Include="Resources\TreeViewTab.ico" />
     <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
     <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />
     <Content Include="SSAS\AggManager\Graphics\Checked.ico" />
@@ -686,6 +817,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Design" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -769,8 +901,15 @@
       <DependentUpon>DeleteUnusedIndexesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\DimensionOptimization.rdlc" />
+    <EmbeddedResource Include="SSAS\M2MMatrixCompressionForm.resx">
+      <DependentUpon>M2MMatrixCompressionForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SSAS\MeasureGroupHealthCheckForm.resx">
       <DependentUpon>MeasureGroupHealthCheckForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\NonDefaultProperties.rdlc" />
+    <EmbeddedResource Include="SSAS\NonDefaultPropertiesSelectionForm.resx">
+      <DependentUpon>NonDefaultPropertiesSelectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\PCDimNaturalizer\frmASFlattener.resx">
       <DependentUpon>frmASFlattener.cs</DependentUpon>
@@ -789,6 +928,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsage.rdlc" />
     <EmbeddedResource Include="SSAS\PrinterFriendlyDimensionUsageBusMatrix.rdlc" />
+    <EmbeddedResource Include="SSAS\RolesReport.rdlc" />
     <EmbeddedResource Include="SSAS\SyncDescriptionsForm.resx">
       <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -797,6 +937,27 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSAS\Tabular\TabularAnnotationWorkaroundForm.resx">
       <DependentUpon>TabularAnnotationWorkaroundForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSAS\UnusedColumns.rdlc" />
+    <EmbeddedResource Include="SSAS\UsedColumns.rdlc" />
+    <EmbeddedResource Include="SSAS\VisualizeAttributeLattice.rdlc" />
+    <EmbeddedResource Include="SSAS\VisualizeAttributeLatticeForm.resx">
+      <DependentUpon>VisualizeAttributeLatticeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
+      <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\BimlValidationListForm.resx">
+      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\FrameworkVersionAlertDialog.resx">
+      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\Biml\MultipleSelectionConfirmationDialog.resx">
+      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.resx">
+      <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
@@ -809,6 +970,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\FindUnusedVariables.resx">
       <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FixedWidthColumnsForm.resx">
+      <DependentUpon>FixedWidthColumnsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\SmartDiff.resx">
       <DependentUpon>SmartDiff.cs</DependentUpon>
