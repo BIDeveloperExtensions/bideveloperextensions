@@ -190,7 +190,7 @@ namespace BIDSHelper.SSAS
             // 
             // m2mMatrixCompressionStatBindingSource
             // 
-            this.m2mMatrixCompressionStatBindingSource.DataSource = typeof(BIDSHelper.M2MMatrixCompressionPlugin.M2MMatrixCompressionStat);
+            this.m2mMatrixCompressionStatBindingSource.DataSource = typeof(BIDSHelper.SSAS.M2MMatrixCompressionPlugin.M2MMatrixCompressionStat);
             // 
             // M2MMatrixCompressionForm
             // 

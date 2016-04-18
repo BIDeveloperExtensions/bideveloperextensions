@@ -1,19 +1,14 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-using System.Data;
-using System.Data.OleDb;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class M2MMatrixCompressionPlugin : BIDSHelperWindowActivatedPluginBase
     {
@@ -112,7 +107,7 @@ namespace BIDSHelper
                         newM2MButton.Enabled = true;
                         newM2MButton.Style = ToolBarButtonStyle.PushButton;
 
-                        if (Connect.Plugins[DeployMDXScriptPlugin.BaseName + typeof(DeployMDXScriptPlugin).Name].Enabled)
+                        if (BIDSHelperPackage.Plugins[BaseName + typeof(PrinterFriendlyDimensionUsagePlugin).Name].Enabled)
                         {
                             toolbar.ImageList.Images.Add(BIDSHelper.Resources.Common.PrinterFriendlyDimensionUsageIcon);
                             newPrintFriendlyButton = new ToolBarButton();
@@ -155,7 +150,7 @@ namespace BIDSHelper
                     }
                     else if (sButtonTag == this.FullName + ".PrintFriendly")
                     {
-                        Connect.Plugins[PrinterFriendlyDimensionUsagePlugin.BaseName + typeof(PrinterFriendlyDimensionUsagePlugin).Name].Exec();
+                        BIDSHelperPackage.Plugins[BaseName + typeof(PrinterFriendlyDimensionUsagePlugin).Name].Exec();
                     }
                 }
             }
@@ -166,8 +161,8 @@ namespace BIDSHelper
         }
 
 
-        public M2MMatrixCompressionPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public M2MMatrixCompressionPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
@@ -177,15 +172,11 @@ namespace BIDSHelper
             get { return "M2MMatrixCompressionPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 4380; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 4380; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "M2M Matrix Compression..."; }
-        }
 
         public override string FeatureName
         {
@@ -197,15 +188,6 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
-
-        public override string MenuName
-        {
-            get { return string.Empty; } //only show in Dimension Usage tab toolbar
-        }
 
         /// <summary>
         /// Gets the Url of the online help page for this plug-in.
@@ -222,7 +204,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -235,30 +217,30 @@ namespace BIDSHelper
         }
         #endregion
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                if (this.ApplicationObject.ActiveWindow == null || this.ApplicationObject.ActiveWindow.ProjectItem == null)
-                    return false;
+        ///// <summary>
+        ///// Determines if the command should be displayed or not.
+        ///// </summary>
+        ///// <param name="item"></param>
+        ///// <returns></returns>
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        if (this.ApplicationObject.ActiveWindow == null || this.ApplicationObject.ActiveWindow.ProjectItem == null)
+        //            return false;
 
-                ProjectItem pi = this.ApplicationObject.ActiveWindow.ProjectItem;
-                if (pi.Object is Cube)
-                {
-                    return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //        ProjectItem pi = this.ApplicationObject.ActiveWindow.ProjectItem;
+        //        if (pi.Object is Cube)
+        //        {
+        //            return true;
+        //        }
+        //        return false;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
 
         public override void Exec()

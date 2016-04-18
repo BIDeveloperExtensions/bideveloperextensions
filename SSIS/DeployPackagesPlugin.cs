@@ -7,23 +7,23 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.DataTransformationServices.Project;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
-using System.Xml.Serialization;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project.Configuration;
 using Microsoft.DataWarehouse.Project;
 using Microsoft.DataWarehouse.VsIntegration.Shell;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.CommandBars;
-using Microsoft.CSharp;
+using BIDSHelper.Core;
+using BIDSHelper.SSAS;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class DeployPackagesPlugin : BIDSHelperPluginBase
     {
         private CommandBarButton cmdButtonProperties = null;
         private Guid guidForCustomPropertyFrame;
 
-        public DeployPackagesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DeployPackagesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
             RegisterClassesForCOM();
             CaptureClickEventForProjectPropertiesMenu();
@@ -35,25 +35,20 @@ namespace BIDSHelper
             get { return "DeployPackagesPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 1812; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Deploy"; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 1812; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item,Project,Solution"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Item,Project,Solution"; }
+        //}
 
         public override string FeatureName
         {
@@ -80,7 +75,7 @@ namespace BIDSHelper
         #endregion
 
 
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             if (((System.Array)solExplorer.SelectedItems).Length == 1)

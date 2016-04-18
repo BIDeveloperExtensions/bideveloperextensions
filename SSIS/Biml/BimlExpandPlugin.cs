@@ -12,8 +12,8 @@ namespace BIDSHelper.SSIS.Biml
     
     public class BimlExpandPlugin : BimlFeaturePluginBase
     {
-        public BimlExpandPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public BimlExpandPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
@@ -23,33 +23,20 @@ namespace BIDSHelper.SSIS.Biml
             get { return "BimlExpandPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override System.Drawing.Icon CustomMenuIcon
-        {
-            get { return BIDSHelper.Resources.Common.Biml; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Generate SSIS Packages"; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Generate SSIS Packages"; }
+        //}
 
         public override string ToolTip
         {
             get { return "Expand BimlScript file into one or more SSIS packages in your project"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
+        
         #endregion
 
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             foreach (object selected in ((System.Array)solExplorer.SelectedItems))

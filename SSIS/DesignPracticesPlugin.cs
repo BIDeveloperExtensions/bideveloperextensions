@@ -8,6 +8,7 @@ using BIDSHelper.SSIS.DesignPracticeScanner;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.SqlServer.Dts.Runtime;
 using System.ComponentModel.Design;
+using BIDSHelper.Core;
 
 namespace BIDSHelper.SSIS
 {
@@ -15,9 +16,11 @@ namespace BIDSHelper.SSIS
     {
         private static DesignPractices _practices = new DesignPractices();
 
-        public DesignPracticesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DesignPracticesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.DesignPracticeScannerId, ".dtsx");
+
             foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
             {
                 if (typeof(DesignPractice).IsAssignableFrom(t)
@@ -45,7 +48,7 @@ namespace BIDSHelper.SSIS
             get { return "Design Warnings Scanner"; }
         }
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Design Warnings Scanner"; }
         }
@@ -64,10 +67,10 @@ namespace BIDSHelper.SSIS
             get { return "This tool will scan the package for adherence to good design practices with SSIS."; }
         }
 
-        public override int Bitmap
-        {
-            get { return 313; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 313; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -76,17 +79,6 @@ namespace BIDSHelper.SSIS
         public override BIDSFeatureCategories FeatureCategory
         {
             get { return BIDSFeatureCategories.SSIS; }
-        }
-
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length != 1) return false;
-
-            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-
-            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-            return (sFileName.EndsWith(".dtsx"));
         }
 
         public override void Exec()

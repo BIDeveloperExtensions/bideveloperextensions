@@ -1,3 +1,4 @@
+using BIDSHelper.Core;
 using EnvDTE;
 using EnvDTE80;
 
@@ -5,8 +6,8 @@ namespace BIDSHelper.SSIS.Biml
 {
     public abstract class BimlFeaturePluginBase : BIDSHelperPluginBase
     {
-        public BimlFeaturePluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public BimlFeaturePluginBase(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
