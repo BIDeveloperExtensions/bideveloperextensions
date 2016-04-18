@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-using System.Data;
+using BIDSHelper.Core;
 using System.DirectoryServices;
 
 //helps work around this error: "No mapping between account names and security IDs was done."
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class RolesReportPlugin : BIDSHelperPluginBase
     {
@@ -28,9 +26,10 @@ namespace BIDSHelper
             }
         }
 
-        public RolesReportPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public RolesReportPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.RolesReportPluginId);
         }
 
         public override string ShortName
@@ -38,15 +37,15 @@ namespace BIDSHelper
             get { return "RolesReportPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 3709; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 3709; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Roles Report..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Roles Report..."; }
+        //}
 
         public override string FeatureName
         {
@@ -58,15 +57,11 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
-        public override string MenuName
-        {
-            get { return "Folder Node,Item"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Folder Node,Item"; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -74,7 +69,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -91,7 +86,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {
@@ -134,7 +129,7 @@ namespace BIDSHelper
                 if (sFileName.EndsWith(".bim"))
                 {
 #if DENALI || SQL2014
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                     db = sandbox.Database;
                     bIsTabular = true;
 #endif

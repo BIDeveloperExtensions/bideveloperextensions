@@ -28,6 +28,7 @@ namespace BIDSHelper
         public const int MyMenuGroupBottom = 0x1030;
         public const int MyMenuViewOtherWindowsGroup = 0x1040;
         public const int myMeasureGroupContextMenuGroup = 0x041A;
+        public const int myProjectMenuGroup = 0x0424;
         public const int DeployMdxScriptId = 0x0100;
         public const int AggregationManagerId = 0x0101;
         public const int PrinterFriendlyDimensionUsageId = 0x0102;
@@ -49,6 +50,19 @@ namespace BIDSHelper
         public const int DeleteUnusedIndexesId = 0x0112;
         public const int DuplicateRolesId = 0x0113;
         public const int DimensionOptimizationReportId = 0x0114;
+        public const int RolesReportPluginId = 0x0115;
+        public const int NonDefaultPropertiesReportId = 0x0116;
+        public const int UnusedColumnsReportId = 0x0117;
+        public const int UsedColumnsReportId = 0x0118;
+        public const int VisualizeAttributeLatticeId = 0x0119;
+        public const int BatchPropertyUpdateId = 0x011A;
+        public const int PerformanceVisualizationId = 0x011B;
+        public const int DesignPracticeScannerId = 0x011C;
+        public const int AddNewBimlFileId = 0x011D;
+        public const int ExpandBimlFileId = 0x011E;
+        public const int LearnMoreAboutBimlId = 0x011E;
+        public const int CheckBimlForErrorsId = 0x0120;
+        public const int FixedWidthColumnsId = 0x0120;
         public const int measureGroupContextMenu = 0x1220;
         public const int picBlank = 0x0001;
         public const int picDeployMdxScript = 0x0002;

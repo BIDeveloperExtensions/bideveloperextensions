@@ -61,8 +61,16 @@
       <Group guid="guidBidsHelperPackageCmdSet" id="myMeasureGroupContextMenuGroup" priority="0x0000">
         <Parent guid="measureGroupContextMenuGroup" id="measureGroupContextMenu"/>
       </Group>
+    
+      <!-- Project Menu -->
+      <Group guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+      </Group>
+
     </Groups>
 
+    
+    
     <!--Buttons section. -->
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
@@ -275,8 +283,96 @@
           <ButtonText>Deploy Aggregation Designs</ButtonText>
         </Strings>
       </Button>
-    </Buttons>
 
+      <Button guid="guidBidsHelperPackageCmdSet" id="NonDefaultPropertiesReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="MyMenuGroupBottom" />
+
+        <Icon guid="guidImages" id="picBlank" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Non-Default Properties Report...</ButtonText>
+        </Strings>
+      </Button>
+    
+      <Button guid="guidBidsHelperPackageCmdSet" id="NonDefaultPropertiesReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Non-Default Properties Report...</ButtonText>
+        </Strings>
+      </Button>
+        
+      <Button guid="guidBidsHelperPackageCmdSet" id="RolesReportPluginId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="MyMenuGroupBottom" />
+
+        <Icon guid="guidImages" id="picBlank" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Roles Report...</ButtonText>
+        </Strings>
+      </Button>
+
+    <Button guid="guidBidsHelperPackageCmdSet" id="UnusedColumnsReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="MyMenuGroupBottom" />
+
+        <Icon guid="guidImages" id="picBlank" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Unused Columns Report...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="VisualizeAttributeLatticeId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="MyMenuGroupBottom" />
+
+        <Icon guid="guidImages" id="picBlank" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Visualize Attribute Lattice</ButtonText>
+        </Strings>
+      </Button>
+        
+      <Button guid="guidBidsHelperPackageCmdSet" id="UsedColumnsReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="MyMenuGroupBottom" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Used Columns Report...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="BatchPropertyUpdateId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="MyMenuGroupBottom" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Batch Property Update...</ButtonText>
+        </Strings>
+      </Button>
+    
+    <!--
+    <IDSymbol name="PerformanceVisualizationId" value="0x011B" />,
+      <IDSymbol name="DesignPracticeScannerId" value="0x11C" />
+      <IDSymbol name="AddNewBimlFileId" value="0x011D" />
+      <IDSymbol name="ExpandBimlFileId" value="0x011E" />
+      <IDSymbol name="LearnMoreAboutBimlId" value="0x011E" />
+      <IDSymbol name="CheckBimlForErrorsId" value="0x0120" />
+      <IDSymbol name="FixedWidthColumnsId" value="0x0120" />
+      -->
+    
+    </Buttons>
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
     <Bitmaps>
       <!--  The bitmap id is defined in a way that is a little bit different from the others:
@@ -303,6 +399,7 @@
       <IDSymbol name="MyMenuGroupBottom" value="0x1030" />
       <IDSymbol name="MyMenuViewOtherWindowsGroup" value ="0x1040" />
       <IDSymbol name="myMeasureGroupContextMenuGroup" value="01050"/>
+      <IDSymbol name="myProjectMenuGroup" value="01060"/>
       <!-- Button IDs-->
       <IDSymbol name="DeployMdxScriptId" value="0x0100" />
       <IDSymbol name="AggregationManagerId" value="0x0101" />
@@ -325,6 +422,19 @@
       <IDSymbol name="DeleteUnusedIndexesId" value="0x0112" />
       <IDSymbol name="DuplicateRolesId" value="0x0113" />
       <IDSymbol name="DimensionOptimizationReportId" value="0x0114" />
+      <IDSymbol name="RolesReportPluginId" value="0x0115" />
+      <IDSymbol name="NonDefaultPropertiesReportId" value="0x0116"/>
+      <IDSymbol name="UnusedColumnsReportId" value="0x0117"/>
+      <IDSymbol name="UsedColumnsReportId" value="0x0118"/>
+      <IDSymbol name="VisualizeAttributeLatticeId" value="0x0119"/>
+      <IDSymbol name="BatchPropertyUpdateId" value="0x011A"/>
+      <IDSymbol name="PerformanceVisualizationId" value="0x011B" />
+      <IDSymbol name="DesignPracticeScannerId" value="0x11C" />
+      <IDSymbol name="AddNewBimlFileId" value="0x011D" />
+      <IDSymbol name="ExpandBimlFileId" value="0x011E" />
+      <IDSymbol name="LearnMoreAboutBimlId" value="0x011E" />
+      <IDSymbol name="CheckBimlForErrorsId" value="0x0120" />
+      <IDSymbol name="FixedWidthColumnsId" value="0x0120" />
     </GuidSymbol>
 
     <GuidSymbol name="measureGroupContextMenuGroup" value="{FA554DC1-6DD4-11D1-AF71-006097DF568C}">
