@@ -46,7 +46,10 @@ namespace BIDSHelper.SSIS
                     return;
             }
             catch
-            { }
+            {
+                // If previous checks failed, the window cannot be what we are looking for, as we know the SSIS window has a valid object kind, and mode.
+                return;
+            }
 
             try
             {
