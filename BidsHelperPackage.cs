@@ -88,12 +88,12 @@ namespace BIDSHelper
             base.Initialize();
 
 #if DEBUG
-            Logger = new Core.Logger.OutputLogger(this);
-            Logger.LogLevel = LogLevels.Verbose;
+            Log = new Core.Logger.OutputLogger(this);
+            Log.LogLevel = LogLevels.Verbose;
 #else
             Logger = new Core.Logger.NullLogger();
 #endif
-            Logger.Info("BIDSHelper Package Initialize Starting");
+            Log.Info("BIDSHelper Package Initialize Starting");
             string sAddInTypeName = string.Empty;
             try
             {
@@ -112,7 +112,7 @@ namespace BIDSHelper
                         && (!t.IsAbstract))
                     {
                         sAddInTypeName = t.Name;
-                        Logger.Verbose(string.Format("Loading Plugin: {0}", sAddInTypeName));
+                        Log.Verbose(string.Format("Loading Plugin: {0}", sAddInTypeName));
 
                         BIDSHelperPluginBase feature;
                         Type[] @params = { typeof(BIDSHelperPackage) };
@@ -144,13 +144,13 @@ namespace BIDSHelper
                 if (string.IsNullOrEmpty(sAddInTypeName))
                 {
                     AddInLoadException = ex;
-                    Logger.Exception("Problem loading BIDS Helper", ex);
+                    Log.Exception("Problem loading BIDS Helper", ex);
                     //System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper: " + ex.Message + "\r\n" + ex.StackTrace);
                 }
                 else
                 {
                     AddInLoadException = new Exception("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace, ex);
-                    Logger.Exception("Problem loading BIDS Helper. Problem type was " + sAddInTypeName , ex);
+                    Log.Exception("Problem loading BIDS Helper. Problem type was " + sAddInTypeName , ex);
                     //System.Windows.Forms.MessageBox.Show("Problem loading BIDS Helper. Problem type was " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
@@ -208,11 +208,12 @@ namespace BIDSHelper
                     _ideMode = enumIDEMode.Run;
                     break;
             }
-
+            IdeModeChanged?.Invoke(this, _ideMode);
             return VSConstants.S_OK;
         }
 
 
+        public event EventHandler<enumIDEMode> IdeModeChanged;
 
         public static Exception AddInLoadException = null;
         private uint debugEventCookie;
@@ -244,7 +245,7 @@ namespace BIDSHelper
         public enumIDEMode IdeMode { get { return _ideMode; } }
 #endregion
 
-        public ILog Logger { get; private set; }
+        public ILog Log { get; private set; }
 
         public void OutputString(string text)
         {

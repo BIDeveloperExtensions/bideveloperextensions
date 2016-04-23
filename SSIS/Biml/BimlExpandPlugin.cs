@@ -15,6 +15,7 @@ namespace BIDSHelper.SSIS.Biml
         public BimlExpandPlugin(BIDSHelperPackage package)
             : base(package)
         {
+            CreateContextMenu(Core.CommandList.ExpandBimlFileId);
         }
 
         #region Standard Property Overrides

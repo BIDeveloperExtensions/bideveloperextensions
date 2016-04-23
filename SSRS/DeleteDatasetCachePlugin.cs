@@ -1,20 +1,18 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using System.Data;
+using BIDSHelper.Core;
 
 namespace BIDSHelper.SSRS
 {
     public class DeleteDatasetCachePlugin : BIDSHelperPluginBase
     {
-        public DeleteDatasetCachePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DeleteDatasetCachePlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.DeleteDatasetCacheId);
         }
 
         public override string ShortName
@@ -22,12 +20,12 @@ namespace BIDSHelper.SSRS
             get { return "DeleteDatasetCache"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 214; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 214; }
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Delete Dataset Cache Files"; }
         }
@@ -37,17 +35,12 @@ namespace BIDSHelper.SSRS
             get { return string.Empty; } //not used anywhere
         }
 
-        public override string MenuName
-        {
-            get { return "Project,Solution"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Project,Solution"; }
+        //}
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
-
-        /// <summary>
+                /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
         /// <value>The feature category.</value>
@@ -70,7 +63,7 @@ namespace BIDSHelper.SSRS
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {
@@ -117,13 +110,13 @@ namespace BIDSHelper.SSRS
                 List<string> lstRdls = new List<string>();
                 if (proj != null)
                 {
-                    lstRdls.AddRange(UnusedDatasetsPlugin.GetRdlFilesInProjectItems(proj.ProjectItems, false));
+                    lstRdls.AddRange(DatasetScanner.GetRdlFilesInProjectItems(proj.ProjectItems, false));
                 }
                 else if (solution != null)
                 {
                     foreach (Project p in solution.Projects)
                     {
-                        lstRdls.AddRange(UnusedDatasetsPlugin.GetRdlFilesInProjectItems(p.ProjectItems, true));
+                        lstRdls.AddRange(DatasetScanner.GetRdlFilesInProjectItems(p.ProjectItems, true));
                     }
                 }
 

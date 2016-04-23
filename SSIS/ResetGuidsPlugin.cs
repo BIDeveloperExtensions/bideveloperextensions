@@ -1,22 +1,20 @@
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Text;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using System;
 using Microsoft.SqlServer.Dts.Runtime;
-using wrap = Microsoft.SqlServer.Dts.Runtime.Wrapper;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class ResetGuidsPlugin : BIDSHelperPluginBase
     {
-        public ResetGuidsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public ResetGuidsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.ResetGUIDsId, ".dtsx");
         }
 
         public override string ShortName
@@ -24,12 +22,12 @@ namespace BIDSHelper
             get { return "ResetGuidsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 313; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 313; }
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Reset GUIDs"; }
         }
@@ -39,10 +37,6 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -62,17 +56,17 @@ namespace BIDSHelper
             get { return "Reset the IDs for all tasks, connection managers, configurations, event handlers, variables, and the package ID itself. Ensures that all IDs in the current package are unique."; }
         }
 
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            if (ApplicationObject.Mode == vsIDEMode.vsIDEModeDebug) return false;
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    if (ApplicationObject.Mode == vsIDEMode.vsIDEModeDebug) return false;
+        //    UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //    if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //        return false;
 
-            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-            return (sFileName.EndsWith(".dtsx"));
-        }
+        //    UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //    string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+        //    return (sFileName.EndsWith(".dtsx"));
+        //}
 
 
         private List<string> _listGuidsToReplace;
