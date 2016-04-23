@@ -793,7 +793,7 @@ namespace BIDSHelper.SSIS
             catch (Exception e)
             {
                 System.Windows.Forms.MessageBox.Show("The Expression List could not be toggled. Error: " + e.Message);
-                this.package.Logger.Exception("The Expression List could not be toggled.", e);
+                this.package.Log.Exception("The Expression List could not be toggled.", e);
             }
         }
 

@@ -13,6 +13,7 @@ namespace BIDSHelper.SSIS.Biml
             : base(package)
         {
             //TODO -create menu
+            CreateContextMenu(Core.CommandList.AddNewBimlFileId);
         }
 
         public override string ShortName

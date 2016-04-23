@@ -2,18 +2,15 @@ using EnvDTE;
 using EnvDTE80;
 using System.Text;
 using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
 using System;
-using Microsoft.VisualStudio.Shell.Interop;
-using System.ComponentModel;
 using System.Windows.Forms;
-using Microsoft.VisualStudio.CommandBars;
 using System.ComponentModel.Design;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Design;
 using Microsoft.DataWarehouse.Project;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class RelativePathsPlugin : BIDSHelperPluginBase
     {
@@ -21,9 +18,10 @@ namespace BIDSHelper
         private Package packageForFixButton = null;
         private string pathForPackageForFixButton;
 
-        public RelativePathsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public RelativePathsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.FixRelativePathsId, new Guid(BIDSProjectKinds.SSIS));
             CaptureClickEventForSSISMenu();
         }
 
@@ -169,25 +167,20 @@ namespace BIDSHelper
             get { return "RelativePathsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 1021; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Fix Relative Paths..."; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 1021; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return "Project"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Project"; }
+        //}
 
 
         /// <summary>
@@ -198,11 +191,6 @@ namespace BIDSHelper
         public override string FeatureName
         {
             get { return "Fix Relative Paths"; }
-        }
-
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
         }
 
         /// <summary>
@@ -225,20 +213,20 @@ namespace BIDSHelper
         #endregion
 
         #region Running from the Project node menu
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length == 1)
-            {
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                EnvDTE.Project proj = GetSelectedProjectReference();
-                if (proj != null)
-                {
-                    return (proj.Kind == BIDSProjectKinds.SSIS);
-                }
-            }
-            return false;
-        }
+        //public override bool ShouldDisplayCommand()
+        //{
+        //    UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //    if (((System.Array)solExplorer.SelectedItems).Length == 1)
+        //    {
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        EnvDTE.Project proj = GetSelectedProjectReference();
+        //        if (proj != null)
+        //        {
+        //            return (proj.Kind == BIDSProjectKinds.SSIS);
+        //        }
+        //    }
+        //    return false;
+        //}
 
         public override void Exec()
         {

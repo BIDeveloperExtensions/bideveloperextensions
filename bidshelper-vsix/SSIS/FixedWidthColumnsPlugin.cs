@@ -250,13 +250,8 @@ namespace BIDSHelper.SSIS
                         }
                         listUsedNames.Add(sName);
 
-#if KATMAI || DENALI || SQL2014
                         wrap.IDTSConnectionManagerFlatFileColumn100 col = ff.Columns.Add();
                         wrap.IDTSName100 name = col as wrap.IDTSName100;
-#else
-                        wrap.IDTSConnectionManagerFlatFileColumn90 col = ff.Columns.Add();
-                        wrap.IDTSName90 name = col as wrap.IDTSName90;
-#endif
 
                         name.Name = sName;
                         col.MaximumWidth = int.Parse(row.Cells[1].Value.ToString());

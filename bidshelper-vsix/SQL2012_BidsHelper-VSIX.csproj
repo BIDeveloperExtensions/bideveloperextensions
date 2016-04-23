@@ -443,6 +443,7 @@
     <Compile Include="SSIS\HighlightingToDo.cs" />
     <Compile Include="SSIS\PackageConfigurationLoader.cs" />
     <Compile Include="SSIS\PackageHelper.cs" />
+    <Compile Include="SSIS\ParametersWindowPlugin.cs" />
     <Compile Include="SSIS\PerformanceVisualizationPlugin.cs" />
     <Compile Include="SSIS\PerformanceVisualization\DtsGanttGrid.cs">
       <SubType>Component</SubType>
@@ -464,6 +465,9 @@
     <Compile Include="SSIS\PerformanceVisualization\PerformanceTab.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="SSIS\PipelineComponentPerformanceBreakdownPlugin.cs" />
+    <Compile Include="SSIS\RelativePathsPlugin.cs" />
+    <Compile Include="SSIS\ResetGuidsPlugin.cs" />
     <Compile Include="SSIS\SmartDiff.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -471,6 +475,8 @@
       <DependentUpon>SmartDiff.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\SmartDiffPlugin.cs" />
+    <Compile Include="SSIS\SortablePackagePropertiesPlugin.cs" />
+    <Compile Include="SSIS\SortProjectFilesPlugin.cs" />
     <Compile Include="SSIS\SSISHelpers.cs" />
     <Compile Include="SSIS\VariablesMove.cs">
       <SubType>Form</SubType>
@@ -480,6 +486,11 @@
     </Compile>
     <Compile Include="SSIS\VariablesWindowPlugin.cs" />
     <Compile Include="SSIS\VariablesWindowPluginPartial.cs" />
+    <Compile Include="SSRS\DatasetScanner.cs" />
+    <Compile Include="SSRS\DeleteDatasetCachePlugin.cs" />
+    <Compile Include="SSRS\ExpressionInfo.cs" />
+    <Compile Include="SSRS\UsedDatasetsPlugin.cs" />
+    <Compile Include="SSRS\UnusedDatasetsPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
@@ -977,9 +988,12 @@
     <EmbeddedResource Include="SSIS\SmartDiff.resx">
       <DependentUpon>SmartDiff.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\SortablePackageProperties.rdlc" />
     <EmbeddedResource Include="SSIS\VariablesMove.resx">
       <DependentUpon>VariablesMove.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SSRS\UnusedDatasets.rdlc" />
+    <EmbeddedResource Include="SSRS\UsedDatasets.rdlc" />
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
