@@ -93,7 +93,7 @@ namespace BIDSHelper.SSAS
         {
             try
             {
-                package.Logger.Info("CalcHelpersPlugin OnWindowActivated Fired");
+                package.Log.Info("CalcHelpersPlugin OnWindowActivated Fired");
                 if (GotFocus == null) return;
                 IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
@@ -197,7 +197,7 @@ namespace BIDSHelper.SSAS
                 }
             }
             catch (Exception ex){
-                package.Logger.Error("CalcHelpersPlugin Exception: " + ex.Message);
+                package.Log.Error("CalcHelpersPlugin Exception: " + ex.Message);
             }
         }
 

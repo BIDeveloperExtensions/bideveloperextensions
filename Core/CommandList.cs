@@ -41,6 +41,14 @@ namespace BIDSHelper.Core
         ExpandBimlFileId                = 0x011E,
         LearnMoreAboutBimlId            = 0x011F,
         CheckBimlForErrorsId            = 0x0120,
-        FixedWidthColumnsId             = 0x0121
+        FixedWidthColumnsId             = 0x0121,
+        PerformanceBreakdownId          = 0x0122,
+        SortablePackagePropertiesId     = 0x0123,
+        SortProjectFilesId              = 0x0124,
+        ResetGUIDsId                    = 0x0125,
+        FixRelativePathsId              = 0x0126,
+        DeleteDatasetCacheId            = 0x0127,
+        UnusedDatasetsId                = 0x0128,
+        UsedDatasetsId                  = 0x0129
     }
 }

@@ -7,8 +7,9 @@ using Microsoft.DataWarehouse.Interfaces;
 using Microsoft.DataWarehouse.Project;
 using Microsoft.DataWarehouse.VsIntegration.Hierarchy;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     /// <summary>
     /// Sort packages in SSIS project. This is very usefull for SQL2005 but was implemented natively in SQL 2008, however was not persisted.
@@ -17,9 +18,10 @@ namespace BIDSHelper
     /// </summary>
     public class SortProjectFilesPlugin : BIDSHelperPluginBase
     {
-        public SortProjectFilesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public SortProjectFilesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.SortProjectFilesId);
         }
 
         public override string ShortName
@@ -27,18 +29,14 @@ namespace BIDSHelper
             get { return "SortProjectFilesPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; } //TODO add sort items icon
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; } //TODO add sort items icon
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
-#if KATMAI || DENALI || SQL2014
             get { return "Sort by name, persisted"; }
-#else
-            get { return "Sort by name"; }
-#endif
         }
 
         public override string ToolTip
@@ -46,20 +44,16 @@ namespace BIDSHelper
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
-        public override bool AddCommandToMultipleMenus
-        {
-            get { return true; }
-        }
+        //public override bool AddCommandToMultipleMenus
+        //{
+        //    get { return true; }
+        //}
 
-        public override string MenuName
-        {
-            get { return "Project Node"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Project Node"; }
+        //}
 
         /// <summary>
         ///     Gets the feature category used to organise the plug-in in the enabled features list.
@@ -88,7 +82,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {

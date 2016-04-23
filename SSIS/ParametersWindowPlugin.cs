@@ -1,5 +1,6 @@
 namespace BIDSHelper.SSIS
 {
+    using Core;
     using EnvDTE;
     using EnvDTE80;
     using Microsoft.DataTransformationServices.Design;
@@ -22,7 +23,7 @@ namespace BIDSHelper.SSIS
         private const BindingFlags getPropertyFlags = BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.DeclaredOnly | BindingFlags.Instance;
         private const BindingFlags getFieldFlags = BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 
-        public ParametersWindowPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
+        public ParametersWindowPlugin(BIDSHelperPackage package) : base (package)
         {
         }
 
@@ -91,25 +92,11 @@ namespace BIDSHelper.SSIS
             get { return "ParametersWindowPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "SSIS Parameters Window Extensions"; }
-        }
-
         public override string ToolTip
         {
             get { return string.Empty; }
         }
-
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
+        
 
         /// <summary>
         /// Gets the name of the friendly name of the plug-in.
@@ -137,16 +124,6 @@ namespace BIDSHelper.SSIS
         public override string FeatureDescription
         {
             get { return "Extended features for the Parameters window. Find parameter references, and find unused parameters."; }
-        }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
         }
 
 

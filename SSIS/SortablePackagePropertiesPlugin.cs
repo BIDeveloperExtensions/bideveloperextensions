@@ -1,26 +1,16 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
-using System.Reflection;
-using Microsoft.Win32;
 using System.ComponentModel.Design;
-using System.ComponentModel;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.SqlServer.Dts.Runtime;
-using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.InteropServices;
 using Microsoft.DataWarehouse.Controls;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using BIDSHelper.Core;
 
-
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class SortablePackagePropertiesPlugin : BIDSHelperPluginBase
     {
@@ -29,9 +19,10 @@ namespace BIDSHelper
         private string PackagePathPrefix;
 
         #region Standard Plugin Overrides
-        public SortablePackagePropertiesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public SortablePackagePropertiesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.SortablePackagePropertiesId);
         }
 
         public override string ShortName
@@ -39,35 +30,31 @@ namespace BIDSHelper
             get { return "SortablePackageProperties"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 9904; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 9904; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Sortable Package Properties Report..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Sortable Package Properties Report..."; }
+        //}
 
         public override string FeatureName
         {
             get { return "Sortable Package Properties Report"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Project,Solution"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Project,Solution"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -92,7 +79,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {

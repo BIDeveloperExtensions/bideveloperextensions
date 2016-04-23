@@ -166,7 +166,7 @@ namespace BIDSHelper
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString(), "BIDSHelper - Deploy Tabular Database - Exception");
-                package.Logger.Exception("Deploy Tabular Database Failed", ex);
+                package.Log.Exception("Deploy Tabular Database Failed", ex);
             }
         }
 

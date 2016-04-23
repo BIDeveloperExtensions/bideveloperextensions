@@ -8,6 +8,7 @@ namespace BIDSHelper.SSIS.Biml
         public HelpWithBimlPlugin(BIDSHelperPackage package)
             : base(package)
         {
+            CreateContextMenu(Core.CommandList.LearnMoreAboutBimlId);
         }
 
         #region Standard Property Overrides

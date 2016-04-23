@@ -78,7 +78,7 @@ namespace BIDSHelper.Core
         //=================================================================================
 
         #region Dynamic Command Visibility
-        internal bool DisplayCommand(FileInfo file)
+        internal bool DisplayCommandInternal(FileInfo file)
         {
             return Extensions.Contains(file.Extension.ToLower());
         }
@@ -91,25 +91,25 @@ namespace BIDSHelper.Core
                 if (Extensions.Count > 0)
                 {
                     var f = GetSelectedFile();
-                    return DisplayCommand(f);
+                    return DisplayCommandInternal(f);
                 }
                 else if (m_ProjectKind != Guid.Empty)
                 {
-                    return DisplayCommand(m_ProjectKind);
+                    return DisplayCommandInternal(m_ProjectKind);
                 }
                 else if (AssociatedObjectType != null)
                 {
-                    return DisplayCommand(AssociatedObjectType);
+                    return DisplayCommandInternal(AssociatedObjectType);
                 }
                 else {
-                    package.Logger.Verbose("Calling virtual ShouldDisplayCommand to see if we should be displaying this command " + this.GetType().Name);
+                    package.Log.Verbose("Calling virtual ShouldDisplayCommand to see if we should be displaying this command " + this.GetType().Name);
                     return ShouldDisplayCommand();
                 }
             }
             return false;
         }
 
-        internal bool DisplayCommand(Guid projectKind)
+        internal bool DisplayCommandInternal(Guid projectKind)
         {
             try
             {
@@ -128,7 +128,7 @@ namespace BIDSHelper.Core
             }
         }
 
-        internal bool DisplayCommand(Type objectType)
+        internal bool DisplayCommandInternal(Type objectType)
         {
             try
             {
@@ -575,7 +575,7 @@ namespace BIDSHelper.Core
             }
             catch (Exception ex)
             {
-                this.package.Logger.Exception("Error Creating ToolWindow", ex);
+                this.package.Log.Exception("Error Creating ToolWindow", ex);
             }
         }
 
@@ -728,8 +728,20 @@ namespace BIDSHelper.Core
             // wrapped in a ProjectItem so we need to unwrap it to get to the project.
             if (proj == null && hierItem.Object is ProjectItem)
             {
-                var pi = (ProjectItem)hierItem.Object;
-                proj = pi.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                ProjectItem pi = (ProjectItem)hierItem.Object;
+                if (((Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.Object) != null)
+                {
+                    proj = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.Object;
+                }
+                else if (pi is Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)
+                {
+                    proj = pi as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                }
+                else
+                {
+                    proj = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.ContainingProject;
+                }
+                
             }
             return proj;
         }

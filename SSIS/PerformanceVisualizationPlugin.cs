@@ -15,22 +15,35 @@ namespace BIDSHelper.SSIS
 {
     public class PerformanceVisualizationPlugin : BIDSHelperPluginBase
     {
-        private DTEEvents events;
+        //private DTEEvents events;
         public PerformanceVisualizationPlugin(BIDSHelperPackage package)
             : base(package)
         {
-            this.events = this.ApplicationObject.Events.DTEEvents;
-            this.events.ModeChanged += new _dispDTEEvents_ModeChangedEventHandler(DTEEvents_ModeChanged);
+         //   this.events = this.ApplicationObject.Events.DTEEvents;
+         //   this.events.ModeChanged += new _dispDTEEvents_ModeChangedEventHandler(DTEEvents_ModeChanged);
 
             CreateContextMenu(CommandList.PerformanceVisualizationId, ".dtsx");
 
         }
 
-        void DTEEvents_ModeChanged(vsIDEMode LastMode)
+        public override void OnEnable()
         {
+            base.OnEnable();
+            package.IdeModeChanged += Package_IdeModeChanged;
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            package.IdeModeChanged -= Package_IdeModeChanged;
+        }
+
+        private void Package_IdeModeChanged(object sender, enumIDEMode newMode)
+        {
+       
             try
             {
-                if (LastMode == vsIDEMode.vsIDEModeDebug) return;
+                if (newMode != enumIDEMode.Debug) return;
                 StringBuilder sb = new StringBuilder();
                 foreach (PerformanceTab tab in PerformanceEditorViews.Values)
                 {

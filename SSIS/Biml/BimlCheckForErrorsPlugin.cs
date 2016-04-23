@@ -14,6 +14,7 @@ namespace BIDSHelper.SSIS.Biml
         public BimlCheckForErrorsPlugin(BIDSHelperPackage package)
             : base(package)
         {
+            CreateContextMenu(Core.CommandList.CheckBimlForErrorsId);
         }
 
         public override string ShortName

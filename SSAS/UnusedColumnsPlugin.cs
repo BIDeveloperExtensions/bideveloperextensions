@@ -89,7 +89,7 @@ namespace BIDSHelper.SSAS
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                if (sFileName.EndsWith(".bim") && !(this is UsedColumnsPlugin)) return true; //show the menu if this is the .bim file of a Tabular model, but don't show the Used Columns Report for Tabular since the data source view isn't really something a Tabular developer manages
+                if (sFileName.EndsWith(".bim")) return true; //show the menu if this is the .bim file of a Tabular model, but don't show the Used Columns Report for Tabular since the data source view isn't really something a Tabular developer manages
 
                 ProjectItem pi = (ProjectItem)hierItem.Object;
                 if (!(pi.Object is DataSourceView)) return false;
@@ -345,13 +345,37 @@ namespace BIDSHelper.SSAS
             }
         }
 
-        public override string ToolTip
+        public override string ToolTip {  get { return string.Empty; } }
+
+        /// <summary>
+        /// Determines if the command should be displayed or not.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public override bool ShouldDisplayCommand()
         {
-            get
+            try
             {
-                return string.Empty;
+                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+                if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                    return false;
+
+                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                if (sFileName.EndsWith(".bim")) return true; //show the menu if this is the .bim file of a Tabular model, but don't show the Used Columns Report for Tabular since the data source view isn't really something a Tabular developer manages
+
+                ProjectItem pi = (ProjectItem)hierItem.Object;
+                if (!(pi.Object is DataSourceView)) return false;
+                Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.ContainingProject;
+
+                return (projExt.Kind == BIDSProjectKinds.SSAS); //only show in an SSAS project, not in a report model or SSIS project (which also can have a DSV)
+            }
+            catch
+            {
+                return false;
             }
         }
+
 
         public override void Exec()
         {
