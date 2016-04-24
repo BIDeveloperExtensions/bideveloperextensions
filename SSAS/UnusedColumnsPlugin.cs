@@ -117,7 +117,12 @@ namespace BIDSHelper.SSAS
                 if (sFileName.EndsWith(".bim"))
                 {
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
-                    foreach (DataSourceView o in sandbox.Database.DataSourceViews)
+#if DENALI || SQL2014
+                    DataSourceViewCollection dsvs = sandbox.Database.DataSourceViews;
+#else
+                    DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[0].DataSourceViews;
+#endif
+                    foreach (DataSourceView o in dsvs)
                     {
                         results = DsvHelpers.IterateDsvColumns(o);
                     }

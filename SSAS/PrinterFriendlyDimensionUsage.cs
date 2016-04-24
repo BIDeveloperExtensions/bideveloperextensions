@@ -68,11 +68,13 @@ namespace BIDSHelper
             return dimUsage;
         }
 
-#if DENALI || SQL2014
         public static List<DimensionUsage> GetTabularDimensionUsage(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox, bool bIsBusMatrix)
         {
+#if DENALI || SQL2014
             Cube c = sandbox.Cube;
-
+#else
+            Cube c = sandbox.AMOServer.Databases[0].Cubes[0];
+#endif
             List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
             List<DimensionUsage> dimUsage = new List<DimensionUsage>();
             foreach (CubeDimension cd in c.Dimensions)
@@ -194,7 +196,7 @@ namespace BIDSHelper
 
             return list;
         }
-#endif
+
 
         /*
         * All relationships - Relationship Type

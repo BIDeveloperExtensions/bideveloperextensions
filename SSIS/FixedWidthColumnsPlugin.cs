@@ -110,7 +110,7 @@ namespace BIDSHelper.SSIS
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
             Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
 
-#if DENALI || SQL2014
+
             Control lvwConnMgrs = null;
             package = (Package)win.PropertiesLinkComponent;
 
@@ -136,41 +136,6 @@ namespace BIDSHelper.SSIS
             Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerModelElement connModelEl = cmControl.SelectedItem as Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerModelElement;
             if (connModelEl == null) return null;
             ConnectionManager conn = connModelEl.ConnectionManager;
-#else
-            ListView lvwConnMgrs = null;
-            IDTSSequence container = null;
-            TaskHost taskHost = null;
-            DdsDiagramHostControl diagram = null;
-            if (win.SelectedIndex == 0) //Control Flow
-            {
-                diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-            }
-            else if (win.SelectedIndex == 1) //Data Flow
-            {
-                diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
-                container = (IDTSSequence)taskHost.Parent;
-                lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
-            }
-            else if (win.SelectedIndex == 2) //Event Handlers
-            {
-                diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
-                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-            }
-            else
-            {
-                return null;
-            }
-
-            if (lvwConnMgrs.SelectedItems.Count != 1) return null;
-            package = GetPackageFromContainer((DtsContainer)container);
-
-            ListViewItem lviConn = lvwConnMgrs.SelectedItems[0];
-            ConnectionManager conn = FindConnectionManager(package, lviConn.Text);
-#endif
 
             return conn;
         }
@@ -223,13 +188,9 @@ namespace BIDSHelper.SSIS
 
                 if (dialogResult == DialogResult.OK)
                 {
-#if KATMAI || DENALI || SQL2014
+
                     wrap.IDTSConnectionManagerFlatFile100 ff = conn.InnerObject as wrap.IDTSConnectionManagerFlatFile100;
                     DtsConvert.GetExtendedInterface(conn);
-#else
-                    wrap.IDTSConnectionManagerFlatFile90 ff = conn.InnerObject as wrap.IDTSConnectionManagerFlatFile90;
-                    DtsConvert.ToConnectionManager90(conn);
-#endif
 
                     while (ff.Columns.Count > 0)
                         ff.Columns.Remove(0);

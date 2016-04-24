@@ -13,12 +13,8 @@ namespace BIDSHelper.SSIS
     using Microsoft.SqlServer.Dts.Runtime;
     using Microsoft.SqlServer.Dts.Design;
     using Microsoft.SqlServer.Management.UI.Grid;
-
-    #if KATMAI || DENALI || SQL2014
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
-    #else
-    using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents90;
-    #endif
+
     
     public partial class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
@@ -704,14 +700,10 @@ namespace BIDSHelper.SSIS
                     {
                         if (!string.IsNullOrEmpty(v.Expression))
                         {
-                            Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass eval = new Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass();
+                            Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluator eval = new Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluator();
                             eval.Expression = v.Expression;
                             eval.Events = events;
-#if KATMAI || DENALI || SQL2014
                             eval.Evaluate(DtsConvert.GetExtendedInterface(o.VariableDispenser), out val, false);
-#else
-                            eval.Evaluate(DtsConvert.ToVariableDispenser90(o.VariableDispenser), out val, false);
-#endif
                         }
                     }
                     catch

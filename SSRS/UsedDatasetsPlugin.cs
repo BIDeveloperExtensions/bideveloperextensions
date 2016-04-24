@@ -143,14 +143,10 @@ namespace BIDSHelper.SSRS
             object oErrorContext = constructorErrorContext.Invoke(new object[] { });
 
             //get ExpressionContext type and constructor
-#if !YUKON
             Type typeExpressionContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.RdlExpressions.ExpressionParser+ExpressionContext");
-#else
-            Type typeExpressionContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportProcessing.ExpressionParser+ExpressionContext");
-#endif
+
             System.Reflection.ConstructorInfo constructorExpressionContext = typeExpressionContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)[0];
 
-#if DENALI || SQL2014
             //get InternalPublishingContext constructor
             Type typeInternalPublishingContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportPublishing.InternalPublishingContext");
             System.Reflection.ConstructorInfo constructorInternalPublishingContext = null;
@@ -163,7 +159,6 @@ namespace BIDSHelper.SSRS
                 }
             }
             if (constructorInternalPublishingContext == null) throw new Exception("Couldn't find InternalPublishingContext constructor");
-#endif
 
             //get PreviewItemContext
             System.Reflection.Assembly assemblyReportPreview = System.Reflection.Assembly.Load("Microsoft.ReportingServices.ReportPreview");
@@ -214,42 +209,18 @@ namespace BIDSHelper.SSRS
                     //create PreviewItemContext
                     object itemContext = typeItemContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)[0].Invoke(null);
 
-#if DENALI || SQL2014
                     //signature of this function call is: public InternalPublishingContext(ICatalogItemContext catalogContext, Microsoft.ReportingServices.ReportProcessing.ReportProcessing.CheckSharedDataSource checkDataSourceCallback, Microsoft.ReportingServices.ReportProcessing.ReportProcessing.ResolveTemporaryDataSource resolveTemporaryDataSourceCallback, DataSourceInfoCollection originalDataSources, IConfiguration configuration, IDataProtection dataProtection, bool traceAtomicScopes, bool isPackagedReportArchive)
                     object oInternalPublishingContext = constructorInternalPublishingContext.Invoke(new object[] { itemContext, null, null, null, null, null, false, false });
 
                     //create ExpressionContext
                     //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, DataType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, int maxExpressionLength, InternalPublishingContext publishingContext);
                     object expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0x12, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN", int.MaxValue, oInternalPublishingContext });
-#elif KATMAI
-                    //create ExpressionContext
-                    object expressionContext = null;
-                    if (constructorExpressionContext.GetParameters().Length == 8)
-                    {
-                        //SSRS2008 R2
-                        //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, DataType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, int maxExpressionLength);
-                        expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0x12, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN", int.MaxValue });
-                    }
-                    else
-                    {
-                        //SSRS2008
-                        //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, DataType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName)
-                        expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0x12, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN" });
-                    }
-#elif YUKON
-                    //create ExpressionContext
-                    //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, ExpressionParser.ConstantType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, bool parseExtended)
-                    object expressionContext = constructorExpressionContext.Invoke(new object[] { ExpressionInfo.ExpressionType.General, 0, ExpressionInfo.LocationFlags.None, ExpressionInfo.ObjectType.Field, string.Empty, "Text", "DSN", false });
-#endif
 
                     //find and invoke ParseExpression method
-#if !YUKON
+
                     int iParseExpressionParamCount = 3;
                     object[] arrParseExpressionParams = new object[] { nodeExpression.InnerText, expressionContext, 0 };
-#else
-                    int iParseExpressionParamCount = 2;
-                    object[] arrParseExpressionParams = new object[] { nodeExpression.InnerText, expressionContext};
-#endif
+
                     System.Reflection.MethodInfo methodParseExpression = null;
                     foreach (System.Reflection.MethodInfo method in type.GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
                     {

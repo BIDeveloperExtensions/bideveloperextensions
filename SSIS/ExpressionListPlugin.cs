@@ -9,6 +9,7 @@ using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.Win32;
 using System.Drawing;
 using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
+using Microsoft.DataWarehouse.Controls;
 
 namespace BIDSHelper.SSIS
 {
@@ -87,11 +88,8 @@ namespace BIDSHelper.SSIS
             IntPtr icon = BIDSHelper.Resources.Common.ExpressionListIcon.ToBitmap().GetHbitmap();
 
             // TODO - need to set the toolwindow icon
-#if KATMAI || DENALI || SQL2014
            // toolWindow.SetTabPicture(icon.ToInt32()); 
-#else
-            toolWindow.SetTabPicture(icon); 
-#endif
+
 
             //if (windowIsVisible)
             //    toolWindow.Visible = true;

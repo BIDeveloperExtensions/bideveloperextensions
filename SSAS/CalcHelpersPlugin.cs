@@ -135,11 +135,8 @@ namespace BIDSHelper.SSAS
                                     newCalcPropButton.ToolTipText = "Calculation Properties (BIDS Helper)";
                                     newCalcPropButton.Name = this.FullName + ".CommandProperties";
                                     newCalcPropButton.Tag = newCalcPropButton.Name;
-#if KATMAI || DENALI || SQL2014
+
                                     newCalcPropButton.ImageIndex = 12;
-#else
-                                    newCalcPropButton.ImageIndex = 11;
-#endif
                                     newCalcPropButton.Enabled = true;
                                     newCalcPropButton.Style = ToolBarButtonStyle.PushButton;
 

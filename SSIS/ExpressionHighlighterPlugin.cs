@@ -13,17 +13,9 @@ namespace BIDSHelper.SSIS
     using System.Collections.Generic;
     using System.Threading;
     using Microsoft.Win32;
-
-#if KATMAI || DENALI || SQL2014
     using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
-#else
-    using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
-#endif
-
-#if DENALI || SQL2014
     using Microsoft.SqlServer.IntegrationServices.Designer.Model;
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
-#endif
 
     public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
     {
@@ -281,12 +273,7 @@ namespace BIDSHelper.SSIS
                                 if (diagram.ComponentDiagram == null) continue;
                                 ComponentDiagram oDtrControlFlowDiagram = diagram.ComponentDiagram;
 
-                                //#if DENALI || SQL2014
-                                //IClipboardService clipService = diagram.Site.GetService(typeof(IClipboardService)) as IClipboardService;
-                                //#else
-                                Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipboardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)typeof(ComponentDiagram).InvokeMember("clipboardCommands", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
-                                Microsoft.SqlServer.Dts.Design.IDtsClipboardService clipService = (Microsoft.SqlServer.Dts.Design.IDtsClipboardService)clipboardCommandHelper.GetType().BaseType.InvokeMember("dtsClipboardService", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, clipboardCommandHelper, null);
-                                //#endif
+                                IClipboardService clipService = diagram.Site.GetService(typeof(IClipboardService)) as IClipboardService;
 
                                 bool bPasteInProgress = clipService.IsPasteActive;
                                 if (bPasteInProgress)
