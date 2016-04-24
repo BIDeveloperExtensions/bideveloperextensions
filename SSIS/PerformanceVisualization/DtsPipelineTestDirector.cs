@@ -5,8 +5,6 @@ using System.Collections;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
-#region Conditional compile for Yukon vs Katmai
-#if KATMAI || DENALI || SQL2014
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
 using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;
@@ -17,19 +15,6 @@ using IDTSPathCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPathCo
 using IDTSVirtualInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInput100;
 using IDTSVirtualInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumn100;
 using IDTSVirtualInputColumnCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumnCollection100;
-#else
-using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
-using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput90;
-using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput90;
-using IDTSPathXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPath90;
-using IDTSInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumn90;
-using IDTSOutputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn90;
-using IDTSPathCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPathCollection90;
-using IDTSVirtualInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInput90;
-using IDTSVirtualInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumn90;
-using IDTSVirtualInputColumnCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumnCollection90;
-#endif
-#endregion
 
 
 namespace BIDSHelper.SSIS.PerformanceVisualization

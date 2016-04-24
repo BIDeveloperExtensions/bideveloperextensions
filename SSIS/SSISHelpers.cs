@@ -44,13 +44,11 @@ namespace BIDSHelper
         public static void MarkPackageDirty(Package package)
         {
             if (package == null) return;
-#if DENALI || SQL2014
+
             var trans = Cud.BeginTransaction(package);
             trans.ChangeComponent(package);
             trans.Commit();
-#else
-            Microsoft.DataTransformationServices.Design.DesignUtils.MarkPackageDirty(package);
-#endif
+
         }
 
         public static Package GetPackageFromContainer(DtsContainer container)

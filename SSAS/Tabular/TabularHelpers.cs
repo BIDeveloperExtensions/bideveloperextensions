@@ -8,6 +8,9 @@ namespace BIDSHelper
 {
     public class TabularHelpers
     {
+        public const string ANNOTATION_STYLE_ANNOTATION = "BIDS_Helper_Tabular_Annotation_Style";
+        public const string ANNOTATION_STYLE_STRING = "String";
+
         private static Microsoft.AnalysisServices.VSHost.VSHostManager GetVSHostManager(UIHierarchyItem hierItem, bool openIfNotOpen)
         {
             Microsoft.VisualStudio.Project.Automation.OAFileItem project = hierItem.Object as Microsoft.VisualStudio.Project.Automation.OAFileItem;
@@ -112,6 +115,24 @@ namespace BIDSHelper
             return diagram;
         }
 
+        public static bool AreAnnotationsStringStyle(MajorObject obj)
+        {
+            while (obj != null && !(obj is Database))
+            {
+                obj = (MajorObject)obj.Parent;
+            }
+            if (obj == null) throw new Exception("Can't find Database object!");
+            Database db = (Database)obj;
+            if (db.Annotations.Contains(ANNOTATION_STYLE_ANNOTATION))
+            {
+                if (db.Annotations[ANNOTATION_STYLE_ANNOTATION].Value.InnerText == ANNOTATION_STYLE_STRING)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static void SaveXmlAnnotation(MajorObject obj, string annotationName, object annotationValue)
         {
             System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(annotationValue.GetType());
@@ -121,7 +142,7 @@ namespace BIDSHelper
             System.Xml.XmlDocument xml = new XmlDocument();
             xml.LoadXml(sb.ToString());
             if (obj.Annotations.Contains(annotationName)) obj.Annotations.Remove(annotationName);
-            if (TabularAnnotationWorkaroundPlugin.AreAnnotationsStringStyle(obj))
+            if (AreAnnotationsStringStyle(obj))
             {
                 //this is just a workaround to this bug: https://connect.microsoft.com/SQLServer/feedback/details/776444/tabular-model-error-during-opening-bim-after-sp1-readelementcontentas-methods-cannot-be-called-on-an-element-that-has-child-elements
                 XmlWriterSettings settings = new XmlWriterSettings();
@@ -146,7 +167,7 @@ namespace BIDSHelper
 
         public static string GetAnnotationXml(MajorObject obj, string annotationName)
         {
-            if (TabularAnnotationWorkaroundPlugin.AreAnnotationsStringStyle(obj))
+            if (AreAnnotationsStringStyle(obj))
             {
                 return obj.Annotations[annotationName].Value.InnerText;
             }
@@ -200,7 +221,11 @@ namespace BIDSHelper
         /// <param name="sandbox"></param>
         public static bool EnsureDataSourceCredentials(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
+#if DENALI || SQL2014
             Database db = sandbox.Database;
+#else
+            Database db = sandbox.AMOServer.Databases[0];
+#endif
             foreach (DataSource ds in db.DataSources)
             {
                 if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))

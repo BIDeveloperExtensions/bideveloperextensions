@@ -15,11 +15,9 @@ namespace BIDSHelper.SSIS
 
     public partial class ParametersWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
-#if SQL2014
+
         private const string SSIS_DESIGNER_WINDOW_KIND = "{8E7B96A8-E33D-11D0-A6D5-00C04FB67F6A}";
-#elif DENALI
-        private const string SSIS_DESIGNER_WINDOW_KIND = "{8E7B96A8-E33D-11D0-A6D5-00C04FB67F6A}";
-#endif
+
         private const BindingFlags getPropertyFlags = BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.DeclaredOnly | BindingFlags.Instance;
         private const BindingFlags getFieldFlags = BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 

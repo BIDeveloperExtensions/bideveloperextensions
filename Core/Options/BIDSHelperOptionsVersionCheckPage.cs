@@ -48,11 +48,7 @@ namespace BIDSHelper.Core
                 AssemblyTitleAttribute attribute = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(assembly, typeof(AssemblyTitleAttribute));
                 this.lblTitle.Text = attribute.Title;
 
-#if DENALI || SQL2014
                 string sBIDSName = "SSDTBI";
-#else
-                string sBIDSName = "BIDS";
-#endif
 
                 if (BIDSHelperPackage.AddInLoadException != null)
                 {
