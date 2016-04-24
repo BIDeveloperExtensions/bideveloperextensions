@@ -10,8 +10,11 @@ namespace BIDSHelper
     using Core;
     public class VersionCheckPlugin : BIDSHelperPluginBase, IDisposable
     {
-
-#if SQL2014
+#if SQL2016
+        private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2014CurrentReleaseVersion.xml";
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2014";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2014";
+#elif SQL2014
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2014CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2014";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2014";
@@ -19,10 +22,6 @@ namespace BIDSHelper
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2012CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2012";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2012";
-#elif KATMAI
-        private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2008CurrentReleaseVersion.xml";
-        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2008";
-        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2008";
 #else
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2005CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2005";

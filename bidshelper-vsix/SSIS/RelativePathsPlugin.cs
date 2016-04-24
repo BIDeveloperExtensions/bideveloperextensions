@@ -66,13 +66,8 @@ namespace BIDSHelper.SSIS
                         Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
                         
                         IWin32Window parentWin;
-                        #if DENALI || SQL2014
+
                         parentWin = viewControl;
-                        #else
-                        DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
-                        if (diagram == null || diagram.DDS == null) return;
-                        parentWin = diagram.DDS;
-                        #endif
                         
                         Button editSelectedButton = (Button)form.Controls["editSelectedConfiguration"];
                         Control packageConfigurationsGridControl1 = form.Controls["packageConfigurationsGridControl1"];

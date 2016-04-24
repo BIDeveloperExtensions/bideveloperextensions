@@ -12,9 +12,7 @@ namespace BIDSHelper
 {
     public class TabularAnnotationWorkaroundPlugin : BIDSHelperPluginBase
     {
-        public const string ANNOTATION_STYLE_ANNOTATION = "BIDS_Helper_Tabular_Annotation_Style";
-        public const string ANNOTATION_STYLE_STRING = "String";
-
+        
         private const string BACKUP_FILE_SUFFIX = ".BeforeBidsHelperAnnotationFix.bim";
 
         #region Standard Plugin Overrides
@@ -121,23 +119,7 @@ namespace BIDSHelper
             }
         }
 
-        public static bool AreAnnotationsStringStyle(MajorObject obj)
-        {
-            while (obj != null && !(obj is Database))
-            {
-                obj = (MajorObject)obj.Parent;
-            }
-            if (obj == null) throw new Exception("Can't find Database object!");
-            Database db = (Database)obj;
-            if (db.Annotations.Contains(ANNOTATION_STYLE_ANNOTATION))
-            {
-                if (db.Annotations[ANNOTATION_STYLE_ANNOTATION].Value.InnerText == ANNOTATION_STYLE_STRING)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+        
 
         public static void FixAnnotations(string sBimFilePath)
         {

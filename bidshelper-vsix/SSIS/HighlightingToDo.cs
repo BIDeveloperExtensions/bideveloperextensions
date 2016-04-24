@@ -7,10 +7,7 @@ namespace BIDSHelper.SSIS
     using EnvDTE;
     using Microsoft.DataWarehouse.Controls;
     using Microsoft.SqlServer.Dts.Runtime;
-
-#if DENALI || SQL2014
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
-#endif
 
     public abstract class HighlightingToDo
     {
@@ -296,7 +293,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-#if DENALI || SQL2014
+
         private static Dictionary<string, System.Windows.Media.Imaging.BitmapSource> _cacheBitmapSource = new Dictionary<string, System.Windows.Media.Imaging.BitmapSource>();
         public static System.Windows.Media.Imaging.BitmapSource GetBitmapSource(System.Drawing.Color color)
         {
@@ -338,7 +335,6 @@ namespace BIDSHelper.SSIS
             bits[x * 4 + y * stride + 2] = c.R;
             bits[x * 4 + y * stride + 3] = c.A;
         }
-#endif
 
         protected void HighlightDdsDiagramObjectIcon(DdsDiagramHostControl diagram, object managedShape, bool bHasExpression, bool bHasConfiguration)
         {

@@ -482,7 +482,7 @@ namespace BIDSHelper.SSAS
             {
                 IDTSObjectHost host = (IDTSObjectHost)o;
                 if (host.InnerObject is Microsoft.SqlServer.Dts.Pipeline.Wrapper.MainPipe)
-                    properties = typeof(Microsoft.SqlServer.Dts.Pipeline.Wrapper.MainPipeClass).GetProperties(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
+                    properties = typeof(Microsoft.SqlServer.Dts.Pipeline.Wrapper.MainPipe).GetProperties(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
                 else if (host.InnerObject is IDTSConnectionManagerDatabaseParametersXX)
                     properties = typeof(IDTSConnectionManagerDatabaseParametersXX).GetProperties(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
                 else //probably won't turn up any properties because reflection on a COM object Type doesn't work

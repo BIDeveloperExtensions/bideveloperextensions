@@ -128,11 +128,15 @@ namespace BIDSHelper.SSAS
                 bool bIsTabular = false;
                 if (sFileName.EndsWith(".bim"))
                 {
-#if DENALI || SQL2014
+
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
+#if DENALI || SQL2014
                     db = sandbox.Database;
-                    bIsTabular = true;
+#else
+                    db = sandbox.AMOServer.Databases[0];
 #endif
+                    bIsTabular = true;
+
                 }
                 else
                 {
@@ -464,7 +468,7 @@ namespace BIDSHelper.SSAS
         }
 
 
-        #region RoleMemberInfo classes
+#region RoleMemberInfo classes
         public class RoleMemberInfo
         {
             public Role role;
@@ -759,9 +763,9 @@ namespace BIDSHelper.SSAS
                 NoAuthDataRequired = 33554432
             }
         }
-        #endregion
+#endregion
 
-        #region RoleDataSourceInfo class
+#region RoleDataSourceInfo class
         public class RoleDataSourceInfo
         {
             public Role role;
@@ -802,9 +806,9 @@ namespace BIDSHelper.SSAS
                 }
             }
         }
-        #endregion
+#endregion
 
-        #region RoleCubeInfo class
+#region RoleCubeInfo class
         public class RoleCubeInfo
         {
             public Role role;
@@ -912,9 +916,9 @@ namespace BIDSHelper.SSAS
                 return null;
             }
         }
-        #endregion
+#endregion
 
-        #region RoleDimensionInfo class
+#region RoleDimensionInfo class
         public class RoleDimensionInfo
         {
             public Role role;
@@ -1149,9 +1153,9 @@ namespace BIDSHelper.SSAS
                 }
             }
         }
-        #endregion
+#endregion
 
-        #region RoleMiningInfo class
+#region RoleMiningInfo class
         public class RoleMiningInfo
         {
             public Role role;
@@ -1253,6 +1257,6 @@ namespace BIDSHelper.SSAS
                 }
             }
         }
-        #endregion
+#endregion
     }
 }
