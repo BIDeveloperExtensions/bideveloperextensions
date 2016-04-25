@@ -135,22 +135,35 @@ namespace BIDSHelper
         {
             if (diagram == null) return;
             //if (_hookedERDiagrams.Contains(diagram)) return;
-
+#if DENALI || SQL2014
             foreach (IDiagramAction action in diagram.Actions)
+#else
+            foreach (IViewModelAction action in diagram.Actions)
+#endif
             {
                 if (action is ERDiagramActionHideMemberIf) return; //if this context menu is already part of the diagram, then we're done
             }
 
-            IDiagramTag tagHierarchyLevel = (IDiagramTag)diagram.GetType().InvokeMember("tagHierarchyLevel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance, null, diagram, null);
+            
 
             ERDiagramActionHideMemberIf levels = new ERDiagramActionHideMemberIf(diagram, this);
             levels.Text = "Set HideMemberIf...";
             levels.DisplayIndex = 0x19f;
+#if DENALI || SQL2014
+            IDiagramTag tagHierarchyLevel = (IDiagramTag)diagram.GetType().InvokeMember("tagHierarchyLevel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance, null, diagram, null);
             levels.Key = new DiagramObjectKey(@"Actions\{0}", new object[] { "HideMemberIf" });
             levels.AvailableRule = delegate(IEnumerable<IEnumerable<IDiagramTag>> tagSets)
             {
                 return tagSets.All<IEnumerable<IDiagramTag>>(tagSet => tagSet.Contains<IDiagramTag>(tagHierarchyLevel));
             };
+#else
+            IViewModelTag tagHierarchyLevel = (IViewModelTag)diagram.GetType().InvokeMember("tagHierarchyLevel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance, null, diagram, null);
+            levels.Key = new ViewModelObjectKey(@"Actions\{0}", new object[] { "HideMemberIf" });
+            levels.AvailableRule = delegate (IEnumerable<IEnumerable<IViewModelTag>> tagSets)
+            {
+                return tagSets.All<IEnumerable<IViewModelTag>>(tagSet => tagSet.Contains<IViewModelTag>(tagHierarchyLevel));
+            };
+#endif
             diagram.GetType().InvokeMember("InitializeViewStates", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod, null, diagram, new object[] { levels });
             diagram.Actions.Add(levels);
 
@@ -159,7 +172,13 @@ namespace BIDSHelper
 
         internal HideIfValue GetHideMemberIf(IEnumerable<Tuple<string, string, string>> hierarchyLevels)
         {
-            Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow(this.package);
+#if DENALI || SQL2014
+            var sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow(this.package);
+#else
+            var sb = TabularHelpers.GetTabularSandboxFromActiveWindow(this.package);
+            var sandbox = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sb.Impl;
+#endif
+
             if (sandbox != null)
             {
                 foreach (Tuple<string, string, string> tuple in hierarchyLevels)
@@ -173,25 +192,32 @@ namespace BIDSHelper
             throw new Exception("Couldn't find HideMemberIf value.");
         }
 
-        internal void SetHideMemberIf(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox, IEnumerable<Tuple<string, string, string>> hierarchyLevels, List<HideIfValue> newValues)
+        internal void SetHideMemberIf(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam, IEnumerable<Tuple<string, string, string>> hierarchyLevels, List<HideIfValue> newValues)
         {
             try
             {
-                Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
+#if DENALI || SQL2014
+                Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code;
+                var sandbox = sandboxParam;
+#else
+                Microsoft.AnalysisServices.BackEnd.AMOCode code;
+                var sandbox = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
+#endif
+                code = delegate
                     {
                         Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties properties = new Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties();
                         properties.RecalcBehavior = Microsoft.AnalysisServices.BackEnd.TransactionRecalcBehavior.AlwaysRecalc;
                         List<Dimension> dims = new List<Dimension>();
-                        using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction(properties))
+                        using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandboxParam.CreateTransaction(properties))
                         {
-                            if (!TabularHelpers.EnsureDataSourceCredentials(sandbox))
+                            if (!TabularHelpers.EnsureDataSourceCredentials(sandboxParam))
                             {
                                 MessageBox.Show("Cancelling apply of HideMemberIf because data source credentials were not entered.", "BIDS Helper Tabular HideMemberIf - Cancelled!");
                                 tran.RollbackAndContinue();
                                 return;
                             }
 
-                            SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandbox);
+                            SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandboxParam);
 
                             foreach (Tuple<string, string, string> tuple in hierarchyLevels)
                             {
@@ -219,7 +245,11 @@ namespace BIDSHelper
                         }
 
                     };
+#if DENALI || SQL2014
                 sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#else
+                sandboxParam.ExecuteEngineCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#endif
             }
             catch (System.Exception ex)
             {
@@ -228,8 +258,13 @@ namespace BIDSHelper
 
         }
 
-        private SSAS.TabularHideMemberIfAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        private SSAS.TabularHideMemberIfAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
         {
+#if DENALI || SQL2014
+            var sandbox = sandboxParam
+#else
+            var sandbox = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
+#endif
             if (sandbox.Database.Annotations.Contains(HIDEMEMBERIF_ANNOTATION))
             {
                 string xml = TabularHelpers.GetAnnotationXml(sandbox.Database, HIDEMEMBERIF_ANNOTATION);
@@ -246,7 +281,7 @@ namespace BIDSHelper
         {
         }
 
-        #region ITabularOnPreBuildAnnotationCheck
+#region ITabularOnPreBuildAnnotationCheck
         public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
         {
             get
@@ -284,10 +319,15 @@ namespace BIDSHelper
         }
 
 
-        private Level[] GetProblemLevels(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        private Level[] GetProblemLevels(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
         {
+#if DENALI || SQL2014
+            var sandbox = sandboxParam
+#else
+            var sandbox = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
+#endif
             List<Level> levels = new List<Level>();
-            SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandbox);
+            SSAS.TabularHideMemberIfAnnotation annotation = GetAnnotation(sandboxParam);
             foreach (Dimension d in sandbox.Database.Dimensions)
             {
                 foreach (Hierarchy h in d.Hierarchies)
@@ -307,9 +347,13 @@ namespace BIDSHelper
             }
             return levels.ToArray();
         }
-        #endregion
+#endregion
 
+#if DENALI || SQL2014
         internal class ERDiagramActionHideMemberIf : SSAS.Tabular.ERDiagramActionBase, IDiagramActionBasic, IDiagramAction, IDiagramObject, System.ComponentModel.INotifyPropertyChanged, INotifyCollectionPropertyChanged
+#else
+        internal class ERDiagramActionHideMemberIf : SSAS.Tabular.ERDiagramActionBase, IViewModelActionBasic, IViewModelAction, IViewModelObject, System.ComponentModel.INotifyPropertyChanged, INotifyCollectionPropertyChanged
+#endif
         {
             private TabularHideMemberIfPlugin _plugin;
             public ERDiagramActionHideMemberIf(ERDiagram diagramInput, TabularHideMemberIfPlugin plugin)
@@ -318,26 +362,34 @@ namespace BIDSHelper
                 _plugin = plugin;
                 this.Icon = DiagramIcon.Hierarchy;
             }
+#if DENALI || SQL2014
+            public override void Cancel(IDiagramActionInstance actionInstance) { }
 
-            public override void Cancel(IDiagramActionInstance actionInstance)
-            {
-            }
+            public override IShowMessageRequest Confirm(IDiagramActionInstance actionInstance) { return null; }
 
-            public override IShowMessageRequest Confirm(IDiagramActionInstance actionInstance)
-            {
-                return null;
-            }
+            public override void Consider(IDiagramActionInstance actionInstance) { }
+#else
+            public override void Cancel(IViewModelActionInstance actionInstance) { }
 
-            public override void Consider(IDiagramActionInstance actionInstance)
-            {
-            }
+            public override IShowMessageRequest Confirm(IViewModelActionInstance actionInstance) { return null; }
 
+            public override void Consider(IViewModelActionInstance actionInstance) { }
+#endif
             private Form form;
+
+#if DENALI || SQL2014
             public override DiagramActionResult Do(IDiagramActionInstance actionInstance)
+#else
+            public override ViewModelActionResult Do(IViewModelActionInstance actionInstance)
+#endif
             {
                 try
                 {
+#if DENALI || SQL2014
                     IEnumerable<Tuple<string, string, string>> hierarchyLevels = this.SortHierarchyLevels(actionInstance.Targets.OfType<IDiagramNode>());
+#else
+                    IEnumerable<Tuple<string, string, string>> hierarchyLevels = this.SortHierarchyLevels(actionInstance.Targets.OfType<IViewModelNode>());
+#endif
 
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow(_plugin.package);
                     if (sandbox == null) throw new Exception("Can't get Sandbox!");
@@ -428,7 +480,12 @@ namespace BIDSHelper
                 {
                     MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error");
                 }
+#if DENALI || SQL2014
                 return new DiagramActionResult(null, (IDiagramObject)null);
+#else
+                return new ViewModelActionResult(null, (IViewModelObject)null);
+#endif
+
             }
 
             void okButton_Click(object sender, EventArgs e)
@@ -437,6 +494,7 @@ namespace BIDSHelper
                 form.Close();
             }
 
+#if DENALI || SQL2014
             private IEnumerable<Tuple<string, string, string>> SortHierarchyLevels(IEnumerable<IDiagramNode> hierarchyLevelNodes)
             {
                 List<Tuple<string, string, string>> list = new List<Tuple<string, string, string>>();
@@ -446,8 +504,18 @@ namespace BIDSHelper
                 }
                 return list;
             }
+#else
+            private IEnumerable<Tuple<string, string, string>> SortHierarchyLevels(IEnumerable<IViewModelNode> hierarchyLevelNodes)
+            {
+                List<Tuple<string, string, string>> list = new List<Tuple<string, string, string>>();
+                foreach (IViewModelNode node in hierarchyLevelNodes)
+                {
+                    list.Add(new Tuple<string, string, string>(ViewModelNode.GetTopAncestor(node).Text, node.ParentNode.Text, node.Text));
+                }
+                return list;
+            }
+#endif
 
-            
         }
 
     

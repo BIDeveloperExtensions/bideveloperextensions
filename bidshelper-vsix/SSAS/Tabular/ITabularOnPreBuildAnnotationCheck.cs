@@ -7,6 +7,7 @@ namespace BIDSHelper
 {
     interface ITabularOnPreBuildAnnotationCheck
     {
+
         string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox);
         void FixPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox);
 

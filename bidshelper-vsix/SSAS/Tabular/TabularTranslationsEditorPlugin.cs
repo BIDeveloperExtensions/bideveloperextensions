@@ -97,8 +97,11 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-
+#if DENALI || SQL2014
                 cube = sandbox.Cube;
+#else
+                cube = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Cube;
+#endif
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
                 SSAS.TabularDisplayFoldersAnnotation annotationSavedFolders = TabularDisplayFolderPlugin.GetAnnotation(sandbox);
@@ -348,7 +351,12 @@ namespace BIDSHelper
 
         private void AlterDatabase(List<SSAS.TabularTranslatedItem> translatedItems)
         {
-            Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
+#if DENALI || SQL2014
+            Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code;
+#else
+            Microsoft.AnalysisServices.BackEnd.AMOCode code;
+#endif
+            code = delegate
             {
                 using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction())
                 {
@@ -367,22 +375,31 @@ namespace BIDSHelper
                     tran.Commit();
                 }
             };
+#if DENALI || SQL2014
             sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#else
+            sandbox.ExecuteEngineCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#endif
         }
 
         private SSAS.TabularTranslationsAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             SSAS.TabularTranslationsAnnotation annotation = new SSAS.TabularTranslationsAnnotation();
-            if (sandbox.Database.Annotations.Contains(TRANSLATIONS_ANNOTATION))
+#if DENALI || SQL2014
+            var db = sandbox.Database;
+#else
+            var db = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Database;
+#endif
+            if (db.Annotations.Contains(TRANSLATIONS_ANNOTATION))
             {
-                string xml = TabularHelpers.GetAnnotationXml(sandbox.Database, TRANSLATIONS_ANNOTATION);
+                string xml = TabularHelpers.GetAnnotationXml(db, TRANSLATIONS_ANNOTATION);
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SSAS.TabularTranslationsAnnotation));
                 annotation = (SSAS.TabularTranslationsAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
             }
             return annotation;
         }
 
-        #region ITabularOnPreBuildAnnotationCheck
+#region ITabularOnPreBuildAnnotationCheck
         public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
         {
             get
@@ -402,7 +419,7 @@ namespace BIDSHelper
         {
             //never gets called
         }
-        #endregion
+#endregion
 
     }
 }
