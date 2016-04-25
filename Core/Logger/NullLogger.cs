@@ -11,6 +11,11 @@ namespace BIDSHelper.Core.Logger
     {
         public LogLevels LogLevel { get; set; }
 
+        public void Debug(string message)
+        {
+            // do nothing
+        }
+
         public void Error(string message)
         {
             // do nothing

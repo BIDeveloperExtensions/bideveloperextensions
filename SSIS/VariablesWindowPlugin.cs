@@ -109,14 +109,10 @@ namespace BIDSHelper.SSIS
                     changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
 
                     // Get grid and toolbar
-#if DENALI || SQL2014
+
                     // "tableLayoutPanelMain" - "tableLayoutPanelVariable" - "dlgGridControl1" | "toolBarVariable"
                     grid = (DlgGridControl)variablesToolWindowControl.Controls[0].Controls[0].Controls[0];
                     ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls[0].Controls[0].Controls[1];
-#else
-                    grid = (DlgGridControl)variablesToolWindowControl.Controls["dlgGridControl1"];
-                    ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls["toolBar1"];
-#endif
 
                     // If buttons already added, no need to do it again so exit 
                     if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
@@ -141,7 +137,6 @@ namespace BIDSHelper.SSIS
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
                     this.editExpressionButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
 
-#if DENALI || SQL2014
                     // Find References button
                     this.findReferencesButton = new ToolBarButton();
                     this.findReferencesButton.Style = ToolBarButtonStyle.PushButton;
@@ -157,7 +152,6 @@ namespace BIDSHelper.SSIS
                     toolbar.Buttons.Add(this.findUnusedButton);
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
                     this.findUnusedButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
-#endif
 
                     toolbar.ButtonClick += new ToolBarButtonClickEventHandler(toolbar_ButtonClick);
                     toolbar.Wrappable = false;
@@ -179,9 +173,7 @@ namespace BIDSHelper.SSIS
         //only way I could find to monitor when row data in the grid changes
         void grid_Invalidated(object sender, InvalidateEventArgs e)
         {
-#if DENALI || SQL2014
             CheckButtonIcons();
-#endif            
             RefreshHighlights();
         }
 
@@ -197,12 +189,12 @@ namespace BIDSHelper.SSIS
                     this.moveCopyButton.ImageIndex = this.moveCopyButton.Parent.ImageList.Images.Count - 1;
                     this.editExpressionButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.EditVariable);
                     this.editExpressionButton.ImageIndex = this.editExpressionButton.Parent.ImageList.Images.Count - 1;
-#if DENALI || SQL2014
+
                     this.findReferencesButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindReferences);
                     this.findReferencesButton.ImageIndex = this.findReferencesButton.Parent.ImageList.Images.Count - 1;
                     this.findUnusedButton.Parent.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
                     this.findUnusedButton.ImageIndex = this.findUnusedButton.Parent.ImageList.Images.Count - 1;
-#endif
+
                     System.Diagnostics.Debug.WriteLine("fixed variables windows button icons");
                 }
             }
@@ -216,11 +208,8 @@ namespace BIDSHelper.SSIS
                 if (bSkipHighlighting) return;
                 if (variablesToolWindowControl == null) return;
 
-#if DENALI || SQL2014
                 packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
-#else
-                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
-#endif
+
                 if (packageDesigner == null) return;
 
                 Package package = packageDesigner.Component as Package;
@@ -243,14 +232,12 @@ namespace BIDSHelper.SSIS
                         System.Diagnostics.Debug.WriteLine(cell.CellData.GetType().FullName);
                         Variable variable = GetVariableForRow(iRow);
 
-#if DENALI || SQL2014
-                        // Denali doesn't need variable highlighting, it is built in. This is a quick fix to disable the highlighting
+                        // Denali and later doesn't need variable highlighting, it is built in. This is a quick fix to disable the highlighting
                         // for Denali only. The other code stays the same for backward compatability when compiled as 2005 or 2008 projects.
                         // We will retain the configuration highlighting though.
                         bool bHasExpression = false;
-#else
-                        bool bHasExpression = variable.EvaluateAsExpression && !string.IsNullOrEmpty(variable.Expression);
-#endif
+                        //bool bHasExpression = variable.EvaluateAsExpression && !string.IsNullOrEmpty(variable.Expression);
+
                         bool bHasConfiguration = false;
                         string sVariablePath = variable.GetPackagePath();
                         foreach (string configPath in listConfigPaths)
@@ -344,12 +331,12 @@ namespace BIDSHelper.SSIS
                 MoveCopyButtonClick();
             else if (e.Button == this.editExpressionButton)
                 EditExpressionButtonClick();
-#if DENALI || SQL2014
+
             else if (e.Button == this.findReferencesButton)
                 FindReferencesButtonClick();
             else if (e.Button == this.findUnusedButton)
                 FindUnusedButtonClick();
-#endif
+
         }
 
 
@@ -416,11 +403,7 @@ namespace BIDSHelper.SSIS
                 if (variables.Count > 0)
                 {
                     System.Collections.ArrayList variableDesigners = GetSelectedVariableDesigners();
-#if DENALI || SQL2014
                     packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
-#else
-                    packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
-#endif
                     Package package = packageDesigner.Component as Package;
 
                     DtsContainer oCurrentScope = FindObjectForVariablePackagePath(package, variables[0].GetPackagePath());
@@ -460,11 +443,8 @@ namespace BIDSHelper.SSIS
 
         private Package GetCurrentPackage()
         {
-#if DENALI || SQL2014
+
             packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
-#else
-            packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().InvokeMember("PackageDesigner", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, null);
-#endif
 
             if (packageDesigner == null) return null;
 
@@ -621,7 +601,6 @@ namespace BIDSHelper.SSIS
 
             if (move)
             {
-#if DENALI || SQL2014
                 //terrible workaround to get the exact right parameter type for the DeleteVariables method in Denali. Guess calling InvokeMember against a function with a parameter of a generic type is tricky
                 System.Collections.IList listParam = ((System.Collections.IList)System.Type.GetType("System.Collections.Generic.List`1[[" + ExpressionHighlighterPlugin.GetPrivateType(variablesToolWindowControl.GetType(), "Microsoft.DataTransformationServices.Design.VariableDesigner").AssemblyQualifiedName + "]]").GetConstructor(new Type[] { }).Invoke(new object[] { }));
                 foreach (object o in sourceVariableDesigners)
@@ -629,9 +608,7 @@ namespace BIDSHelper.SSIS
                     listParam.Add(o);
                 }
                 variablesToolWindowControl.GetType().GetMethod("DeleteVariables", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).Invoke(variablesToolWindowControl, new object[] { listParam });
-#else
-                variablesToolWindowControl.GetType().InvokeMember("DeleteVariables", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { sourceVariableDesigners });
-#endif
+
             }
 
             changesvc.OnComponentChanging(targetContainer, null);

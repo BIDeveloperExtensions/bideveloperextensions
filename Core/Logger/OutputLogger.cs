@@ -42,6 +42,12 @@ namespace BIDSHelper.Core.Logger
                 _package.OutputString(FormatMessage("VERBOSE", message));
         }
 
+        public void Debug(string message)
+        {
+            if (LogLevel >= LogLevels.Debug)
+                _package.OutputString(FormatMessage("DEBUG", message));
+        }
+
         public void Warn(string message)
         {
             if (LogLevel >= LogLevels.Warning)
