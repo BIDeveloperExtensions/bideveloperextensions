@@ -68,13 +68,12 @@ namespace BIDSHelper
             return dimUsage;
         }
 
+#if DENALI || SQL2014
         public static List<DimensionUsage> GetTabularDimensionUsage(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox, bool bIsBusMatrix)
         {
-#if DENALI || SQL2014
+
             Cube c = sandbox.Cube;
-#else
-            Cube c = sandbox.AMOServer.Databases[sandbox.DatabaseID].Cubes[0];
-#endif
+
             List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
             List<DimensionUsage> dimUsage = new List<DimensionUsage>();
             foreach (CubeDimension cd in c.Dimensions)
@@ -140,7 +139,82 @@ namespace BIDSHelper
 
             return dimUsage;
         }
+#else
+        public static List<DimensionUsage> GetTabularDimensionUsage(Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox, bool bIsBusMatrix)
+        {
 
+            Cube c = sandbox.Cube;
+
+            List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
+            List<DimensionUsage> dimUsage = new List<DimensionUsage>();
+            foreach (CubeDimension cd in c.Dimensions)
+            {
+                bool bFoundVisibleAttribute = false;
+                foreach (DimensionAttribute da in cd.Dimension.Attributes)
+                {
+                    if (da.AttributeHierarchyVisible)
+                    {
+                        bFoundVisibleAttribute = true;
+                        break;
+                    }
+                }
+                if (bFoundVisibleAttribute)
+                    listCubeDimensions.Add(cd);
+
+                bool bFoundVisibleMeasure = false;
+#if DENALI || SQL2014
+                foreach (Microsoft.AnalysisServices.BackEnd.DataModelingMeasure m in sandbox.Measures)
+#else
+                foreach (Microsoft.AnalysisServices.BackEnd.DataModelingMeasure m in sandbox.Cube.AllMeasures)
+#endif
+                {
+                    if (m.Table == cd.Dimension.Name && !m.IsPrivate)
+                    {
+                        bFoundVisibleMeasure = true;
+                        break;
+                    }
+                }
+                if (!bFoundVisibleMeasure && bIsBusMatrix) continue;
+
+                MeasureGroup mg = c.MeasureGroups[cd.DimensionID];
+                List<DimensionUsage> tmp = RecurseTabularRelationships(cd.Dimension, mg, bIsBusMatrix);
+                dimUsage.AddRange(tmp);
+
+                if (bFoundVisibleAttribute && bFoundVisibleMeasure) //if this table had a measure but no dimension relationships (except to itself)
+                {
+                    DimensionUsage du = new DimensionUsage("Fact", mg, cd, cd.Dimension);
+                    dimUsage.Add(du);
+                }
+                else if (tmp.Count == 0 && bIsBusMatrix && bFoundVisibleMeasure) //if this table with a measure had no dimension relationships, add it as such...
+                {
+                    DimensionUsage du = new DimensionUsage(string.Empty, mg, null, null);
+                    dimUsage.Add(du);
+                }
+            }
+
+            //remove dimensions in relationships
+            foreach (DimensionUsage du in dimUsage)
+            {
+                for (int i = 0; i < listCubeDimensions.Count; i++)
+                {
+                    if (listCubeDimensions[i].Name == du.DimensionName)
+                    {
+                        listCubeDimensions.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+
+            //add any cube dimensions which aren't related to any measure groups
+            foreach (CubeDimension cd in listCubeDimensions)
+            {
+                DimensionUsage du = new DimensionUsage(string.Empty, null, cd, cd.Dimension);
+                dimUsage.Add(du);
+            }
+
+            return dimUsage;
+        }
+#endif
         private static List<DimensionUsage> RecurseTabularRelationships(Dimension dMG, MeasureGroup mgOuter, bool bIsBusMatrix)
         {
             List<DimensionUsage> list = new List<DimensionUsage>();

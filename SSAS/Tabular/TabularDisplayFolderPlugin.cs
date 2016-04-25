@@ -6,20 +6,25 @@ using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 using System.Data;
 using BIDSHelper.Core;
+using Microsoft.AnalysisServices.BackEnd;
 
 namespace BIDSHelper
 {
     public class TabularDisplayFolderPlugin : BIDSHelperPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         public const string DISPLAY_FOLDER_ANNOTATION = "BIDS_Helper_Tabular_Display_Folder_Backups";
+#if DENALI || SQL2014
         private Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox;
+#else
+        private Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox;
+#endif
         private Cube cube;
 
-        #region Standard Plugin Overrides
+#region Standard Plugin Overrides
         public TabularDisplayFolderPlugin(BIDSHelperPackage package)
             : base(package)
         {
-            CreateContextMenu(CommandList.TabularDisplayFoldersId, ".bim");
+            CreateContextMenu(CommandList.TabularDisplayFoldersId);
         }
 
         public override string ShortName
@@ -65,7 +70,7 @@ namespace BIDSHelper
             get { return "Provides a UI for editing display folders for columns and measures in Tabular models."; }
         }
         
-        #endregion
+#endregion
 
         public override void Exec()
         {
@@ -73,10 +78,13 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+//#if DENALI || SQL2014
+                var _sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
+//#else
+//                sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
+//#endif
 
-                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
-
-                ExecSandbox(sandbox);
+                ExecSandbox(_sandbox);
             }
             catch (System.Exception ex)
             {
@@ -88,14 +96,18 @@ namespace BIDSHelper
         {
             try
             {
+#if DENALI || SQL2014
                 sandbox = sandboxParam;
+#else
+                sandbox = (DataModelingSandboxAmo)sandboxParam.Impl;
+#endif
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
                 cube = sandbox.Cube;
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
                 bool bRestoreDisplayFolders = false;
-                SSAS.TabularDisplayFoldersAnnotation annotationSaved = GetAnnotation(sandbox);
-                if (GetPreBuildWarning(sandbox) != null)
+                SSAS.TabularDisplayFoldersAnnotation annotationSaved = GetAnnotation(sandboxParam);
+                if (GetPreBuildWarning(sandboxParam) != null)
                 {
                     if (MessageBox.Show("Some display folders have been blanked out by other editing operations. Restoring display folders may be possible except when a measures or columns have been renamed.\r\n\r\nWould you like BIDS Helper to attempt restore the display folders now?", "BIDS Helper Tabular Display Folders", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
@@ -109,7 +121,7 @@ namespace BIDSHelper
 
                 Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                 restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
-                DataSet datasetMeasures = sandbox.AdomdConnection.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
+                DataSet datasetMeasures = sandboxParam.AdomdConnection.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
 
                 Database db = cube.Parent;
                 foreach (Dimension d in db.Dimensions)
@@ -197,9 +209,14 @@ namespace BIDSHelper
 
                     if (iNumberOfChanges > 0 || bRestoreDisplayFolders)
                     {
-                        Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
+#if DENALI || SQL2014
+                        Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code;
+#else
+                        Microsoft.AnalysisServices.BackEnd.AMOCode code;
+#endif
+                        code = delegate
                             {
-                                using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction())
+                                using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandboxParam.CreateTransaction())
                                 {
                                     foreach (BIDSHelper.SSAS.TabularDisplayFolder folder in displayFolders)
                                     {
@@ -207,13 +224,17 @@ namespace BIDSHelper
                                     }
                                     TabularHelpers.SaveXmlAnnotation(cube.Parent, DISPLAY_FOLDER_ANNOTATION, annotation);
 
-                                    TabularHelpers.EnsureDataSourceCredentials(sandbox);
+                                    TabularHelpers.EnsureDataSourceCredentials(sandboxParam);
                                     cube.Parent.Update(UpdateOptions.ExpandFull);
 
                                     tran.Commit();
                                 }
                             };
+#if DENALI || SQL2014
                         sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#else
+                        sandboxParam.ExecuteEngineCode(DataModelingSandbox.OperationType.Update, DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#endif
                     }
                 }
             }
@@ -222,7 +243,7 @@ namespace BIDSHelper
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error");
             }
         }
-
+#if DENALI || SQL2014
         public static SSAS.TabularDisplayFoldersAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             SSAS.TabularDisplayFoldersAnnotation annotation = new SSAS.TabularDisplayFoldersAnnotation();
@@ -234,8 +255,27 @@ namespace BIDSHelper
             }
             return annotation;
         }
+#else
+        public static SSAS.TabularDisplayFoldersAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+#if DENALI || SQL2014
+            var sb = sandbox
+#else
+            var sb = (DataModelingSandboxAmo)sandbox.Impl;
+#endif
 
-        #region ITabularOnPreBuildAnnotationCheck
+            SSAS.TabularDisplayFoldersAnnotation annotation = new SSAS.TabularDisplayFoldersAnnotation();
+            if (sb.Database.Annotations.Contains(DISPLAY_FOLDER_ANNOTATION))
+            {
+                string xml = TabularHelpers.GetAnnotationXml(sb.Database, DISPLAY_FOLDER_ANNOTATION);
+                System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(SSAS.TabularDisplayFoldersAnnotation));
+                annotation = (SSAS.TabularDisplayFoldersAnnotation)serializer.Deserialize(new System.IO.StringReader(xml));
+            }
+            return annotation;
+        }
+#endif
+
+            #region ITabularOnPreBuildAnnotationCheck
         public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
         {
             get
@@ -243,7 +283,7 @@ namespace BIDSHelper
                 return TabularOnPreBuildAnnotationCheckPriority.HighPriority;
             }
         }
-
+#if DENALI || SQL2014
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             string strWarning = "Click OK for BIDS Helper to restore display folders. The Tabular Display Folders form will open. Then click Yes then OK.";
@@ -251,6 +291,24 @@ namespace BIDSHelper
 
 
             Database db = sandbox.Database;
+            return GetPreBuildWarningInternal(strWarning, annotation, db);
+        }
+#else
+        public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            string strWarning = "Click OK for BIDS Helper to restore display folders. The Tabular Display Folders form will open. Then click Yes then OK.";
+            SSAS.TabularDisplayFoldersAnnotation annotation = GetAnnotation(sandbox);
+
+#if DENALI || SQL2014
+            Database db = sandbox.Database;
+#else
+            Database db = ((DataModelingSandboxAmo)sandbox.Impl).Database;
+#endif
+            return GetPreBuildWarningInternal(strWarning, annotation, db);
+        }
+#endif
+        private static string GetPreBuildWarningInternal(string strWarning, SSAS.TabularDisplayFoldersAnnotation annotation, Database db)
+        {
             foreach (Dimension d in db.Dimensions)
             {
                 foreach (DimensionAttribute da in d.Attributes)
@@ -287,16 +345,36 @@ namespace BIDSHelper
                     }
                 }
             }
-            
+
             return null;
         }
-
+#if DENALI || SQL2014
         public void FixPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
             //open the actions form and let it fix actions
             ExecSandbox(sandbox);
         }
+#else
+        public void FixPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
+        {
+            //open the actions form and let it fix actions
+            ExecSandbox(sandbox);
+        }
+#endif
         #endregion
 
+        public override bool ShouldDisplayCommand()
+        {
+            var f = GetSelectedFile();
+            if (f == null) return false;
+            if (f.Extension.ToLower() != ".bim") return false;
+#if DENALI || SQL2014
+            return true;
+#else
+            var sb = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
+            if (sb.IsTabularMetadata) return false;
+            return true;
+#endif
+        }
     }
 }

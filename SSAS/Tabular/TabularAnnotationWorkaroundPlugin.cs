@@ -129,7 +129,7 @@ namespace BIDSHelper
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
             nsmgr.AddNamespace("SSAS", doc.DocumentElement.NamespaceURI);
 
-            if (doc.SelectSingleNode("//SSAS:ObjectDefinition/SSAS:Database/SSAS:Annotations/SSAS:Annotation/SSAS:Name[text()='" + ANNOTATION_STYLE_ANNOTATION + "']/../SSAS:Value[text()='" + ANNOTATION_STYLE_STRING + "']", nsmgr) != null)
+            if (doc.SelectSingleNode("//SSAS:ObjectDefinition/SSAS:Database/SSAS:Annotations/SSAS:Annotation/SSAS:Name[text()='" + TabularHelpers.ANNOTATION_STYLE_ANNOTATION + "']/../SSAS:Value[text()='" + TabularHelpers.ANNOTATION_STYLE_STRING + "']", nsmgr) != null)
             {
                 throw new Exception("BIDS Helper has already switched annotations to the new format!!!");
             }
@@ -157,8 +157,8 @@ namespace BIDSHelper
                 XmlElement annotations = (XmlElement)doc.SelectSingleNode("//SSAS:ObjectDefinition/SSAS:Database/SSAS:Annotations", nsmgr);
                 if (annotations == null) throw new Exception("No Database annotations exist yet!");
                 XmlElement newAnnotation = doc.CreateElement("Annotation", doc.DocumentElement.NamespaceURI);
-                newAnnotation.AppendChild(doc.CreateElement("Name", doc.DocumentElement.NamespaceURI)).InnerText = ANNOTATION_STYLE_ANNOTATION;
-                newAnnotation.AppendChild(doc.CreateElement("Value", doc.DocumentElement.NamespaceURI)).InnerText = ANNOTATION_STYLE_STRING;
+                newAnnotation.AppendChild(doc.CreateElement("Name", doc.DocumentElement.NamespaceURI)).InnerText = TabularHelpers.ANNOTATION_STYLE_ANNOTATION;
+                newAnnotation.AppendChild(doc.CreateElement("Value", doc.DocumentElement.NamespaceURI)).InnerText = TabularHelpers.ANNOTATION_STYLE_STRING;
                 annotations.PrependChild(newAnnotation);
 
                 System.IO.File.Copy(sBimFilePath, sBimFilePath + BACKUP_FILE_SUFFIX, true);

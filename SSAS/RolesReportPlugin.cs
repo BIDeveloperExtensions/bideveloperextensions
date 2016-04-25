@@ -122,7 +122,6 @@ namespace BIDSHelper.SSAS
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
                 Database db = null;
-                Microsoft.AnalysisServices.BackEnd.DataModelingRoleCollection roles = null;
                 
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
 
@@ -130,13 +129,14 @@ namespace BIDSHelper.SSAS
                 if (sFileName.EndsWith(".bim"))
                 {
 
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
+
 #if DENALI || SQL2014
-                    db = sandbox.Database;
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
 #else
-                    
-                    roles = sandbox.Roles;
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
+
 #endif
+                    db = sandbox.Database;
                     bIsTabular = true;
 
                 }
