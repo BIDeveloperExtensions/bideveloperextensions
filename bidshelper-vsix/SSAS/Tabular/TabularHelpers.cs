@@ -224,7 +224,7 @@ namespace BIDSHelper
 #if DENALI || SQL2014
             Database db = sandbox.Database;
 #else
-            Database db = sandbox.AMOServer.Databases[0];
+            Database db = sandbox.AMOServer.Databases[sandbox.DatabaseID];
 #endif
             foreach (DataSource ds in db.DataSources)
             {
@@ -238,6 +238,8 @@ namespace BIDSHelper
                 }
             }
             return true;
+      
+            
         }
     }
 }

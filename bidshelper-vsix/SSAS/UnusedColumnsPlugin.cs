@@ -120,7 +120,8 @@ namespace BIDSHelper.SSAS
 #if DENALI || SQL2014
                     DataSourceViewCollection dsvs = sandbox.Database.DataSourceViews;
 #else
-                    DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[0].DataSourceViews;
+                    // TODO - need to work with the new sandbox properties for VS2015
+                    DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[sandbox.DatabaseID].DataSourceViews;
 #endif
                     foreach (DataSourceView o in dsvs)
                     {
