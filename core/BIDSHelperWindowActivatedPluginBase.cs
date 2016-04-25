@@ -50,7 +50,7 @@ namespace BIDSHelper
 
         public void HookWindowActivation()
         {
-            package.Log.Info("BIDSHelperWindowActivatedPluginBase HookWindowActivation fired");
+            package.Log.Debug("BIDSHelperWindowActivatedPluginBase HookWindowActivation fired");
             windowEvents = base.GetWindowEvents();
             if (ShouldHookWindowActivated)
                 windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
@@ -102,7 +102,7 @@ namespace BIDSHelper
         }
         public override void OnEnable()
         {
-            package.Log.Info("BIDSHelperWindowActivatedPluginBase OnEnable fired");
+            package.Log.Debug("BIDSHelperWindowActivatedPluginBase OnEnable fired");
             base.OnEnable();
             this.HookWindowActivation();
             // force OnWindowActivate to fire

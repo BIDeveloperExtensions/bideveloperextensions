@@ -93,7 +93,7 @@ namespace BIDSHelper
 #else
             Logger = new Core.Logger.NullLogger();
 #endif
-            Log.Info("BIDSHelper Package Initialize Starting");
+            Log.Debug("BIDSHelper Package Initialize Starting");
             string sAddInTypeName = string.Empty;
             try
             {

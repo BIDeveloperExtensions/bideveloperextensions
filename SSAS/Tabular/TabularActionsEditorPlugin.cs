@@ -82,7 +82,7 @@ namespace BIDSHelper
             try
             {
 #if DENALI || SQL2014
-                sb = sandboxParam;
+                var sb = sandboxParam;
 #else
                 var sb = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
 #endif
