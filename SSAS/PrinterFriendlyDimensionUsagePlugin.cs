@@ -112,7 +112,7 @@ namespace BIDSHelper.SSAS
 #if DENALI || SQL2014
                     cub = sandbox.Cube;
 #else
-                    cub = sandbox.AMOServer.Databases[0].Cubes[0];
+                    cub = sandbox.AMOServer.Databases[sandbox.DatabaseID].Cubes[0];
 #endif
                     bIsTabular = true;
                     Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Measures;

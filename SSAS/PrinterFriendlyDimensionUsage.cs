@@ -73,7 +73,7 @@ namespace BIDSHelper
 #if DENALI || SQL2014
             Cube c = sandbox.Cube;
 #else
-            Cube c = sandbox.AMOServer.Databases[0].Cubes[0];
+            Cube c = sandbox.AMOServer.Databases[sandbox.DatabaseID].Cubes[0];
 #endif
             List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
             List<DimensionUsage> dimUsage = new List<DimensionUsage>();
