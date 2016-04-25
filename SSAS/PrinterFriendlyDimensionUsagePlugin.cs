@@ -96,9 +96,11 @@ namespace BIDSHelper.SSAS
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
 
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-
+#if DENALI || SQL2014
                 Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = null;
-
+#else
+                Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox = null;
+#endif
                 bool bIsTabular = false;
                 Cube cub = null;
                 if (projItem.Object is Cube)
@@ -107,15 +109,18 @@ namespace BIDSHelper.SSAS
                 }
                 else if (sFileName.EndsWith(".bim"))
                 {
-
-                    sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
 #if DENALI || SQL2014
+                    sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                     cub = sandbox.Cube;
-#else
-                    cub = sandbox.AMOServer.Databases[sandbox.DatabaseID].Cubes[0];
-#endif
                     bIsTabular = true;
                     Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Measures;
+#else
+                    sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
+                    cub = sandbox.Cube;
+                    bIsTabular = true;
+                    //Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Cube.AllMeasures;
+#endif
+
                 }
                 else
                 {

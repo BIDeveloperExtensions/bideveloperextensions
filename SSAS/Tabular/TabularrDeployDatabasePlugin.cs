@@ -116,7 +116,11 @@ namespace BIDSHelper
 
         private void ExecInternal(ProjectItem projItem, DataModelingSandbox sandbox)
         {
-            //sandbox.
+#if DENALI || SQL2014
+            var db = sandbox.Database;
+#else
+            var db = ((DataModelingSandboxAmo)sandbox.Impl).Database;
+#endif
             // extract deployment information
             DeploymentSettings deploySet = new DeploymentSettings(projItem);
 
@@ -142,7 +146,7 @@ namespace BIDSHelper
                 xws.OmitXmlDeclaration = true;
                 xws.ConformanceLevel = ConformanceLevel.Fragment;
                 XmlWriter xwrtr = XmlWriter.Create(sb, xws);
-                scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[] {sandbox.Database}, xwrtr, true);
+                scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[] {db}, xwrtr, true);
 
                 // update the MDX Script
                 XmlaResultCollection xmlaRC = svr.Execute(sb.ToString());

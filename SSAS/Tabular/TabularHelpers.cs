@@ -51,7 +51,7 @@ namespace BIDSHelper
             GetVSHostManager(project, openIfNotOpen); //just to force the window open if not open
             return ((Microsoft.VisualStudio.Project.ProjectNode)((project.ContainingProject).Object)).Site;
         }
-
+//#if DENALI || SQL2014
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(Core.BIDSHelperPluginBase plugin, bool openIfNotOpen)
         {
             UIHierarchy solExplorer = plugin.ApplicationObject.ToolWindows.SolutionExplorer;
@@ -65,11 +65,33 @@ namespace BIDSHelper
             {
                 Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
                 if (host == null) return null;
+#if DENALI || SQL2014
                 return host.Sandbox;
+#else
+                if (!host.Sandbox.IsTabularMetadata) return host.Sandbox;
+#endif
             }
             return null;
         }
+//#endif
+        
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo GetTabularSandboxAmoFromBimFile(Core.BIDSHelperPluginBase plugin, bool openIfNotOpen)
+        {
+            UIHierarchy solExplorer = plugin.ApplicationObject.ToolWindows.SolutionExplorer;
+            if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                return null;
 
+            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            if (!(hierItem.Object is ProjectItem)) return null;
+            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            if (sFileName.EndsWith(".bim"))
+            {
+                Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
+                if (host == null) return null;
+                if (!host.Sandbox.IsTabularMetadata) return (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)host.Sandbox.Impl;
+            }
+            return null;
+        }
         //TODO - replace these methods?
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromActiveWindow(BIDSHelperPackage package)
         {
@@ -221,12 +243,15 @@ namespace BIDSHelper
         /// <param name="sandbox"></param>
         public static bool EnsureDataSourceCredentials(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
-#if DENALI || SQL2014
-            Database db = sandbox.Database;
-#else
-            Database db = sandbox.AMOServer.Databases[sandbox.DatabaseID];
-#endif
-            foreach (DataSource ds in db.DataSources)
+//#if DENALI || SQL2014
+            //Database db = sandbox.Database;
+//#else
+//            Database db = sandbox.AMOServer.Databases[sandbox.DatabaseID];
+                     
+//#endif
+
+            
+            foreach (var ds in sandbox.DataSources)
             {
                 if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))
                 {

@@ -81,15 +81,24 @@ namespace BIDSHelper
         {
             try
             {
-                sandbox = sandboxParam;
+#if DENALI || SQL2014
+                sb = sandboxParam;
+#else
+                var sb = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
+#endif
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
-                cube = sandbox.Cube;
+                cube = sb.Cube;
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
-                SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, sandbox.AdomdConnection);
+                SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, sandboxParam.AdomdConnection);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
+#if DENALI || SQL2014
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code;
+#else
+                    Microsoft.AnalysisServices.BackEnd.AMOCode code;
+#endif
+                    code = delegate
                         {
                             using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction())
                             {
@@ -116,7 +125,11 @@ namespace BIDSHelper
                                 tran.Commit();
                             }
                         };
+#if DENALI || SQL2014
                     sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#else
+                    sandboxParam.ExecuteEngineCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#endif
                 }
             }
             catch (System.Exception ex)
@@ -137,7 +150,7 @@ namespace BIDSHelper
             return annotation;
         }
 
-        #region ITabularOnPreBuildAnnotationCheck
+#region ITabularOnPreBuildAnnotationCheck
         public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
         {
             get
@@ -148,7 +161,11 @@ namespace BIDSHelper
 
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
+#if DENALI || SQL2014
             cube = sandbox.Cube;
+#else
+            cube = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Cube;
+#endif
             SSAS.TabularActionsAnnotation annotation = GetAnnotation(cube);
 
             bool bContainsPerspectiveListAnnotation = false;
@@ -182,7 +199,7 @@ namespace BIDSHelper
             //open the actions form and let it fix actions
             ExecSandbox(sandbox);
         }
-        #endregion
+#endregion
         
         public class DrillthroughColumn
         {

@@ -125,22 +125,35 @@ namespace BIDSHelper.SSAS
         private void SetupContextMenu(ERDiagram diagram)
         {
             if (diagram == null) return;
-
+#if DENALI || SQL2014
             foreach (IDiagramAction action in diagram.Actions)
+#else
+            foreach (IViewModelAction action in diagram.Actions)
+#endif
             {
                 if (action is ERDiagramActionSyncDescriptions) return; //if this context menu is already part of the diagram, then we're done
             }
 
-            IDiagramTag tagTable = (IDiagramTag)diagram.GetType().InvokeMember("tagTable", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance, null, diagram, null);
+            
 
             ERDiagramActionSyncDescriptions syncAction = new ERDiagramActionSyncDescriptions(diagram, this);
             syncAction.Text = "Sync Descriptions...";
             syncAction.DisplayIndex = 0x19f;
+#if DENALI || SQL2014
+            IDiagramTag tagTable = (IDiagramTag)diagram.GetType().InvokeMember("tagTable", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance, null, diagram, null);
             syncAction.Key = new DiagramObjectKey(@"Actions\{0}", new object[] { "SyncDescriptions" });
             syncAction.AvailableRule = delegate(IEnumerable<IEnumerable<IDiagramTag>> tagSets)
             {
                 return tagSets.All<IEnumerable<IDiagramTag>>(tagSet => tagSet.Contains<IDiagramTag>(tagTable));
             };
+#else
+            IViewModelTag tagTable = (IViewModelTag)diagram.GetType().InvokeMember("tagTable", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance, null, diagram, null);
+            syncAction.Key = new ViewModelObjectKey(@"Actions\{0}", new object[] { "SyncDescriptions" });
+            syncAction.AvailableRule = delegate (IEnumerable<IEnumerable<IViewModelTag>> tagSets)
+            {
+                return tagSets.All<IEnumerable<IViewModelTag>>(tagSet => tagSet.Contains<IViewModelTag>(tagTable));
+            };
+#endif
             diagram.GetType().InvokeMember("InitializeViewStates", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod, null, diagram, new object[] { syncAction });
             diagram.Actions.Add(syncAction);
         }
@@ -149,7 +162,14 @@ namespace BIDSHelper.SSAS
         {
             try
             {
-                Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
+#if DENALI || SQL2014
+                var db = sandbox.Database;
+                Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code;
+#else
+                var db = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Database;
+                Microsoft.AnalysisServices.BackEnd.AMOCode code;
+#endif
+                code = delegate
                     {
                         int iDescriptionsSet;
                         Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties properties = new Microsoft.AnalysisServices.BackEnd.SandboxTransactionProperties();
@@ -163,15 +183,19 @@ namespace BIDSHelper.SSAS
                                 return;
                             }
 
-                            Dimension d = sandbox.Database.Dimensions.GetByName(tableName);
+                            Dimension d = db.Dimensions.GetByName(tableName);
                             iDescriptionsSet = SyncDescriptionsPlugin.SyncDescriptions(d, true, provider, true);
-                            sandbox.Database.Update(UpdateOptions.ExpandFull);
+                            db.Update(UpdateOptions.ExpandFull);
                             tran.Commit();
                         }
 
                         MessageBox.Show("Set " + iDescriptionsSet + " descriptions successfully.", "BIDS Helper - Sync Descriptions");
                     };
+#if DENALI || SQL2014
                 sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#else
+                sandbox.ExecuteEngineCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#endif
             }
             catch (System.Exception ex)
             {
@@ -184,8 +208,11 @@ namespace BIDSHelper.SSAS
         public override void Exec()
         {
         }
-
+#if DENALI || SQL2014
         internal class ERDiagramActionSyncDescriptions : SSAS.Tabular.ERDiagramActionBase, IDiagramActionBasic, IDiagramAction, IDiagramObject, System.ComponentModel.INotifyPropertyChanged, INotifyCollectionPropertyChanged
+#else
+        internal class ERDiagramActionSyncDescriptions : SSAS.Tabular.ERDiagramActionBase, IViewModelActionBasic, IViewModelAction, IViewModelObject, System.ComponentModel.INotifyPropertyChanged, INotifyCollectionPropertyChanged
+#endif
         {
             private TabularSyncDescriptionsPlugin _plugin;
             public ERDiagramActionSyncDescriptions(ERDiagram diagramInput, TabularSyncDescriptionsPlugin plugin)
@@ -195,19 +222,12 @@ namespace BIDSHelper.SSAS
                 this.Icon = DiagramIcon.None;
             }
 
-            public override void Cancel(IDiagramActionInstance actionInstance)
-            {
-            }
+#if DENALI || SQL2014
+            public override void Cancel(IDiagramActionInstance actionInstance) { }
 
-            public override IShowMessageRequest Confirm(IDiagramActionInstance actionInstance)
-            {
-                return null;
-            }
+            public override IShowMessageRequest Confirm(IDiagramActionInstance actionInstance) { return null; }
 
-            public override void Consider(IDiagramActionInstance actionInstance)
-            {
-            }
-
+            public override void Consider(IDiagramActionInstance actionInstance) { }
             public override DiagramActionResult Do(IDiagramActionInstance actionInstance)
             {
                 try
@@ -227,6 +247,34 @@ namespace BIDSHelper.SSAS
                 }
                 return new DiagramActionResult(null, (IDiagramObject)null);
             }
+#else
+
+            public override void Cancel(IViewModelActionInstance actionInstance) { }
+
+            public override IShowMessageRequest Confirm(IViewModelActionInstance actionInstance) { return null; }
+
+            public override void Consider(IViewModelActionInstance actionInstance) { }
+
+            public override ViewModelActionResult Do(IViewModelActionInstance actionInstance)
+            {
+                try
+                {
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromActiveWindow(_plugin.package);
+                    if (sandbox == null) throw new Exception("Can't get Sandbox!");
+                    IServiceProvider provider = TabularHelpers.GetTabularServiceProviderFromActiveWindow(_plugin.package);
+
+                    foreach (IViewModelNode node in actionInstance.Targets.OfType<IViewModelNode>())
+                    {
+                        _plugin.ExecuteSyncDescriptions(sandbox, provider, node.Text);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error");
+                }
+                return new ViewModelActionResult(null, (IViewModelObject)null);
+            }
         }
+#endif
     }
 }
