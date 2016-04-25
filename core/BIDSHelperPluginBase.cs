@@ -626,10 +626,6 @@ namespace BIDSHelper.Core
 
                 if (itemid == VSConstants.VSITEMID_ROOT) return false;
 
-                var tmp = Marshal.GetObjectForIUnknown(hierarchyPtr);
-            
-                var tmp2 = (FileProjectHierarchy)tmp;
-
                 hierarchy = Marshal.GetObjectForIUnknown(hierarchyPtr) as IVsHierarchy;
                 if (hierarchy == null) return false;
 

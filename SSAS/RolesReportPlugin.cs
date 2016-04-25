@@ -122,7 +122,8 @@ namespace BIDSHelper.SSAS
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
                 Database db = null;
-
+                Microsoft.AnalysisServices.BackEnd.DataModelingRoleCollection roles = null;
+                
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
 
                 bool bIsTabular = false;
@@ -133,7 +134,8 @@ namespace BIDSHelper.SSAS
 #if DENALI || SQL2014
                     db = sandbox.Database;
 #else
-                    db = sandbox.AMOServer.Databases[0];
+                    
+                    roles = sandbox.Roles;
 #endif
                     bIsTabular = true;
 
