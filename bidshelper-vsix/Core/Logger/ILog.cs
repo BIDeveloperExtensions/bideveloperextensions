@@ -9,6 +9,7 @@ namespace BIDSHelper.Core.Logger
         void Warn(string message);
         void Error(string message);
         void Verbose(string message);
+        void Debug(string message);
         void Exception(string message, Exception ex);
     }
 }

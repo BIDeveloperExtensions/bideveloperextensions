@@ -30,7 +30,7 @@ namespace BIDSHelper
         
         public override void OnEnable()
         {
-            package.Log.Info("BIDSHelperWindowActivatedPluginBase OnEnable fired");
+            package.Log.Debug("BIDSHelperWindowActivatedPluginBase OnEnable fired");
             base.OnEnable();
             this.HookBuildEvents();
         }

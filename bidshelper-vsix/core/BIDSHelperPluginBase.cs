@@ -653,6 +653,7 @@ namespace BIDSHelper.Core
             }
         }
 
+
         public static IVsHierarchy GetSelectedProjectItem()
         {
             IVsHierarchy hierarchy = null;
@@ -749,7 +750,9 @@ namespace BIDSHelper.Core
             string itemFullPath;
             if (!IsSingleProjectItemSelection(out hierarchy, out itemId)) return null;
             ((IVsProject)hierarchy).GetMkDocument(itemId, out itemFullPath);
-            
+
+            var i = GetSelectedProjectItem();
+
             return new FileInfo(itemFullPath);
         }
         #endregion

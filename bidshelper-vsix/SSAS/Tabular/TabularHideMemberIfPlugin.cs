@@ -261,7 +261,7 @@ namespace BIDSHelper
         private SSAS.TabularHideMemberIfAnnotation GetAnnotation(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
         {
 #if DENALI || SQL2014
-            var sandbox = sandboxParam
+            var sandbox = sandboxParam;
 #else
             var sandbox = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
 #endif
@@ -322,7 +322,7 @@ namespace BIDSHelper
         private Level[] GetProblemLevels(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
         {
 #if DENALI || SQL2014
-            var sandbox = sandboxParam
+            var sandbox = sandboxParam;
 #else
             var sandbox = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
 #endif

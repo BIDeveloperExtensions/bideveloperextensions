@@ -73,8 +73,9 @@ namespace BIDSHelper
             }
             return null;
         }
-//#endif
-        
+        //#endif
+
+#if !DENALI && !SQL2014
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo GetTabularSandboxAmoFromBimFile(Core.BIDSHelperPluginBase plugin, bool openIfNotOpen)
         {
             UIHierarchy solExplorer = plugin.ApplicationObject.ToolWindows.SolutionExplorer;
@@ -92,6 +93,7 @@ namespace BIDSHelper
             }
             return null;
         }
+#endif
         //TODO - replace these methods?
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromActiveWindow(BIDSHelperPackage package)
         {
@@ -243,15 +245,14 @@ namespace BIDSHelper
         /// <param name="sandbox"></param>
         public static bool EnsureDataSourceCredentials(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
-//#if DENALI || SQL2014
-            //Database db = sandbox.Database;
-//#else
-//            Database db = sandbox.AMOServer.Databases[sandbox.DatabaseID];
+#if DENALI || SQL2014
+            Database db = sandbox.Database;
+#else
+            Database db = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Database;
                      
-//#endif
+#endif
 
-            
-            foreach (var ds in sandbox.DataSources)
+            foreach (DataSource ds in db.DataSources)
             {
                 if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))
                 {

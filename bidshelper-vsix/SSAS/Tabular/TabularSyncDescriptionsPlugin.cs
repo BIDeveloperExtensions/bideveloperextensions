@@ -274,7 +274,8 @@ namespace BIDSHelper.SSAS
                 }
                 return new ViewModelActionResult(null, (IViewModelObject)null);
             }
-        }
+        
 #endif
+        }
     }
 }
