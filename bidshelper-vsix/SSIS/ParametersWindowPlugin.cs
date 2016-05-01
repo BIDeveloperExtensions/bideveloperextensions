@@ -64,7 +64,7 @@ namespace BIDSHelper.SSIS
 
                 // We want the DtsPackageView, an EditorWindow, Microsoft.DataTransformationServices.Design.DtsPackageView
                 EditorWindow editorWindow = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-
+                //if (editorWindow == null)
                 if (editorWindow.Tag == null)
                 {
                     ParametersWindowManager manager = new ParametersWindowManager(editorWindow);
@@ -82,6 +82,7 @@ namespace BIDSHelper.SSIS
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.package.Log.Exception("ParametersWindowPlugin.OnWindowActivate", ex);
             }
         }
 

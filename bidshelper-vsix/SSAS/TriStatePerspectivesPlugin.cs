@@ -1,17 +1,11 @@
 //using Extensibility;
 using EnvDTE;
-using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
-using Microsoft.DataWarehouse.ComponentModel;
 using System;
-using Microsoft.Win32;
 using System.Collections;
 using System.Reflection;
 
@@ -24,9 +18,7 @@ namespace BIDSHelper
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.Dictionary<string, EditorWindow> windowHandlesFixedForPerspectives = new System.Collections.Generic.Dictionary<string,EditorWindow>();
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForGridEvents = new System.Collections.Generic.Dictionary<string,EditorWindow>();
-#if DENALI || SQL2014
         private bool _IsMetroOrGreater = false;
-#endif
 
         public TriStatePerspectivesPlugin(BIDSHelperPackage package)
             : base(package)
@@ -34,13 +26,7 @@ namespace BIDSHelper
 
         }
 
-        public override bool ShouldHookWindowCreated
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool ShouldHookWindowCreated { get { return true; } }
 
         public override void OnDisable()
         {
@@ -54,9 +40,7 @@ namespace BIDSHelper
                 Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
                 grid.MouseClick -= grid_MouseClick;
                 grid.KeyPress -= grid_KeyPress;
-#if DENALI || SQL2014
                 HookCellPaintEvent(grid, false);
-#endif
             }
 
             foreach (EditorWindow win in windowHandlesFixedForPerspectives.Values)
@@ -65,7 +49,7 @@ namespace BIDSHelper
             }
         }
 
-#if DENALI || SQL2014
+//#if DENALI || SQL2014
         //the CellPaint event is on an internal class Microsoft.AnalysisServices.Design.SquigglyFriendlyDlgGrid and it uses an internal Microsoft.AnalysisServices.Design.CellPaintEventArgs args, so you have to hook with reflection
         private void HookCellPaintEvent(object grid, bool add)
         {
@@ -116,7 +100,7 @@ namespace BIDSHelper
             }
             catch { }
         }
-#endif
+//#endif
 
         public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {

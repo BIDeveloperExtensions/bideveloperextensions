@@ -112,7 +112,7 @@ namespace BIDSHelper
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
@@ -120,7 +120,7 @@ namespace BIDSHelper
         {
             get
             {
-                throw new NotImplementedException();
+                return "MeasureGroup Health Check";
             }
         }
 
