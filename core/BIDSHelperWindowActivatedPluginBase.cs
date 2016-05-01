@@ -28,11 +28,7 @@ namespace BIDSHelper
         {
             
         }
-
-        //public BIDSHelperWindowActivatedPluginBase()
-        //{
-
-        //}
+        
         #endregion
 
         public virtual bool ShouldHookWindowCreated
@@ -50,7 +46,7 @@ namespace BIDSHelper
 
         public void HookWindowActivation()
         {
-            package.Log.Debug("BIDSHelperWindowActivatedPluginBase HookWindowActivation fired");
+            package.Log.Debug("BIDSHelperWindowActivatedPluginBase HookWindowActivation fired (" + this.GetType().Name + ")");
             windowEvents = base.GetWindowEvents();
             if (ShouldHookWindowActivated)
                 windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
@@ -80,6 +76,7 @@ namespace BIDSHelper
 
         public void OnActiveViewChanged()
         {
+            this.package.Log.Debug("BIDSHelperWindowActivatedPlugin " + this.IdeMode + " (" + this.GetType().Name + ")");
             if (this.IdeMode == enumIDEMode.Design)
             {
                 OnWindowActivated(this.ApplicationObject.ActiveWindow, null);

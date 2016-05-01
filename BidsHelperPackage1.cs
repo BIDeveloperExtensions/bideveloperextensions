@@ -14,6 +14,8 @@ namespace BIDSHelper
         public const string measureGroupContextMenuGroupString = "fa554dc1-6dd4-11d1-af71-006097df568c";
         public const string guidImagesString = "feec21bd-6b4e-4eca-9c2f-14772de9478c";
         public const string guidImages2String = "feec21bd-6b4e-4eca-9c2f-14772de9478d";
+        public const string guidSsasImagesString = "feec21bd-6b4e-4eca-9c2f-14772de9478e";
+        public const string guidSsisImagesString = "feec21bd-6b4e-4eca-9c2f-14772de9478f";
         public static Guid guidBidsHelperPackage = new Guid(guidBidsHelperPackageString);
         public static Guid guidSsisConnectionMenu = new Guid(guidSsisConnectionMenuString);
         public static Guid guidSsisDesignerMenu = new Guid(guidSsisDesignerMenuString);
@@ -21,6 +23,8 @@ namespace BIDSHelper
         public static Guid measureGroupContextMenuGroup = new Guid(measureGroupContextMenuGroupString);
         public static Guid guidImages = new Guid(guidImagesString);
         public static Guid guidImages2 = new Guid(guidImages2String);
+        public static Guid guidSsasImages = new Guid(guidSsasImagesString);
+        public static Guid guidSsisImages = new Guid(guidSsisImagesString);
     }
     /// <summary>
     /// Helper class that encapsulates all CommandIDs uses across VS Package.
@@ -85,9 +89,45 @@ namespace BIDSHelper
         public const int UsedDatasetsId = 0x0129;
         public const int measureGroupContextMenu = 0x1220;
         public const int picBlank = 0x0001;
-        public const int picDeployMdxScript = 0x0002;
+        public const int picDeployMdxScriptOld = 0x0002;
         public const int picEditAggs = 0x0003;
-        public const int picPrinterFriendlyDimUsage = 0x0004;
+        public const int picPrinterFriendlyDimUsageOld = 0x0004;
         public const int bmpIndex = 0x0001;
+        public const int picAggManager = 0x0001;
+        public const int picUsedColumns = 0x0002;
+        public const int picUnusedColumns = 0x0003;
+        public const int picDeleteAggs = 0x0004;
+        public const int picDeleteIndexes = 0x0005;
+        public const int picDeployMdxScript = 0x0006;
+        public const int picDimDataTypeCheck = 0x0007;
+        public const int picDimensionHealthCheck = 0x0008;
+        public const int picDimOptimizationReport = 0x0009;
+        public const int picDuplicateRole = 0x000A;
+        public const int picMeasureGroupHealthCheck = 0x000B;
+        public const int picNonDefaultProperties = 0x000C;
+        public const int picPCDimNaturalize = 0x000D;
+        public const int picPrinterFriendlyDimUsage = 0x000E;
+        public const int picRolesReport = 0x000F;
+        public const int picSmartDiff = 0x0010;
+        public const int picVisualizeAttributeLattice = 0x0011;
+        public const int picSyncDescriptions = 0x0012;
+        public const int picTabularActions = 0x0013;
+        public const int picTabularFolers = 0x0014;
+        public const int picTabularTranslations = 0x0015;
+        public const int picTabularAnnotationWorkaround = 0x0016;
+        public const int picTabularHideMemberIf = 0x0017;
+        public const int picBatchProperties = 0x0001;
+        public const int picBiml = 0x0002;
+        public const int picBimlFile = 0x0003;
+        public const int picBimlCheck = 0x0004;
+        public const int picBimlHelp = 0x0005;
+        public const int picDesignScanner = 0x0006;
+        public const int picSsisDeploy = 0x0007;
+        public const int picExpressionList = 0x0008;
+        public const int picRelativePaths = 0x0009;
+        public const int picSsisPerformance = 0x000A;
+        public const int picNewGuid = 0x000B;
+        public const int picFixedColumns = 0x000C;
+        public const int picSortPackages = 0x000D;
     }
 }

@@ -60,7 +60,7 @@ namespace BIDSHelper
         {
             get
             {
-                throw new NotImplementedException();
+                return "Deploy Aggregation Designs";
             }
         }
 
