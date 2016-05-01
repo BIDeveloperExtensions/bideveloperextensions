@@ -554,6 +554,8 @@
     <Content Include="Resources\SmartDiffDtsx.xslt" />
     <Content Include="Resources\SmartDiffSSAS.xslt" />
     <Content Include="Resources\SmartDiffSSRS.xslt" />
+    <Content Include="Resources\SSAS-Icons.png" />
+    <Content Include="Resources\SSIS-Icons.png" />
     <Content Include="Resources\stop.ico" />
     <Content Include="Resources\TaskSmall.ico" />
     <Content Include="Resources\TreeViewTab.ico" />
