@@ -76,6 +76,7 @@ namespace BIDSHelper
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
         }
+        
 
         #region Package Members
 
@@ -89,9 +90,10 @@ namespace BIDSHelper
 
 #if DEBUG
             Log = new Core.Logger.OutputLogger(this);
-            Log.LogLevel = LogLevels.Verbose;
+            Log.LogLevel = LogLevels.Debug;
 #else
-            Logger = new Core.Logger.NullLogger();
+            Log = new Core.Logger.NullLogger();
+            Log.LogLevel = LogLevels.Warning;
 #endif
             Log.Debug("BIDSHelper Package Initialize Starting");
             string sAddInTypeName = string.Empty;

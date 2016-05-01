@@ -34,7 +34,7 @@ namespace BIDSHelper.SSAS
             base.OnDisable();
             foreach (EditorWindow win in windowHandlesFixedDefaultCalcScriptView.Values)
             {
-                win.ActiveViewChanged -= win_ActiveViewChanged;            
+                //win.ActiveViewChanged -= win_ActiveViewChanged;            
                 // get toolbar and remove click handlers
 
             }
