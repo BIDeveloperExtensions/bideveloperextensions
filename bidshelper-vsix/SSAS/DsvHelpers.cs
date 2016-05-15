@@ -12,7 +12,11 @@ namespace BIDSHelper.SSAS
         //protected List<UsedColumn> usedColumns = new List<UsedColumn>();
         //private DataSourceView m_dsv;
 
-        public DsvColumnResult(DataSourceView dsv) { DSV = dsv; }
+        public DsvColumnResult(DataSourceView dsv) {
+            DSV = dsv;
+            UnusedColumns = new Dictionary<string, UnusedColumn>();
+            UsedColumns = new List<UsedColumn>();
+        }
 
         public DataSourceView DSV { get; internal set; }
         public Dictionary<string, UnusedColumn> UnusedColumns { get; set; }
