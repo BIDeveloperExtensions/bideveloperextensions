@@ -626,11 +626,11 @@ namespace BIDSHelper.SSIS
     public class ConnectionManagerHighlightingToDo : HighlightingToDo
     {
         public ConnectionManager connection = null;
-#if DENALI || SQL2014
+//#if DENALI || SQL2014
         public List<System.Windows.FrameworkElement> listConnectionLVIs = new List<System.Windows.FrameworkElement>();
-#else
-        public List<ListViewItem> listConnectionLVIs = new List<ListViewItem>();
-#endif
+//#else
+//        public List<ListViewItem> listConnectionLVIs = new List<ListViewItem>();
+//#endif
         public override void Highlight()
         {
             List<string> listConfigPaths;

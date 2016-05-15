@@ -57,8 +57,23 @@ namespace BIDSHelper
         {
             get { return "Provides a UI for editing actions such as drillthrough actions or report actions in Tabular models."; }
         }
-        
+
         #endregion
+
+        public override bool ShouldDisplayCommand()
+        {
+            if (GetSelectedFile().Extension == ".bim")
+            {
+#if !DENALI && !SQL2014
+                var sb = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
+                if (sb == null) return false;
+                return !sb.IsTabularMetadata;
+#else
+                return true;
+#endif
+            }
+            return false; 
+        }
 
         public override void Exec()
         {

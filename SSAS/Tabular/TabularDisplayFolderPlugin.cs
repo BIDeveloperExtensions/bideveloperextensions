@@ -372,6 +372,7 @@ namespace BIDSHelper
             return true;
 #else
             var sb = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
+            if (sb == null) return false;
             if (sb.IsTabularMetadata) return false;
             return true;
 #endif

@@ -543,7 +543,7 @@ namespace BIDSHelper
         {
         }
 
-#if DENALI || SQL2014
+//#if DENALI || SQL2014
         private class TriStatePerspectiveGridCell : Microsoft.SqlServer.Management.UI.Grid.GridCell
         {
             private Microsoft.SqlServer.Management.UI.Grid.GridCell _original;
@@ -559,6 +559,6 @@ namespace BIDSHelper
 
 
 
-#endif
+//#endif
     }
 }
