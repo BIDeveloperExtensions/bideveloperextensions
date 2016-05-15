@@ -31,13 +31,13 @@
     group; your package should define its own command set in order to avoid collisions
     with command ids defined by other packages. -->
 
-    <Menus>
+    <!--<Menus>
       <Menu guid="guidBidsHelperPackageCmdSet" id="menuExpressionWindow" priority="0x0000" type="ToolWindowToolbar">
         <Strings>
           <ButtonText>Expression Window 3 (BIDS Helper)</ButtonText>
         </Strings>
       </Menu>
-    </Menus>
+    </Menus>-->
     
     <!-- In this section you can define new menu groups. A menu group is a container for
          other menus or buttons (commands); from a visual point of view you can see the
@@ -241,24 +241,12 @@
       </Button>
         
       <Button guid="guidBidsHelperPackageCmdSet" id="ExpressionWindowId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="MyMenuViewOtherWindowsGroup" />
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
         <Icon guid="guidSsisImages" id="picExpressionList" />
-        <!-- the 2 lines below set the default visibility-->
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Expression List (BIDS Helper)</ButtonText>
-        </Strings>
-      </Button>
-
-      <Button guid="guidBidsHelperPackageCmdSet" id="ExpressionWindowId" priority="0x0100" type="Button">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
-        <Icon guid="guidImages" id="picBlank" />
-        <!-- the 2 lines below set the default visibility-->
-        <!--<CommandFlag>DefaultInvisible</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>-->
-        <Strings>
-          <ButtonText>Expression List 2 (BIDS Helper)</ButtonText>
         </Strings>
       </Button>
 
