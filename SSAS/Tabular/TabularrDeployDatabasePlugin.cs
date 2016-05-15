@@ -146,6 +146,7 @@ namespace BIDSHelper
                 xws.OmitXmlDeclaration = true;
                 xws.ConformanceLevel = ConformanceLevel.Fragment;
                 XmlWriter xwrtr = XmlWriter.Create(sb, xws);
+                // TODO - do we need different code for JSON based models??
                 scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[] {db}, xwrtr, true);
 
                 // update the MDX Script

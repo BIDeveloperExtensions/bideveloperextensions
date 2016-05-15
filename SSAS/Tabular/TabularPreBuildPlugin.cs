@@ -89,6 +89,9 @@ namespace BIDSHelper
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
                     if (sandbox != null)
                     {
+#if !DENALI && !SQL2014
+                        if (sandbox.IsTabularMetadata) return;
+#endif
                         List<BIDSHelperPluginBase> checks = new List<BIDSHelperPluginBase>();
                         foreach (BIDSHelperPluginBase plugin in BIDSHelperPackage.Plugins.Values)
                         {
