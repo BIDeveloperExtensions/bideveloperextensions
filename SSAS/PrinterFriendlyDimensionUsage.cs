@@ -164,9 +164,6 @@ namespace BIDSHelper
                 bool bFoundVisibleMeasure = false;
 #if DENALI || SQL2014
                 foreach (Microsoft.AnalysisServices.BackEnd.DataModelingMeasure m in sandbox.Measures)
-#else
-                foreach (Microsoft.AnalysisServices.BackEnd.DataModelingMeasure m in sandbox.Cube.AllMeasures)
-#endif
                 {
                     if (m.Table == cd.Dimension.Name && !m.IsPrivate)
                     {
@@ -174,6 +171,16 @@ namespace BIDSHelper
                         break;
                     }
                 }
+#else
+                foreach (Microsoft.AnalysisServices.Measure m in sandbox.Cube.AllMeasures)
+                {
+                    if (m.Parent.Name == cd.Dimension.Name && m.Visible)
+                    {
+                        bFoundVisibleMeasure = true;
+                        break;
+                    }
+                }
+#endif
                 if (!bFoundVisibleMeasure && bIsBusMatrix) continue;
 
                 MeasureGroup mg = c.MeasureGroups[cd.DimensionID];

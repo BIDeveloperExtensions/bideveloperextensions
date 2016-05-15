@@ -65,11 +65,8 @@ namespace BIDSHelper
             {
                 Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
                 if (host == null) return null;
-#if DENALI || SQL2014
+
                 return host.Sandbox;
-#else
-                if (!host.Sandbox.IsTabularMetadata) return host.Sandbox;
-#endif
             }
             return null;
         }

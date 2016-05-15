@@ -117,10 +117,6 @@ namespace BIDSHelper.SSIS
                 if (ClosingWindow == null) return;
                 IDesignerHost designer = ClosingWindow.Object as IDesignerHost;
                 if (designer == null) return;
-//#if !DENALI && !SQL2014 //apparently ProjectItem is null in Denali and above
-//                ProjectItem pi = ClosingWindow.ProjectItem;
-//                if (pi == null || !(pi.Name.ToLower().EndsWith(".dtsx"))) return;
-//#endif
 
                 EditorWindow win = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator)) as EditorWindow;
                 if (win == null) return;
@@ -212,13 +208,9 @@ namespace BIDSHelper.SSIS
 
                 try
                 {
-#if DENALI || SQL2014
                     IClipboardService clipboardService = (IClipboardService)package.Site.GetService(typeof(IClipboardService));
                     if (clipboardService.IsPasteActive)
                         bRequeue = true;
-#else
-                    
-#endif
                 }
                 catch (Exception ex)
                 {
@@ -249,9 +241,6 @@ namespace BIDSHelper.SSIS
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#if !DENALI && !SQL2014
-                
-#endif
 
                 if (win.Tag == null)
                 {
@@ -271,19 +260,14 @@ namespace BIDSHelper.SSIS
 
                     if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.ControlFlow)
                     {
-#if DENALI || SQL2014
+
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        ListView lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-                        BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
-#endif
 
-#if DENALI || SQL2014
                         Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)viewControl.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, viewControl, null);
                         foreach (Microsoft.SqlServer.Graph.Model.ModelElement task in ctlFlowModel)
                         {
@@ -318,9 +302,6 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        
-#endif
                     }
                     else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.EventHandlers)
                     {
@@ -332,18 +313,15 @@ namespace BIDSHelper.SSIS
                             //don't need to monitor the Base Control (leftmost) combo box because changing it will trigger a change to the event handler combo: ((Microsoft.DataWarehouse.Controls.BaseControlComboBox)(viewControl.Controls["panel1"].Controls["panel2"].Controls["Custom ComboBox"]))
                         }
 
-#if DENALI || SQL2014
+
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        
-#endif                        
 
-#if DENALI || SQL2014
+
                         foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
                         {
                             if (!(c is Microsoft.DataTransformationServices.Design.EventHandlerElementHost)) continue;
@@ -382,24 +360,15 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        
-#endif
                     }
                     else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.DataFlow)
                     {
-#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        
-#endif
-
-#if DENALI || SQL2014
                         Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox pipelineComboBox = (Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox)(viewControl.Controls["panel1"].Controls["tableLayoutPanel"].Controls["pipelineComboBox"]);
                         if (pipelineComboBox.Tag == null)
                         {
@@ -471,9 +440,6 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        
-#endif
                     }
                 }
 
@@ -505,7 +471,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-#if DENALI || SQL2014
+
         private void BuildConnectionManagerToDos(Package package, Control lvwConnMgrs, bool bIncremental, bool bRescan, ConnectionManager oIncrementalConnectionManager)
         {
             ConnectionManagerUserControl cmControl = (ConnectionManagerUserControl)lvwConnMgrs.GetType().InvokeMember("m_connectionManagerUserControl", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, lvwConnMgrs, null);
@@ -536,9 +502,6 @@ namespace BIDSHelper.SSIS
                 }
             }
         }
-#else
-        
-#endif
         #endregion
 
         #region Worker Thread
@@ -713,21 +676,6 @@ namespace BIDSHelper.SSIS
         #endregion
 
         #region Event Handlers For Incremental Highlighting
-#if !DENALI && !SQL2014
-        private void lvwConnMgrs_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            try
-            {
-                if (this.Enabled)
-                    ConnectionManagerHighlightingToDo.HighlightConnectionManagerLVI(e.Item);
-                e.DrawDefault = true;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("problem in lvwConnMgrs_DrawItem: " + ex.Message + " " + ex.StackTrace);
-            }
-        }
-#endif
 
         void comboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
