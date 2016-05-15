@@ -98,6 +98,10 @@ namespace BIDSHelper
 
                 SandboxEditor editor = TabularHelpers.GetTabularSandboxEditorFromProjectItem(pi, false);
                 if (editor == null) return;
+#if !DENALI && !SQL2014
+                // if the sandbox is in the new tabular metadata mode (JSON) then exit here
+                if (editor.Sandbox.IsTabularMetadata) return;
+#endif
                 Microsoft.AnalysisServices.Common.ERDiagram diagram = TabularHelpers.GetTabularERDiagramFromSandboxEditor(editor);
                 if (diagram != null)
                 {
@@ -135,16 +139,19 @@ namespace BIDSHelper
         {
             if (diagram == null) return;
             //if (_hookedERDiagrams.Contains(diagram)) return;
+            
 #if DENALI || SQL2014
+            IDiagramAction actionHideMemberIf = null;
             foreach (IDiagramAction action in diagram.Actions)
 #else
+            IViewModelAction actionHideMemberIf = null;
             foreach (IViewModelAction action in diagram.Actions)
 #endif
             {
-                if (action is ERDiagramActionHideMemberIf) return; //if this context menu is already part of the diagram, then we're done
+                if (action is ERDiagramActionHideMemberIf) { actionHideMemberIf = action;  break; } 
             }
+            if (actionHideMemberIf != null) return; //if this context menu is already part of the diagram, then we're done
 
-            
 
             ERDiagramActionHideMemberIf levels = new ERDiagramActionHideMemberIf(diagram, this);
             levels.Text = "Set HideMemberIf...";
