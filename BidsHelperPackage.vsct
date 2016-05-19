@@ -72,7 +72,9 @@
       <Group guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
       </Group>
-
+      <Group guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" priority="0x0001">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+      </Group>
       <Group guid="guidBidsHelperPackageCmdSet" id="mySsisDesignerGroup" priority="0x0600">
         <Parent guid="guidSsisDesignerMenu" id="menuSsisControlFlowItem" />
       </Group>
@@ -181,6 +183,16 @@
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Parent-Child Dimension Naturalizer...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="SmartDiffId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picSmartDiff" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Smart Diff...</ButtonText>
         </Strings>
       </Button>
 
@@ -376,7 +388,7 @@
       </Button>
       
       <Button guid="guidBidsHelperPackageCmdSet" id="AddNewBimlFileId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" />
         <Icon guid="guidSsisImages" id="picBimlFile" />
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -576,6 +588,7 @@
       <IDSymbol name="mySsisDataFlowGroup" value="0x1080"/>
       <IDSymbol name="mySsisDesignerGroup" value="0x1090" />
       <IDSymbol name="mySsisProjectNode" value="0x10A0" />
+      <IDSymbol name="myProjectMenuGroupTop" value="0x10B0"/>
       <!-- Button IDs-->
       <IDSymbol name="DeployMdxScriptId" value="0x0100" />
       <IDSymbol name="AggregationManagerId" value="0x0101" />

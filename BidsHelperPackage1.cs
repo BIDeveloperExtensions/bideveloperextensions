@@ -45,6 +45,7 @@ namespace BIDSHelper
         public const int mySsisDataFlowGroup = 0x1080;
         public const int mySsisDesignerGroup = 0x1090;
         public const int mySsisProjectNode = 0x10A0;
+        public const int myProjectMenuGroupTop = 0x10B0;
         public const int DeployMdxScriptId = 0x0100;
         public const int AggregationManagerId = 0x0101;
         public const int PrinterFriendlyDimensionUsageId = 0x0102;
