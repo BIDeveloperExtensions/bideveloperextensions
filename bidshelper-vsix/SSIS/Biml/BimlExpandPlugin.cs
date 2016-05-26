@@ -151,17 +151,17 @@ namespace BIDSHelper.SSIS.Biml
 
 
                     List<string> newProjectFiles = new List<string>();
-                    string[] newPackageFiles = Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories);
-                    newProjectFiles.AddRange(newPackageFiles);
 
-#if (!YUKON && !KATMAI)
-                    //IF DENALI or later...
                     // Read packages AND project connection managers
                     string[] newConnFiles = Directory.GetFiles(tempTargetDirectory, "*.conmgr", SearchOption.AllDirectories);
                     newProjectFiles.AddRange(newConnFiles);
-#endif
+
+                    string[] newPackageFiles = Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories);
+                    newProjectFiles.AddRange(newPackageFiles);
+
                     var safePackageFilePaths = new List<string>();
                     var conflictingPackageFilePaths = new List<string>();
+                    var conflictingPackageHighlights = new List<bool>();
                     foreach (var tempFilePath in newProjectFiles)
                     {
                         string tempFileName = Path.GetFileName(tempFilePath);
@@ -169,6 +169,8 @@ namespace BIDSHelper.SSIS.Biml
                         if (File.Exists(projectItemFileName))
                         {
                             conflictingPackageFilePaths.Add(tempFilePath);
+                            bool readOnly = new FileInfo(projectItemFileName).IsReadOnly;
+                            conflictingPackageHighlights.Add(readOnly);
                         }
                         else
                         {
@@ -178,7 +180,7 @@ namespace BIDSHelper.SSIS.Biml
 
                     if (conflictingPackageFilePaths.Count > 0)
                     {
-                        var dialog = new MultipleSelectionConfirmationDialog(conflictingPackageFilePaths, projectDirectory, safePackageFilePaths.Count);
+                        var dialog = new MultipleSelectionConfirmationDialog(conflictingPackageFilePaths, conflictingPackageHighlights, projectDirectory, safePackageFilePaths.Count);
                         if (dialog.ShowDialog() == DialogResult.OK)
                         {
                             foreach (var filePath in dialog.SelectedFilePaths)
@@ -192,7 +194,6 @@ namespace BIDSHelper.SSIS.Biml
                         }
                     }
 
-#if (DENALI || SQL2014)
                     /*
                      * Make sure that the package correctly references the Project connection manager, if used
                      */
@@ -319,12 +320,19 @@ namespace BIDSHelper.SSIS.Biml
                             doc.Save(fileFullPath);
                         }
                     }
-#endif
 
                     // Add files to VS Project
                     foreach (var tempFilePath in safePackageFilePaths)
                     {
                         string projectItemFilePath = Path.Combine(projectDirectory, Path.GetFileName(tempFilePath));
+
+                        // Check for read-only and try and overwrite
+                        FileAttributes attributes = File.GetAttributes(projectItemFilePath);
+                        if (attributes.HasFlag(FileAttributes.ReadOnly))
+                        {
+                            File.SetAttributes(projectItemFilePath, attributes & ~FileAttributes.ReadOnly);
+                        }
+
                         File.Copy(tempFilePath, projectItemFilePath, true);
                         project.ProjectItems.AddFromFile(projectItemFilePath);
                     }

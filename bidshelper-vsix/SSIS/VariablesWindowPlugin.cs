@@ -1,32 +1,33 @@
 namespace BIDSHelper.SSIS
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.ComponentModel.Design;
-    using System.Windows.Forms;
     using EnvDTE;
     using EnvDTE80;
     using Microsoft.DataTransformationServices.Design;
     using Microsoft.DataWarehouse.Design;
     using Microsoft.DataWarehouse.Interfaces;
-    using Microsoft.SqlServer.Dts.Runtime;
     using Microsoft.SqlServer.Dts.Design;
+    using Microsoft.SqlServer.Dts.Runtime;
     using Microsoft.SqlServer.Management.UI.Grid;
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.ComponentModel.Design;
+    using System.Globalization;
+    using System.Reflection;
+    using System.Windows.Forms;
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
 
-    
     public partial class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
         /// <summary>
         /// TODO: Make thks a base class, and inherit for variables and parameters window controls
         /// </summary>
-#if SQL2014
+#if SQL2016
+        internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{9F0B409F-14B8-4D44-AFD0-1099A3FB8BA3}";
+#elif SQL2014
         internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{826881A1-F158-483E-A118-8D5289CB6F1C}";
 #elif DENALI
         internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{41C287E9-BCD9-4D20-8D38-B6FD9CFB73C9}";
-#else // TODO SQL 2016??
-        internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{826881A1-F158-483E-A118-8D5289CB6F1C}";
 #endif
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ToolBarButton moveCopyButton;
@@ -80,7 +81,6 @@ namespace BIDSHelper.SSIS
 
                 //they've highlighted the Variables window, so add the extra toolbar buttons
                 //find a package designer window
-                
                 IDesignerHost designer = null;
                 foreach (Window w in this.ApplicationObject.Windows)
                 {
@@ -118,6 +118,21 @@ namespace BIDSHelper.SSIS
                     // If buttons already added, no need to do it again so exit 
                     if (this.moveCopyButton != null && toolbar.Buttons.Contains(this.moveCopyButton)) return;
 
+                    // When you click the edit expression ellipsis button in the variables grid, we want to use our own expression editor, not the MS one.
+                    // The following section removes their event handler and adds our own
+                    // Get the type of the variables grid, and get the MouseButtonClicked clicked event info
+                    // Then get the private dlgGridControl1_MouseButtonClicked event handler method, and get an instance delegate
+                    Type gridType = grid.GetType();
+                    System.Reflection.EventInfo eventInfo = gridType.GetEvent("MouseButtonClicked");
+                    Type handlerType = eventInfo.EventHandlerType;
+                    MethodInfo legacyMethod = variablesToolWindowControl.GetType().GetMethod("dlgGridControl1_MouseButtonClicked", BindingFlags.NonPublic | BindingFlags.Instance);
+                    Delegate del = Delegate.CreateDelegate(handlerType, variablesToolWindowControl, legacyMethod, false);
+
+                    // Finally remove the interal MS event handler from the event, and add our own
+                    eventInfo.RemoveEventHandler(grid, del);
+                    grid.MouseButtonClicked += grid_MouseButtonClicked;
+
+                    // Now build tool bar buttons and add them
                     ToolBarButton separator = new ToolBarButton();
                     separator.Style = ToolBarButtonStyle.Separator;
                     toolbar.Buttons.Add(separator);
@@ -149,7 +164,7 @@ namespace BIDSHelper.SSIS
                     // Find Unused button
                     this.findUnusedButton = new ToolBarButton();
                     this.findUnusedButton.Style = ToolBarButtonStyle.PushButton;
-                    this.findUnusedButton.ToolTipText = "Find Variable References (BIDS Helper)";
+                    this.findUnusedButton.ToolTipText = "Find Unused Variables (BIDS Helper)";
                     toolbar.Buttons.Add(this.findUnusedButton);
                     toolbar.ImageList.Images.Add(BIDSHelper.Resources.Versioned.VariableFindUnused);
                     this.findUnusedButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
@@ -168,6 +183,16 @@ namespace BIDSHelper.SSIS
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void grid_MouseButtonClicked(object sender, MouseButtonClickedEventArgs args)
+        {
+            // Fragile, as relies on hardcoded index. We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
+            if (args.Button == MouseButtons.Left && args.ColumnIndex == 6)
+            {
+                // Dumbass, the args.RowIndex is a long, but all the grid methods that accept a row index are int!
+                EditExpressionButtonClick((int)args.RowIndex, args.ColumnIndex);
             }
         }
 
@@ -305,6 +330,66 @@ namespace BIDSHelper.SSIS
             }
         }
 
+        private void FindReferencesButtonClick()
+        {
+            try
+            {
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+                if (packageDesigner == null) return;
+
+                Package package = packageDesigner.Component as Package;
+                if (package == null) return;
+
+                int selectedRow;
+                int selectedCol;
+                grid.GetSelectedCell(out selectedRow, out selectedCol);
+
+                if (selectedRow < 0) return;
+
+                Variable variable = GetVariableForRow(selectedRow);
+
+                if (variable == null) return;
+
+                FindVariableReferences dialog = new FindVariableReferences();
+                //dialog.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(findReferences_EditExpressionSelected);
+
+                dialog.Show(package, variable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
+            }
+        }
+
+        private void FindUnusedButtonClick()
+        {
+            try
+            {
+                packageDesigner = (ComponentDesigner)variablesToolWindowControl.GetType().GetProperty("PackageDesigner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance).GetValue(variablesToolWindowControl, null);
+                if (packageDesigner == null) return;
+
+                Package package = packageDesigner.Component as Package;
+                if (package == null) return;
+
+                FindUnusedVariables dialog = new FindUnusedVariables(VariablesDisplayMode.Variables);
+                if (dialog.Show(package) == DialogResult.OK)
+                {
+                    // Dialog result OK indicates we have deleted one or more variables
+                    // Flag package as dirty
+                    SSISHelpers.MarkPackageDirty(package);
+
+                    // Refresh the grid
+                    variablesToolWindowControl.GetType().InvokeMember("FillGrid", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance, null, variablesToolWindowControl, new object[] { });
+                    SetButtonEnabled();
+                    RefreshHighlights();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace);
+            }
+        }
+
         void grid_SelectionChanged(object sender, SelectionChangedEventArgs args)
         {
             try
@@ -343,14 +428,19 @@ namespace BIDSHelper.SSIS
 
         private void EditExpressionButtonClick()
         {
+            int selectedRow;
+            int selectedCol;
+            grid.GetSelectedCell(out selectedRow, out selectedCol);
+
+            EditExpressionButtonClick(selectedRow, selectedCol);
+        }
+
+        private void EditExpressionButtonClick(int selectedRow, int selectedCol)
+        {
             try
             {
                 Package package = GetCurrentPackage();
                 if (package == null) return;
-
-                int selectedRow;
-                int selectedCol;
-                grid.GetSelectedCell(out selectedRow, out selectedCol);
 
                 if (selectedRow < 0) return;
 
@@ -678,7 +768,7 @@ namespace BIDSHelper.SSIS
                     {
                         if (!string.IsNullOrEmpty(v.Expression))
                         {
-                            Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluator eval = new Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluator();
+                            Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass eval = new Microsoft.SqlServer.Dts.Runtime.Wrapper.ExpressionEvaluatorClass();
                             eval.Expression = v.Expression;
                             eval.Events = events;
                             eval.Evaluate(DtsConvert.GetExtendedInterface(o.VariableDispenser), out val, false);
@@ -804,12 +894,10 @@ namespace BIDSHelper.SSIS
             get { return "VariablesWindowPlugin"; }
         }
 
-
         public override string ToolTip
         {
             get { return string.Empty; }
         }
-
 
         /// <summary>
         /// Gets the name of the friendly name of the plug-in.
@@ -838,7 +926,6 @@ namespace BIDSHelper.SSIS
         {
             get { return "Extended features for the Variables window. Move or copy a variable between scopes in a package, expression and configuration highlighting of the variables and the advanced expression editor."; }
         }
-
 
         public override void Exec()
         {

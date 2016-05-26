@@ -10,11 +10,13 @@ namespace BIDSHelper.SSIS
     public partial class FindUnusedVariables : Form
     {
         private BackgroundWorker processPackage = null;
-        private System.Diagnostics.Stopwatch stopwatch;
         private FindVariables finder = new FindVariables();
         private Package package;
         private List<string> unusedVariablesList;
-        
+#if DEBUG
+        private System.Diagnostics.Stopwatch stopwatch;
+#endif
+                
         public FindUnusedVariables(VariablesDisplayMode displayMode)
         {
             this.DisplayMode = displayMode;
@@ -50,6 +52,8 @@ namespace BIDSHelper.SSIS
         public DialogResult Show(Package package)
         {
             this.selectionList.ClearItems();
+
+            this.progressBar.MarqueeAnimationSpeed = 20;
             this.progressBar.Visible = true;
 
             finder.VariableFound += new EventHandler<VariableFoundEventArgs>(VariableFound);
@@ -82,7 +86,9 @@ namespace BIDSHelper.SSIS
                 }
             }
 
+#if DEBUG
             stopwatch = new System.Diagnostics.Stopwatch();
+#endif
             processPackage.RunWorkerAsync(variables.ToArray());
 
             return this.ShowDialog();
@@ -114,8 +120,8 @@ namespace BIDSHelper.SSIS
         private void processPackage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             this.progressBar.Visible = false;
-            stopwatch.Stop();
 #if DEBUG
+            stopwatch.Stop();
             this.Text = string.Format("{0} ({1})", this.Text, stopwatch.ElapsedMilliseconds);
 #endif
             this.selectionList.ClearItems();
@@ -124,10 +130,11 @@ namespace BIDSHelper.SSIS
 
         private void processPackage_DoWork(object sender, DoWorkEventArgs e)
         {
+#if DEBUG
             stopwatch.Start();
-
+#endif
             Variable[] variables = e.Argument as Variable[];
-            finder.FindReferences(this.package, variables);
+            finder.FindReferences(this.package, variables, null);
         }
         #endregion
 

@@ -21,7 +21,6 @@ namespace BIDSHelper.SSIS
         
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ExpressionListControl expressionListWindow = null;
-        //private Window toolWindow = null;
         private EditorWindow win = null;
         private IDesignerHost designer = null;
         private BackgroundWorker processPackage = null;
@@ -243,6 +242,7 @@ namespace BIDSHelper.SSIS
 
         private void SetPackageAsDirty(IDTSSequence container, string expression, object objectChanged)
         {
+            // TODO: DO we need this code still? We have several mark dirty methods, can we rationalise?
             try
             {
                 if (!string.IsNullOrEmpty(expression))
@@ -306,44 +306,8 @@ namespace BIDSHelper.SSIS
 
         private Package GetCurrentPackage()
         {
-            #if DENALI || SQL2014
-            // This seems to simple, but it appears to work (Green)
+            // This seems too simple, but it appears to work (Darren Green). See source control history for lots of code in previous incarnation
             return (Package)win.PropertiesLinkComponent;
-            #else
-            Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-
-            // Get the package, but may have to walk up the object hierarchy.
-            // We need to start at the top with the Package in the worker thread, 
-            // otherwise string path functions fail and stuff gets missed.
-            DtsContainer container = null;
-
-            if (win.SelectedIndex == 0) //Control Flow
-            {
-                // Parent of Control Flow diagram is the Package
-                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
-            }
-            else if (win.SelectedIndex == 1) // Data flow
-            {
-                // Parent of Data Flow diagram is a Task
-                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                TaskHost taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
-                container = (DtsContainer)taskHost.Parent; // container is Package
-            }
-            else if (win.SelectedIndex == 2) //Event Handlers
-            {
-                // Parent of Event Handlers diagram is a DtsEventHandler
-                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
-                container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
-            }
-            else
-            {
-                return null;
-            }
-
-            // Get the root container, i.e the Package
-            return GetPackageFromContainer(container);
-            #endif
         }
 
         #region Window Events
@@ -695,36 +659,15 @@ namespace BIDSHelper.SSIS
             get { return "ExpressionList"; }
         }
 
-        //public override int Bitmap
-        //{
-        //    get { return 6; }
-        //}
-
-        //public override string ButtonText
-        //{
-        //    get { return "Expression List (BIDS Helper)"; }
-        //}
-
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-
-        //public override string MenuName
-        //{
-        //    get { return "Other Windows"; }
-        //}
-
         public override string FeatureName
         {
             get { return "Expression List"; }
         }
-
-        //public override bool Checked
-        //{
-        //    get { return toolWindow.Visible; }
-        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -743,35 +686,6 @@ namespace BIDSHelper.SSIS
         {
             get { return "Provides a tool window listing expressions defined in a package, making it easy to review and manage expressions. Editing uses the integrated advanced expression editor."; }
         }
-
-        //public override bool AddCommandToMultipleMenus
-        //{
-        //    get { return false; } //the Other Windows menu is nested under other menus, so this Add to multiple menus logic won't work here
-        //}
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        //public override bool ShouldDisplayCommand()
-        //{
-        //    try
-        //    {
-        //        // TODO - do I need to add a ProjectKind overload to CreateContextMenu
-        //        if (ToolWindowVisible) return true;
-        //        if (this.ApplicationObject.Solution == null) return false;
-        //        foreach (EnvDTE.Project p in this.ApplicationObject.Solution.Projects)
-        //        {
-        //            if (p.Kind == BIDSProjectKinds.SSIS) return true;
-        //        }
-        //        return false;
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
-        //}
 
         public override void Exec()
         {
