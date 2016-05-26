@@ -15,7 +15,7 @@ namespace BIDSHelper.SSIS.Biml
             get; private set;
         }
 
-        public MultipleSelectionConfirmationDialog(List<string> itemsSource, string projectDirectory, int safeCount)
+        public MultipleSelectionConfirmationDialog(List<string> itemsSource, List<bool> highlighted, string projectDirectory, int safeCount)
         {
             this.itemsSource = itemsSource;
             InitializeComponent();
@@ -24,10 +24,14 @@ namespace BIDSHelper.SSIS.Biml
                 "In addition to {0} new items, the template generated the following items that conflict with existing items.  Which of these items would you like to overwrite?",
                 safeCount);
 
+            int index = 0;
             foreach (var item in itemsSource)
             {
-                selectionList.AddItem(Path.Combine(projectDirectory, Path.GetFileName(item)), true);
+                selectionList.AddItem(Path.Combine(projectDirectory, Path.GetFileName(item)), true, highlighted[index]);
+                index++;
             }
+
+            panelWarning.Visible = (highlighted.Contains(true));
         }
 
         private void helpButton_Click(object sender, EventArgs e)

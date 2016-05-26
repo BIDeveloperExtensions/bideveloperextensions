@@ -30,10 +30,10 @@
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.panelSelectAll = new System.Windows.Forms.Panel();
-            this.checkBoxSelectAll = new System.Windows.Forms.CheckBox();
             this.ColumnCheckBox = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.ColumnLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.panelSelectAll = new System.Windows.Forms.Panel();
+            this.checkBoxSelectAll = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.panelSelectAll.SuspendLayout();
             this.SuspendLayout();
@@ -69,6 +69,22 @@
             this.dataGridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_CellClick);
             this.dataGridView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.dataGridView_KeyPress);
             // 
+            // ColumnCheckBox
+            // 
+            this.ColumnCheckBox.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.ColumnCheckBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.ColumnCheckBox.HeaderText = "CheckBox";
+            this.ColumnCheckBox.Name = "ColumnCheckBox";
+            this.ColumnCheckBox.ReadOnly = true;
+            this.ColumnCheckBox.Width = 5;
+            // 
+            // ColumnLabel
+            // 
+            this.ColumnLabel.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.ColumnLabel.HeaderText = "Label";
+            this.ColumnLabel.Name = "ColumnLabel";
+            this.ColumnLabel.ReadOnly = true;
+            // 
             // panelSelectAll
             // 
             this.panelSelectAll.Controls.Add(this.checkBoxSelectAll);
@@ -88,22 +104,6 @@
             this.checkBoxSelectAll.Text = "Select all";
             this.checkBoxSelectAll.UseVisualStyleBackColor = true;
             this.checkBoxSelectAll.CheckedChanged += new System.EventHandler(this.checkBoxSelectAll_CheckedChanged);
-            // 
-            // ColumnCheckBox
-            // 
-            this.ColumnCheckBox.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.ColumnCheckBox.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.ColumnCheckBox.HeaderText = "CheckBox";
-            this.ColumnCheckBox.Name = "ColumnCheckBox";
-            this.ColumnCheckBox.ReadOnly = true;
-            this.ColumnCheckBox.Width = 5;
-            // 
-            // ColumnLabel
-            // 
-            this.ColumnLabel.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.ColumnLabel.HeaderText = "Label";
-            this.ColumnLabel.Name = "ColumnLabel";
-            this.ColumnLabel.ReadOnly = true;
             // 
             // SelectionList
             // 

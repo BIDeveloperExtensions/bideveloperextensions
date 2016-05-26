@@ -24,10 +24,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2014")]
 #elif DENALI
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2012")]
-#elif KATMAI
-[assembly: AssemblyTitle("BIDS Helper for SQL Server 2008")]
-#else
-[assembly: AssemblyTitle("BIDS Helper for SQL Server 2005")]
 #endif
 
 #if DEBUG

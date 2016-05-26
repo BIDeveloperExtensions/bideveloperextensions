@@ -212,13 +212,9 @@ namespace BIDSHelper.SSIS
 
                 try
                 {
-#if DENALI || SQL2014
                     IClipboardService clipboardService = (IClipboardService)package.Site.GetService(typeof(IClipboardService));
                     if (clipboardService.IsPasteActive)
                         bRequeue = true;
-#else
-                    
-#endif
                 }
                 catch (Exception ex)
                 {
@@ -249,10 +245,6 @@ namespace BIDSHelper.SSIS
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#if !DENALI && !SQL2014
-                
-#endif
-
                 if (win.Tag == null)
                 {
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
@@ -271,19 +263,13 @@ namespace BIDSHelper.SSIS
 
                     if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.ControlFlow)
                     {
-//#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-//#else
-//                        ListView lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-//                        BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
-//#endif
 
-#if DENALI || SQL2014
                         Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)viewControl.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, viewControl, null);
                         foreach (Microsoft.SqlServer.Graph.Model.ModelElement task in ctlFlowModel)
                         {
@@ -318,9 +304,6 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        
-#endif
                     }
                     else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.EventHandlers)
                     {
@@ -535,7 +518,6 @@ namespace BIDSHelper.SSIS
                 }
             }
         }
-
         #endregion
 
         #region Worker Thread
