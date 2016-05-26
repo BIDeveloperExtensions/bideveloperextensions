@@ -1,10 +1,13 @@
-﻿using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+﻿using Microsoft.DataTransformationServices.Design;
+using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
 using Microsoft.SqlServer.Dts.Tasks.ExecuteSQLTask;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {
@@ -12,16 +15,26 @@ namespace BIDSHelper.SSIS
     {
         private string[] expressionMatches = null;
         private string[] properytMatches = null;
+        private TreeView treeView;
 
-        // Define string constants we use for specicific object types
-        // Type of MainPipe
-        private const string ObjectTypeDataFlowTask = "DataFlowTask";
-        private const string ObjectTypeExecutePackageTask = "ExecutePackageTask";
-
+        public const string IconKeyFolder = "Folder";
+        public const string IconKeyProperties = "Properties";
+        public const string IconKeyInput = "Input";
+        public const string IconKeyOutput = "Output";
+        public const string IconKeyColumn = "Column";
+        public const string IconKeyPrecedenceConstraint = "PrecedenceConstraint";
+        public const string IconKeyVariable = "Variable";
+        public const string IconKeyVariableExpression = "VariableExpression";
+        public const string IconKeyProperty = "Property";
+        public const string IconKeyPropertyExpression = "PropertyExpression";
 
         public event EventHandler<VariableFoundEventArgs> VariableFound;
 
-        public bool CancellationPending { get; private set; }
+        public bool CancellationPending
+        {
+            get;
+            private set;
+        }
 
         public bool Cancel()
         {
@@ -33,13 +46,13 @@ namespace BIDSHelper.SSIS
             this.CancellationPending = true;
             return true;
         }
-
-        public void FindReferences(Package package, Variable variable)
+        
+        public void FindReferences(Package package, Variable variable, TreeView treeView)
         {
-            FindReferences(package, new Variable[] { variable });
+            FindReferences(package, new Variable[] { variable }, treeView);
         }
 
-        public void FindReferences(Package package, Variable[] variables)
+        public void FindReferences(Package package, Variable[] variables, TreeView treeView)
         {
             // Reset cancel pending flag
             this.CancellationPending = false;
@@ -53,7 +66,7 @@ namespace BIDSHelper.SSIS
                 expressions.Add(string.Format("@{0}", variable.Name));
                 expressions.Add(string.Format("@[{0}]", variable.Name));
                 expressions.Add(string.Format("@[{0}]", variable.QualifiedName));
-                
+
                 // Clean qualified name for property match
                 properties.Add(variable.QualifiedName);
             }
@@ -62,196 +75,368 @@ namespace BIDSHelper.SSIS
             this.expressionMatches = expressions.ToArray();
             this.properytMatches = properties.ToArray();
 
-            ProcessObject(package, string.Empty);
+            this.treeView = treeView;
+
+            if (treeView != null)
+            {
+                SetupImageList();
+
+                // Create package node, the top level node
+                int imageIndex = GetControlFlowImageIndex(PackageHelper.PackageCreationName);
+                TreeNode packageNode = new TreeNode(package.Name, imageIndex, imageIndex);
+                packageNode.Tag = package;
+
+                ProcessObject(package, packageNode);
+
+                // Hide nodes that don't have any matches
+                PruneNodes(packageNode);
+
+                // Add node graph to tree view
+                AddRootNode(packageNode);
+            }
+            else
+            {
+                ProcessObject(package, null);
+            }
+
 
             // Reset cancel pending in case we have cancelled, as about to exit, so no longer pending
             this.CancellationPending = false;
         }
 
-        private void ProcessObject(object component, string path)
+        private void PruneNodes(TreeNode parent)
+        {
+            // Removed tree nodes that don't relate to any variable.
+            // For a variable "found" node, we set the Checked property to true, so remove branches where the leaf is not Checked
+            for (int index = parent.Nodes.Count - 1; index >= 0; index--)
+            {
+                TreeNode node = parent.Nodes[index];
+
+                if (node.IsExpanded || node.Checked)
+                {
+                    PruneNodes(node);
+                }
+                else
+                {
+                    node.Remove();
+                }
+            }
+        }
+
+        private delegate void AddRootNodeCallback(TreeNode node);
+        private delegate void AddNodeCallback(TreeNode treeView, TreeNode node);
+
+        private void AddRootNode(TreeNode node)
+        {
+            if (node == null)
+                throw new ArgumentNullException("node");
+
+            if (this.treeView.InvokeRequired)
+            {
+                AddRootNodeCallback callback = new AddRootNodeCallback(AddRootNode);
+                this.treeView.Invoke(callback, new object[] { node });
+            }
+            else
+            {
+                this.treeView.Nodes.Add(node);
+            }
+        }
+
+        private TreeNode AddNode(TreeNode parentNode, string text, int imageIndex, object tag)
+        {
+            return AddNode(parentNode, text, imageIndex, tag, false);
+        }
+
+        private TreeNode AddNode(TreeNode parentNode, string text, int imageIndex, object tag, bool found)
+        {
+            if (parentNode == null)
+                return null;
+
+            TreeNode node = new TreeNode(text, imageIndex, imageIndex);
+            node.Name = text;
+            node.Tag = tag;
+            node.Checked = found;
+
+            AddNodeSafe(parentNode, node);
+
+            return node;
+        }
+
+        private void AddNodeSafe(TreeNode parentNode, TreeNode childNode)
+        {
+            if (parentNode == null)
+                return;
+
+            if (childNode == null)
+                return;
+
+            if (treeView.InvokeRequired)
+            {
+                AddNodeCallback callback = new AddNodeCallback(AddNodeSafe);
+                treeView.Invoke(callback, new object[] { parentNode, childNode });
+            }
+            else
+            {
+                parentNode.Nodes.Add(childNode);
+
+                if (childNode.Checked)
+                {
+                    TreeNode target = childNode;
+                    while (target != null)
+                    {
+                        target.Expand();
+
+                        target = target.Parent;
+                    }
+                }
+            }
+        }
+
+        private int GetControlFlowImageIndex(string key)
+        {
+            if (treeView == null)
+                return -1;
+
+            int imageIndex = treeView.ImageList.Images.IndexOfKey(key);
+            if (imageIndex == -1)
+            {
+                AddImageListItem(key, PackageHelper.ControlFlowInfos[key].Icon);
+                imageIndex = treeView.ImageList.Images.Count - 1;
+            }
+
+            return imageIndex;
+        }
+
+        private int GetComponentImageIndex(string key)
+        {
+            if (treeView == null)
+                return -1;
+
+            int imageIndex = treeView.ImageList.Images.IndexOfKey(key);
+            if (imageIndex == -1)
+            {
+                if (PackageHelper.ComponentInfos.ContainsKey(key))
+                {
+                    AddImageListItem(key, PackageHelper.ComponentInfos[key].Icon);
+                }
+                else
+                {
+                    // TODO: HACK: This really shouldn't happen. All components shoudl be enumerated in PackageHelper and therefore exist in PackageHelper.ComponentInfos. Why do some not show up? Wrong key?
+                    AddImageListItem(key, BIDSHelper.Resources.Common.NoIcon);
+                }
+                imageIndex = treeView.ImageList.Images.Count - 1;
+            }
+
+            return imageIndex;
+        }
+
+        private int GetImageIndex(string iconKey)
+        {
+            if (treeView == null)
+                return -1;
+
+            return treeView.ImageList.Images.IndexOfKey(iconKey);
+        }
+
+        private void SetupImageList()
+        {
+            // Add some standard icons to our image list. Order is fixed, since we have hardcoded index values in GetImageIndex function
+            AddImageListItem(IconKeyFolder, SharedIcons.FolderOpened);
+            AddImageListItem(IconKeyProperties, SharedIcons.AllProperties);
+            AddImageListItem(IconKeyInput, SharedIcons.FolderOpened);
+            AddImageListItem(IconKeyOutput, SharedIcons.FolderOpened);
+            AddImageListItem(IconKeyColumn, SharedIcons.FolderOpened);
+            AddImageListItem(IconKeyPrecedenceConstraint, SharedIcons.PrecedenceConstraint);
+            AddImageListItem(IconKeyVariable, SharedIcons.Variable_properties);
+            AddImageListItem(IconKeyVariableExpression, SharedIcons.VariableExpressionIcon);
+            AddImageListItem(IconKeyProperty, BIDSHelper.Resources.Versioned.Variable);
+            AddImageListItem(IconKeyPropertyExpression, SharedIcons.VariableExpressionIcon);
+        }
+
+        delegate void AddImageListItemCallback(string creationName, Icon image);
+
+        private void AddImageListItem(string creationName, Icon image)
+        {
+            if (image == null)
+                return;
+
+            if (treeView.InvokeRequired)
+            {
+                AddImageListItemCallback callback = new AddImageListItemCallback(AddImageListItem);
+                treeView.Invoke(callback, new object[] { creationName, image });
+            }
+            else
+            {
+                this.treeView.ImageList.Images.Add(creationName, image);
+            }
+        }
+
+        private void ProcessObject(object component, TreeNode parentNode)
         {
             if (this.CancellationPending)
             {
                 return;
             }
 
-            DtsContainer container = component as DtsContainer;
-
-            // Should only get package as we call GetPackage up front. Could make scope like, but need UI indicator that this is happening
             Package package = component as Package;
             if (package != null)
             {
-                path = "\\Package";
-                CheckConnectionManagers(package, path);
-            }
-            else if (!(component is DtsEventHandler))
-            {
-                path = path + "\\" + container.Name;
+                // Package node is created in calling function.
+                CheckConnectionManagers(package, parentNode);
             }
 
-            IDTSPropertiesProvider propertiesProvider = component as IDTSPropertiesProvider;
-            if (propertiesProvider != null)
+            DtsContainer container = component as DtsContainer;
+            if (container != null)
             {
-                CheckProperties(propertiesProvider, path);
+                string containerKey = PackageHelper.GetContainerKey(container);
+                TaskHost taskHost = null;
+
+                if (package == null)
+                {
+                    int imageIndex = GetControlFlowImageIndex(containerKey);
+                    parentNode = AddNode(parentNode, container.Name, imageIndex, component);
+                    taskHost = container as TaskHost;
+                }
+                
+                if (taskHost != null)
+                {
+                    CheckTask(taskHost, parentNode);
+                }
+                else if (containerKey == PackageHelper.ForLoopCreationName)
+                {
+                    CheckForLoop(container as IDTSPropertiesProvider, parentNode);
+                }
+                else if (containerKey == PackageHelper.ForEachLoopCreationName)
+                {
+                    CheckForEachLoop(container as ForEachLoop, parentNode);
+                }
+                else if (containerKey == PackageHelper.SequenceCreationName)
+                {
+                    ScanProperties(container as IDTSPropertiesProvider, parentNode);
+                }
+                else
+                {
+                    // Package, Event Handlers etc
+                    ScanProperties(container as IDTSPropertiesProvider, parentNode);
+                }
+
+                string currentPath = string.Empty;
+                IDTSPackagePath packagePath = component as IDTSPackagePath;
+                if (packagePath != null)
+                {
+                    currentPath = packagePath.GetPackagePath();
+                }
+
+                ScanVariables(container.Variables, parentNode, currentPath);
             }
 
             EventsProvider eventsProvider = component as EventsProvider;
             if (eventsProvider != null)
             {
+                TreeNode eventsNode = AddFolder("EventHandlers", parentNode);
                 foreach (DtsEventHandler eventhandler in eventsProvider.EventHandlers)
                 {
-                    ProcessObject(eventhandler, path + ".EventHandlers[" + eventhandler.Name + "]");
+                    ProcessObject(eventhandler, eventsNode);
                 }
             }
 
             IDTSSequence sequence = component as IDTSSequence;
             if (sequence != null)
             {
-                ProcessSequence(container, sequence, path);
-                ScanPrecedenceConstraints(path, container.ID, sequence.PrecedenceConstraints);
+                ProcessSequence(sequence, parentNode);
+                ScanPrecedenceConstraints(container.ID, sequence.PrecedenceConstraints, parentNode);
             }
         }
 
-        private void ProcessSequence(DtsContainer container, IDTSSequence sequence, string path)
+        private void ProcessSequence(IDTSSequence sequence, TreeNode parentNode)
         {
-            if (this.CancellationPending)
-            {
+            if (sequence == null)
                 return;
-            }
+
+            if (this.CancellationPending)
+                return;
 
             foreach (Executable executable in sequence.Executables)
             {
-                ProcessObject(executable, path);
+                ProcessObject(executable, parentNode);
             }
         }
 
-        private void CheckConnectionManagers(Package package, string path)
+        private void CheckConnectionManagers(Package package, TreeNode parentNode)
         {
-            if (this.CancellationPending) return;
+            if (this.CancellationPending)
+                return;
+
+            TreeNode folder = AddFolder("Connections", parentNode);
+
+            int imageIndex = GetControlFlowImageIndex(PackageHelper.ConnectionCreationName);
 
             foreach (ConnectionManager connection in package.Connections)
             {
                 DtsContainer container = (DtsContainer)package;
-                // TODO; Fix - Cheat and hard code creation name as icon routines cannot get the correct connection icon
-
-                VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
-                foundArgument.ContainerID = container.ID;
-                foundArgument.ObjectID = connection.ID;
-                foundArgument.ObjectType = connection.GetType().Name;
-                foundArgument.Type = typeof(ConnectionManager);
-                foundArgument.Icon = PackageHelper.ControlFlowInfos[PackageHelper.ConnectionCreationName].Icon;
-                foundArgument.ObjectPath = path + ".Connections[" + connection.Name + "].";
-                foundArgument.ObjectName = connection.Name;
-
-                //private void ScanProperties(string objectPath, Type objectType, string objectTypeName, string containerID, string objectID, string objectName, IDTSPropertiesProvider provider, string containerKey)
-                ScanProperties((IDTSPropertiesProvider)connection, foundArgument);
+                TreeNode node = AddNode(folder, connection.Name, imageIndex, connection);
+                ScanProperties((IDTSPropertiesProvider)connection, node);
             }
         }
 
-        private void CheckProperties(IDTSPropertiesProvider propProvider, string path)
+        private TreeNode AddFolder(string folder, TreeNode parentNode)
         {
-            if (this.CancellationPending) return;
+            if (parentNode == null)
+                return null;
 
-            if (propProvider is DtsContainer)
-            {
-                DtsContainer container = (DtsContainer)propProvider;
-
-                VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
-                foundArgument.ContainerID = container.ID;
-                foundArgument.ObjectID = container.ID;                
-                
-                foundArgument.ObjectPath = path;
-
-                string containerKey = PackageHelper.GetContainerKey(container);
-                foundArgument.Icon = PackageHelper.ControlFlowInfos[containerKey].Icon;
-
-                TaskHost taskHost = container as TaskHost;
-                if (taskHost != null)
-                {
-                    CheckTask(taskHost, foundArgument);
-                }
-                else
-                {
-                    foundArgument.ObjectType = container.GetType().Name;
-
-                    switch (foundArgument.ObjectType)
-                    {
-                        case "ForLoop" :
-                            CheckForLoop(propProvider, foundArgument);
-                            break;
-                        case "ForEachLoop":
-                            CheckForEachLoop(container as ForEachLoop, foundArgument);
-                            break;
-                        default:
-                            foundArgument.Type = container.GetType();
-                            ScanProperties(propProvider, foundArgument);
-                            break;
-                    }
-                }
-
-                ScanVariables(container.Variables, foundArgument);
-            }
+            int imageIndex = treeView.ImageList.Images.IndexOfKey(IconKeyFolder);
+            return AddNode(parentNode, folder, imageIndex, null);
         }
 
-        private void CheckTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
+        private void CheckTask(TaskHost taskHost, TreeNode parent)
         {
-            foundArgument.Type = taskHost.InnerObject.GetType();
-            string typeName = foundArgument.Type.Name;
+            string typeName = taskHost.InnerObject.GetType().Name;
 
-            // Set type, used in case of expression editor, if we get that far. Correct it later as required too
-            foundArgument.Type = taskHost.InnerObject.GetType();
+            // Scan regular task properties and expressions
+            // We may use the TreeView Properties folder in task specific checks, so do this first
+            ScanProperties(taskHost, parent);
 
-				
             // Task specific checks, split by native and managed
             if (typeName == "__ComObject")
             {
+                // Translate creation name via PackageHelper, as that caters for both nice and GUID formats, e.g. For SQL 2012 a dataFLow task can be either "{5918251B-2970-45A4-AB5F-01C3C588FE5A}" or SSIS.Pipeline.3
+                string creatioName = PackageHelper.ControlFlowInfos[taskHost.CreationName].CreationName;
+
                 // Native code tasks, can't use type name, so use creation name.
                 // Need to be wary of suffix, SSIS.ExecutePackageTask.3 for 2012, SSIS.ExecutePackageTask.4 for 2014 etc
-                if (taskHost.CreationName == string.Format("SSIS.{0}.{1}",  ObjectTypeExecutePackageTask, SSISHelpers.CreationNameIndex))
+                if (creatioName == string.Format("SSIS.ExecutePackageTask.{0}",  SSISHelpers.CreationNameIndex))
                 {
-                    foundArgument.Type = typeof(ExecutePackageTask);
-                    foundArgument.ObjectType = ObjectTypeExecutePackageTask;
-                    CheckExecutePackageTask(taskHost, foundArgument);
+                    CheckExecutePackageTask(taskHost, parent);
                 }
-                else if (taskHost.CreationName == string.Format("SSIS.Pipeline.{0}", SSISHelpers.CreationNameIndex))
+                else if (creatioName == string.Format("SSIS.Pipeline.{0}", SSISHelpers.CreationNameIndex))
                 {
-                    foundArgument.ObjectType = ObjectTypeDataFlowTask;
-                    foundArgument.Type = typeof(MainPipe);
-                    //foundArgument.Icon = BIDSHelper.Resources.Versioned.DataFlow;
                     MainPipe pipeline = taskHost.InnerObject as MainPipe;
-                    ScanPipeline(pipeline, foundArgument);
+                    ScanPipeline(pipeline, parent);
                 }
                 else
                 {
-                    foundArgument.ObjectType = "**UnknownNativeTask**";
                     System.Diagnostics.Debug.Assert(false, "Unrecognised native task - " + taskHost.CreationName);
                 }
             }
             else
             {
-                // Set type name, as it is correct for managed tasks
-                foundArgument.ObjectType = typeName;
-
                 // For managed code tasks we can use type name. This means we don't have to have a 
                 // full reference to the task assembly, but any properties we access must be simple 
                 // ones accessible via IDTSPropertiesProvider, i.e. ExpressionTask. For more complex 
-                // properties such as ParameterBiningds on the ExecuteSQLTask we need the reference.
+                // properties such as ParameterBindings on the ExecuteSQLTask we need the reference.
                 switch (typeName)
                 {
                     case "ExecuteSQLTask":
-	                    CheckExecuteSQLTask(taskHost, foundArgument);
+                        CheckExecuteSQLTask(taskHost, parent);
 	                    break;
                     case "ExpressionTask":
-	                    CheckExpressionTask(taskHost, foundArgument);
+                        CheckExpressionTask(taskHost, parent);
 	                    break;
                     case "ExecutePackageTask":
-	                    CheckExecutePackageTask(taskHost, foundArgument);
+                        CheckExecutePackageTask(taskHost, parent);
 	                    break;
                 }
             }
-
-            // Scan regular task properties and epressions
-            ScanProperties(taskHost, foundArgument);
         }
 
         private static bool GetIsFriendlyExpression(IDTSCustomPropertyCollection100 properties)
@@ -280,60 +465,54 @@ namespace BIDSHelper.SSIS
             return false;
         }
 
-        private void ScanPipeline(MainPipe pipeline, VariableFoundEventArgs foundArgument)
+        private void ScanPipeline(MainPipe pipeline, TreeNode parent)
         {
-            // Careful if trying to use //Parallel.ForEach(pipeline.ComponentMetaDataCollection.OfType<IDTSComponentMetaData100>(), componentMetadata =>
-            // Causes issues with twp threads using the same common foundArgument. Need to clone it first.
-            foreach (IDTSComponentMetaData100 componentMetadata in pipeline.ComponentMetaDataCollection)
-            {
-                foundArgument.ObjectID = componentMetadata.ID.ToString();
-                foundArgument.ObjectName = componentMetadata.Name;
-                string componentPath = foundArgument.ObjectPath + "\\" + componentMetadata.Name;
-                string componentKey = PackageHelper.GetComponentKey(componentMetadata);
-                foundArgument.ObjectType = PackageHelper.ComponentInfos[componentKey].Name;
+            TreeNode folder = AddFolder("Components", parent);
 
-                ScanCustomPropertiesCollection(componentMetadata.CustomPropertyCollection, foundArgument, componentPath);// containerId, objectId, objectName, componentPath, objectType);
+            // TODO: Revisit using Parallel for each to see if we can speed this up for large packages.
+            // Parallel.ForEach(pipeline.ComponentMetaDataCollection.OfType<IDTSComponentMetaData100>(), componentMetadata =>
+            foreach (IDTSComponentMetaData100 componentMetaData in pipeline.ComponentMetaDataCollection)
+            {
+                string componentKey = PackageHelper.GetComponentKey(componentMetaData);
+                int imageIndex = GetComponentImageIndex(componentKey);
+                TreeNode componentNode = AddNode(folder, componentMetaData.Name, imageIndex, componentMetaData); ;
+
+                ScanCustomPropertiesCollection(componentMetaData.CustomPropertyCollection, componentNode);
 
                 #region Inputs, Outputs, Columns
                 // Scan inputs and input columns
-                foreach (IDTSInput100 input in componentMetadata.InputCollection)
+                foreach (IDTSInput100 input in componentMetaData.InputCollection)
                 {
-                    string localPath = componentPath + ".Input[" + input.Name + "]";
-                    ScanCustomPropertiesCollection(input.CustomPropertyCollection, foundArgument, localPath);
+                    TreeNode node = AddNode(componentNode, "Input [" + input.Name + "]", GetImageIndex(IconKeyInput), input);
+                    ScanCustomPropertiesCollection(input.CustomPropertyCollection, node);
 
+                    TreeNode columnsNode = AddFolder("Output Columns", node);
                     foreach (IDTSInputColumn100 column in input.InputColumnCollection)
                     {
-                        string columnPath = localPath + ".Columns[" + column.Name + "]";
-                        ScanCustomPropertiesCollection(column.CustomPropertyCollection, foundArgument, localPath);
+                        TreeNode columnNode = AddNode(columnsNode, column.Name, GetImageIndex(IconKeyColumn), column);
+                        ScanCustomPropertiesCollection(column.CustomPropertyCollection, columnNode);
                     }
                 }
 
                 // Scan outputs and output columns
-                foreach (IDTSOutput100 output in componentMetadata.OutputCollection)
+                foreach (IDTSOutput100 output in componentMetaData.OutputCollection)
                 {
-                    string localPath = componentPath + ".Output[" + output.Name + "]";
-                    ScanCustomPropertiesCollection(output.CustomPropertyCollection, foundArgument, localPath);
+                    TreeNode node = AddNode(componentNode, "Output [" + output.Name + "]", GetImageIndex(IconKeyOutput), output);
+                    ScanCustomPropertiesCollection(output.CustomPropertyCollection, node);
 
+                    TreeNode columnsNode = AddFolder("Output Columns", node);
                     foreach (IDTSOutputColumn100 column in output.OutputColumnCollection)
                     {
-                        string columnPath = localPath + ".Columns[" + column.Name + "]";
-                        ScanCustomPropertiesCollection(column.CustomPropertyCollection, foundArgument, localPath);
+                        TreeNode columnNode = AddNode(columnsNode, column.Name, GetImageIndex(IconKeyColumn), column);
+                        ScanCustomPropertiesCollection(column.CustomPropertyCollection, columnNode);
                     }
-                }
-                #endregion
-
-                #region Derived Column Transformation
-                if (componentKey == "{18E9A11B-7393-47C5-9D47-687BE04A6B09}")
-                {
-                    // Component specific logic - TBC
                 }
                 #endregion
             }
         }
 
-        private void ScanCustomPropertiesCollection(IDTSCustomPropertyCollection100 properties, VariableFoundEventArgs foundArgument, string componentPath)
+        private void ScanCustomPropertiesCollection(IDTSCustomPropertyCollection100 properties, TreeNode parent)
         {
-            // string containerId, string objectId, string objectName, string path, string objectType
             // First check if we have a "FriendlyExpression". We use the value from FriendlyExpression, because it is CPET_NOTIFY
             // The related Expression will always be CPET_NONE, and less readable.
             bool friendlyExpressionValid = GetIsFriendlyExpression(properties);
@@ -359,14 +538,10 @@ namespace BIDSHelper.SSIS
                             propertyName = "Expression";
                         }
 
-                        VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                        info.ObjectPath = componentPath + ".Properties[" + propertyName + "]";
-                        info.PropertyName = propertyName;
-                        info.Value = value;
-                        info.IsExpression = true;
-                        info.Icon = BIDSHelper.Resources.Versioned.DataFlow;
+                        VariableFoundEventArgs info = new VariableFoundEventArgs();
                         info.Match = match;
                         OnRaiseVariableFound(info);
+                        AddNode(parent, propertyName, GetImageIndex(IconKeyPropertyExpression), new PropertyExpression(propertyName, value, property.Value.GetType()), true);
                     }
                 }
                 else
@@ -376,32 +551,29 @@ namespace BIDSHelper.SSIS
                         continue;
                     }
 
-                    string pathOverride;
-                    if (propertyName.StartsWith("["))
-                    {
-                        pathOverride = componentPath + ".Properties" + propertyName + "";
-                    }
-                    else
-                    {
-                        pathOverride = componentPath + ".Properties[" + propertyName + "]";
-                    }
 
-                    PropertyMatch(foundArgument, pathOverride, propertyName, value);
+                    if (PropertyMatch(propertyName, value, out match))
+                    {
+                        VariableFoundEventArgs info = new VariableFoundEventArgs();
+                        info.Match = match;
+                        OnRaiseVariableFound(info);
+                        AddNode(parent, propertyName, GetImageIndex(IconKeyProperty), property, true);
+                    }
                 }
             }
         }
 
-        private void ScanPrecedenceConstraints(string objectPath, string containerID, PrecedenceConstraints constraints)
+        private void ScanPrecedenceConstraints(string containerID, PrecedenceConstraints constraints, TreeNode parent)
         {
             if (this.CancellationPending)
             {
                 return;
             }
 
+            TreeNode constraintsNode = AddFolder("PrecedenceConstraints", parent);
+
             foreach (PrecedenceConstraint constraint in constraints)
             {
-                // Check properties
-
                 // Check expressions
                 if (constraint.EvalOp == DTSPrecedenceEvalOp.Constraint)
                 {
@@ -419,72 +591,57 @@ namespace BIDSHelper.SSIS
                 if (ExpressionMatch(constraint.Expression, out match))
                 {
                     VariableFoundEventArgs info = new VariableFoundEventArgs();
-                    info.ContainerID = containerID;
-                    info.ObjectID = constraint.ID;
-                    info.ObjectName = ((DtsContainer)constraint.PrecedenceExecutable).Name;
-                    info.ObjectPath = objectPath + ".PrecedenceConstraints[" + constraint.Name + "]";
-                    info.Type = typeof(PrecedenceConstraint);
-                    info.ObjectType = constraint.GetType().Name;
-                    info.PropertyName = constraint.Name;
-                    info.Value = constraint.Expression;
-                    info.IsExpression = true;
-                    info.Icon = BIDSHelper.Resources.Common.Path;
                     info.Match = match;
                     OnRaiseVariableFound(info);
+                    AddNode(constraintsNode, "Expression", GetImageIndex(IconKeyPrecedenceConstraint), constraint, true);
                 }
             }
         }
 
-        private void ScanVariables(Variables variables, VariableFoundEventArgs foundArgument)
+        private void ScanVariables(Variables variables, TreeNode parent, string currentPath)
         {
             if (this.CancellationPending)
             {
                 return;
             }
+
+            TreeNode variablesFolder = AddFolder("Variables", parent);
+            int imageIndex = GetImageIndex(IconKeyVariableExpression);
 
             foreach (Variable variable in variables)
             {
-                try
+                if (!variable.EvaluateAsExpression)
                 {
-                    if (!variable.EvaluateAsExpression)
-                    {
-                        continue;
-                    }
-
-                    // Check path to ensure variable is parented by current scope 
-                    // only, not by child containers that inherit the variable
-                    if (!variable.GetPackagePath().StartsWith(foundArgument.ObjectPath + ".Variables["))
-                    {
-                        continue;
-                    }
-
-                    string match;
-                    if (ExpressionMatch(variable.Expression, out match))
-                    {
-                        VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                        info.ObjectID = variable.ID;
-                        info.ObjectPath = foundArgument.ObjectPath + ".Variables[" + variable.QualifiedName + "]";
-                        info.ObjectType = variable.GetType().Name;
-                        info.PropertyName = variable.QualifiedName;
-                        info.Value = variable.Expression;
-                        info.IsExpression = variable.EvaluateAsExpression;
-                        info.Icon = BIDSHelper.Resources.Versioned.Variable;
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
-                    }
+                    continue;
                 }
-                catch { }
+
+                // Check path to ensure variable is parented by current scope 
+                // only, not by child containers that inherit the variable
+                if (!variable.GetPackagePath().StartsWith(currentPath + ".Variables["))
+                {
+                    continue;
+                }
+
+                string match;
+                if (ExpressionMatch(variable.Expression, out match))
+                {
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                    AddNode(variablesFolder, variable.QualifiedName, imageIndex, variable, true);
+                }
             }
         }
 
-        private void ScanProperties(IDTSPropertiesProvider provider, VariableFoundEventArgs foundArgument)
+        private void ScanProperties(IDTSPropertiesProvider provider, TreeNode parent)
         {
             if (this.CancellationPending)
             {
                 return;
             }
 
-            bool isPipeline = (foundArgument.ObjectType == ObjectTypeDataFlowTask);
+            TreeNode properties = AddFolder("Properties", parent);
+            TreeNode expressions = AddFolder("PropertyExpressions", parent);
 
             // New 2012 + interface implemented by Package, Sequence, DtsEventHandler, ForLoop, ForEachLoop
             // There are other objects that implement IDTSPropertiesProvider, and therefore support expressions, e.g. ConnectionManager, Variable
@@ -498,12 +655,6 @@ namespace BIDSHelper.SSIS
             
             foreach (DtsProperty property in provider.Properties)
             {
-                // Skip any expressuon properties on the Data Flow task, we deal with then in ScanPipeline explicitly
-                if (isPipeline && property.Name.StartsWith("["))
-                {
-                    continue;
-                }
-                
                 TypeCode propertyType = property.Type;
                 string propertyName = property.Name;
 
@@ -514,33 +665,18 @@ namespace BIDSHelper.SSIS
                     string value = property.GetValue(provider) as string;
                     if (!string.IsNullOrEmpty(value))
                     {
-
-                        string pathOverride;
-                        if (property.Name.StartsWith("["))
+                        if (PropertyMatch(propertyName, value, out match))
                         {
-                            pathOverride = foundArgument.ObjectPath + ".Properties" + property.Name + "";
+                            VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
+                            foundArgument.Match = match;
+                            OnRaiseVariableFound(foundArgument);
+                            AddNode(properties, propertyName, GetImageIndex(IconKeyProperty), new DisplayProperty(property, value), true);
                         }
-                        else
-                        {
-                            pathOverride = foundArgument.ObjectPath + ".Properties[" + property.Name + "]";
-                        }
-
-                        PropertyMatch(foundArgument, pathOverride, propertyName, value);
                     }
                 }
                 #endregion
 
                 #region Check property expression
-                // Check expression
-
-                // TODO can we use IDTSPropertiesProviderEx.HasExpressions Property
-                //
-
-                //if (!hasExpressions)
-                //{
-                //    continue;
-                //}
-
                 string expression = provider.GetExpression(property.Name);
                 if (expression == null)
                 {
@@ -552,21 +688,10 @@ namespace BIDSHelper.SSIS
 
                 if (ExpressionMatch(expression, out match))
                 {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                    if (property.Name.StartsWith("["))
-                    {
-                        info.ObjectPath = foundArgument.ObjectPath + ".PropertyExpression" + property.Name + "";
-                    }
-                    else
-                    {
-                        info.ObjectPath = foundArgument.ObjectPath + ".PropertyExpression[" + property.Name + "]";
-                    }
-
-                    info.PropertyName = property.Name;
-                    info.Value = expression;
-                    info.IsExpression = true;
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
+                    VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
+                    foundArgument.Match = match;
+                    OnRaiseVariableFound(foundArgument);
+                    AddNode(expressions, propertyName, GetImageIndex(IconKeyVariableExpression), new PropertyExpression(propertyName, expression, PackageHelper.GetTypeFromTypeCode(property.Type)), true);
                 }
                 #endregion
 
@@ -575,7 +700,6 @@ namespace BIDSHelper.SSIS
 
         private bool ExpressionMatch(string expression, out string match)
         {
-            //return this.expressionMatches.Any(expression.Contains);
             foreach (string test in this.expressionMatches)
             {
                 if (expression.Contains(test))
@@ -589,42 +713,32 @@ namespace BIDSHelper.SSIS
             return false;
         }
 
-        private void PropertyMatch(VariableFoundEventArgs foundArgument, string pathOverride, string propertyName, string value)
+        private bool PropertyMatch(string propertyName, string value, out string match)
         {
-            string match;
             if (propertyName == "ReadOnlyVariables" || propertyName == "ReadWriteVariables")
             {
                 // Comma delimited list of variable names, split and then search
                 foreach (string item in value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (PropertyMatch(item, out match))
+                    if (PropertyMatchEval(item, out match))
                     {
-                        VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                        info.ObjectPath = pathOverride;
-                        info.PropertyName = propertyName;
-                        info.Value = value;
-                        info.IsExpression = false;
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
+                        return true;
                     }
                 }
             }
             else
             {
-                if (PropertyMatch(value, out match))
+                if (PropertyMatchEval(value, out match))
                 {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                    info.ObjectPath = pathOverride;
-                    info.PropertyName = propertyName;
-                    info.Value = value;
-                    info.IsExpression = false;
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
+                    return true;
                 }
             }
+
+            match = null;
+            return false;
         }
 
-        private bool PropertyMatch(string value, out string match)
+        private bool PropertyMatchEval(string value, out string match)
         {            
             foreach (string test in this.properytMatches)
             {
@@ -653,140 +767,148 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        private void CheckExecuteSQLTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
+        private void CheckExecuteSQLTask(TaskHost taskHost, TreeNode parent)
         {
             ExecuteSQLTask task = taskHost.InnerObject as ExecuteSQLTask;
+
+            TreeNode parameterBindings = AddFolder("ParameterBindings", parent);
 
             foreach (IDTSParameterBinding binding in task.ParameterBindings)
             {
                 string match;
                 string value = binding.DtsVariableName;
-                if (!string.IsNullOrEmpty(value) && PropertyMatch(value, out match))
+                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
                 {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                    info.ObjectPath = foundArgument.ObjectPath + ".ParameterBindings[" + binding.ParameterName + "]";
-                    info.PropertyName = binding.ParameterName.ToString();
-                    info.Value = value;
-                    info.IsExpression = false;
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
                     info.Match = match;
                     OnRaiseVariableFound(info);
+                    AddNode(parameterBindings, binding.ParameterName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
                 }
             }
+
+            TreeNode resultSetBindings = AddFolder("ResultSetBindings", parent);
 
             foreach (IDTSResultBinding binding in task.ResultSetBindings)
             {
                 string match;
                 string value = binding.DtsVariableName;
-                if (!string.IsNullOrEmpty(value) && PropertyMatch(value, out match))
+                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
                 {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                    info.ObjectPath = foundArgument.ObjectPath + ".ResultSetBindings[" + binding.ResultName + "]";
-                    info.PropertyName = binding.ResultName.ToString();
-                    info.Value = value;
-                    info.IsExpression = false;
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
                     info.Match = match;
                     OnRaiseVariableFound(info);
+                    AddNode(resultSetBindings, binding.ResultName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
                 }
             }
         }
 
-        private void CheckExpressionTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
+        private void CheckExpressionTask(TaskHost taskHost, TreeNode parent)
         {
             // Expression task has the Expression property which we need to treat as an expression rather than a literal value as we do for normal properties.
-            // Get the Expression value and run an expression matct test
+            // Get the Expression value and run an expression match test
             DtsProperty property = taskHost.Properties["Expression"];
             string expression = property.GetValue(taskHost).ToString();
-            PropertyAsExpressionMatch(property.Name, expression, foundArgument);
+            PropertyAsExpressionMatch(property, expression, parent);
         }
 
-        private void CheckExecutePackageTask(TaskHost taskHost, VariableFoundEventArgs foundArgument)
+        private void CheckExecutePackageTask(TaskHost taskHost, TreeNode parent)
         {
             ExecutePackageTask task = taskHost.InnerObject as ExecutePackageTask;
 
-            // ParameterAssignments doesn't support foreach enumeration, so use for loop instead.
+            TreeNode parameterAssignments = AddFolder("ParameterAssignments", parent);
+
+            // IDTSParameterAssignment doesn't support foreach enumeration, so use for loop instead.
             for (int i = 0; i < task.ParameterAssignments.Count; i++)
             {
                 IDTSParameterAssignment assignment = task.ParameterAssignments[i];
 
                 string match;                
                 string value = assignment.BindedVariableOrParameterName;
-                if (!string.IsNullOrEmpty(value) && PropertyMatch(value, out match))
+                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
                 {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                    info.ObjectPath = foundArgument.ObjectPath + ".ParameterAssignments[" + assignment.ParameterName + "]";
-                    info.PropertyName = assignment.ParameterName.ToString();
-                    info.Value = value;
-                    info.IsExpression = false;
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
                     info.Match = match;
                     OnRaiseVariableFound(info);
+                    AddNode(parameterAssignments, assignment.ParameterName.ToString(), GetImageIndex(IconKeyProperty), assignment, true);
                 }
             }
         }
 
-        private void CheckForEachLoop(ForEachLoop forEachLoop, VariableFoundEventArgs foundArgument)
+        private void CheckForEachLoop(ForEachLoop forEachLoop, TreeNode parent)
         {
             // Check properties of loop itself
-            foundArgument.Type = typeof(ForEachLoop);
-            ScanProperties(forEachLoop, foundArgument);
+            ScanProperties(forEachLoop, parent);
 
             // Check properties of enumerator, when present
             ForEachEnumeratorHost enumerator = forEachLoop.ForEachEnumerator;
-            if (enumerator == null)
-                return;
+            if (enumerator != null)
+            {
+                TreeNode enumeratorFolder = AddFolder(enumerator.GetType().Name, parent);
+                ScanProperties(enumerator, enumeratorFolder);
+            }
 
-            VariableFoundEventArgs foundEnumerator = new VariableFoundEventArgs(foundArgument);
-            foundEnumerator.ObjectPath = foundArgument.ObjectPath + "\\" + foundEnumerator.Type.Name + ".";
-            foundEnumerator.Type = enumerator.GetType();
-            ScanProperties(enumerator, foundEnumerator);
-
+            // Check the (output) variable mappings
+            TreeNode variableMappings = AddFolder("VariableMappings", parent);
             foreach (ForEachVariableMapping mapping in forEachLoop.VariableMappings)
             {
                 string match;
                 string value = mapping.VariableName;
-                if (!string.IsNullOrEmpty(value) && PropertyMatch(value, out match))
+                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
                 {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                    info.ObjectPath = foundArgument.ObjectPath + ".VariableMappings[" + mapping.ValueIndex.ToString() + "]";
-                    info.PropertyName = mapping.ValueIndex.ToString();
-                    info.Value = value;
-                    info.IsExpression = false;
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
                     info.Match = match;
                     OnRaiseVariableFound(info);
+                    AddNode(variableMappings, mapping.ValueIndex.ToString(), GetImageIndex(IconKeyProperty), mapping, true);
                 }
             }
         }
 
-        private void CheckForLoop(IDTSPropertiesProvider forLoop, VariableFoundEventArgs foundArgument)
+        private void CheckForLoop(IDTSPropertiesProvider forLoop, TreeNode parent)
         {
             // Check regular properties of the loop for variables and regular property expressions 
-            foundArgument.Type = typeof(ForEachLoop);
-            ScanProperties(forLoop, foundArgument);
+            ScanProperties(forLoop, parent);
+
+            DtsProperty property;
+            object propertyValue;
 
             // Check explicit expression properties as expressions, missed if we are looking for literal variables.
-            DtsProperty property;
-
             property = forLoop.Properties["AssignExpression"];
-            PropertyAsExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+            propertyValue = property.GetValue(forLoop);
+            if (propertyValue != null)
+            {
+                PropertyAsExpressionMatch(property, propertyValue.ToString(), parent);
+            }
 
             property = forLoop.Properties["EvalExpression"];
-            PropertyAsExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+            propertyValue = property.GetValue(forLoop);
+            if (propertyValue != null)
+            {
+                PropertyAsExpressionMatch(property, propertyValue.ToString(), parent);
+            }
 
             property = forLoop.Properties["InitExpression"];
-            PropertyAsExpressionMatch(property.Name, property.GetValue(forLoop).ToString(), foundArgument);
+            propertyValue = property.GetValue(forLoop);
+            if (propertyValue != null)
+            {
+                PropertyAsExpressionMatch(property, propertyValue.ToString(), parent);
+            }
         }
 
-        private void PropertyAsExpressionMatch(string propertyName, string expression, VariableFoundEventArgs foundArgument)
+        private void PropertyAsExpressionMatch(DtsProperty property, string expression, TreeNode parent)
         {
             string match;
             if (ExpressionMatch(expression, out match))
             {
-                VariableFoundEventArgs info = new VariableFoundEventArgs(foundArgument);
-                info.ObjectPath = foundArgument.ObjectPath + ".Properties[" + propertyName + "]";
-                info.PropertyName = propertyName;
-                info.Value = expression;
-                info.IsExpression = true;
+                VariableFoundEventArgs info = new VariableFoundEventArgs();
                 info.Match = match;
                 OnRaiseVariableFound(info);
+                
+                if (parent != null)
+                {
+                    TreeNode propertiesNode = parent.Nodes["Properties"];
+                    System.Diagnostics.Debug.Assert(!(parent != null && propertiesNode == null), "Properties node doesn't exist when it should already. We will lose this property match. Find the Properties node.");
+                    AddNode(propertiesNode, property.Name, GetImageIndex(IconKeyVariableExpression), new DisplayProperty(property, expression), true);
+                }
             }
         }
     }
@@ -800,29 +922,66 @@ namespace BIDSHelper.SSIS
 
         public VariableFoundEventArgs(VariableFoundEventArgs variableFoundEventArgs)
         {
-            this.Icon = variableFoundEventArgs.Icon;
-            this.Type = variableFoundEventArgs.Type;
-            this.IsExpression = variableFoundEventArgs.IsExpression;
-            this.ContainerID = variableFoundEventArgs.ContainerID;
             this.Match = variableFoundEventArgs.Match;
-            this.ObjectID = variableFoundEventArgs.ObjectID;
-            this.ObjectName = variableFoundEventArgs.ObjectName;
-            this.ObjectPath = variableFoundEventArgs.ObjectPath;
-            this.ObjectType = variableFoundEventArgs.ObjectType;
-            this.PropertyName = variableFoundEventArgs.PropertyName;
-            this.Value = variableFoundEventArgs.Value;
         }
 
-        public Icon Icon { get; set; }
-        public Type Type { get; set; }
-        public bool IsExpression { get; set; }
-        public string ContainerID { get; set; }
         public string Match { get; set; }
-        public string ObjectID { get; set; }
-        public string ObjectName { get; set; }
-        public string ObjectPath { get; set; }
-        public string ObjectType { get; set; }
-        public string PropertyName { get; set; }
-        public string Value { get; set; }
+    }
+
+    /// <summary>
+    /// Display class for property expressions, used to pass information back to UI. 
+    /// This object assigned to the tree node, and is shown in the property grid when the node is selected.
+    /// </summary>
+    public class PropertyExpression
+    {
+        public PropertyExpression(string name, string expression, Type type)
+        {
+            this.PropertyName = name;
+            this.Expression = expression;
+            this.Type = type;
+        }
+
+        [ParenthesizePropertyName(), Browsable(true), Category("General"), Description("The name of the property hosting the expression.")]
+        public string PropertyName { get; private set; }
+
+        [Category("General"), Description("The expression text for the property expression.")]
+        public object Expression { get; private set; }
+
+        [Category("General")]
+        public Type Type { get; private set; }
+    }
+
+    /// <summary>
+    /// Display class for container/task/event properties, in other words those that use DtsProperty via IDTSPropertiesProvider. Used to pass information back to UI. 
+    /// This object assigned to the tree node, and is shown in the property grid when the node is selected.
+    /// We don't need one for IDTSCustomProperty100 properties, because that already does a good job of displaying both the property information AND the value.
+    /// DtsProperty doesn't include the value, hence we use this wrapper for the TreeView tag object
+    /// </summary>
+    [DisplayName("Property")]
+    public class DisplayProperty
+    {
+        public DisplayProperty(DtsProperty property, object value)
+        {
+            this.Name = property.Name;
+            this.Value = value;
+            this.Type =  PackageHelper.GetTypeFromTypeCode(property.Type);
+            this.Get = property.Get;
+            this.Set = property.Set;
+        }
+
+        [ParenthesizePropertyName(), Browsable(true), Category("General"), Description("The name of the property which contains the reference.")]
+        public string Name { get; private set; }
+
+        [Category("Accessors"), Description("Indicates whether the property value can be read.")]
+        public bool Get { get; private set; }
+
+        [Category("Accessors"), Description("Indicates whether the property value is changeable.")]
+        public bool Set { get; private set; }
+
+        [Category("General"), Description("THe property value, including the reference.")]
+        public object Value { get; private set; }
+
+        [Category("General"), Description("The data type of the property value.")]
+        public Type Type { get; private set; }
     }
 }

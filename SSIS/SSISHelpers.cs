@@ -7,36 +7,30 @@ namespace BIDSHelper
     public class SSISHelpers
     {
 
-#if SQL2014
+#if SQL2016
+        public const string CreationNameIndex = "5";
+#elif SQL2014
         public const string CreationNameIndex = "4";
 #elif DENALI
         public const string CreationNameIndex = "3";
-#elif KATMAI
-        public const string CreationNameIndex = "2";
-#else
-        public const string CreationNameIndex = "1";
 #endif
 
         public enum SsisDesignerTabIndex
         {
             ControlFlow = 0,
             DataFlow = 1,
-#if DENALI || SQL2014
             Parameters = 2,
             EventHandlers = 3,
             PackageExplorer = 4
-#else
-            EventHandlers = 2,
-            PackageExplorer = 3
-#endif
         }
 
-        //this is only defined in the latest VS2013 OneDesigner, so it won't be available in older versions
+        // This is only defined in the SQL 2016+ tools, OneDesigner, so it won't be available in older versions
         public enum ProjectTargetVersion
         {
             LatestSQLServerVersion = 12,
             SQLServer2012 = 11,
-            SQLServer2014 = 12
+            SQLServer2014 = 12,
+            SQLServer2016 = 12
         }
 
         public static ProjectTargetVersion? LatestProjectTargetVersion = null;
@@ -90,8 +84,6 @@ namespace BIDSHelper
 
         internal static DtsContainer FindContainer(DtsContainer component, string objectId)
         {
-            //DtsContainer container = component as DtsContainer;
-
             if (component == null)
             {
                 return null;

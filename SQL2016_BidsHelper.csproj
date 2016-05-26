@@ -67,7 +67,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;OUTPUT_LOGGER</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;OUTPUT_LOGGER,SQL2016</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CopyVsixExtensionFiles>False</CopyVsixExtensionFiles>
@@ -82,7 +82,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;SQL2016</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -434,23 +434,17 @@
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\ExpressionListPlugin.cs" />
-    <Compile Include="SSIS\FindReferences.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\FindReferences.Designer.cs">
-      <DependentUpon>FindReferences.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSIS\FindReferencesControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="SSIS\FindReferencesControl.Designer.cs">
-      <DependentUpon>FindReferencesControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="SSIS\FindUnusedVariables.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SSIS\FindUnusedVariables.Designer.cs">
       <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SSIS\FindVariableReferences.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SSIS\FindVariableReferences.Designer.cs">
+      <DependentUpon>FindVariableReferences.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\FindVariables.cs" />
     <Compile Include="SSIS\FixedWidthColumnsForm.cs">
@@ -505,7 +499,6 @@
       <DependentUpon>VariablesMove.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\VariablesWindowPlugin.cs" />
-    <Compile Include="SSIS\VariablesWindowPluginPartial.cs" />
     <Compile Include="SSRS\DatasetScanner.cs" />
     <Compile Include="SSRS\DeleteDatasetCachePlugin.cs" />
     <Compile Include="SSRS\ExpressionInfo.cs" />
@@ -701,7 +694,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.Controls, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+      <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2016\References\Microsoft.DataTransformationServices.Controls.DLL</HintPath>
       <Private>False</Private>
     </Reference>
@@ -734,29 +727,29 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.DlgGrid, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+      <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.DlgGrid.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+      <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.Dts.Design.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SQLServer.DTSPipelineWrap, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+      <SpecificVersion>True</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <HintPath>DLLs\SQL2016\References\Microsoft.SQLServer.DTSPipelineWrap.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.DTSRuntimeWrap, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
+      <SpecificVersion>True</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.DTSRuntimeWrap.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.ExecPackageTaskWrap, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Microsoft.SqlServer.ExecPackageTaskWrap, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.ExecPackageTaskWrap.dll</HintPath>
       <Private>False</Private>
@@ -1067,14 +1060,11 @@
     <EmbeddedResource Include="SSIS\ExpressionListControl.resx">
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\FindReferences.resx">
-      <DependentUpon>FindReferences.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\FindReferencesControl.resx">
-      <DependentUpon>FindReferencesControl.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="SSIS\FindUnusedVariables.resx">
       <DependentUpon>FindUnusedVariables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SSIS\FindVariableReferences.resx">
+      <DependentUpon>FindVariableReferences.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\FixedWidthColumnsForm.resx">
       <DependentUpon>FixedWidthColumnsForm.cs</DependentUpon>
