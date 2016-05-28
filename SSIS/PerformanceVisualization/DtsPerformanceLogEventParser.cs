@@ -18,20 +18,10 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
         private Regex regexBufferSizeTuning = new Regex(@"buffer type (\d+) .+ (\d+) rows in buffers of this type", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private Regex regexCreateBuffer = new Regex(@"CreatePrimeBuffer of type (\d+) for output ID (\d+)");
-
-#if DENALI || SQL2014
         private Regex regexExecutionTreeOutput = new Regex(@"\s+(.+?)\.Outputs\[(.+?)\]\;");
-#else
-        private Regex regexExecutionTreeOutput = new Regex(@"output \"".+?\"" \((\d+)\)");
-#endif
 
-#if KATMAI || DENALI || SQL2014
         private const string EXECUTION_TREE_START_PHRASE = "Begin Path ";
         private const string EXECUTION_TREE_END_PHRASE = "End Path ";
-#else
-        private const string EXECUTION_TREE_START_PHRASE = "begin execution tree ";
-        private const string EXECUTION_TREE_END_PHRASE = "end execution tree ";
-#endif
 
         public DtsPerformanceLogEventParser(Package package)
         {
@@ -195,7 +185,6 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     {
                         Match match = regexExecutionTreeOutput.Match(line);
 
-#if DENALI || SQL2014
                         if (match.Groups.Count == 3)
                         {
                             string sComponent = match.Groups[1].Value;
@@ -208,14 +197,6 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                                 }
                             }
                         }
-#else
-                        if (match.Groups.Count == 2)
-                        {
-                            int iOutputID = int.Parse(match.Groups[1].Value);
-                            if (pipePerf.InputOutputLookup.ContainsKey(iOutputID) && !tree.Paths.Contains(pipePerf.InputOutputLookup[iOutputID]))
-                                tree.Paths.Add(pipePerf.InputOutputLookup[iOutputID]);
-                        }
-#endif
                     }
                 }
             }

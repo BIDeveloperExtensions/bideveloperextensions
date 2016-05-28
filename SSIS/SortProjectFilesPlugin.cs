@@ -1,13 +1,12 @@
-using System;
-using System.Reflection;
-using System.Windows.Forms;
+using BIDSHelper.Core;
 using EnvDTE;
-using EnvDTE80;
 using Microsoft.DataWarehouse.Interfaces;
 using Microsoft.DataWarehouse.Project;
 using Microsoft.DataWarehouse.VsIntegration.Hierarchy;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
-using BIDSHelper.Core;
+using System;
+using System.Reflection;
+using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {
@@ -29,11 +28,6 @@ namespace BIDSHelper.SSIS
             get { return "SortProjectFilesPlugin"; }
         }
 
-        //public override int Bitmap
-        //{
-        //    get { return 0; } //TODO add sort items icon
-        //}
-
         public override string FeatureName
         {
             get { return "Sort by name, persisted"; }
@@ -44,20 +38,6 @@ namespace BIDSHelper.SSIS
             get { return string.Empty; } //not used anywhere
         }
 
-
-        //public override bool AddCommandToMultipleMenus
-        //{
-        //    get { return true; }
-        //}
-
-        //public override string MenuName
-        //{
-        //    get { return "Project Node"; }
-        //}
-
-        /// <summary>
-        ///     Gets the feature category used to organise the plug-in in the enabled features list.
-        /// </summary>
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
@@ -70,11 +50,7 @@ namespace BIDSHelper.SSIS
         /// <value>The description.</value>
         public override string FeatureDescription
         {
-#if KATMAI || DENALI || SQL2014
             get { return "Adds a 'Sort by name, persisted' menu option to the SSIS Packages folder allowing you to easily re-order the packages. Only available for Package deployment model projects."; }
-#else
-            get { return "Adds a 'Sort by name' menu option to the SSIS Packages folder allowing you to easily re-order the packages."; }
-#endif
         }
 
         /// <summary>

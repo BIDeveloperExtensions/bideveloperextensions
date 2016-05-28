@@ -315,18 +315,13 @@ namespace BIDSHelper.SSIS
                             //don't need to monitor the Base Control (leftmost) combo box because changing it will trigger a change to the event handler combo: ((Microsoft.DataWarehouse.Controls.BaseControlComboBox)(viewControl.Controls["panel1"].Controls["panel2"].Controls["Custom ComboBox"]))
                         }
 
-#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        
-#endif                        
 
-#if DENALI || SQL2014
                         foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
                         {
                             if (!(c is Microsoft.DataTransformationServices.Design.EventHandlerElementHost)) continue;
@@ -365,24 +360,16 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        
-#endif
                     }
                     else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.DataFlow)
                     {
-#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        
-#endif
 
-#if DENALI || SQL2014
                         Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox pipelineComboBox = (Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox)(viewControl.Controls["panel1"].Controls["tableLayoutPanel"].Controls["pipelineComboBox"]);
                         if (pipelineComboBox.Tag == null)
                         {
@@ -454,12 +441,8 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        
-#endif
                     }
                 }
-
 
                 //if taking a long time, offer to disable for this package
                 if (dtToDoBuildingStartTime.AddSeconds(MAX_SECONDS_BUILDING_TO_DOS_BEFORE_OFFER_DISABLE) < DateTime.Now && !disableHighlighting.ContainsKey(win))
@@ -990,7 +973,5 @@ namespace BIDSHelper.SSIS
         {
         }
         #endregion
-
-
     }
 }

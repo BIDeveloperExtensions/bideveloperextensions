@@ -114,9 +114,7 @@ namespace BIDSHelper.SSIS
             }
             else
             {
-                #if DENALI || SQL2014
                 Cud.Transaction trans = Cud.BeginTransaction(this.packageForFixButton);
-                #endif
 
                 bool bChanged = false;
                 foreach (Microsoft.SqlServer.Dts.Runtime.Configuration config in this.packageForFixButton.Configurations)
@@ -129,9 +127,7 @@ namespace BIDSHelper.SSIS
                             sb.Append("Configuration ").Append(config.Name).AppendLine(" changed to relative path");
                             bChanged = true;
 
-                            #if DENALI || SQL2014
                             trans.ChangeProperty(config, "ConfigurationString");
-                            #endif
                         }
                     }
                 }
@@ -147,9 +143,7 @@ namespace BIDSHelper.SSIS
                     Control packageConfigurationsGridControl1 = form.Controls["packageConfigurationsGridControl1"];
                     packageConfigurationsGridControl1.GetType().InvokeMember("RefreshConfigurations", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod, null, packageConfigurationsGridControl1, new object[] { });
 
-                    #if DENALI || SQL2014
                     trans.Commit();
-                    #endif
                 }
                 MessageBox.Show(sb.ToString(), "BIDS Helper - Fix Relative Paths");
             }
@@ -289,9 +283,7 @@ namespace BIDSHelper.SSIS
 
                     outputWindow.ReportStatusMessage("Package " + item.Name);
 
-                    #if DENALI || SQL2014
                     Cud.Transaction trans = Cud.BeginTransaction(package);
-                    #endif
 
                     bool bChanged = false;
                     foreach (Microsoft.SqlServer.Dts.Runtime.Configuration config in package.Configurations)
@@ -304,9 +296,7 @@ namespace BIDSHelper.SSIS
                                 outputWindow.ReportStatusMessage("  Configuration " + config.Name + " changed to relative path");
                                 bChanged = true;
 
-                                #if DENALI || SQL2014
                                 trans.ChangeProperty(config, "ConfigurationString");
-                                #endif
                             }
                         }
                     }
@@ -318,9 +308,7 @@ namespace BIDSHelper.SSIS
                             outputWindow.ReportStatusMessage("  Connection " + conn.Name + " changed to relative path");
                             bChanged = true;
 
-                            #if DENALI || SQL2014
                             trans.ChangeProperty(conn, "ConnectionString");
-                            #endif
                         }
                     }
                     if (bChanged)

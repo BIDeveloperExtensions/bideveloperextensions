@@ -78,7 +78,6 @@
 
     }
 
-#if KATMAI || DENALI || SQL2014
     class DataFlowSortPractice : DesignPractice
     {
         public DataFlowSortPractice(string registryPath)
@@ -130,9 +129,7 @@
             }
         }
     }
-#endif
 
-#if KATMAI || DENALI || SQL2014
     class AccessModePractice : DesignPractice
     {
         public AccessModePractice(string registryPath)
@@ -184,7 +181,6 @@
             }
         }
     }
-#endif
 }
 
 

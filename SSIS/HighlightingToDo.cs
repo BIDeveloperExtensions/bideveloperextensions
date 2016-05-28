@@ -626,11 +626,8 @@ namespace BIDSHelper.SSIS
     public class ConnectionManagerHighlightingToDo : HighlightingToDo
     {
         public ConnectionManager connection = null;
-//#if DENALI || SQL2014
         public List<System.Windows.FrameworkElement> listConnectionLVIs = new List<System.Windows.FrameworkElement>();
-//#else
-//        public List<ListViewItem> listConnectionLVIs = new List<ListViewItem>();
-//#endif
+
         public override void Highlight()
         {
             List<string> listConfigPaths;
@@ -687,11 +684,6 @@ namespace BIDSHelper.SSIS
             //the lvwConnMgrs_DrawItem event will take care of painting the connection managers 90% of the time
             //unfortunately we had to use the lvwConnMgrs_DrawItem to catch all the appropriate times we needed to refix the icon
         }
-
-
-#if !DENALI && !SQL2014
-
-#endif
 
         private static bool HasExpression(ConnectionManager connectionManager, List<string> listConfigPaths, out bool HasConfiguration)
         {
