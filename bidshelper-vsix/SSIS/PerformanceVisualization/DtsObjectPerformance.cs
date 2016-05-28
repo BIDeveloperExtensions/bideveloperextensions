@@ -226,13 +226,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 case DataType.DT_TEXT:
                 case DataType.DT_NTEXT:
                     return 24; //don't know length based on metadata so we guess... SSIS buffer tuning may use the same guess???
-#if DENALI || KATMAI || SQL2014
                 case DataType.DT_DBTIME2:
                 case DataType.DT_DBTIMESTAMP2:
                     return 8;
                 case DataType.DT_DBTIMESTAMPOFFSET:
                     return 10;
-#endif
                 default:
                     return 4;
             }

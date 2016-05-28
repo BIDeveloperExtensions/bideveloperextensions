@@ -24,6 +24,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2014")]
 #elif DENALI
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2012")]
+#else
+Unknown SQL Sever version. Add a new clause for AssemblyTitle
 #endif
 
 #if DEBUG

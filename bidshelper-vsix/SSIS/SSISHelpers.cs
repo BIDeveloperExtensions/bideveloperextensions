@@ -27,10 +27,10 @@ namespace BIDSHelper
         // This is only defined in the SQL 2016+ tools, OneDesigner, so it won't be available in older versions
         public enum ProjectTargetVersion
         {
-            LatestSQLServerVersion = 12,
+            LatestSQLServerVersion = 13,
             SQLServer2012 = 11,
             SQLServer2014 = 12,
-            SQLServer2016 = 12
+            SQLServer2016 = 13
         }
 
         public static ProjectTargetVersion? LatestProjectTargetVersion = null;
