@@ -561,13 +561,9 @@ namespace BIDSHelper.SSIS
         /// <returns>true if the project uses the legacy package deployment model; otherwise else false.</returns>
         public static bool IsLegacyDeploymentMode(Project project)
         {
-#if DENALI || SQL2014
             Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
             return IsLegacyDeploymentMode(projectManager);
-#else
-            return true;
-#endif
         }
 
         /// <summary>
@@ -577,7 +573,6 @@ namespace BIDSHelper.SSIS
         /// <returns>true if the project uses the legacy package deployment model; otherwise else false.</returns>
         public static bool IsLegacyDeploymentMode(DataWarehouseProjectManager projectManager)
         {
-#if DENALI || SQL2014
             Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager manager = projectManager as Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager;
             if ((manager != null) && (manager.ObjectModelProject != null))
             {
@@ -588,9 +583,6 @@ namespace BIDSHelper.SSIS
             {
                 return true;
             }
-#else
-            return true;
-#endif
         }
 
         private void LoadFromBidsHelperConfiguration(System.Xml.XmlDocument doc, string sConfigurationName, DtsProjectExtendedConfigurationOptions newOptions)
@@ -673,7 +665,7 @@ namespace BIDSHelper.SSIS
         /// Immediately after closing the project properties dialog, it must be removed as it cannot be serialized with Microsoft's serialization code without causing problems.
         /// </summary>
         [DisplayableByPropertyPage(new Type[] { 
-#if SQL2014
+#if SQL2014 || SQL2016
             typeof(DtsGeneralPropertyPage),
 #endif
             typeof(DataTransformationsBuildPropertyPage), 

@@ -98,10 +98,8 @@ public class DeploymentSettings
         regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\12.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
 #elif DENALI //TODO: make this dynamic depending on the version of VS so that VS2010 and VS2012 both work
         regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\10.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
-#elif KATMAI
-        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\9.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
 #else
-        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\8.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
+        Unknown SQL Sever version. Add a new clause for regKey value
 #endif
         if (regKey == null) return;
         string targetSvr = (string)regKey.GetValue("DefaultTargetServer");

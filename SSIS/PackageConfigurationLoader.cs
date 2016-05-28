@@ -48,10 +48,7 @@ namespace BIDSHelper.SSIS
                 Microsoft.DataTransformationServices.Design.DesignUtils.ParseSqlServerConfigurationString(c.ConfigurationString, out sConnectionManagerName, out sTableName, out sFilter);
 
                 ConnectionManager cm = p.Connections[sConnectionManagerName];
-
-#if DENALI || SQL2014
                 if (cm.OfflineMode) return list.ToArray();
-#endif
 
                 ISessionProperties o = cm.AcquireConnection(null) as ISessionProperties;
                 try
