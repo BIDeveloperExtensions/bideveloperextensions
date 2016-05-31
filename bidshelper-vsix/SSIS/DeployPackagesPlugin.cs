@@ -27,6 +27,7 @@ namespace BIDSHelper.SSIS
         {
             RegisterClassesForCOM();
             CaptureClickEventForProjectPropertiesMenu();
+            CreateContextMenu(CommandList.DeploySsisPackage);
         }
 
         #region Standard Property Overrides

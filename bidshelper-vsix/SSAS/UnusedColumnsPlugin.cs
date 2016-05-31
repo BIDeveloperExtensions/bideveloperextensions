@@ -390,8 +390,29 @@ namespace BIDSHelper.SSAS
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
-                DataSourceView dsv = (DataSourceView)projItem.Object;
-                DsvColumnResult results = DsvHelpers.IterateDsvColumns(dsv);
+                DsvColumnResult results = null;
+                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+                
+                if (sFileName.EndsWith(".bim"))
+                {
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
+#if DENALI || SQL2014
+                    DataSourceViewCollection dsvs = sandbox.Database.DataSourceViews;
+#else
+                    // TODO - need to work with the new sandbox properties for VS2015
+                    DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[sandbox.DatabaseID].DataSourceViews;
+#endif
+                    foreach (DataSourceView o in dsvs)
+                    {
+                        results = DsvHelpers.IterateDsvColumns(o);
+                    }
+                }
+                else
+                {
+                    DataSourceView dsv = (DataSourceView)projItem.Object;
+                    results = DsvHelpers.IterateDsvColumns(dsv);
+                }
+
 
                 ReportViewerForm frm = new ReportViewerForm();
                 frm.ReportBindingSource.DataSource = results.UsedColumns;
