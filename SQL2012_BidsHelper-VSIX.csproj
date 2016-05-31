@@ -414,15 +414,11 @@
       <DependentUpon>ExpressionListControl.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\ExpressionListPlugin.cs" />
-    <Compile Include="SSIS\FindReferences.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="SSIS\FindReferences.cs" />
     <Compile Include="SSIS\FindReferences.Designer.cs">
       <DependentUpon>FindReferences.cs</DependentUpon>
     </Compile>
-    <Compile Include="SSIS\FindReferencesControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="SSIS\FindReferencesControl.cs" />
     <Compile Include="SSIS\FindReferencesControl.Designer.cs">
       <DependentUpon>FindReferencesControl.cs</DependentUpon>
     </Compile>
@@ -495,6 +491,7 @@
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
     <None Include="packages.config" />
+    <None Include="Properties\vsix-compress.props" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -1018,6 +1015,10 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup Label="VsixCompress">
+    <VsixCompressTargets Condition=" '$(VsixCompressTargets)'=='' ">$([System.IO.Path]::GetFullPath( $(MSBuildProjectDirectory)\.\packages\VsixCompress.1.0.1\tools\vsix-compress.targets ))</VsixCompressTargets>
+  </PropertyGroup>
+  <Import Project="$(VsixCompressTargets)" Condition="Exists('$(VsixCompressTargets)')" Label="VsixCompress" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

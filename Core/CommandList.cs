@@ -49,6 +49,7 @@ namespace BIDSHelper.Core
         FixRelativePathsId              = 0x0126,
         DeleteDatasetCacheId            = 0x0127,
         UnusedDatasetsId                = 0x0128,
-        UsedDatasetsId                  = 0x0129
+        UsedDatasetsId                  = 0x0129,
+        DeploySsisPackage               = 0x012A
     }
 }

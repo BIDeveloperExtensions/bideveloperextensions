@@ -37,8 +37,10 @@
             foreach (IDTSPath100 path in mainPipe.PathCollection)
             {
                 string key = PackageHelper.GetComponentKey(path.StartPoint.Component);
-                if (path.StartPoint.SynchronousInputID != 0)
+                if (path.StartPoint.SynchronousInputID != 0)  continue;
+                if (!PackageHelper.ComponentInfos.ContainsKey(key))
                 {
+                    System.Diagnostics.Debug.WriteLine("DataFlowPerformancePractice (43): Key not found '" + key + "'");
                     continue;
                 }
                 if (PackageHelper.ComponentInfos[key].ComponentType != DTSPipelineComponentType.SourceAdapter)
@@ -101,10 +103,15 @@
         private void ProcessDataFlow(MainPipe mainPipe, TaskHost taskHost)
         {
             int sortCount = 0;
+
             foreach (IDTSComponentMetaData100 comp in mainPipe.ComponentMetaDataCollection)
             {
                 string key = PackageHelper.GetComponentKey(comp);
-
+                if (!PackageHelper.ComponentInfos.ContainsKey(key))
+                {
+                    System.Diagnostics.Debug.WriteLine("DataFlowPerformancePractice ProcessDataFlow(113): Key not found '" + key + "'");
+                    continue;
+                }
                 if (PackageHelper.ComponentInfos[key].CreationName == "DTSTransform.Sort.2")
                 {
                     sortCount++;
@@ -155,7 +162,11 @@
             foreach (IDTSComponentMetaData100 comp in mainPipe.ComponentMetaDataCollection)
             {
                 string key = PackageHelper.GetComponentKey(comp);
-
+                if (!PackageHelper.ComponentInfos.ContainsKey(key))
+                {
+                    System.Diagnostics.Debug.WriteLine("DataFlowPerformancePractice (170): Key not found '" + key + "'");
+                    continue;
+                }
                 if (PackageHelper.ComponentInfos[key].Name == "OLE DB Source" ||
                     PackageHelper.ComponentInfos[key].Name == "ADO NET Source" ||
                     PackageHelper.ComponentInfos[key].Name == "Lookup")

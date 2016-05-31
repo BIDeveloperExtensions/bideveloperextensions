@@ -80,6 +80,7 @@ namespace BIDSHelper.Core
         #region Dynamic Command Visibility
         internal bool DisplayCommandInternal(FileInfo file)
         {
+            if (file == null) return false;
             return Extensions.Contains(file.Extension.ToLower());
         }
 
@@ -726,7 +727,7 @@ namespace BIDSHelper.Core
             if (proj == null && hierItem.Object is ProjectItem)
             {
                 ProjectItem pi = (ProjectItem)hierItem.Object;
-                if (((Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.Object) != null)
+                if ((pi.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt) != null)
                 {
                     proj = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.Object;
                 }
@@ -736,7 +737,7 @@ namespace BIDSHelper.Core
                 }
                 else
                 {
-                    proj = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.ContainingProject;
+                    proj = pi.ContainingProject as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
                 }
                 
             }

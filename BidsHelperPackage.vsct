@@ -75,6 +75,11 @@
       <Group guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" priority="0x0001">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
       </Group>
+
+      <Group guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" priority="0x0600">
+        <Parent guid="guidSolutionFolder" id="contextMenuSolutionFolder"/>
+      </Group>
+        
       <Group guid="guidBidsHelperPackageCmdSet" id="mySsisDesignerGroup" priority="0x0600">
         <Parent guid="guidSsisDesignerMenu" id="menuSsisControlFlowItem" />
       </Group>
@@ -143,9 +148,20 @@
         </Strings>
       </Button>
       
+      <Button guid="guidBidsHelperPackageCmdSet" id="TabularActionsEditorId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picTabularActions" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Tabular Actions Editor...</ButtonText>
+        </Strings>
+      </Button>
+        
       <Button guid="guidBidsHelperPackageCmdSet" id="TabularDisplayFoldersId" priority="0x0100" type="Button">
         <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
-        <Icon guid="guidSsasImages" id="picTabularFolers" />
+        <Icon guid="guidSsasImages" id="picTabularFolders" />
         <!-- the 2 lines below set the default visibility-->
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -230,7 +246,7 @@
       </Button>
       
       <Button guid="guidBidsHelperPackageCmdSet" id="DimensionOptimizationReportId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" />
         <Icon guid="guidSsasImages" id="picDimOptimizationReport" />
         <!-- the 2 lines below set the default visibility-->
         <CommandFlag>DefaultInvisible</CommandFlag>
@@ -273,7 +289,7 @@
       </Button>
 
       <Button guid="guidBidsHelperPackageCmdSet" id="DataTypeDiscrepancyCheckId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" />
         <Icon guid="guidSsasImages" id="picDimDataTypeCheck" />
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -312,8 +328,9 @@
         </Strings>
       </Button>
         
+      <!-- Roles folder -->
       <Button guid="guidBidsHelperPackageCmdSet" id="RolesReportPluginId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" />
         <Icon guid="guidSsasImages" id="picRolesReport" />
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -322,6 +339,17 @@
         </Strings>
       </Button>
 
+      <!-- bim file -->
+    <Button guid="guidBidsHelperPackageCmdSet" id="RolesReportPluginId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picRolesReport" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Roles Report...</ButtonText>
+        </Strings>
+      </Button>  
+        
     <Button guid="guidBidsHelperPackageCmdSet" id="UnusedColumnsReportId" priority="0x0100" type="Button">
         <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
         <Icon guid="guidSsasImages" id="picUnusedColumns" />
@@ -355,6 +383,17 @@
       </Button>
 
       <!-- SSIS Buttons -->
+        
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeploySSISPackageId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupTop" />
+        <Icon guid="guidSsisImages" id="picBatchProperties" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Deploy</ButtonText>
+        </Strings>
+      </Button>
         
       <Button guid="guidBidsHelperPackageCmdSet" id="BatchPropertyUpdateId" priority="0x0100" type="Button">
         <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
@@ -556,7 +595,7 @@
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
       <Bitmap guid="guidImages" href="Resources\BIDSHelperIcons.png" usedList="picBlank, picDeployMdxScriptOld, picEditAggs, picPrinterFriendlyDimUsageOld"/>
-      <Bitmap guid="guidSsasImages" href="Resources\ssas-icons.png" usedList="picAggManager, picUsedColumns, picUnusedColumns, picDeleteAggs, picDeleteIndexes, picDeployMdxScript, picDimDataTypeCheck, picDimensionHealthCheck, picDimOptimizationReport, picDuplicateRole, picMeasureGroupHealthCheck, picNonDefaultProperties, picPCDimNaturalize, picPrinterFriendlyDimUsage, picRolesReport, picSmartDiff, picVisualizeAttributeLattice, picSyncDescriptions, picTabularActions, picTabularFolers, picTabularTranslations, picTabularAnnotationWorkaround, picTabularHideMemberIf" />
+      <Bitmap guid="guidSsasImages" href="Resources\ssas-icons.png" usedList="picAggManager, picUsedColumns, picUnusedColumns, picDeleteAggs, picDeleteIndexes, picDeployMdxScript, picDimDataTypeCheck, picDimensionHealthCheck, picDimOptimizationReport, picDuplicateRole, picMeasureGroupHealthCheck, picNonDefaultProperties, picPCDimNaturalize, picPrinterFriendlyDimUsage, picRolesReport, picSmartDiff, picVisualizeAttributeLattice, picSyncDescriptions, picTabularActions, picTabularFolders, picTabularTranslations, picTabularAnnotationWorkaround, picTabularHideMemberIf" />
       <Bitmap guid="guidSsisImages" href="Resources\ssis-icons.png" usedList="picBatchProperties, picBiml, picBimlFile, picBimlCheck, picBimlHelp, picDesignScanner, picSsisDeploy, picExpressionList, picRelativePaths, picSsisPerformance, picNewGuid, picFixedColumns, picSortPackages"  />
     </Bitmaps>
   </Commands>
@@ -568,6 +607,10 @@
       <IDSymbol name="menuSsisConnectionId" value="0x1008"/>
     </GuidSymbol>
     
+    <GuidSymbol name="guidSolutionFolder" value="{FA554DC1-6DD4-11D1-AF71-006097DF568C}">
+      <IDSymbol name="contextMenuSolutionFolder" value="0x0431"/>
+    </GuidSymbol>
+      
     <GuidSymbol name="guidSsisDesignerMenu" value="{96B36E93-F71C-4160-A4EA-26AE801D2F63}">
       <IDSymbol name="menuSsisControlFlowItem" value="0x1003"/>
       <IDSymbol name="menuSsisDataFlowSurface" value="0x1014"/>
@@ -589,6 +632,7 @@
       <IDSymbol name="mySsisDesignerGroup" value="0x1090" />
       <IDSymbol name="mySsisProjectNode" value="0x10A0" />
       <IDSymbol name="myProjectMenuGroupTop" value="0x10B0"/>
+      <IDSymbol name="myMenuFolderGroup" value="0x10C0"/>
       <!-- Button IDs-->
       <IDSymbol name="DeployMdxScriptId" value="0x0100" />
       <IDSymbol name="AggregationManagerId" value="0x0101" />
@@ -632,6 +676,7 @@
       <IDSymbol name="DeleteDatasetCacheId" value="0x0127" />
       <IDSymbol name="UnusedDatasetsId" value="0x0128" />
       <IDSymbol name="UsedDatasetsId" value="0x0129" />
+      <IDSymbol name="DeploySSISPackageId" value="0x012A" />
     </GuidSymbol>
 
     <GuidSymbol name="measureGroupContextMenuGroup" value="{FA554DC1-6DD4-11D1-AF71-006097DF568C}">
@@ -667,7 +712,7 @@
       <IDSymbol name="picVisualizeAttributeLattice" value="17" />
       <IDSymbol name="picSyncDescriptions" value="18" />
       <IDSymbol name="picTabularActions" value="19" />
-      <IDSymbol name="picTabularFolers" value="20" />
+      <IDSymbol name="picTabularFolders" value="20" />
       <IDSymbol name="picTabularTranslations" value="21" />
       <IDSymbol name="picTabularAnnotationWorkaround" value="22" />
       <IDSymbol name="picTabularHideMemberIf" value="23" />
