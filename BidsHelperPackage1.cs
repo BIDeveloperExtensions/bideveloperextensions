@@ -9,6 +9,7 @@ namespace BIDSHelper
     {
         public const string guidBidsHelperPackageString = "d3474f10-475f-4a9d-84f6-85bc892ad3b6";
         public const string guidSsisConnectionMenuString = "96b36e93-f71c-4160-a4ea-26ae801d2f63";
+        public const string guidSolutionFolderString = "fa554dc1-6dd4-11d1-af71-006097df568c";
         public const string guidSsisDesignerMenuString = "96b36e93-f71c-4160-a4ea-26ae801d2f63";
         public const string guidBidsHelperPackageCmdSetString = "bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7";
         public const string measureGroupContextMenuGroupString = "fa554dc1-6dd4-11d1-af71-006097df568c";
@@ -18,6 +19,7 @@ namespace BIDSHelper
         public const string guidSsisImagesString = "feec21bd-6b4e-4eca-9c2f-14772de9478f";
         public static Guid guidBidsHelperPackage = new Guid(guidBidsHelperPackageString);
         public static Guid guidSsisConnectionMenu = new Guid(guidSsisConnectionMenuString);
+        public static Guid guidSolutionFolder = new Guid(guidSolutionFolderString);
         public static Guid guidSsisDesignerMenu = new Guid(guidSsisDesignerMenuString);
         public static Guid guidBidsHelperPackageCmdSet = new Guid(guidBidsHelperPackageCmdSetString);
         public static Guid measureGroupContextMenuGroup = new Guid(measureGroupContextMenuGroupString);
@@ -32,6 +34,7 @@ namespace BIDSHelper
     internal sealed partial class PackageIds
     {
         public const int menuSsisConnectionId = 0x1008;
+        public const int contextMenuSolutionFolder = 0x0431;
         public const int menuSsisControlFlowItem = 0x1003;
         public const int menuSsisDataFlowSurface = 0x1014;
         public const int menuSsisProjectNode = 0x1020;
@@ -46,6 +49,7 @@ namespace BIDSHelper
         public const int mySsisDesignerGroup = 0x1090;
         public const int mySsisProjectNode = 0x10A0;
         public const int myProjectMenuGroupTop = 0x10B0;
+        public const int myMenuFolderGroup = 0x10C0;
         public const int DeployMdxScriptId = 0x0100;
         public const int AggregationManagerId = 0x0101;
         public const int PrinterFriendlyDimensionUsageId = 0x0102;
@@ -88,6 +92,7 @@ namespace BIDSHelper
         public const int DeleteDatasetCacheId = 0x0127;
         public const int UnusedDatasetsId = 0x0128;
         public const int UsedDatasetsId = 0x0129;
+        public const int DeploySSISPackageId = 0x012A;
         public const int measureGroupContextMenu = 0x1220;
         public const int picBlank = 0x0001;
         public const int picDeployMdxScriptOld = 0x0002;
@@ -113,7 +118,7 @@ namespace BIDSHelper
         public const int picVisualizeAttributeLattice = 0x0011;
         public const int picSyncDescriptions = 0x0012;
         public const int picTabularActions = 0x0013;
-        public const int picTabularFolers = 0x0014;
+        public const int picTabularFolders = 0x0014;
         public const int picTabularTranslations = 0x0015;
         public const int picTabularAnnotationWorkaround = 0x0016;
         public const int picTabularHideMemberIf = 0x0017;
