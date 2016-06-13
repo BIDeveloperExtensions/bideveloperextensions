@@ -2,9 +2,9 @@
 using Microsoft.DataWarehouse.Project;
 using Microsoft.SqlServer.Dts.Runtime;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
-    public class SSISHelpers
+    public static class SSISHelpers
     {
 
 #if SQL2016
@@ -25,6 +25,7 @@ namespace BIDSHelper
         }
 
         // This is only defined in the SQL 2016+ tools, OneDesigner, so it won't be available in older versions
+        // Why don't we just re-use Microsoft.SqlServer.Dts.Runtime.DTSTargetServerVersion ? Darren Green
         public enum ProjectTargetVersion
         {
             LatestSQLServerVersion = 13,
@@ -34,6 +35,22 @@ namespace BIDSHelper
         }
 
         public static ProjectTargetVersion? LatestProjectTargetVersion = null;
+
+        public static DTSTargetServerVersion ToSpecificTargetServerVersion(this DTSTargetServerVersion targetServerVersion)
+        {
+            if (targetServerVersion == DTSTargetServerVersion.Latest)
+            {
+#if SQL2016
+                return DTSTargetServerVersion.SQLServer2016;
+#elif SQL2014
+                return DTSTargetServerVersion.SQLServer2014;
+#elif DENALI
+                return DTSTargetServerVersion.SQLServer2012;
+#endif
+            }
+
+            return targetServerVersion;
+        }
 
         public static void MarkPackageDirty(Package package)
         {
