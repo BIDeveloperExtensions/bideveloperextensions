@@ -91,6 +91,9 @@
 
         public override void Check(Package package, EnvDTE.ProjectItem projectItem)
         {
+            // Set target version on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.SetTargetServerVersion(package);
+
             Results.Clear();
             List<TaskHost> pipelines = PackageHelper.GetControlFlowObjects<MainPipe>(package);
             foreach (TaskHost host in pipelines)

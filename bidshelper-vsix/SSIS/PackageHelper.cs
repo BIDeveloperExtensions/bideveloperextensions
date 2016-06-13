@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
     using Microsoft.SqlServer.Dts.Runtime;
-    using System.Runtime.InteropServices;
+    using System.Reflection;
     internal class PackageHelper
     {
         public const string PackageCreationName = "Package";
@@ -13,6 +13,11 @@
         public const string SequenceCreationName = "Sequence";
         public const string ForLoopCreationName = "ForLoop";
         public const string ForEachLoopCreationName = "ForEachLoop";
+
+        /// <summary>
+        /// Private field for the TargetServerVersion property
+        /// </summary>
+        private static DTSTargetServerVersion targetServerVersion;
 
         /// <summary>
         /// Private field for the ComponentInfos property
@@ -81,6 +86,22 @@
             return returnItems;
         }
 
+        public static DTSTargetServerVersion TargetServerVersion
+        {
+            get { return targetServerVersion; }
+            set
+            {
+                if (targetServerVersion.ToSpecificTargetServerVersion() == value.ToSpecificTargetServerVersion())
+                {
+                    return;
+                }
+
+                componentInfos.Clear();
+                controlInfos.Clear();
+                targetServerVersion = value;
+            }
+        }
+
         /// <summary>
         /// Gets the cached collection of Pipeline ComponentInfo objects.
         /// </summary>
@@ -96,6 +117,7 @@
                         if (componentInfos.Count == 0)
                         {
                             Application application = new Application();
+                            application.TargetServerVersion = targetServerVersion;
                             PipelineComponentInfos pipelineComponentInfos = application.PipelineComponentInfos;
 
                             foreach (PipelineComponentInfo pipelineComponentInfo in pipelineComponentInfos)
@@ -136,6 +158,7 @@
                 if (controlInfos.Count == 0)
                 {
                     Application application = new Application();
+                    application.TargetServerVersion = targetServerVersion;
                     TaskInfos taskInfos = application.TaskInfos;
 
                     foreach (TaskInfo taskInfo in taskInfos)
@@ -236,8 +259,6 @@
         {
             string containerKey = container.CreationName;
 
-            string typeName = container.GetType().Name;
-
             if (container is Package)
             {
                 containerKey = PackageHelper.PackageCreationName;
@@ -325,6 +346,27 @@
             }
             return null;
 
+        }
+
+        internal static void SetTargetServerVersion(Package package)
+        {
+            // Get target version of the package, and set on PackageHelper to ensure any ComponentInfos is for the correct info.
+            DTSTargetServerVersion targetServerVersion = (DTSTargetServerVersion)PackageHelper.GetPropertyValue(package, "TargetServerVersion");
+            PackageHelper.TargetServerVersion = targetServerVersion;
+        }
+
+        /// <summary>
+        /// Get property value from an object via reflection.
+        /// </summary>
+        /// <param name="target">The object which hosts the property to get the value of.</param>
+        /// <param name="propertyName">The name of the property to get the value of.</param>
+        /// <returns>The value of the named property from the target object.</returns>
+        internal static object GetPropertyValue(object target, string propertyName)
+        {
+            Type type = target.GetType();
+            PropertyInfo property = type.GetProperty(propertyName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+            object result = property.GetValue(target, null);
+            return result;
         }
     }
 
