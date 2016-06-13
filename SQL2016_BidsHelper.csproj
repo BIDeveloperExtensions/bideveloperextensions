@@ -99,6 +99,7 @@
     <Compile Include="Core\CommandList.cs" />
     <Compile Include="Core\DataGridViewButtonDisableColumn.cs" />
     <Compile Include="Core\DirtyMonitoredDictionary.cs" />
+    <Compile Include="Core\EditorWindowTag.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\Logger\LogLevels.cs" />

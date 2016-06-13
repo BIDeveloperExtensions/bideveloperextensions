@@ -12,7 +12,7 @@ namespace BIDSHelper.SSIS
     using Microsoft.Win32;
     using Microsoft.SqlServer.IntegrationServices.Designer.Model;
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
-
+    using Core;
     public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -245,13 +245,12 @@ namespace BIDSHelper.SSIS
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-                if (win.Tag == null)
+                if (win.SetTagExpressionHighlighterPlugin())
                 {
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                     IComponentChangeService configurationsChangeService = (IComponentChangeService)designer;
                     configurationsChangeService.ComponentChanged += new ComponentChangedEventHandler(configurationsChangeService_ComponentChanged);
                     configurationsChangeService.ComponentAdded += new ComponentEventHandler(configurationsChangeService_ComponentAdded);
-                    win.Tag = true;
                     bRescan = true;
                 }
 
