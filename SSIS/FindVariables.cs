@@ -2,11 +2,12 @@
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
-using Microsoft.SqlServer.Dts.Tasks.ExecuteSQLTask;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
@@ -59,6 +60,9 @@ namespace BIDSHelper.SSIS
 
             List<string> expressions = new List<string>();
             List<string> properties = new List<string>();
+
+            // Set target version on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.SetTargetServerVersion(package);
 
             foreach (Variable variable in variables)
             {
@@ -769,37 +773,40 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecuteSQLTask(TaskHost taskHost, TreeNode parent)
         {
-            var x = SSISHelpers.LatestProjectTargetVersion;
-
-            ExecuteSQLTask task = taskHost.InnerObject as ExecuteSQLTask;
-
             TreeNode parameterBindings = AddFolder("ParameterBindings", parent);
-
-            foreach (IDTSParameterBinding binding in task.ParameterBindings)
-            {
-                string match;
-                string value = binding.DtsVariableName;
-                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
-                {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs();
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
-                    AddNode(parameterBindings, binding.ParameterName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
-                }
-            }
+            EnumerateCollection(taskHost.InnerObject, parameterBindings, "ParameterBindings", "ParameterName");
 
             TreeNode resultSetBindings = AddFolder("ResultSetBindings", parent);
+            EnumerateCollection(taskHost.InnerObject, resultSetBindings, "ResultSetBindings", "ResultName");
 
-            foreach (IDTSResultBinding binding in task.ResultSetBindings)
+            //foreach (IDTSResultBinding binding in task.ResultSetBindings)
+            //{
+            //    string match;
+            //    string value = binding.DtsVariableName;
+            //    if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
+            //    {
+            //        VariableFoundEventArgs info = new VariableFoundEventArgs();
+            //        info.Match = match;
+            //        OnRaiseVariableFound(info);
+            //        AddNode(resultSetBindings, binding.ResultName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
+            //    }
+            //}
+        }
+
+        private void EnumerateCollection(object task, TreeNode parameterBindings, string propertyName, string textProperty)
+        {
+            IEnumerable listObject = PackageHelper.GetPropertyValue(task, propertyName) as IEnumerable;
+
+            foreach (object binding in listObject)
             {
                 string match;
-                string value = binding.DtsVariableName;
+                string value = PackageHelper.GetPropertyValue(binding, "DtsVariableName").ToString();
                 if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
                 {
                     VariableFoundEventArgs info = new VariableFoundEventArgs();
                     info.Match = match;
                     OnRaiseVariableFound(info);
-                    AddNode(resultSetBindings, binding.ResultName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
+                    AddNode(parameterBindings, PackageHelper.GetPropertyValue(binding, textProperty).ToString(), GetImageIndex(IconKeyProperty), binding, true);
                 }
             }
         }

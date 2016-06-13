@@ -10,6 +10,9 @@
 
         public VariablesMove(Package package, string selectedContainerId, int selectedVariablesCount)
         {
+            // Set target version on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.SetTargetServerVersion(package);
+
             this.selectedContainerId = selectedContainerId;
             
             InitializeComponent();

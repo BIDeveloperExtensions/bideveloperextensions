@@ -79,7 +79,7 @@ namespace BIDSHelper.SSIS
 
         private void processPackage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            TreeNode parent = this.treeView.Nodes[0];
+            //TreeNode parent = this.treeView.Nodes[0];
 
 #if DEBUG
             stopwatch.Stop();

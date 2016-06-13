@@ -295,6 +295,9 @@ namespace BIDSHelper.SSIS
 
                 expressionListWindow.StartProgressBar();
 
+                // Set target version on PackageHelper to ensure any ComponentInfos is for the correct info.
+                PackageHelper.SetTargetServerVersion(package);
+
                 IDTSSequence sequence = (IDTSSequence)package;
                 processPackage.RunWorkerAsync(sequence);
             }
