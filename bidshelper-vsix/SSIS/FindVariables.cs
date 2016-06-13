@@ -769,6 +769,8 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecuteSQLTask(TaskHost taskHost, TreeNode parent)
         {
+            var x = SSISHelpers.LatestProjectTargetVersion;
+
             ExecuteSQLTask task = taskHost.InnerObject as ExecuteSQLTask;
 
             TreeNode parameterBindings = AddFolder("ParameterBindings", parent);
