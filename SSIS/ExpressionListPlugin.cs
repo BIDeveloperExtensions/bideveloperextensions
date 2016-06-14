@@ -1,15 +1,13 @@
-using System;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Globalization;
-using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.Win32;
+using System;
+using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Drawing;
-using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
-using Microsoft.DataWarehouse.Controls;
+using System.Globalization;
+using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {

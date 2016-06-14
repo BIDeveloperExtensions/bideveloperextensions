@@ -552,7 +552,6 @@
     <Content Include="DLLs\SQL2016\Reference\Microsoft.SqlServer.IntegrationServices.Design.dll" />
     <Content Include="DLLs\SQL2016\Reference\Microsoft.SqlServer.IntegrationServices.Graph.dll" />
     <Content Include="DLLs\SQL2016\Reference\Microsoft.SqlServer.ManagedDTS.dll" />
-    <Content Include="DLLs\SQL2016\Reference\Microsoft.SqlServer.SQLTask.dll" />
     <Content Include="Resources\2012\DataFlow.ico" />
     <Content Include="Resources\2012\DestinationComponent.ico" />
     <Content Include="Resources\2012\EditVariable.ico" />
@@ -750,10 +749,9 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.ExecPackageTaskWrap, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>True</SpecificVersion>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.ExecPackageTaskWrap.dll</HintPath>
-      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.ExecPackageTaskWrap.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Graph, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
