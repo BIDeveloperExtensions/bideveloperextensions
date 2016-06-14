@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
@@ -773,42 +772,14 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecuteSQLTask(TaskHost taskHost, TreeNode parent)
         {
+            // Use reflection yo examine parameter and result binding collections, so that we avoid a direct reference to the assembly
+            // That causes issues when changing target versions in VS 2015 and SQL 2016 (OneDesigner) tools
+            // Could investigate C# dynamic keyword, but this is tried and tested for now.
             TreeNode parameterBindings = AddFolder("ParameterBindings", parent);
-            EnumerateCollection(taskHost.InnerObject, parameterBindings, "ParameterBindings", "ParameterName");
+            EnumerateCollection(taskHost.InnerObject, parameterBindings, "ParameterBindings", "DtsVariableName", "ParameterName");
 
             TreeNode resultSetBindings = AddFolder("ResultSetBindings", parent);
-            EnumerateCollection(taskHost.InnerObject, resultSetBindings, "ResultSetBindings", "ResultName");
-
-            //foreach (IDTSResultBinding binding in task.ResultSetBindings)
-            //{
-            //    string match;
-            //    string value = binding.DtsVariableName;
-            //    if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
-            //    {
-            //        VariableFoundEventArgs info = new VariableFoundEventArgs();
-            //        info.Match = match;
-            //        OnRaiseVariableFound(info);
-            //        AddNode(resultSetBindings, binding.ResultName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
-            //    }
-            //}
-        }
-
-        private void EnumerateCollection(object task, TreeNode parameterBindings, string propertyName, string textProperty)
-        {
-            IEnumerable listObject = PackageHelper.GetPropertyValue(task, propertyName) as IEnumerable;
-
-            foreach (object binding in listObject)
-            {
-                string match;
-                string value = PackageHelper.GetPropertyValue(binding, "DtsVariableName").ToString();
-                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
-                {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs();
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
-                    AddNode(parameterBindings, PackageHelper.GetPropertyValue(binding, textProperty).ToString(), GetImageIndex(IconKeyProperty), binding, true);
-                }
-            }
+            EnumerateCollection(taskHost.InnerObject, resultSetBindings, "ResultSetBindings", "DtsVariableName", "ResultName");
         }
 
         private void CheckExpressionTask(TaskHost taskHost, TreeNode parent)
@@ -822,16 +793,19 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecutePackageTask(TaskHost taskHost, TreeNode parent)
         {
-            ExecutePackageTask task = taskHost.InnerObject as ExecutePackageTask;
-
             TreeNode parameterAssignments = AddFolder("ParameterAssignments", parent);
 
+            // We have a reference to Microsoft.SqlServer.ExecPackageTaskWrap.dll
+            // Only ever use interfaces which are consistent between versions of SSIS, cannot use reflection because task is native, not managed code.
+            IDTSExecutePackage100 task = taskHost.InnerObject as IDTSExecutePackage100;
+
             // IDTSParameterAssignment doesn't support foreach enumeration, so use for loop instead.
+            // Why? ParameterAssignments -> IDTSParameterAssignments -> IEnumerable
             for (int i = 0; i < task.ParameterAssignments.Count; i++)
             {
                 IDTSParameterAssignment assignment = task.ParameterAssignments[i];
 
-                string match;                
+                string match;
                 string value = assignment.BindedVariableOrParameterName;
                 if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
                 {
@@ -900,6 +874,24 @@ namespace BIDSHelper.SSIS
             if (propertyValue != null)
             {
                 PropertyAsExpressionMatch(property, propertyValue.ToString(), parent);
+            }
+        }
+
+        private void EnumerateCollection(object task, TreeNode parameterBindings, string propertyName, string valueProperty, string textProperty)
+        {
+            IEnumerable listObject = PackageHelper.GetPropertyValue(task, propertyName) as IEnumerable;
+
+            foreach (object binding in listObject)
+            {
+                string match;
+                string value = PackageHelper.GetPropertyValue(binding, valueProperty).ToString();
+                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
+                {
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                    AddNode(parameterBindings, PackageHelper.GetPropertyValue(binding, textProperty).ToString(), GetImageIndex(IconKeyProperty), binding, true);
+                }
             }
         }
 
