@@ -60,13 +60,13 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         {
             get
             {
-                switch (PackageHelper.TargetServerVersion.ToSpecificTargetServerVersion())
+                switch (PackageHelper.TargetServerVersion)
                 {
-                    case DTSTargetServerVersion.SQLServer2012:
+                    case SsisTargetServerVersion.SQLServer2012:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
-                    case DTSTargetServerVersion.SQLServer2014:
+                    case SsisTargetServerVersion.SQLServer2014:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
-                    case DTSTargetServerVersion.SQLServer2016:
+                    case SsisTargetServerVersion.SQLServer2016:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\130\SSIS\Setup\DTSPath";
                     default:
                         throw new Exception("Unknown deployemnt version, DTSPATH_REGISTRY_PATH cannot be determined.");
