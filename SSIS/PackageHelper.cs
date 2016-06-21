@@ -15,11 +15,6 @@
         public const string ForEachLoopCreationName = "ForEachLoop";
 
         /// <summary>
-        /// Private field for the TargetServerVersion property
-        /// </summary>
-        private static DTSTargetServerVersion targetServerVersion;
-
-        /// <summary>
         /// Private field for the ComponentInfos property
         /// </summary>
         private static ComponentInfos componentInfos = new ComponentInfos();
@@ -86,18 +81,46 @@
             return returnItems;
         }
 
-        public static DTSTargetServerVersion TargetServerVersion
+        private static Application application;
+
+        internal static Application Application
+        {
+            get
+            {
+                if (application == null)
+                {
+                    Application application = new Application();
+#if DENALI || SQL2014
+                    // Do nothing
+#else
+                    // SQL2016 or above, set the version
+                    application.TargetServerVersion = targetServerVersion;
+#endif
+                }
+
+                return application;
+            }
+        }
+
+        /// <summary>
+        /// Private field for the TargetServerVersion property
+        /// </summary>
+        private static SsisTargetServerVersion targetServerVersion;
+
+
+        public static SsisTargetServerVersion TargetServerVersion
         {
             get { return targetServerVersion; }
             set
             {
-                if (targetServerVersion.ToSpecificTargetServerVersion() == value.ToSpecificTargetServerVersion())
+                if (targetServerVersion == value)
                 {
                     return;
                 }
 
                 componentInfos.Clear();
                 controlInfos.Clear();
+                application = null;
                 targetServerVersion = value;
             }
         }
@@ -116,9 +139,8 @@
                     {
                         if (componentInfos.Count == 0)
                         {
-                            Application application = new Application();
-                            application.TargetServerVersion = targetServerVersion;
-                            PipelineComponentInfos pipelineComponentInfos = application.PipelineComponentInfos;
+
+                            PipelineComponentInfos pipelineComponentInfos = Application.PipelineComponentInfos;
 
                             foreach (PipelineComponentInfo pipelineComponentInfo in pipelineComponentInfos)
                             {
@@ -157,9 +179,7 @@
             {
                 if (controlInfos.Count == 0)
                 {
-                    Application application = new Application();
-                    application.TargetServerVersion = targetServerVersion;
-                    TaskInfos taskInfos = application.TaskInfos;
+                    TaskInfos taskInfos = Application.TaskInfos;
 
                     foreach (TaskInfo taskInfo in taskInfos)
                     {
