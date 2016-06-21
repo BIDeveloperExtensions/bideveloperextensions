@@ -47,7 +47,7 @@
             // This is a placeholder only, as BIML doesn't support 2016 yet
             // Assume default of 2014 for now.
             SsisVersion version = SsisVersion.Ssis2014;
-            if (SSISHelpers.GetTargetServerVersion(project).ToSpecificTargetServerVersion() == Microsoft.SqlServer.Dts.Runtime.DTSTargetServerVersion.SQLServer2012)
+            if (SSISHelpers.GetTargetServerVersion(project) == SsisTargetServerVersion.SQLServer2012)
             {
                 // Downgrade Biml target version to match project target.
                 version = SsisVersion.Ssis2012;

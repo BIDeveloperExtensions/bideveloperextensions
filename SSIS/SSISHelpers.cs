@@ -4,13 +4,18 @@ using Microsoft.SqlServer.Dts.Runtime;
 
 namespace BIDSHelper.SSIS
 {
+
+    /// <summary>
+    /// BIDSHelper specific target version enumeration. 
+    /// This directly copies values Microsoft.SqlServer.Dts.Runtime.DTSTargetServerVersion
+    /// This allows us to simply cast between the two. 
+    /// "Latest" is not required because it is equal to another value, so when casting a specific version can alwasy be returned instead.
+    /// </summary>
     public enum SsisTargetServerVersion
     {
         SQLServer2012 = 110,
         SQLServer2014 = 120,
         SQLServer2016 = 130
-        //    ,
-        //Latest = 130
     }
 
     public static class SSISHelpers
@@ -33,25 +38,6 @@ namespace BIDSHelper.SSIS
             PackageExplorer = 4
         }
 
-#if SQL2016
-        /// <summary>
-        /// Extension method for DTSTargetServerVersion, that always returns a specific version. 
-        /// This ensures that DTSTargetServerVersion.Latest is translated to whatevere the latest version is, 
-        /// for the current compilation target.
-        /// </summary>
-        /// <param name="targetServerVersion">The DTSTargetServerVersion value.</param>
-        /// <returns>A version specific DTSTargetServerVersion value.</returns>
-        public static DTSTargetServerVersion ToSpecificTargetServerVersion(this DTSTargetServerVersion targetServerVersion)
-        {
-            if (targetServerVersion == DTSTargetServerVersion.Latest)
-            {
-                // In future versions, add conditional compiltion here to ensure correct version is returned for target compilation
-                return DTSTargetServerVersion.SQLServer2016;
-            }
-
-            return targetServerVersion;
-        }
-#endif
         public static void MarkPackageDirty(Package package)
         {
             if (package == null) return;
