@@ -60,13 +60,13 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         {
             get
             {
-                switch (SSISHelpers.LatestProjectTargetVersion)
+                switch (PackageHelper.TargetServerVersion.ToSpecificTargetServerVersion())
                 {
-                    case SSISHelpers.ProjectTargetVersion.SQLServer2012:
+                    case DTSTargetServerVersion.SQLServer2012:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
-                    case SSISHelpers.ProjectTargetVersion.SQLServer2014:
+                    case DTSTargetServerVersion.SQLServer2014:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
-                    case SSISHelpers.ProjectTargetVersion.SQLServer2016:
+                    case DTSTargetServerVersion.SQLServer2016:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\130\SSIS\Setup\DTSPath";
                     default:
                         throw new Exception("Unknown deployemnt version, DTSPATH_REGISTRY_PATH cannot be determined.");
@@ -470,7 +470,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.use64Bit = options.Run64BitRuntime;
 
             // Refreshes cached target version which is needed in GetPathToDtsExecutable below
-            SSISHelpers.ProjectTargetVersion? projectTargetVersion = SSISHelpers.GetProjectTargetVersion(this.projectItem.ContainingProject);
+            PackageHelper.SetTargetServerVersion(projectItem.ContainingProject);
 
             //get path to dtexec
             this.dtexecPath = GetPathToDtsExecutable("dtexec.exe", this.use64Bit);

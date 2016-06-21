@@ -351,8 +351,13 @@
         internal static void SetTargetServerVersion(Package package)
         {
             // Get target version of the package, and set on PackageHelper to ensure any ComponentInfos is for the correct info.
-            DTSTargetServerVersion targetServerVersion = (DTSTargetServerVersion)PackageHelper.GetPropertyValue(package, "TargetServerVersion");
-            PackageHelper.TargetServerVersion = targetServerVersion;
+            PackageHelper.TargetServerVersion = SSISHelpers.GetTargetServerVersion(package);
+        }
+
+        internal static void SetTargetServerVersion(EnvDTE.Project project)
+        {
+            // Get target version of the package, and set on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.TargetServerVersion = SSISHelpers.GetTargetServerVersion(project);
         }
 
         /// <summary>

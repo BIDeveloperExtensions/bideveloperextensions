@@ -24,18 +24,13 @@ namespace BIDSHelper.SSIS
             PackageExplorer = 4
         }
 
-        // This is only defined in the SQL 2016+ tools, OneDesigner, so it won't be available in older versions
-        // Why don't we just re-use Microsoft.SqlServer.Dts.Runtime.DTSTargetServerVersion ? Darren Green
-        public enum ProjectTargetVersion
-        {
-            LatestSQLServerVersion = 13,
-            SQLServer2012 = 11,
-            SQLServer2014 = 12,
-            SQLServer2016 = 13
-        }
-
-        public static ProjectTargetVersion? LatestProjectTargetVersion = null;
-
+        /// <summary>
+        /// Extension method for DTSTargetServerVersion, that always returns a specific version. 
+        /// This ensures that DTSTargetServerVersion.Latest is translated to whatevere the latest version is, 
+        /// for the current compilation target.
+        /// </summary>
+        /// <param name="targetServerVersion">The DTSTargetServerVersion value.</param>
+        /// <returns>A version specific DTSTargetServerVersion value.</returns>
         public static DTSTargetServerVersion ToSpecificTargetServerVersion(this DTSTargetServerVersion targetServerVersion)
         {
             if (targetServerVersion == DTSTargetServerVersion.Latest)
@@ -77,26 +72,30 @@ namespace BIDSHelper.SSIS
         }
 
         /// <summary>
-        /// Will return null if the TargetDeploymentVersion property isn't defined (i.e. we're using an older version of SSDTBI before that was introduced)
+        /// Get the DTSTargetServerVersion of a project. See PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion or actual usage.
         /// </summary>
-        /// <param name="project"></param>
-        /// <returns></returns>
-        public static ProjectTargetVersion? GetProjectTargetVersion(EnvDTE.Project project)
+        /// <param name="project">The project to get the version of</param>
+        /// <returns>The DTSTargetServerVersion of the project specified.</returns>
+        /// <remarks>Do not use directly, see PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion for actual usage.</remarks>
+        internal static DTSTargetServerVersion GetTargetServerVersion(EnvDTE.Project project)
         {
-            try
-            {
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
-                Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
-                Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
-                object oVersion = options.GetType().InvokeMember("TargetDeploymentVersion", System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, options, null);
-                LatestProjectTargetVersion = (ProjectTargetVersion)System.Enum.Parse(typeof(ProjectTargetVersion), oVersion.ToString());
-                return LatestProjectTargetVersion;
-            }
-            catch
-            {
-                LatestProjectTargetVersion = null;
-                return null;
-            }
+            // TODO: If this doesn't work <2016, we can just hardcode, based on conditional compiation
+            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)PackageHelper.GetPropertyValue(settings, "ProjectManager");
+            Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
+            return options.TargetServerVersion;           
+        }
+
+        /// <summary>s
+        /// Get the DTSTargetServerVersion of a package.
+        /// </summary>
+        /// <param name="package">The package to get the version of</param>
+        /// <returns>The DTSTargetServerVersion of the package specified.</returns>
+        /// <remarks>Do not use directly, see PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion for actual usage.</remarks>
+        internal static DTSTargetServerVersion GetTargetServerVersion(Package package)
+        {
+            DTSTargetServerVersion targetServerVersion = (DTSTargetServerVersion)PackageHelper.GetPropertyValue(package, "TargetServerVersion");
+            return targetServerVersion;
         }
 
         internal static DtsContainer FindContainer(DtsContainer component, string objectId)
