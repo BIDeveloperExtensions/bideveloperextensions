@@ -89,12 +89,12 @@
             {
                 if (application == null)
                 {
-                    Application application = new Application();
+                    application = new Application();
 #if DENALI || SQL2014
                     // Do nothing
 #else
                     // SQL2016 or above, set the version
-                    application.TargetServerVersion = targetServerVersion;
+                    application.TargetServerVersion = (DTSTargetServerVersion)targetServerVersion;
 #endif
                 }
 
