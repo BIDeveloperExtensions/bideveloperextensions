@@ -554,14 +554,7 @@ namespace BIDSHelper.SSIS
                         continue;
                     }
 
-
-                    if (PropertyMatch(propertyName, value, out match))
-                    {
-                        VariableFoundEventArgs info = new VariableFoundEventArgs();
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
-                        AddNode(parent, propertyName, GetImageIndex(IconKeyProperty), property, true);
-                    }
+                    PropertyMatch(parent, property, propertyName, value);
                 }
             }
         }
@@ -668,13 +661,7 @@ namespace BIDSHelper.SSIS
                     string value = property.GetValue(provider) as string;
                     if (!string.IsNullOrEmpty(value))
                     {
-                        if (PropertyMatch(propertyName, value, out match))
-                        {
-                            VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
-                            foundArgument.Match = match;
-                            OnRaiseVariableFound(foundArgument);
-                            AddNode(properties, propertyName, GetImageIndex(IconKeyProperty), new DisplayProperty(property, value), true);
-                        }
+                        PropertyMatch(properties, new DisplayProperty(property, value), propertyName, value);
                     }
                 }
                 #endregion
@@ -716,29 +703,33 @@ namespace BIDSHelper.SSIS
             return false;
         }
 
-        private bool PropertyMatch(string propertyName, string value, out string match)
+
+        private void PropertyMatch(TreeNode parent, object property, string propertyName, string value)
         {
+            IEnumerable valueList;
+
+            // If the property value contains a delimited list, we need to split it, e.g Script Task
             if (propertyName == "ReadOnlyVariables" || propertyName == "ReadWriteVariables")
             {
-                // Comma delimited list of variable names, split and then search
-                foreach (string item in value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (PropertyMatchEval(item, out match))
-                    {
-                        return true;
-                    }
-                }
+                // Comma delimited list of variable names, split and then search below
+                valueList = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             }
             else
             {
-                if (PropertyMatchEval(value, out match))
+                valueList = new string[] { value };
+            }
+            
+            foreach (string item in valueList)
+            {
+                string match;
+                if (PropertyMatchEval(item, out match))
                 {
-                    return true;
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                    AddNode(parent, propertyName, GetImageIndex(IconKeyProperty), property, true);
                 }
             }
-
-            match = null;
-            return false;
         }
 
         private bool PropertyMatchEval(string value, out string match)
@@ -979,7 +970,7 @@ namespace BIDSHelper.SSIS
         [Category("Accessors"), Description("Indicates whether the property value is changeable.")]
         public bool Set { get; private set; }
 
-        [Category("General"), Description("THe property value, including the reference.")]
+        [Category("General"), Description("The property value, including the reference.")]
         public object Value { get; private set; }
 
         [Category("General"), Description("The data type of the property value.")]
