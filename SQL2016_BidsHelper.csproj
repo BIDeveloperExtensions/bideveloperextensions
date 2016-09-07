@@ -517,7 +517,10 @@
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BIDSHelper.ico" />
+    <Content Include="BIDSHelper.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="DLLs\SQL2016\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2016\msddsp.dll" />
     <Content Include="DLLs\SQL2016\Reference\Microsoft.AnalysisServices.AppLocal.Core.dll" />

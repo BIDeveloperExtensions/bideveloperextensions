@@ -50,15 +50,17 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelMain.Controls.Add(this.splitContainer);
             this.panelMain.Controls.Add(this.progressBar);
-            this.panelMain.Location = new System.Drawing.Point(12, 12);
+            this.panelMain.Location = new System.Drawing.Point(24, 23);
+            this.panelMain.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.panelMain.Name = "panelMain";
-            this.panelMain.Size = new System.Drawing.Size(863, 390);
+            this.panelMain.Size = new System.Drawing.Size(1726, 750);
             this.panelMain.TabIndex = 2;
             // 
             // splitContainer
             // 
             this.splitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.splitContainer.Name = "splitContainer";
             // 
             // splitContainer.Panel1
@@ -68,8 +70,9 @@
             // splitContainer.Panel2
             // 
             this.splitContainer.Panel2.Controls.Add(this.propertyGrid);
-            this.splitContainer.Size = new System.Drawing.Size(863, 380);
-            this.splitContainer.SplitterDistance = 555;
+            this.splitContainer.Size = new System.Drawing.Size(1726, 731);
+            this.splitContainer.SplitterDistance = 1110;
+            this.splitContainer.SplitterWidth = 8;
             this.splitContainer.TabIndex = 1;
             // 
             // treeView
@@ -78,11 +81,12 @@
             this.treeView.ImageIndex = 0;
             this.treeView.ImageList = this.imageList;
             this.treeView.Location = new System.Drawing.Point(0, 0);
+            this.treeView.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.treeView.Name = "treeView";
             this.treeView.SelectedImageIndex = 0;
-            this.treeView.Size = new System.Drawing.Size(555, 380);
+            this.treeView.Size = new System.Drawing.Size(1110, 731);
             this.treeView.TabIndex = 0;
-            this.treeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseClick);
+            this.treeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
             // 
             // imageList
             // 
@@ -94,17 +98,19 @@
             // 
             this.propertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.propertyGrid.Location = new System.Drawing.Point(0, 0);
+            this.propertyGrid.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(304, 380);
+            this.propertyGrid.Size = new System.Drawing.Size(608, 731);
             this.propertyGrid.TabIndex = 0;
             // 
             // progressBar
             // 
             this.progressBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar.Location = new System.Drawing.Point(0, 380);
+            this.progressBar.Location = new System.Drawing.Point(0, 731);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.progressBar.MarqueeAnimationSpeed = 200;
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(863, 10);
+            this.progressBar.Size = new System.Drawing.Size(1726, 19);
             this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.progressBar.TabIndex = 2;
             // 
@@ -112,9 +118,10 @@
             // 
             this.buttonClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonClose.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonClose.Location = new System.Drawing.Point(786, 421);
+            this.buttonClose.Location = new System.Drawing.Point(1572, 810);
+            this.buttonClose.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.buttonClose.Name = "buttonClose";
-            this.buttonClose.Size = new System.Drawing.Size(89, 23);
+            this.buttonClose.Size = new System.Drawing.Size(178, 44);
             this.buttonClose.TabIndex = 3;
             this.buttonClose.Text = "&Close";
             this.buttonClose.UseVisualStyleBackColor = true;
@@ -122,12 +129,13 @@
             // 
             // FindVariableReferences
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonClose;
-            this.ClientSize = new System.Drawing.Size(887, 456);
+            this.ClientSize = new System.Drawing.Size(1774, 877);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.panelMain);
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "FindVariableReferences";
             this.Text = "Find variable references";
             this.panelMain.ResumeLayout(false);
