@@ -55,6 +55,8 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
+            if (Biml.BimlUtility.ShowDisabledMessage()) return;
+
             if (!BimlUtility.CheckRequiredFrameworkVersion())
             {
                 return;

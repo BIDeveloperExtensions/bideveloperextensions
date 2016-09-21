@@ -1,5 +1,6 @@
 ﻿namespace BIDSHelper.SSIS.Biml
 {
+    using System;
     using System.Collections.Generic;
     using System.Text;
     using EnvDTE;
@@ -9,9 +10,14 @@
     using Varigence.Flow.FlowFramework.Validation;
     using Varigence.Languages.Biml;
     using Varigence.Languages.Biml.Platform;
-    
+
     internal static class BimlUtility
     {
+        private static string bimlDisabledText = "BIML Features are currently unavailable while we wait for Varigence to provide an update to the BimlEngine component.";
+        private static string bimlDisabledCaption = "BIML Features Not Available";
+
+        public static bool IsDisabled { get { return true; } }
+
         public static bool CheckRequiredFrameworkVersion()
         {
             RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5");
@@ -60,6 +66,16 @@
             ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2012, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
 #endif
             return validationReporter;
+        }
+
+        internal static bool ShowDisabledMessage()
+        {
+            if (IsDisabled)
+            {
+                System.Windows.MessageBox.Show(bimlDisabledText, bimlDisabledCaption, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Stop);
+                return true;
+            }
+            return false;
         }
 
         internal static void ProcessValidationReport(IOutputWindow outputWindow, ValidationReporter validationReporter, bool showWarnings)
