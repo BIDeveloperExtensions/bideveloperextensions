@@ -6,13 +6,15 @@ using Microsoft.AnalysisServices;
 using System.Data;
 using System.Windows.Forms;
 using BIDSHelper.Core;
+using BIDSHelper.SSAS;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class TabularTranslationsEditorPlugin : BIDSHelperPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         public const string TRANSLATIONS_ANNOTATION = "BIDS_Helper_Tabular_Translations_Backups";
-        private Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox;
+        //private Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox;
+        private DataModelingSandboxWrapper sandboxWrapper;
         private Cube cube;
 
         #region Standard Plugin Overrides
@@ -80,9 +82,9 @@ namespace BIDSHelper
         {
             try
             {
-
-                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
-                if (sandbox == null) throw new Exception("Can't get Sandbox!");
+                sandboxWrapper = new DataModelingSandboxWrapper(this);
+                //sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
+                if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
 
                 ExecInternal(false);
             }
@@ -100,12 +102,12 @@ namespace BIDSHelper
 #if DENALI || SQL2014
                 cube = sandbox.Cube;
 #else
-                cube = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Cube;
+                cube = sandboxWrapper.GetSandboxAmo().Cube;
 #endif
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
-                SSAS.TabularDisplayFoldersAnnotation annotationSavedFolders = TabularDisplayFolderPlugin.GetAnnotation(sandbox);
-                SSAS.TabularTranslationsAnnotation annotationSaved = GetAnnotation(sandbox); 
+                SSAS.TabularDisplayFoldersAnnotation annotationSavedFolders = TabularDisplayFolderPlugin.GetAnnotation(sandboxWrapper.GetSandbox());
+                SSAS.TabularTranslationsAnnotation annotationSaved = GetAnnotation(sandboxWrapper.GetSandbox()); 
 
                 string sTargetDatabase = null;
                 string sTargetCubeName = null;
@@ -123,9 +125,9 @@ namespace BIDSHelper
                 bool bRestoredDisplayFolders = false;
                 List<SSAS.TabularTranslatedItem> translationRows = new List<BIDSHelper.SSAS.TabularTranslatedItem>();
 
-                Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
-                restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
-                DataSet datasetMeasures = sandbox.AdomdConnection.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
+                var restrictions = new Dictionary<string,string>();
+                restrictions.Add("CUBE_NAME", cube.Name);
+                DataSet datasetMeasures = sandboxWrapper.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
                 DataRowCollection rowsMeasures = datasetMeasures.Tables[0].Rows;
 
                 Database db = cube.Parent;
@@ -358,7 +360,7 @@ namespace BIDSHelper
 #endif
             code = delegate
             {
-                using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction())
+                using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandboxWrapper.GetSandbox().CreateTransaction())
                 {
                     SSAS.TabularTranslationsAnnotation annotation = new SSAS.TabularTranslationsAnnotation();
                     List<SSAS.TabularTranslationObjectAnnotation> annotationsList = new List<SSAS.TabularTranslationObjectAnnotation>();
@@ -369,16 +371,16 @@ namespace BIDSHelper
                     annotation.TabularTranslations = annotationsList.ToArray();
                     TabularHelpers.SaveXmlAnnotation(cube.Parent, TRANSLATIONS_ANNOTATION, annotation);
 
-                    TabularHelpers.EnsureDataSourceCredentials(sandbox);
+                    TabularHelpers.EnsureDataSourceCredentials(sandboxWrapper.GetSandbox());
                     cube.Parent.Update(UpdateOptions.ExpandFull);
 
                     tran.Commit();
                 }
             };
 #if DENALI || SQL2014
-            sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+            sandboxWrapper.GetSandbox().ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
 #else
-            sandbox.ExecuteEngineCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+            sandboxWrapper.GetSandbox().ExecuteEngineCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
 #endif
         }
 
@@ -410,7 +412,7 @@ namespace BIDSHelper
 
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
-            this.sandbox = sandbox;
+            //this.sandbox = sandbox;
             ExecInternal(true);
             return null; //always return null since ExecInternal just handled it
         }

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.IO;
 using BIDSHelper.Core;
+using BIDSHelper.SSAS;
 
 namespace BIDSHelper
 {
