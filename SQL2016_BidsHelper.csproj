@@ -86,6 +86,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BidsHelperPackage.cs" />
@@ -333,6 +335,7 @@
       <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSAS\Tabular\DataModelingSandboxWrapper.cs" />
     <Compile Include="SSAS\Tabular\ERDiagramActionBase.cs" />
     <Compile Include="SSAS\Tabular\ITabularOnPreBuildAnnotationCheck.cs" />
     <Compile Include="SSAS\Tabular\TabularActionsAnnotation.cs" />
@@ -660,6 +663,10 @@
     <Reference Include="Microsoft.AnalysisServices.AppLocal, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.AppLocal.AdomdClient">
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll</HintPath>
+      <Aliases>localAdomdClient</Aliases>
+    </Reference>
     <Reference Include="Microsoft.AnalysisServices.AppLocal.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
@@ -708,6 +715,7 @@
     <Reference Include="Microsoft.DataTransformationServices.VsIntegration">
       <HintPath>DLLs\SQL2016\References\Microsoft.DataTransformationServices.VsIntegration.DLL</HintPath>
       <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.Common, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2016\References\Microsoft.ReportViewer.Common.dll</HintPath>

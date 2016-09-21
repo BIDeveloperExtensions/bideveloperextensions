@@ -8,16 +8,16 @@ using System.Data;
 using BIDSHelper.Core;
 using Microsoft.AnalysisServices.BackEnd;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class TabularDisplayFolderPlugin : BIDSHelperPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         public const string DISPLAY_FOLDER_ANNOTATION = "BIDS_Helper_Tabular_Display_Folder_Backups";
-#if DENALI || SQL2014
+//#if DENALI || SQL2014
         private Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox;
-#else
-        private Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox;
-#endif
+//#else
+//        private Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox;
+//#endif
         private Cube cube;
 
 #region Standard Plugin Overrides
@@ -78,11 +78,13 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-//#if DENALI || SQL2014
-                var _sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
-//#else
-//                sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
-//#endif
+                //#if DENALI || SQL2014
+                //Microsoft.AnalysisServices.BackEnd.DataModelingSandbox _sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
+                var _sandbox = new DataModelingSandboxWrapper(this);
+                //#else
+                //                var _sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
+                //#endif
+                var conn = _sandbox.GetSandbox().AdomdConnection;
 
                 ExecSandbox(_sandbox);
             }
@@ -92,22 +94,23 @@ namespace BIDSHelper
             }
         }
 
-        private void ExecSandbox(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
+        //private void ExecSandbox(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
+        private void ExecSandbox(DataModelingSandboxWrapper sandboxParam)
         {
             try
             {
-#if DENALI || SQL2014
-                sandbox = sandboxParam;
-#else
-                sandbox = (DataModelingSandboxAmo)sandboxParam.Impl;
-#endif
+//#if DENALI || SQL2014
+                sandbox = sandboxParam.GetSandbox();
+//#else
+//                sandbox = sandboxParam.GetSandboxAmo();
+//#endif
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
-                cube = sandbox.Cube;
+                cube = sandboxParam.GetSandboxAmo().Cube;
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
                 bool bRestoreDisplayFolders = false;
-                SSAS.TabularDisplayFoldersAnnotation annotationSaved = GetAnnotation(sandboxParam);
-                if (GetPreBuildWarning(sandboxParam) != null)
+                SSAS.TabularDisplayFoldersAnnotation annotationSaved = GetAnnotation(sandboxParam.GetSandbox());
+                if (GetPreBuildWarning(sandboxParam.GetSandbox()) != null)
                 {
                     if (MessageBox.Show("Some display folders have been blanked out by other editing operations. Restoring display folders may be possible except when a measures or columns have been renamed.\r\n\r\nWould you like BIDS Helper to attempt restore the display folders now?", "BIDS Helper Tabular Display Folders", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
@@ -119,9 +122,10 @@ namespace BIDSHelper
 
                 List<BIDSHelper.SSAS.TabularDisplayFolder> displayFolders = new List<BIDSHelper.SSAS.TabularDisplayFolder>();
 
-                Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
-                restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
-                DataSet datasetMeasures = sandboxParam.AdomdConnection.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
+                Dictionary<string,string> restrictions = new Dictionary<string, string>();
+                restrictions.Add("CUBE_NAME", cube.Name);
+                
+                DataSet datasetMeasures = sandboxParam.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
 
                 Database db = cube.Parent;
                 foreach (Dimension d in db.Dimensions)
@@ -216,7 +220,7 @@ namespace BIDSHelper
 #endif
                         code = delegate
                             {
-                                using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandboxParam.CreateTransaction())
+                                using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandboxParam.GetSandbox().CreateTransaction())
                                 {
                                     foreach (BIDSHelper.SSAS.TabularDisplayFolder folder in displayFolders)
                                     {
@@ -224,7 +228,7 @@ namespace BIDSHelper
                                     }
                                     TabularHelpers.SaveXmlAnnotation(cube.Parent, DISPLAY_FOLDER_ANNOTATION, annotation);
 
-                                    TabularHelpers.EnsureDataSourceCredentials(sandboxParam);
+                                    TabularHelpers.EnsureDataSourceCredentials(sandboxParam.GetSandbox());
                                     cube.Parent.Update(UpdateOptions.ExpandFull);
 
                                     tran.Commit();
@@ -233,7 +237,7 @@ namespace BIDSHelper
 #if DENALI || SQL2014
                         sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
 #else
-                        sandboxParam.ExecuteEngineCode(DataModelingSandbox.OperationType.Update, DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+                        sandboxParam.GetSandbox().ExecuteEngineCode(DataModelingSandbox.OperationType.Update, DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
 #endif
                     }
                 }
@@ -357,8 +361,9 @@ namespace BIDSHelper
 #else
         public void FixPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
+            //TODO - fix this method
             //open the actions form and let it fix actions
-            ExecSandbox(sandbox);
+            //ExecSandbox(sandbox);
         }
 #endif
         #endregion
