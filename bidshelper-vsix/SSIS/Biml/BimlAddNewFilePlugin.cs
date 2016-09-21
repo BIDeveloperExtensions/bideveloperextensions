@@ -69,6 +69,8 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
+            if (Biml.BimlUtility.ShowDisabledMessage()) return;
+
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
             Project project = GetSelectedProjectReference();

@@ -53,6 +53,7 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
+            if (Biml.BimlUtility.ShowDisabledMessage()) return;
             System.Diagnostics.Process.Start(BIDSHelper.Resources.Common.BimlHelpUrl);
         }
     }
