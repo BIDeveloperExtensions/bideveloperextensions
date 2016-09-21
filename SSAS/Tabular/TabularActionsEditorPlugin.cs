@@ -1,9 +1,11 @@
+extern alias localAdomdClient;
+
 using System;
 using EnvDTE;
-using EnvDTE80;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using BIDSHelper.Core;
+using AdomdLocal = localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
 
 namespace BIDSHelper
 {
@@ -105,7 +107,10 @@ namespace BIDSHelper
                 cube = sb.Cube;
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
-                SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, sandboxParam.AdomdConnection);
+                var localConn = sandboxParam.AdomdConnection;
+                var conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(localConn.ConnectionString);
+
+                SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, conn);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
 #if DENALI || SQL2014
