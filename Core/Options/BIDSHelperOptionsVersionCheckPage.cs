@@ -48,7 +48,8 @@ namespace BIDSHelper.Core
                 AssemblyTitleAttribute attribute = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(assembly, typeof(AssemblyTitleAttribute));
                 this.lblTitle.Text = attribute.Title;
 
-                string sBIDSName = "SSDTBI";
+                // Conditionally select name, BIDS vs SSDBI - Retained as suspsect BI will be dropped shortly
+                string bidsName = "SSDTBI";
 
                 if (BIDSHelperPackage.AddInLoadException != null)
                 {
@@ -89,14 +90,14 @@ namespace BIDSHelper.Core
 
                 try
                 {
-                    this.lblSqlVersion.Text = sBIDSName + " " + GetFriendlySqlVersion() + " for Visual Studio " + GetFriendlyVisualStudioVersion() + " was detected";
+                    this.lblSqlVersion.Text = string.Format("{0} {1} ({2}) for Visual Studio {3} was detected", bidsName, VersionInfo.SqlServerFriendlyVersion, VersionInfo.SqlServerVersion, VersionInfo.VisualStudioFriendlyVersion);
                 }
                 catch
                 {
                     //if there's an exception it's because we couldn't find SSDTBI or BIDS installed in this Visual Studio version
                     try
                     {
-                        this.lblSqlVersion.Text = sBIDSName + " for Visual Studio " + GetFriendlyVisualStudioVersion() + " was NOT detected. BIDS Helper disabled.";
+                        this.lblSqlVersion.Text = bidsName + " for Visual Studio " + VersionInfo.VisualStudioFriendlyVersion + " was NOT detected. BIDS Helper disabled.";
                         this.lblSqlVersion.ForeColor = System.Drawing.Color.Red;
                         if (BIDSHelperPackage.AddInLoadException != null && BIDSHelperPackage.AddInLoadException is System.Reflection.ReflectionTypeLoadException)
                         {
@@ -187,52 +188,6 @@ namespace BIDSHelper.Core
             {
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
             }
-        }
-
-        private string GetFriendlyVisualStudioVersion()
-        {
-            //TODO - get version number for VS
-            //if (BIDSHelperPackage.Application.Version.StartsWith("8.")) //YUKON runs here
-            //    return "2005";
-            //else if (BIDSHelperPackage.Application.Version.StartsWith("9.")) //KATMAI runs here
-            //    return "2008";
-            //else if (BIDSHelperPackage.Application.Version.StartsWith("10.")) //DENALI runs here
-            //    return "2010";
-            //else if (BIDSHelperPackage.Application.Version.StartsWith("11.")) //DENALI runs here
-            //    return "2012";
-            //else if (BIDSHelperPackage.Application.Version.StartsWith("12.")) //SQL2014 runs here
-            //    return "2013";
-            //else
-            //    return BIDSHelperPackage.Application.Version; //todo in future
-            return "Unknown";
-        }
-
-        private string GetFriendlySqlVersion()
-        {
-            Assembly assemb = System.Reflection.Assembly.Load("Microsoft.DataWarehouse"); //get a sample assembly that's installed with BIDS and use that to detect if BIDS is installed
-            string sVersion = assemb.GetName().Version.ToString();
-
-            try
-            {
-                //if it's a SQL2008 R2 release, you need to get the informational version attribute
-                //SQL2005 didn't have this attribute
-                AssemblyInformationalVersionAttribute attributeVersion = (AssemblyInformationalVersionAttribute)AssemblyTitleAttribute.GetCustomAttribute(assemb, typeof(AssemblyInformationalVersionAttribute));
-                if (attributeVersion != null) sVersion = attributeVersion.InformationalVersion;
-            }
-            catch { }
-
-            if (sVersion.StartsWith("9."))
-                return "2005";
-            else if (sVersion.StartsWith("10.5"))
-                return "2008 R2";
-            else if (sVersion.StartsWith("10."))
-                return "2008";
-            else if (sVersion.StartsWith("11."))
-                return "2012";
-            else if (sVersion.StartsWith("12."))
-                return "2014";
-            else
-                return sVersion; //todo in future post DENALI and SQL2014
         }
 
         /// <summary>

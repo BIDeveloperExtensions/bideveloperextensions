@@ -1,4 +1,4 @@
-using BidsHelper.Core;
+using BIDSHelper.Core;
 using System;
 using System.Reflection;
 using System.Resources;
