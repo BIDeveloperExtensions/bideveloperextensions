@@ -488,6 +488,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BIDSHelper.snk" />
+    <Content Include="License.rtf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\vsix-compress.props" />
     <None Include="source.extension.vsixmanifest">
@@ -496,6 +500,14 @@
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BIDSHelper.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="BIDSHelperMontage.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="DLLs\SQL2012\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2012\msddsp.dll" />
     <Content Include="Resources\2012\DataFlow.ico" />
