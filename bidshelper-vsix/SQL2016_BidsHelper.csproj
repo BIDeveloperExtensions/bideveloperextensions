@@ -524,6 +524,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="BIDSHelperMontage.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="DLLs\SQL2016\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2016\msddsp.dll" />
     <Content Include="DLLs\SQL2016\Reference\Microsoft.AnalysisServices.AppLocal.Core.dll" />
@@ -570,7 +574,10 @@
     <Content Include="Resources\2012\VariableFindReferences.ico" />
     <Content Include="Resources\2012\VariableFindUnused.ico" />
     <Content Include="Resources\arrowDown.bmp" />
-    <Content Include="Resources\arrowFlat.bmp" />
+    <Content Include="Resources\arrowFlat.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Resources\arrowUp.bmp" />
     <Content Include="Resources\BIDSHelperIcons.png" />
     <Content Include="Resources\Biml.ico" />
