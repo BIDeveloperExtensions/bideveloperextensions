@@ -239,12 +239,14 @@ namespace BIDSHelper.SSAS
             base.OnEnable();
             foreach (Project p in this.ApplicationObject.Solution.Projects)
             {
-                foreach (ProjectItem pi in p.ProjectItems)
+                if (p.ProjectItems != null)
                 {
-                    ConfigureProjectItemExtraProperties(pi);
+                    foreach (ProjectItem pi in p.ProjectItems)
+                    {
+                        ConfigureProjectItemExtraProperties(pi);
+                    }
                 }
             }
-
         }
 
         public override void Exec()
@@ -623,6 +625,4 @@ namespace BIDSHelper.SSAS
             return UITypeEditorEditStyle.Modal;
         }
     }
- 
-
 }

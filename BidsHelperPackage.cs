@@ -11,7 +11,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System.Reflection;
 using BIDSHelper.Core;
-using BidsHelper.Core;
 using BIDSHelper.Core.VsIntegration;
 using System.Linq;
 using Microsoft.VisualStudio;

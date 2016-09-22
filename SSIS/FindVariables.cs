@@ -27,6 +27,7 @@ namespace BIDSHelper.SSIS
         public const string IconKeyVariableExpression = "VariableExpression";
         public const string IconKeyProperty = "Property";
         public const string IconKeyPropertyExpression = "PropertyExpression";
+        public const string IconKeyError = "ErrorIcon";
 
         public event EventHandler<VariableFoundEventArgs> VariableFound;
 
@@ -254,6 +255,7 @@ namespace BIDSHelper.SSIS
             AddImageListItem(IconKeyVariableExpression, SharedIcons.VariableExpressionIcon);
             AddImageListItem(IconKeyProperty, BIDSHelper.Resources.Versioned.Variable);
             AddImageListItem(IconKeyPropertyExpression, SharedIcons.VariableExpressionIcon);
+            AddImageListItem(IconKeyError, SharedIcons.ErrorIcon);
         }
 
         delegate void AddImageListItemCallback(string creationName, Icon image);
@@ -784,11 +786,23 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecutePackageTask(TaskHost taskHost, TreeNode parent)
         {
-            TreeNode parameterAssignments = AddFolder("ParameterAssignments", parent);
-
             // We have a reference to Microsoft.SqlServer.ExecPackageTaskWrap.dll
             // Only ever use interfaces which are consistent between versions of SSIS, cannot use reflection because task is native, not managed code.
             IDTSExecutePackage100 task = taskHost.InnerObject as IDTSExecutePackage100;
+
+            // Potential issue because of multiple version support in SQL Server 2016+. Is the reference to the correct version?
+            if (task == null)
+            {
+                // Task is null following cast to IDTSExecutePackage100, therefore we have the wrong Microsoft.SqlServer.ExecPackageTaskWrap reference
+                // Produce a false found variable for feedback to the UI, else a null referece exception will break the search
+                VariableFoundEventArgs info = new VariableFoundEventArgs();
+                info.Match = "Invalid IDTSExecutePackage100 reference";
+                OnRaiseVariableFound(info);
+                AddNode(parent, info.Match, GetImageIndex(IconKeyError), new DisplayProperty("InvalidIDTSExecutePackage100", info.Match), true);
+                return;
+            }
+
+            TreeNode parameterAssignments = AddFolder("ParameterAssignments", parent);
 
             // IDTSParameterAssignment doesn't support foreach enumeration, so use for loop instead.
             // Why? ParameterAssignments -> IDTSParameterAssignments -> IEnumerable
@@ -952,6 +966,11 @@ namespace BIDSHelper.SSIS
     [DisplayName("Property")]
     public class DisplayProperty
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DisplayProperty"/> wrapper class based on an existing <see cref="DtsProperty"/>.
+        /// </summary>
+        /// <param name="property">The <see cref="DtsProperty"/> to wrap for display.</param>
+        /// <param name="value">The property value.</param>
         public DisplayProperty(DtsProperty property, object value)
         {
             this.Name = property.Name;
@@ -959,6 +978,20 @@ namespace BIDSHelper.SSIS
             this.Type =  PackageHelper.GetTypeFromTypeCode(property.Type);
             this.Get = property.Get;
             this.Set = property.Set;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DisplayProperty"/> wrapper class for infromation purposes, as no valid property is supplied.
+        /// </summary>
+        /// <param name="name">The infromation string used as the property name.</param>
+        /// <param name="value">The information string used as the property value.</param>
+        public DisplayProperty(string name, string value)
+        {
+            this.Name = name;
+            this.Value = value;
+            this.Type = null;
+            this.Get = false;
+            this.Set = false;
         }
 
         [ParenthesizePropertyName(), Browsable(true), Category("General"), Description("The name of the property which contains the reference.")]
