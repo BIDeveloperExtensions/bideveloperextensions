@@ -1,11 +1,13 @@
+#if !DENALI && !SQL2014
 extern alias localAdomdClient;
+#endif
 
 using System;
 using EnvDTE;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using BIDSHelper.Core;
-using AdomdLocal = localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+//using AdomdLocal = localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
 
 namespace BIDSHelper
 {
@@ -18,7 +20,7 @@ namespace BIDSHelper
         public TabularActionsEditorPlugin(BIDSHelperPackage package)
             : base(package)
         {
-            CreateContextMenu(CommandList.TabularActionsEditorId, ".bim");
+            CreateContextMenu(CommandList.TabularActionsEditorId);
         }
 
         public override string ShortName
@@ -98,17 +100,21 @@ namespace BIDSHelper
         {
             try
             {
+
+                
 #if DENALI || SQL2014
                 var sb = sandboxParam;
+                var conn = sandboxParam.AdomdConnection;
 #else
                 var sb = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
+                var localConn = sandboxParam.AdomdConnection;
+                var conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(localConn.ConnectionString);
 #endif
-                if (sandbox == null) throw new Exception("Can't get Sandbox!");
+
+                if (sb == null) throw new Exception("Can't get Sandbox!");
                 cube = sb.Cube;
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
-                var localConn = sandboxParam.AdomdConnection;
-                var conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(localConn.ConnectionString);
 
                 SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, conn);
                 if (form.ShowDialog() == DialogResult.OK)
