@@ -94,7 +94,11 @@ namespace BIDSHelper.SSAS
             }
         }
 
-        //private void ExecSandbox(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
+        private void ExecSandbox(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandboxParam)
+        {
+            var wrap = new DataModelingSandboxWrapper(sandboxParam);
+            ExecSandbox(wrap);
+        }
         private void ExecSandbox(DataModelingSandboxWrapper sandboxParam)
         {
             try

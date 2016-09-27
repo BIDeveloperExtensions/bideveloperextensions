@@ -21,7 +21,7 @@ namespace BIDSHelper.SSAS
         public TabularTranslationsEditorPlugin(BIDSHelperPackage package)
             : base(package)
         {
-            CreateContextMenu(CommandList.TabularTranslationsEditorId, ".bim");
+            CreateContextMenu(CommandList.TabularTranslationsEditorId);
         }
 
         public override string ShortName
@@ -74,7 +74,21 @@ namespace BIDSHelper.SSAS
             get { return "Provides a UI for editing translations of metadata (not data) in Tabular models."; }
         }
 
-        
+        public override bool ShouldDisplayCommand()
+        {
+            if (GetSelectedFile().Extension == ".bim")
+            {
+#if !DENALI && !SQL2014
+                var sb = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
+                if (sb == null) return false;
+                return !sb.IsTabularMetadata;
+#else
+                return true;
+#endif
+            }
+            return false;
+        }
+
         #endregion
 
 
@@ -100,7 +114,7 @@ namespace BIDSHelper.SSAS
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 #if DENALI || SQL2014
-                cube = sandbox.Cube;
+                cube = sandboxWrapper.GetSandboxAmo().Cube;
 #else
                 cube = sandboxWrapper.GetSandboxAmo().Cube;
 #endif

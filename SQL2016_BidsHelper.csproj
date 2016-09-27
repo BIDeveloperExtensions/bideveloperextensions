@@ -512,9 +512,13 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="BIDSHelper.snk" />
+    <Content Include="License.rtf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\vsix-compress.props" />
-    <None Include="source.extension.vsixmanifest">
+    <None Include="Manifest\SQL2016\source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
