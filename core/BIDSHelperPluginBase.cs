@@ -408,6 +408,7 @@ namespace BIDSHelper.Core
         /// <param name="extension">This menu item will only display for files with this extension (eg ".cube")</param>
         public void CreateContextMenu(CommandList commandId, string extension)
         {
+            if (!extension.StartsWith(".")) throw new ArgumentException("the extension argument to CreateContextMenu must start with a period (.)"); 
             Extensions.Add(extension);
             CreateMenu(CommandSet, (int)commandId);
         }

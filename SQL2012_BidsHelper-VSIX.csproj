@@ -47,10 +47,10 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DENALI OUTPUT_LOGGER</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DENALI,OUTPUT_LOGGER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CopyVsixExtensionFiles>True</CopyVsixExtensionFiles>
+    <CopyVsixExtensionFiles>False</CopyVsixExtensionFiles>
     <DeployExtension>False</DeployExtension>
     <CopyVsixExtensionLocation>C:\Users\greendg\AppData\Local\Microsoft\VisualStudio\11.0\Extensions\rdv4kqk3.4rj</CopyVsixExtensionLocation>
     <Prefer32Bit>false</Prefer32Bit>
@@ -313,6 +313,7 @@
       <DependentUpon>SyncDescriptionsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
+    <Compile Include="SSAS\Tabular\DataModelingSandboxWrapper.cs" />
     <Compile Include="SSAS\Tabular\ERDiagramActionBase.cs" />
     <Compile Include="SSAS\Tabular\ITabularOnPreBuildAnnotationCheck.cs" />
     <Compile Include="SSAS\Tabular\TabularActionsAnnotation.cs" />
@@ -494,9 +495,6 @@
     </Content>
     <None Include="packages.config" />
     <None Include="Properties\vsix-compress.props" />
-    <None Include="source.extension.vsixmanifest">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="SSAS\AggManager\Properties\Settings.settings" />
   </ItemGroup>
   <ItemGroup>
@@ -510,6 +508,7 @@
     </Content>
     <Content Include="DLLs\SQL2012\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2012\msddsp.dll" />
+    <None Include="Manifest\SQL2012\source.extension.vsixmanifest" />
     <Content Include="Resources\2012\DataFlow.ico" />
     <Content Include="Resources\2012\DestinationComponent.ico" />
     <Content Include="Resources\2012\EditVariable.ico" />

@@ -1,9 +1,11 @@
-﻿extern alias localAdomdClient;
+﻿#if !DENALI && !SQL2014
+extern alias localAdomdClient;
+using AdomdLocal = localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+#endif
 
 using BIDSHelper.Core;
 using System.Collections.Generic;
 using System.Data;
-using AdomdLocal = localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
 
 namespace BIDSHelper.SSAS
 {
@@ -24,36 +26,61 @@ namespace BIDSHelper.SSAS
         {
             return _sandbox;
         }
+#if DENALI || SQL2014
+        public Microsoft.AnalysisServices.AdomdClient.AdomdConnection GetAdomdConnection()
+        {
+            return _sandbox.AdomdConnection;
+        }
+#else
+        public  AdomdLocal.AdomdConnection GetAdomdConnection()
+        {
+            return _sandbox.AdomdConnection;
+        }
+#endif
 
+#if !DENALI && !SQL2014
         public Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo GetSandboxAmo()
         {
-#if !DENALAI && !SQL2014
+
             if (!_sandbox.IsTabularMetadata)
                 return (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)_sandbox.Impl;
-#endif
+
             return null;
 
         }
+#else
+        public Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetSandboxAmo()
+        {
+            return _sandbox;
+        }
+#endif
 
         public DataSet GetSchemaDataSet(string schemaName, Dictionary<string,string> restrictions )
         {
+
+#if DENALI || SQL2014
+            var res = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
+#else
             var res = new localAdomdClient.Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
-            foreach (string key in restrictions.Keys) {
+#endif
+
+            foreach (string key in restrictions.Keys)
+            {
                 res.Add(key, restrictions[key]);
             }
-
-            System.Guid schemaId = new System.Guid();
-            switch (schemaName)
-            {
-                case "MDSCHEMA_MEMBERS":
-                    schemaId = AdomdLocal.AdomdSchemaGuid.Members;
-                    break;
-                case "MDSCHEMA_MEASURES":
-                    schemaId = AdomdLocal.AdomdSchemaGuid.Measures;
-                    break;
-            }
-            if (schemaId == System.Guid.Empty) throw new System.Exception("Unknown schemaName");
-            return _sandbox.AdomdConnection.GetSchemaDataSet(schemaName, res );// .GetSchemaDataSet(schemaId, restrictions);
+            //System.Guid schemaId = new System.Guid();
+            //switch (schemaName)
+            //{
+            //    case "MDSCHEMA_MEMBERS":
+            //        schemaId = AdomdLocal.AdomdSchemaGuid.Members;
+            //        break;
+            //    case "MDSCHEMA_MEASURES":
+            //        schemaId = AdomdLocal.AdomdSchemaGuid.Measures;
+            //        break;
+            //}
+            //if (schemaId == System.Guid.Empty) throw new System.Exception("Unknown schemaName");
+            
+            return _sandbox.AdomdConnection.GetSchemaDataSet(schemaName, res);
         }
 
     }
