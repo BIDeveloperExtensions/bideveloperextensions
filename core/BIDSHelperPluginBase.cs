@@ -716,8 +716,12 @@ namespace BIDSHelper.Core
                 }
             }
         }
-
         protected Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetSelectedProjectReference()
+        {
+            return GetSelectedProjectReference(false);   
+        }
+
+        protected Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetSelectedProjectReference(bool onlyIfFileNotSelected)
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
@@ -736,7 +740,7 @@ namespace BIDSHelper.Core
                 {
                     proj = pi as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
                 }
-                else
+                else if (!onlyIfFileNotSelected)
                 {
                     proj = pi.ContainingProject as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
                 }

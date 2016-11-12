@@ -383,8 +383,18 @@
       </Button>
 
       <!-- SSIS Buttons -->
-        
-      
+
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeploySSISPackageId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" />
+        <Icon guid="guidSsisImages" id="picBatchProperties" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Deploy</ButtonText>
+        </Strings>
+      </Button>
+
       <Button guid="guidBidsHelperPackageCmdSet" id="DeploySSISPackageId" priority="0x0100" type="Button">
         <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupTop" />
         <Icon guid="guidSsisImages" id="picBatchProperties" />
@@ -394,7 +404,7 @@
           <ButtonText>Deploy</ButtonText>
         </Strings>
       </Button>
-        
+
       <Button guid="guidBidsHelperPackageCmdSet" id="BatchPropertyUpdateId" priority="0x0100" type="Button">
         <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
         <Icon guid="guidSsisImages" id="picBatchProperties" />
