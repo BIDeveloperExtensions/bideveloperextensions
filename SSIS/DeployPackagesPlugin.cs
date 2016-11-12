@@ -27,7 +27,7 @@ namespace BIDSHelper.SSIS
         {
             RegisterClassesForCOM();
             CaptureClickEventForProjectPropertiesMenu();
-            CreateContextMenu(CommandList.DeploySsisPackage);
+            CreateContextMenu(CommandList.DeploySSISPackageId); //don't mark as SSIS project type menu so ShouldDisplayCommand called
         }
 
         #region Standard Property Overrides
@@ -83,7 +83,7 @@ namespace BIDSHelper.SSIS
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 //Project proj = hierItem.Object as Project;
-                Project proj = this.GetSelectedProjectReference();
+                Project proj = this.GetSelectedProjectReference(true); //only return if project node selected
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
@@ -123,7 +123,7 @@ namespace BIDSHelper.SSIS
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project pr = GetSelectedProjectReference();
+                Project pr = GetSelectedProjectReference(true); //only return if project node selected
 
                 bool bJustDeploySelectedPackages = false;
                 System.Collections.Generic.List<Project> projects = new System.Collections.Generic.List<Project>();
@@ -179,6 +179,7 @@ namespace BIDSHelper.SSIS
                         selectedItems = list.ToArray();
                     }
 
+                    PackageHelper.SetTargetServerVersion(proj); //cache the target server version before you use it
                     DeployProject(proj, outputWindow, selectedItems, !bJustDeploySelectedPackages);
                 }
             }

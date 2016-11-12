@@ -50,6 +50,6 @@ namespace BIDSHelper.Core
         DeleteDatasetCacheId            = 0x0127,
         UnusedDatasetsId                = 0x0128,
         UsedDatasetsId                  = 0x0129,
-        DeploySsisPackage               = 0x012A
+        DeploySSISPackageId             = 0x012A
     }
 }
