@@ -209,11 +209,10 @@ namespace BIDSHelper.SSIS
                     doc.Load(sConfigFileName);
                 }
 
-#if SQL2014
+#if SQL2014 || SQL2016
                 //refreshes the cached target version which is needed in GetPathToDtsExecutable below
-                SSISHelpers.ProjectTargetVersion? projectTargetVersion = SSISHelpers.GetProjectTargetVersion(proj);
+                SsisTargetServerVersion? projectTargetVersion = SSISHelpers.GetTargetServerVersion(proj);
 #endif
-
                 IProjectConfiguration config = projectManager.ConfigurationManager.CurrentConfiguration;
                 DtsProjectExtendedConfigurationOptions newOptions = new DtsProjectExtendedConfigurationOptions();
                 LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
@@ -675,7 +674,7 @@ namespace BIDSHelper.SSIS
             typeof(DebugPropertyPage), 
             typeof(DtsProjectExtendedDeployPropertyPage) })]
         public class DtsProjectExtendedConfigurationOptions : DataTransformationsProjectConfigurationOptions
-#if DENALI || SQL2014
+#if DENALI || SQL2014 || SQL2016
             , ICustomTypeDescriptor
 #endif
         {
@@ -836,7 +835,7 @@ namespace BIDSHelper.SSIS
 
 
 
-#if DENALI || SQL2014 //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
+#if DENALI || SQL2014 || SQL2016 //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
 
 #pragma warning disable //disable warning that I'm hiding the GetAttributes method in the base class
             public AttributeCollection GetAttributes()
