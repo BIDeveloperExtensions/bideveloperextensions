@@ -76,7 +76,8 @@ namespace BIDSHelper.SSAS
 
         public override bool ShouldDisplayCommand()
         {
-            if (GetSelectedFile().Extension == ".bim")
+            var selectedFile = GetSelectedFile();
+            if (selectedFile != null && selectedFile.Extension == ".bim")
             {
 #if !DENALI && !SQL2014
                 var sb = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
