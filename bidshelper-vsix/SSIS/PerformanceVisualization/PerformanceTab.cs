@@ -22,7 +22,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager;
         private bool use64Bit;
         private string dtexecPath;
-        private Microsoft.SqlServer.Dts.Runtime.Application ssisApp = new Microsoft.SqlServer.Dts.Runtime.Application();
+        private Microsoft.SqlServer.Dts.Runtime.Application ssisApp = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
         private System.Diagnostics.Process process = null;
         private DtsPerformanceLogEventParser eventParser = null;
         private DtsTextLogFileLoader logFileLoader = null;
@@ -69,7 +69,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     case SsisTargetServerVersion.SQLServer2016:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\130\SSIS\Setup\DTSPath";
                     default:
-                        throw new Exception("Unknown deployemnt version, DTSPATH_REGISTRY_PATH cannot be determined.");
+                        throw new Exception("Unknown deployment version, DTSPATH_REGISTRY_PATH cannot be determined.");
                 }
             }
         }
