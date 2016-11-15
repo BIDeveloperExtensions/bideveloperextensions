@@ -6,7 +6,7 @@
     using Microsoft.SqlServer.Dts.Runtime;
 
     //TODO: Update this to work with 2005
-#if KATMAI || DENALI || SQL2014
+#if !(YUKON)
     class DataFlowAsynchPathsPractice : DesignPractice
     {
         //private ComponentInfos _componentInfos;
