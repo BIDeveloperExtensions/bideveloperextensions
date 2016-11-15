@@ -209,7 +209,7 @@ namespace BIDSHelper.SSIS
                     doc.Load(sConfigFileName);
                 }
 
-#if SQL2014 || SQL2016
+#if !(YUKON || KATMAI || DENALI)
                 //refreshes the cached target version which is needed in GetPathToDtsExecutable below
                 SsisTargetServerVersion? projectTargetVersion = SSISHelpers.GetTargetServerVersion(proj);
 #endif
@@ -666,7 +666,7 @@ namespace BIDSHelper.SSIS
         /// Immediately after closing the project properties dialog, it must be removed as it cannot be serialized with Microsoft's serialization code without causing problems.
         /// </summary>
         [DisplayableByPropertyPage(new Type[] { 
-#if SQL2014 || SQL2016
+#if !(YUKON || KATMAI || DENALI)
             typeof(DtsGeneralPropertyPage),
 #endif
             typeof(DataTransformationsBuildPropertyPage), 
@@ -674,7 +674,7 @@ namespace BIDSHelper.SSIS
             typeof(DebugPropertyPage), 
             typeof(DtsProjectExtendedDeployPropertyPage) })]
         public class DtsProjectExtendedConfigurationOptions : DataTransformationsProjectConfigurationOptions
-#if DENALI || SQL2014 || SQL2016
+#if !(YUKON || KATMAI)
             , ICustomTypeDescriptor
 #endif
         {
@@ -835,7 +835,7 @@ namespace BIDSHelper.SSIS
 
 
 
-#if DENALI || SQL2014 || SQL2016 //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
+#if !(YUKON || KATMAI) //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
 
 #pragma warning disable //disable warning that I'm hiding the GetAttributes method in the base class
             public AttributeCollection GetAttributes()
