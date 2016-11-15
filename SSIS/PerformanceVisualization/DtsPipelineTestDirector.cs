@@ -54,7 +54,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             System.IO.File.Copy(OriginalPackagePath, this._OriginalPackagePath);
             System.IO.File.SetAttributes(this._OriginalPackagePath, System.IO.FileAttributes.Normal);
 
-            this._app = new Application();
+            this._app = PackageHelper.Application; //sets the property TargetServerVersion
         }
 
         //TODO: skip any step which is simply writing one raw file into another raw file
@@ -750,7 +750,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             Variable variable = dataFlowTask.Variables.Add("BIDS_HELPER_ROWCOUNT_" + output.ID, false, "User", (int)0);
 
             IDTSComponentMetaDataXX transform = pipeline.ComponentMetaDataCollection.New();
-            transform.ComponentClassID = "DTSTransform.RowCount";
+#if SQL2016
+            transform.ComponentClassID = "Microsoft.RowCount";
+#else
+            transform.ComponentClassID = "DTSAdapter.RowCount";
+#endif
             CManagedComponentWrapper inst = transform.Instantiate();
             inst.ProvideComponentProperties();
             inst.SetComponentProperty("VariableName", variable.QualifiedName);
@@ -767,7 +771,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private void HookupRawDestination(MainPipe pipeline, IDTSOutputXX output)
         {
             IDTSComponentMetaDataXX rawDestComponent = pipeline.ComponentMetaDataCollection.New();
+#if SQL2016
+            rawDestComponent.ComponentClassID = "Microsoft.RawDestination";
+#else
             rawDestComponent.ComponentClassID = "DTSAdapter.RawDestination";
+#endif
             CManagedComponentWrapper inst = rawDestComponent.Instantiate();
             inst.ProvideComponentProperties();
             inst.SetComponentProperty("FileName", GetRawFilePathForOutput(output));
@@ -785,7 +793,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private static void HookupRawSource(MainPipe pipeline, MainPipe pipelineToReference, IDTSInputXX input, IDTSComponentMetaDataXX componentNextInPath, string sRawFilePath)
         {
             IDTSComponentMetaDataXX rawSourceComponent = pipeline.ComponentMetaDataCollection.New();
+#if SQL2016
+            rawSourceComponent.ComponentClassID = "Microsoft.RawSource";
+#else
             rawSourceComponent.ComponentClassID = "DTSAdapter.RawSource";
+#endif
             CManagedComponentWrapper inst = rawSourceComponent.Instantiate();
             inst.ProvideComponentProperties();
             inst.SetComponentProperty("FileName", sRawFilePath);
@@ -1060,9 +1072,9 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             }
             return matchingExecutable;
         }
-        #endregion
+#endregion
 
-        #region Pipeline Test Helper Classes
+#region Pipeline Test Helper Classes
         public class DtsPipelineComponentTest : IDtsGridRowData
         {
             public DtsPipelineComponentTestType TestType;
@@ -1209,6 +1221,6 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             /// </summary>
             UpstreamOnlyWithoutComponentItself
         }
-        #endregion
+#endregion
     }
 }
