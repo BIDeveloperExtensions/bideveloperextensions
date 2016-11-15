@@ -195,7 +195,7 @@ namespace BIDSHelper.SSIS
                 IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
-                if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
+                if (pi == null || !(pi.Name.ToLower().EndsWith(".dtsx"))) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 if (win == null) // Happens with bad packages and flipping between XML and code, and on save. Not 100% clear, but caused stability issues
                     return;
