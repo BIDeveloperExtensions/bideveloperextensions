@@ -23,21 +23,24 @@ namespace BIDSHelper.SSIS
                 }
 
                 XmlDocument dom = new XmlDocument();
-                if (sConfigurationString.Contains("\\"))
+                if (sConfigurationString != null)
                 {
-                    dom.Load(sConfigurationString);
-                }
-                else
-                {
-                    //if it's a relative file path, then try this directory first, and if it's not there, then try the path relative to the dtsx package
-                    if (System.IO.File.Exists(sVisualStudioRelativePath + sConfigurationString))
-                        dom.Load(sVisualStudioRelativePath + sConfigurationString);
-                    else
+                    if (sConfigurationString.Contains("\\"))
+                    {
                         dom.Load(sConfigurationString);
-                }
-                foreach (XmlNode node in dom.GetElementsByTagName("Configuration"))
-                {
-                    list.Add(new PackageConfigurationSetting(node.Attributes["Path"].Value, node.SelectSingleNode("ConfiguredValue").InnerText));
+                    }
+                    else
+                    {
+                        //if it's a relative file path, then try this directory first, and if it's not there, then try the path relative to the dtsx package
+                        if (System.IO.File.Exists(sVisualStudioRelativePath + sConfigurationString))
+                            dom.Load(sVisualStudioRelativePath + sConfigurationString);
+                        else
+                            dom.Load(sConfigurationString);
+                    }
+                    foreach (XmlNode node in dom.GetElementsByTagName("Configuration"))
+                    {
+                        list.Add(new PackageConfigurationSetting(node.Attributes["Path"].Value, node.SelectSingleNode("ConfiguredValue").InnerText));
+                    }
                 }
             }
             else if (c.ConfigurationType == DTSConfigurationType.SqlServer && !bOfflineMode) //not when in offline mode
