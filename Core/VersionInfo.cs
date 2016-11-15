@@ -88,8 +88,10 @@ namespace BIDSHelper.Core
                 {
                     if (sqlServerVersion == null)
                     {
+                        //TODO: maybe read the proper SSDT version number from the registry here? HKEY_CURRENT_USER\SOFTWARE\Microsoft\VisualStudio\14.0_Config\InstalledProducts\Microsoft SQL Server Data Tools
+
                         // Get a sample assembly that's installed with BIDS and use that to detect if BIDS is installed
-                        Assembly assembly = Assembly.Load("Microsoft.DataWarehouse"); 
+                        Assembly assembly = Assembly.Load("Microsoft.DataWarehouse");
 
                         AssemblyInformationalVersionAttribute attributeVersion = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(assembly, typeof(AssemblyInformationalVersionAttribute));
                         if (attributeVersion != null)
@@ -111,28 +113,22 @@ namespace BIDSHelper.Core
         {
             get
             {
-                switch (VisualStudioVersion.Major)
-                {
-                    case 9:
-                        return "2005";
-                    case 10:
-                        if (VisualStudioVersion.Minor == 5)
-                        {
-                            return "2008 R2";
-                        }
-                        else
-                        {
-                            return "2008";
-                        }
-                    case 11:
-                        return "2012";
-                    case 12:
-                        return "2014";
-                    case 13:
-                        return "2016";
-                    default:
-                        return string.Format("(SQL Unknown {0})", VisualStudioVersion.ToString());
-                }
+                string sVersion = SqlServerVersion.ToString();
+
+                if (sVersion.StartsWith("9."))
+                    return "2005";
+                else if (sVersion.StartsWith("10.5"))
+                    return "2008 R2";
+                else if (sVersion.StartsWith("10."))
+                    return "2008";
+                else if (sVersion.StartsWith("11."))
+                    return "2012";
+                else if (sVersion.StartsWith("12."))
+                    return "2014";
+                else if (sVersion.StartsWith("13."))
+                    return "2016";
+                else
+                    return string.Format("(SQL Unknown {0})", sVersion);
             }
         }
 
