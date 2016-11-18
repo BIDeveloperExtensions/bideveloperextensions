@@ -137,7 +137,7 @@ namespace BIDSHelper
             DataSource dataSource = d.DataSource;
 
             ColumnBinding colDimensionKey = null;
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
             if (d.KeyAttribute.KeyColumns[0].Source is RowNumberBinding)
             {
                 foreach (DimensionAttribute a in d.Attributes)
@@ -285,7 +285,7 @@ namespace BIDSHelper
                     {
                         ColumnBinding col = null;
 
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
                         if (a.Type == AttributeType.RowNumber)
                         {
                             continue;
