@@ -157,6 +157,7 @@ namespace AggManager
                             this.aggD = aggD;
                             tester = new AggregationPerformanceTester(aggD, chkTestAgg.Checked, chkTestNoAggs.Checked, chkWithoutIndividualAggs.Checked);
                             tester.OnProgress += new ProgressChangedEventHandler(tester_OnProgress);
+                            tester.form = this;
                             tester.StartTest();
                             listPerf.AddRange(tester.Results);
                             missingPerf.AddRange(tester.MissingResults);
@@ -182,6 +183,7 @@ namespace AggManager
                 {
                     tester = new AggregationPerformanceTester(this.aggD, chkTestAgg.Checked, chkTestNoAggs.Checked, chkWithoutIndividualAggs.Checked);
                     tester.OnProgress += new ProgressChangedEventHandler(tester_OnProgress);
+                    tester.form = this;
                     tester.StartTest();
                     listPerf.AddRange(tester.Results);
                     missingPerf.AddRange(tester.MissingResults);
