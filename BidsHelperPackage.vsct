@@ -252,7 +252,7 @@
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>Dimension Optimzation Report...</ButtonText>
+          <ButtonText>Dimension Optimization Report...</ButtonText>
         </Strings>
       </Button>
         
