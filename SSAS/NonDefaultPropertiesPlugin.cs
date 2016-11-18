@@ -160,7 +160,7 @@ namespace BIDSHelper.SSAS
                             {
                                 int iProgress = 0;
                                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
-                                Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                                Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
                                 foreach (ProjectItem pi in p.ProjectItems)
                                 {
                                     ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, p.ProjectItems.Count);
@@ -207,7 +207,7 @@ namespace BIDSHelper.SSAS
                                 if (projExt.Kind == BIDSProjectKinds.SSIS)
                                 {
                                     int iProgress = 0;
-                                    Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                                    Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion;
                                     foreach (ProjectItem pi in proj.ProjectItems)
                                     {
                                         ApplicationObject.StatusBar.Progress(true, "Scanning project " + proj.Name + " package " + pi.Name, iProgress++, proj.ProjectItems.Count);
@@ -348,7 +348,7 @@ namespace BIDSHelper.SSAS
             }
             else
             {
-                Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
                 return app.LoadPackage(pi.get_FileNames(0), null);
             }
         }
