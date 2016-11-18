@@ -83,7 +83,16 @@ namespace BIDSHelper.SSAS
                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationDeploy);
                 ApplicationObject.StatusBar.Progress(true, "Fixing Attribute Relationship Names...", 0, d.Attributes.Count);
 
-                FixAttributeRelationshipNames(d);
+                bool bAttributesChanged = FixAttributeRelationshipNames(d);
+
+                if (bAttributesChanged)
+                {
+                    EnvDTE.Window w = projItem.Open(BIDSViewKinds.Designer); //opens the designer
+                    System.ComponentModel.Design.IDesignerHost designer = (System.ComponentModel.Design.IDesignerHost)w.Object;
+                    System.ComponentModel.Design.IComponentChangeService changesvc = (System.ComponentModel.Design.IComponentChangeService)designer.GetService(typeof(System.ComponentModel.Design.IComponentChangeService));
+
+                    changesvc.OnComponentChanged(d, null, null, null); //marks the cube designer as dirty
+                }
 
             }
             catch (Exception ex)
@@ -97,20 +106,23 @@ namespace BIDSHelper.SSAS
             }
         }
 
-        private void FixAttributeRelationshipNames(Dimension dimension)
+        private bool FixAttributeRelationshipNames(Dimension dimension)
         {
             int attribCount = dimension.Attributes.Count;
             int iAttrib = 0;
+            bool bAttributesChanged = false;
             foreach (DimensionAttribute attribute in dimension.Attributes)
             {
                 iAttrib++;
                 foreach (AttributeRelationship attribRel in attribute.AttributeRelationships)
                 {
-                    attribRel.Name = attribRel.AttributeID;
+                    if (attribRel.Name != attribRel.Attribute.Name) bAttributesChanged = true;
+                    attribRel.Name = attribRel.Attribute.Name;
                 }
-                ApplicationObject.StatusBar.Progress(true, "Fixing Attribute Relationship Names...", iAttrib, attribCount);   
+                ApplicationObject.StatusBar.Progress(true, "Fixing Attribute Relationship Names...", iAttrib, attribCount);
             }
+            return bAttributesChanged;
         }
-       
+
     }
 }
