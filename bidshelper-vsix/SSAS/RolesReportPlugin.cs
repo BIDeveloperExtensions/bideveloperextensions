@@ -1065,7 +1065,7 @@ namespace BIDSHelper.SSAS
             {
                 get
                 {
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
                     try //Tabular
                     {
                         if (dimensionAttribute == null)
@@ -1250,7 +1250,7 @@ namespace BIDSHelper.SSAS
                     {
                         MiningStructurePermission perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
                         if (perm == null) return "None";
-#if KATMAI || DENALI || SQL2014
+#if !(YUKON)
                         return perm.AllowDrillThrough ? "Drillthrough" : "None";
 #else
                         return "None";
