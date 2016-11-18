@@ -99,6 +99,7 @@ namespace BIDSHelper.SSIS
                 }
                 else
                 {
+                    if (!(hierItem.Object is ProjectItem)) return false;
                     proj = ((ProjectItem)hierItem.Object).ContainingProject;
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
                     return (sFileName.EndsWith(".dtsx") && IsLegacyDeploymentMode(proj));
@@ -109,6 +110,7 @@ namespace BIDSHelper.SSIS
                 foreach (object selected in ((System.Array)solExplorer.SelectedItems))
                 {
                     UIHierarchyItem hierItem = (UIHierarchyItem)selected;
+                    if (!(hierItem.Object is ProjectItem)) return false;
                     Project proj = ((ProjectItem)hierItem.Object).ContainingProject;
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
                     if (!sFileName.EndsWith(".dtsx") || !IsLegacyDeploymentMode(proj)) return false;
