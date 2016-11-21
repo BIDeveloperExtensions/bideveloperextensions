@@ -125,6 +125,19 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
 
+#if SQL2016
+                if (projItem.Name.ToLower().EndsWith(".bim"))
+                {
+                    var sandboxWrapper = new BIDSHelper.SSAS.DataModelingSandboxWrapper(this);
+                    if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
+                    if (sandboxWrapper.GetSandbox().IsTabularMetadata)
+                    {
+                        System.Windows.Forms.MessageBox.Show("BIDS Helper Smart Diff is not supported for 1200 compatibility level models yet.", "BIDS Helper Smart Diff");
+                        return;
+                    }
+                }
+#endif
+
                 SourceControl2 oSourceControl = ((SourceControl2)this.ApplicationObject.SourceControl);
                 string sProvider = "";
                 string sSourceControlServerName = "";
