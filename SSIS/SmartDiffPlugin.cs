@@ -125,7 +125,7 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
 
-#if SQL2016
+#if !(YUKON || KATMAI || DENALI || SQL2014)
                 if (projItem.Name.ToLower().EndsWith(".bim"))
                 {
                     var sandboxWrapper = new BIDSHelper.SSAS.DataModelingSandboxWrapper(this);
