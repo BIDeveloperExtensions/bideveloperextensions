@@ -51,7 +51,7 @@ namespace BIDSHelper
             GetVSHostManager(project, openIfNotOpen); //just to force the window open if not open
             return ((Microsoft.VisualStudio.Project.ProjectNode)((project.ContainingProject).Object)).Site;
         }
-//#if DENALI || SQL2014
+        //#if DENALI || SQL2014
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(Core.BIDSHelperPluginBase plugin, bool openIfNotOpen)
         {
             UIHierarchy solExplorer = plugin.ApplicationObject.ToolWindows.SolutionExplorer;
@@ -59,14 +59,31 @@ namespace BIDSHelper
                 return null;
 
             UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            if (!(hierItem.Object is ProjectItem)) return null;
-            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            string sFileName = "";
+            if (hierItem.Object is ProjectItem)
+            {
+                sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            }
+
             if (sFileName.EndsWith(".bim"))
             {
                 Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
                 if (host == null) return null;
 
                 return host.Sandbox;
+            }
+            else
+            {
+                foreach (UIHierarchyItem hierItem2 in VisualStudioHelpers.GetAllItemsFromSolutionExplorer(plugin.ApplicationObject.ToolWindows.SolutionExplorer))
+                {
+                    if (hierItem2.Name != null && hierItem2.Name.ToLower().EndsWith(".bim"))
+                    {
+                        Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem2, openIfNotOpen);
+                        if (host == null) return null;
+
+                        return host.Sandbox;
+                    }
+                }
             }
             return null;
         }
@@ -251,13 +268,16 @@ namespace BIDSHelper
 
             foreach (DataSource ds in db.DataSources)
             {
-                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))
+                if (ds.ConnectionString != "Provider=None") //for pushed data source (pasted data) skip
                 {
-                    return false;
-                }
-                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPromptForImpersonation(null, sandbox, ds.ID, null))
-                {
-                    return false;
+                    if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))
+                    {
+                        return false;
+                    }
+                    if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPromptForImpersonation(null, sandbox, ds.ID, null))
+                    {
+                        return false;
+                    }
                 }
             }
             return true;
