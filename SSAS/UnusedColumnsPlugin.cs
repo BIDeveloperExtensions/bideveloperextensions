@@ -271,6 +271,7 @@ namespace BIDSHelper.SSAS
             private DataSourceView m_dsv;
             private string m_usageType;
             private string m_usageObjectName;
+            private Microsoft.AnalysisServices.BackEnd.DataModelingColumn m_tomColumn;
             public UsedColumn(DataItem di, ColumnBinding column, DataSourceView dsv, string usageType, string usageObjectName)
             {
                 m_dataItem = di;
@@ -279,25 +280,37 @@ namespace BIDSHelper.SSAS
                 m_usageType = usageType;
                 m_usageObjectName = usageObjectName;
             }
+            public UsedColumn(Microsoft.AnalysisServices.BackEnd.DataModelingColumn column)
+            {
+                m_tomColumn = column;
+                m_usageType = "Column";
+            }
 
             public string TableName
             {
                 get
                 {
-                    if (m_dsv.Schema.Tables[m_column.TableID] != null)
+                    if (m_tomColumn != null)
                     {
-                        if (m_dsv.Schema.Tables[m_column.TableID].ExtendedProperties.ContainsKey("FriendlyName"))
-                        {
-                            return m_dsv.Schema.Tables[m_column.TableID].ExtendedProperties["FriendlyName"].ToString();
-                        }
-                        else
-                        {
-                            return m_dsv.Schema.Tables[m_column.TableID].TableName;
-                        }
+                        return m_tomColumn.DBTableName;
                     }
                     else
                     {
-                        return m_column.TableID;
+                        if (m_dsv.Schema.Tables[m_column.TableID] != null)
+                        {
+                            if (m_dsv.Schema.Tables[m_column.TableID].ExtendedProperties.ContainsKey("FriendlyName"))
+                            {
+                                return m_dsv.Schema.Tables[m_column.TableID].ExtendedProperties["FriendlyName"].ToString();
+                            }
+                            else
+                            {
+                                return m_dsv.Schema.Tables[m_column.TableID].TableName;
+                            }
+                        }
+                        else
+                        {
+                            return m_column.TableID;
+                        }
                     }
                 }
             }
@@ -306,14 +319,19 @@ namespace BIDSHelper.SSAS
             {
                 get
                 {
-                    return (m_dsv.Schema.Tables[m_column.TableID] == null || m_dsv.Schema.Tables[m_column.TableID].Columns[m_column.ColumnID] == null);
+                    if (m_tomColumn != null)
+                        return false;
+                    else
+                        return (m_dsv.Schema.Tables[m_column.TableID] == null || m_dsv.Schema.Tables[m_column.TableID].Columns[m_column.ColumnID] == null);
                 }
             }
 
             public string ColumnName
             {
                 get {
-                    if (IsInvalidBinding)
+                    if (m_tomColumn != null)
+                        return m_tomColumn.DBColumnName;
+                    else if (IsInvalidBinding)
                         return m_column.ColumnID;
                     else
                         return m_dsv.Schema.Tables[m_column.TableID].Columns[m_column.ColumnID].ColumnName;
@@ -324,7 +342,9 @@ namespace BIDSHelper.SSAS
             {
                 get
                 {
-                    if (IsInvalidBinding)
+                    if (m_tomColumn != null)
+                        return Microsoft.AnalysisServices.OleDbTypeConverter.Convert(m_tomColumn.DataType).Name;
+                    else if (IsInvalidBinding)
                         return null;
                     else
                         return m_dsv.Schema.Tables[m_column.TableID].Columns[m_column.ColumnID].DataType.Name;
@@ -333,27 +353,58 @@ namespace BIDSHelper.SSAS
 
             public string BindingDataTypeName
             {
-                get { return m_dataItem.DataType.ToString(); }
+                get
+                {
+                    if (m_tomColumn != null)
+                        return string.Empty;
+                    else
+                        return m_dataItem.DataType.ToString();
+                }
             }
 
             public string dsvName
             {
-                get { return m_dsv.Name; }
+                get
+                {
+                    if (m_tomColumn != null)
+                        return string.Empty;
+                    else
+                        return m_dsv.Name;
+                }
             }
 
             public string DatabaseName
             {
-                get { return m_dsv.Parent.Name; }
+                get
+                {
+                    if (m_tomColumn != null)
+                        return m_tomColumn.Table.Sandbox.DatabaseName;
+                    else
+                        return m_dsv.Parent.Name;
+                }
             }
 
             public string UsageType
             {
-                get { return m_usageType; }
+                get {
+                    return m_usageType;
+                }
             }
 
             public string UsageObjectName
             {
-                get { return m_usageObjectName; }
+                get
+                {
+                    if (m_tomColumn != null)
+                    {
+                        if (m_tomColumn.Table.Name.Contains(" "))
+                            return "'" + m_tomColumn.Table.Name + "'[" + m_tomColumn.Name + "]";
+                        else
+                            return m_tomColumn.Table.Name + "[" + m_tomColumn.Name + "]";
+                    }
+                    else
+                        return m_usageObjectName;
+                }
             }
         }
     }
@@ -450,14 +501,36 @@ namespace BIDSHelper.SSAS
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
 #if DENALI || SQL2014
                     DataSourceViewCollection dsvs = sandbox.Database.DataSourceViews;
-#else
-                    // TODO - need to work with the new sandbox properties for VS2015
-                    DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[sandbox.DatabaseID].DataSourceViews;
-#endif
                     foreach (DataSourceView o in dsvs)
                     {
                         results = DsvHelpers.IterateDsvColumns(o);
                     }
+#else
+                    if (sandbox.IsTabularMetadata)
+                    {
+                        Microsoft.AnalysisServices.BackEnd.EditMappingUtility util = new Microsoft.AnalysisServices.BackEnd.EditMappingUtility(sandbox);
+                        results = new DsvColumnResult(null);
+
+                        foreach (Microsoft.AnalysisServices.BackEnd.DataModelingTable table in sandbox.Tables)
+                        {
+                            if (table.IsCalculated || table.IsPushedData) continue;
+
+                            foreach (Microsoft.AnalysisServices.BackEnd.DataModelingColumn col in table.Columns)
+                            {
+                                if (col.IsRowNumber || col.IsCalculated) continue;
+                                results.UsedColumns.Add(new UnusedColumnsPlugin.UsedColumn(col));
+                            }
+                        }
+                    }
+                    else //AMO Tabular
+                    {
+                        DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[sandbox.DatabaseID].DataSourceViews;
+                        foreach (DataSourceView o in dsvs)
+                        {
+                            results = DsvHelpers.IterateDsvColumns(o);
+                        }
+                    }
+#endif
                 }
                 else
                 {
