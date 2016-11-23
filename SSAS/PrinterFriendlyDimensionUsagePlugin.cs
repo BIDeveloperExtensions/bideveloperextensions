@@ -118,7 +118,7 @@ namespace BIDSHelper.SSAS
 #else
                     sandbox = new DataModelingSandboxWrapper(this);
                     //sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
-                    cub = sandbox.Cube;
+                    //cub = sandbox.Cube;
                     bIsTabular = true;
                     //Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Cube.AllMeasures;
 #endif
@@ -180,7 +180,7 @@ namespace BIDSHelper.SSAS
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
     }
