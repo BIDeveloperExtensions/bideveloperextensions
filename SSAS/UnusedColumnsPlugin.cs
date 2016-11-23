@@ -119,14 +119,62 @@ namespace BIDSHelper.SSAS
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
 #if DENALI || SQL2014
                     DataSourceViewCollection dsvs = sandbox.Database.DataSourceViews;
-#else
-                    // TODO - need to work with the new sandbox properties for VS2015
-                    DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[sandbox.DatabaseID].DataSourceViews;
-#endif
                     foreach (DataSourceView o in dsvs)
                     {
                         results = DsvHelpers.IterateDsvColumns(o);
                     }
+#else
+                    if (sandbox.IsTabularMetadata)
+                    {
+                        Microsoft.AnalysisServices.BackEnd.EditMappingUtility util = new Microsoft.AnalysisServices.BackEnd.EditMappingUtility(sandbox);
+                        results = new DsvColumnResult(null);
+                        TabularHelpers.EnsureDataSourceCredentials(sandbox);
+
+                        foreach (Microsoft.AnalysisServices.BackEnd.DataModelingTable table in sandbox.Tables)
+                        {
+                            if (table.IsCalculated || table.IsPushedData) continue;
+
+                            //new 1200 models don't appear to have an equivalent of the DSV where the list of columns from the SQL query are cached, so we will have to get the columns from executing (schema only) the SQL query
+                            var conn = ((Microsoft.AnalysisServices.BackEnd.RelationalDataStorage)((util.GetDataSourceConnection(util.GetDataSourceID(table.Id), sandbox)))).DataSourceConnection;
+                            conn.Open();
+                            System.Data.Common.DbCommand cmd = conn.CreateCommand();
+                            cmd.CommandText = sandbox.GetSourceQueryDefinition(table.Id);
+                            cmd.Prepare();
+                            System.Data.Common.DbDataReader reader = cmd.ExecuteReader(CommandBehavior.SchemaOnly);
+                            DataTable tbl = reader.GetSchemaTable();
+                            for (int i = 0; i < tbl.Rows.Count; i++)
+                            {
+                                string sColumnName = Convert.ToString(tbl.Rows[i]["ColumnName"]);
+                                Type oDataType = (Type)tbl.Rows[i]["DataType"];
+                                bool bFound = false;
+                                foreach (Microsoft.AnalysisServices.BackEnd.DataModelingColumn col in table.Columns)
+                                {
+                                    if (col.IsCalculated || col.IsRowNumber) continue;
+                                    if (sColumnName == col.DBColumnName)
+                                    {
+                                        bFound = true;
+                                        break;
+                                    }
+                                }
+                                if (!bFound)
+                                {
+                                    DataTable t = new DataTable(table.Name);
+                                    DataColumn c = t.Columns.Add(sColumnName, oDataType);
+
+                                    results.UnusedColumns.Add("[" + t.TableName + "].[" + sColumnName + "]", new UnusedColumn(c, null));
+                                }
+                            }
+                        }
+                    }
+                    else //AMO Tabular
+                    {
+                        DataSourceViewCollection dsvs = sandbox.AMOServer.Databases[sandbox.DatabaseID].DataSourceViews;
+                        foreach (DataSourceView o in dsvs)
+                        {
+                            results = DsvHelpers.IterateDsvColumns(o);
+                        }
+                    }
+#endif
                 }
                 else
                 {
@@ -134,7 +182,7 @@ namespace BIDSHelper.SSAS
                     results = DsvHelpers.IterateDsvColumns(dsv);
                 }
 
-                if (results.UnusedColumns.Count == 0)
+                if (results == null || results.UnusedColumns == null || results.UnusedColumns.Count == 0)
                 {
                     MessageBox.Show("There are no unused columns.", "BIDS Helper - Unused Columns Report");
                     return;
@@ -158,12 +206,6 @@ namespace BIDSHelper.SSAS
                 MessageBox.Show(ex.Message);
             }
         }
-
-        //protected Dictionary<string, UnusedColumn> unusedColumns = new Dictionary<string, UnusedColumn>();
-        //protected List<UsedColumn> usedColumns = new List<UsedColumn>();
-        //private DataSourceView m_dsv;
-
-        
 
 
         public class UnusedColumn
@@ -203,12 +245,22 @@ namespace BIDSHelper.SSAS
 
             public string dsvName
             {
-                get { return m_dsv.Name; }
+                get {
+                    if (m_dsv != null)
+                        return m_dsv.Name;
+                    else
+                        return string.Empty;
+                }
             }
 
             public string DatabaseName
             {
-                get { return m_dsv.Parent.Name; }
+                get {
+                    if (m_dsv != null)
+                        return m_dsv.Parent.Name;
+                    else
+                        return string.Empty;
+                }
             }
         }
 
