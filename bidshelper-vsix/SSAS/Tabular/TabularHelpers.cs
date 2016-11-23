@@ -259,30 +259,36 @@ namespace BIDSHelper
         /// <param name="sandbox"></param>
         public static bool EnsureDataSourceCredentials(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
+            System.Collections.Generic.List<string> dataSourceIDs = new System.Collections.Generic.List<string>();
 #if DENALI || SQL2014
             Database db = sandbox.Database;
-#else
-            Database db = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Database;
-                     
-#endif
-
             foreach (DataSource ds in db.DataSources)
             {
                 if (ds.ConnectionString != "Provider=None") //for pushed data source (pasted data) skip
+                    dataSourceIDs.Add(ds.ID);
+            }
+#else
+            foreach (Microsoft.AnalysisServices.BackEnd.DataModelingDataSource ds in sandbox.DataSources)
+            {
+                if (ds.ConnectionString != "Provider=None") //for pushed data source (pasted data) skip
+                    dataSourceIDs.Add(ds.ID);
+            }
+#endif
+
+            foreach (string sDataSourceID in dataSourceIDs)
+            {
+                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, sDataSourceID, null))
                 {
-                    if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))
-                    {
-                        return false;
-                    }
-                    if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPromptForImpersonation(null, sandbox, ds.ID, null))
-                    {
-                        return false;
-                    }
+                    return false;
+                }
+                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPromptForImpersonation(null, sandbox, sDataSourceID, null))
+                {
+                    return false;
                 }
             }
             return true;
-      
-            
+
+
         }
     }
 }
