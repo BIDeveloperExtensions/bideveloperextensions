@@ -32,7 +32,7 @@ namespace BIDSHelper.SSAS
             return _sandbox.AdomdConnection;
         }
 #else
-        public  AdomdLocal.AdomdConnection GetAdomdConnection()
+        public AdomdLocal.AdomdConnection GetAdomdConnection()
         {
             return _sandbox.AdomdConnection;
         }
@@ -55,7 +55,31 @@ namespace BIDSHelper.SSAS
         }
 #endif
 
-        public DataSet GetSchemaDataSet(string schemaName, Dictionary<string,string> restrictions )
+        public Microsoft.AnalysisServices.Cube Cube
+        {
+            get
+            {
+#if !DENALI && !SQL2014
+                return ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)_sandbox.Impl).Cube;
+#else
+                return _sandbox.Cube;
+#endif
+            }
+        }
+
+        public Microsoft.AnalysisServices.BackEnd.IDataModelingMeasureCollection Measures
+        {
+            get
+            {
+#if !DENALI && !SQL2014
+                return _sandbox.Measures;
+#else
+                return _sandbox.Measures;
+#endif
+            }
+        }
+
+    public DataSet GetSchemaDataSet(string schemaName, Dictionary<string,string> restrictions )
         {
 
 #if DENALI || SQL2014
