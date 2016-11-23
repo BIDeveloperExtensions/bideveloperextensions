@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using Microsoft.AnalysisServices;
+using BIDSHelper.SSAS;
 
 namespace BIDSHelper
 {
@@ -140,7 +141,7 @@ namespace BIDSHelper
             return dimUsage;
         }
 #else
-        public static List<DimensionUsage> GetTabularDimensionUsage(Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox, bool bIsBusMatrix)
+        public static List<DimensionUsage> GetTabularDimensionUsage(DataModelingSandboxWrapper sandbox, bool bIsBusMatrix)
         {
 
             Cube c = sandbox.Cube;
@@ -162,7 +163,6 @@ namespace BIDSHelper
                     listCubeDimensions.Add(cd);
 
                 bool bFoundVisibleMeasure = false;
-#if DENALI || SQL2014
                 foreach (Microsoft.AnalysisServices.BackEnd.DataModelingMeasure m in sandbox.Measures)
                 {
                     if (m.Table == cd.Dimension.Name && !m.IsPrivate)
@@ -171,16 +171,6 @@ namespace BIDSHelper
                         break;
                     }
                 }
-#else
-                foreach (Microsoft.AnalysisServices.Measure m in sandbox.Cube.AllMeasures)
-                {
-                    if (m.Parent.Name == cd.Dimension.Name && m.Visible)
-                    {
-                        bFoundVisibleMeasure = true;
-                        break;
-                    }
-                }
-#endif
                 if (!bFoundVisibleMeasure && bIsBusMatrix) continue;
 
                 MeasureGroup mg = c.MeasureGroups[cd.DimensionID];
