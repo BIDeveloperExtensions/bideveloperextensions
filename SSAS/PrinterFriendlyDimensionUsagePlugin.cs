@@ -99,7 +99,8 @@ namespace BIDSHelper.SSAS
 #if DENALI || SQL2014
                 Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = null;
 #else
-                Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox = null;
+                //Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox = null;
+                DataModelingSandboxWrapper sandbox = null;
 #endif
                 bool bIsTabular = false;
                 Cube cub = null;
@@ -115,7 +116,8 @@ namespace BIDSHelper.SSAS
                     bIsTabular = true;
                     Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Measures;
 #else
-                    sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
+                    sandbox = new DataModelingSandboxWrapper(this);
+                    //sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
                     cub = sandbox.Cube;
                     bIsTabular = true;
                     //Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Cube.AllMeasures;
