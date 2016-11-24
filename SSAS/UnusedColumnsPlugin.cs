@@ -292,7 +292,7 @@ namespace BIDSHelper.SSAS
                 {
                     if (m_tomColumn != null)
                     {
-                        return m_tomColumn.DBTableName;
+                        return m_tomColumn.Table.SourceTableName;
                     }
                     else
                     {
