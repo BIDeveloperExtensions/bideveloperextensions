@@ -166,7 +166,11 @@ namespace BIDSHelper.SSAS
                 var db = sandbox.Database;
                 Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code;
 #else
-                var db = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Database;
+                Database db = null;
+                if (!sandbox.IsTabularMetadata)
+                    db = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Database;
+                else
+                    db = null;
                 Microsoft.AnalysisServices.BackEnd.AMOCode code;
 #endif
                 code = delegate
@@ -182,10 +186,19 @@ namespace BIDSHelper.SSAS
                                 tran.RollbackAndContinue();
                                 return;
                             }
-
+#if !(DENALI || SQL2014)
+                            Microsoft.AnalysisServices.BackEnd.DataModelingTable table = sandbox.Tables[tableName];
+                            iDescriptionsSet = SyncDescriptionsPlugin.SyncDescriptions(table, true);
+                            if (iDescriptionsSet > 0)
+                            {
+                                table.UpdateNowOrLater();
+                            }
+#else
                             Dimension d = db.Dimensions.GetByName(tableName);
                             iDescriptionsSet = SyncDescriptionsPlugin.SyncDescriptions(d, true, provider, true);
-                            db.Update(UpdateOptions.ExpandFull);
+                            if (iDescriptionsSet > 0)
+                                db.Update(UpdateOptions.ExpandFull);
+#endif
                             tran.Commit();
                         }
 
