@@ -44,6 +44,7 @@ namespace BIDSHelper.SSAS
                 }
                 if (mg != null) //if this is a drillthrough action targeting a whole measure group, MeasureGroupMeasures doesn't actually return the calculated measures in a measure group, so we have to take this one drillthrough action and clone it for each measure under the covers
                 {
+                    if (conn.State != ConnectionState.Open) conn.Open();
                     Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
                     restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
                     restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("MEASUREGROUP_NAME", mg.Name));
@@ -1124,6 +1125,7 @@ namespace BIDSHelper.SSAS
                 Microsoft.AnalysisServices.AdomdClient.AdomdCommand cmd = new Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
                 cmd.CommandTimeout = 0;
                 cmd.Connection = conn;
+                if (conn.State != ConnectionState.Open) conn.Open();
 
                 Dictionary<string, string> dictQueries = new Dictionary<string, string>();
 
