@@ -87,6 +87,11 @@ namespace BIDSHelper
                 if (hierItem.Name != null && hierItem.Name.ToLower().EndsWith(".bim"))
                 {
                     Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
+                    if (sandbox == null)
+                    {
+                        var sandboxEditor = TabularHelpers.GetTabularSandboxEditorFromBimFile(hierItem, true);
+                        if (sandboxEditor != null) sandbox = sandboxEditor.Sandbox;
+                    }
                     if (sandbox != null)
                     {
 #if !DENALI && !SQL2014

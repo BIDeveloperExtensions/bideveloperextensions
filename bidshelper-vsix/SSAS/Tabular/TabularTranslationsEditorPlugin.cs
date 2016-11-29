@@ -114,7 +114,7 @@ namespace BIDSHelper.SSAS
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI) //TODO
                 cube = sandboxWrapper.GetSandboxAmo().Cube;
 #else
                 cube = sandboxWrapper.GetSandboxAmo().Cube;
@@ -427,7 +427,10 @@ namespace BIDSHelper.SSAS
 
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
-            //this.sandbox = sandbox;
+            sandboxWrapper = new DataModelingSandboxWrapper(this);
+            //sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
+            if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
+
             ExecInternal(true);
             return null; //always return null since ExecInternal just handled it
         }
