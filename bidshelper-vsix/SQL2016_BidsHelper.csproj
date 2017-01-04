@@ -720,7 +720,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.Design">
-      <HintPath>DLLs\SQL2016\References\\Microsoft.DataTransformationServices.Design.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\References\Microsoft.DataTransformationServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.VsIntegration">

@@ -95,7 +95,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
     </Reference>
-    <Reference Include="ExpressionEditor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
+    <Reference Include="ExpressionEditor, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2014\ExpressionEditor.dll</HintPath>
     </Reference>
