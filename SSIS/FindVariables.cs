@@ -765,7 +765,7 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecuteSQLTask(TaskHost taskHost, TreeNode parent)
         {
-            // Use reflection yo examine parameter and result binding collections, so that we avoid a direct reference to the assembly
+            // Use reflection to examine parameter and result binding collections, so that we avoid a direct reference to the assembly
             // That causes issues when changing target versions in VS 2015 and SQL 2016 (OneDesigner) tools
             // Could investigate C# dynamic keyword, but this is tried and tested for now.
             TreeNode parameterBindings = AddFolder("ParameterBindings", parent);
