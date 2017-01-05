@@ -185,6 +185,10 @@ namespace BIDSHelper.SSIS
 
                 // Show the editor
                 Konesans.Dts.ExpressionEditor.ExpressionEditorPublic editor = new Konesans.Dts.ExpressionEditor.ExpressionEditorPublic(variables, variableDispenser, propertyType, propertyName, e.Expression);
+                editor.Editor.ExpressionFont = ExpressionFont;
+                editor.Editor.ExpressionColor = ExpressionColor;
+                editor.Editor.ResultFont = ResultFont;
+                editor.Editor.ResultColor = ResultColor;
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
                     // Get expression
@@ -318,7 +322,6 @@ namespace BIDSHelper.SSIS
             processPackage.CancelAsync();
             win = null;
         }
-
         
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
@@ -710,6 +713,132 @@ namespace BIDSHelper.SSIS
             }
         }
 
+        private const string REGISTRY_KEY_ExpressionEditorFont = "ExpressionFont";
+        private const string REGISTRY_KEY_ResultFont = "ResultFont";
+        private const string REGISTRY_KEY_ExpressionEditorColor = "ExpressionColor";
+        private const string REGISTRY_KEY_ResultColor = "ResultColor";
+
+        public static Font ExpressionFont
+        {
+            get
+            {
+                return GetFont(REGISTRY_KEY_ExpressionEditorFont);
+            }
+
+            set
+            {
+                SetFont(value, REGISTRY_KEY_ExpressionEditorFont);
+            }
+        }
+
+        public static Font ResultFont
+        {
+            get
+            {
+                return GetFont(REGISTRY_KEY_ResultFont);
+            }
+
+            set
+            {
+                SetFont(value, REGISTRY_KEY_ResultFont);
+            }
+        }
+
+        public static Color ExpressionColor
+        {
+            get
+            {
+                return GetColor(REGISTRY_KEY_ExpressionEditorColor);
+            }
+
+            set
+            {
+                SetValue(value.Name, REGISTRY_KEY_ExpressionEditorColor);
+            }
+        }
+
+        public static Color ResultColor
+        {
+            get
+            {
+                return GetColor(REGISTRY_KEY_ResultColor);
+            }
+
+            set
+            {
+                SetValue(value.Name, REGISTRY_KEY_ResultColor);
+            }
+        }
+
+        private static string GetValue(string registryKey)
+        {
+            string value = null;
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionListPlugin)));
+            if (key == null)
+                return null;
+
+            value = (string)key.GetValue(registryKey, null);
+            key.Close();
+
+            return value;
+        }
+
+        private static Font GetFont(string registryKey)
+        {
+            string fontString = GetValue(registryKey);
+            if (fontString == null)
+                return null;
+
+            TypeConverter converter = TypeDescriptor.GetConverter(typeof(Font));
+            return (Font)converter.ConvertFromString(fontString);
+        }
+
+        private static Color GetColor(string registryKey)
+        {
+            string colorString = GetValue(registryKey);
+            if (colorString == null)
+            {
+                // Default text colour for text string 
+                return SystemColors.WindowText;
+            }
+
+            return Color.FromName(colorString);
+        }
+
+        private static void SetValue(string value, string registryKey)
+        {
+            string path = BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionListPlugin));
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(path, true);
+            if (key == null)
+            {
+                key = Registry.CurrentUser.CreateSubKey(path);
+            }
+
+            if (value == null)
+            {
+                key.DeleteValue(registryKey, false);
+            }
+            else
+            {
+                key.SetValue(registryKey, value, RegistryValueKind.String);
+            }
+
+            key.Close();
+        }
+
+        private static void SetFont(Font value, string registryKey)
+        {
+            string fontString = null;
+
+            if (value != null)
+            { 
+                TypeConverter converter = TypeDescriptor.GetConverter(typeof(Font));
+                fontString = converter.ConvertToString(value);
+            }
+
+            SetValue(fontString, registryKey);
+        }
+
         private struct ExpressionInfo
         {
             public Type Type;
@@ -723,6 +852,5 @@ namespace BIDSHelper.SSIS
             public bool HasExpression;
             public Icon Icon;
         }
-
     }
 }
