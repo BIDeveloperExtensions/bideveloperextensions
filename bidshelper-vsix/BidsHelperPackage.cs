@@ -51,7 +51,7 @@ namespace BIDSHelper
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideOptionPage(typeof(BIDSHelperOptionsFeatures), "BIDS Helper", "Features", 0, 0, true)]
-    //[ProvideOptionPage(typeof(BIDSHelperOptionsPreferences), "BIDS Helper", "Preferences", 0, 0, true)]
+    [ProvideOptionPage(typeof(BIDSHelperPreferencesDialogPage), "BIDS Helper", "Preferences", 0, 0, true)]
     [ProvideOptionPage(typeof(BIDSHelperOptionsVersion), "BIDS Helper", "Version", 0, 0, true)]
     public sealed class BIDSHelperPackage : Package, IVsDebuggerEvents
     {

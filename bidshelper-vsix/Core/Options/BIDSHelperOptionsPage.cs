@@ -16,9 +16,6 @@ namespace BIDSHelper.Core
         /// </summary>
         private static string DefaultMessageBoxCaption = "BIDS Helper Options";
 
-
-
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BIDSHelperOptionsPage"/> class.
         /// </summary>
@@ -27,12 +24,9 @@ namespace BIDSHelper.Core
             InitializeComponent();
         }
 
-        
-
         /// <summary>
         /// Called after the dialog has been created.
         /// </summary>
-        /// <param name="DTEObject">The DTE object.</param>
         public void Initialize()
         {
             // Enumerate plug-ins and create a dynamic properties

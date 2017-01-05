@@ -30,6 +30,7 @@ namespace BIDSHelper.SSIS
         internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{41C287E9-BCD9-4D20-8D38-B6FD9CFB73C9}";
 #endif
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
+
         private ToolBarButton moveCopyButton;
         private ToolBarButton editExpressionButton;
         private ToolBarButton findReferencesButton;
@@ -41,7 +42,7 @@ namespace BIDSHelper.SSIS
         private static ComponentDesigner packageDesigner;
         private static bool bSkipHighlighting = false;
 
-        public VariablesWindowPlugin(BIDSHelperPackage package):base(package)
+        public VariablesWindowPlugin(BIDSHelperPackage package) : base(package)
         {
         }
 
@@ -453,6 +454,10 @@ namespace BIDSHelper.SSIS
                 VariableDispenser variableDispenser = sourceContainer.VariableDispenser;
 
                 Konesans.Dts.ExpressionEditor.ExpressionEditorPublic editor = new Konesans.Dts.ExpressionEditor.ExpressionEditorPublic(variables, variableDispenser, variable);
+                editor.Editor.ExpressionFont = ExpressionListPlugin.ExpressionFont;
+                editor.Editor.ExpressionColor = ExpressionListPlugin.ExpressionColor;
+                editor.Editor.ResultFont = ExpressionListPlugin.ResultFont;
+                editor.Editor.ResultColor = ExpressionListPlugin.ResultColor;
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
                     string expression = editor.Expression;

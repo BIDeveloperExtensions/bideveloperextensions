@@ -1,15 +1,9 @@
 namespace BIDSHelper.Core
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Drawing;
-    using System.Data;
-    using System.Text;
-    using System.Windows.Forms;
-    using EnvDTE;
     using BIDSHelper.SSIS;
-    
+    using System;
+    using System.Windows.Forms;
+
     public partial class BIDSHelperPreferencesPage : UserControl
     {
         public BIDSHelperPreferencesPage()
@@ -17,16 +11,20 @@ namespace BIDSHelper.Core
             InitializeComponent();
         }
 
-        #region IDTToolsOptionsPage Members
+        public BIDSHelperPreferencesDialogPage OptionsPage
+        {
+            get;
+            set;
+        }
 
         public void Initialize()
         {
             this.Width = 395; //392
             this.Height = 290;
 
+            // Smart Diff
             lblTFS.Text = "Visual Studio Built-in";
             lblVSS.Text = string.Empty;
-
 
             if (string.IsNullOrEmpty(SmartDiffPlugin.CustomDiffViewer))
             {
@@ -38,19 +36,28 @@ namespace BIDSHelper.Core
                 radSmartDiffCustom.Checked = true;
                 txtSmartDiffCustom.Text = SmartDiffPlugin.CustomDiffViewer;
             }
+
             FixSmartDiffCustomEnabled();
 
+            // Expression & Configuration highlighter
             btnExpressionColor.BackColor = ExpressionHighlighterPlugin.ExpressionColor;
             btnConfigurationColor.BackColor = ExpressionHighlighterPlugin.ConfigurationColor;
 
+            // Measure group free space
             txtFreeSpaceFactor.Text = MeasureGroupHealthCheckPlugin.FreeSpaceFactor.ToString();
-        }
 
+            // Expression editor, font and colours
+            buttonExpressionFontSample.Font = ExpressionListPlugin.ExpressionFont;
+            buttonExpressionFontSample.ForeColor = ExpressionListPlugin.ExpressionColor;
+            buttonResultFontSample.Font = ExpressionListPlugin.ResultFont;
+            buttonResultFontSample.ForeColor = ExpressionListPlugin.ResultColor;
+        }
 
         public void Apply()
         {
             try
             {
+                // Smart Diff
                 if (radSmartDiffCustom.Checked)
                 {
                     SmartDiffPlugin.CustomDiffViewer = txtSmartDiffCustom.Text;
@@ -60,34 +67,27 @@ namespace BIDSHelper.Core
                     SmartDiffPlugin.CustomDiffViewer = null;
                 }
 
+                // Expression & Configuration highlighter
                 ExpressionHighlighterPlugin.ExpressionColor = btnExpressionColor.BackColor;
                 ExpressionHighlighterPlugin.ConfigurationColor = btnConfigurationColor.BackColor;
 
+                // Measure group free space
                 int iFreeSpaceFactor;
                 if (int.TryParse(txtFreeSpaceFactor.Text, out iFreeSpaceFactor))
+                {
                     MeasureGroupHealthCheckPlugin.FreeSpaceFactor = iFreeSpaceFactor;
-                //BIDSHelperPluginBase pu = null;
-                ////foreach (object itm in lstPlugins.Items) //(BIDSHelperPluginReference puRef in Connect.Plugins.Values)
-                //for (int i = 0;i<lstPlugins.Items.Count;i++)
-                //{
-                //    pu = (BIDSHelperPluginBase)lstPlugins.Items[i];
-                //    if (pu.Enabled != lstPlugins.GetItemChecked(i))
-                //    {
-                //        pu.Enabled = lstPlugins.GetItemChecked(i);
-                //    }
-                //}
+                }
+
+                // Expression editor, font and colours
+                ExpressionListPlugin.ExpressionFont = buttonExpressionFontSample.Font;
+                ExpressionListPlugin.ExpressionColor = buttonExpressionFontSample.ForeColor;
+                ExpressionListPlugin.ResultFont = buttonResultFontSample.Font;
+                ExpressionListPlugin.ResultColor = buttonResultFontSample.ForeColor;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
-        }
-
-        #endregion
-
-        private void BIDSHelperPreferencesPage_Load(object sender, EventArgs e)
-        {
-
         }
 
         private void radSmartDiffDefault_CheckedChanged(object sender, EventArgs e)
@@ -107,19 +107,19 @@ namespace BIDSHelper.Core
 
         private void btnExpressionColor_Click(object sender, EventArgs e)
         {
-            colorDialog1.Color = btnExpressionColor.BackColor;
-            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            colorDialog.Color = btnExpressionColor.BackColor;
+            if (colorDialog.ShowDialog() == DialogResult.OK)
             {
-                btnExpressionColor.BackColor = colorDialog1.Color;
+                btnExpressionColor.BackColor = colorDialog.Color;
             }
         }
 
         private void btnConfigurationColor_Click(object sender, EventArgs e)
         {
-            colorDialog1.Color = btnConfigurationColor.BackColor;
-            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            colorDialog.Color = btnConfigurationColor.BackColor;
+            if (colorDialog.ShowDialog() == DialogResult.OK)
             {
-                btnConfigurationColor.BackColor = colorDialog1.Color;
+                btnConfigurationColor.BackColor = colorDialog.Color;
             }
         }
 
@@ -137,6 +137,29 @@ namespace BIDSHelper.Core
             int i;
             if (!int.TryParse(txtFreeSpaceFactor.Text, out i))
                 txtFreeSpaceFactor.Text = MeasureGroupHealthCheckPlugin.FreeSpaceFactor.ToString();
+        }
+
+        private void buttonExpressionFont_Click(object sender, EventArgs e)
+        {
+            fontDialog.Font = buttonExpressionFontSample.Font;
+            fontDialog.Color = buttonExpressionFontSample.ForeColor;
+            if (fontDialog.ShowDialog() == DialogResult.OK)
+            {
+                buttonExpressionFontSample.Font = fontDialog.Font;
+                buttonExpressionFontSample.ForeColor = fontDialog.Color;
+            }
+        }
+
+        private void buttonResultFont_Click(object sender, EventArgs e)
+        {
+            fontDialog.Font = buttonResultFontSample.Font;
+            fontDialog.Color = buttonResultFontSample.ForeColor;
+            if (fontDialog.ShowDialog() == DialogResult.OK)
+            {
+                buttonResultFontSample.Font = fontDialog.Font;
+                buttonResultFontSample.ForeColor = fontDialog.Color;
+            }
+
         }
     }
 
