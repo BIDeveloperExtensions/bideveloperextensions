@@ -13,18 +13,17 @@ namespace BIDSHelper.Core
 {
     [ClassInterface(ClassInterfaceType.AutoDual)]
     [CLSCompliant(false), ComVisible(true)]
-    //[Guid(BIDSHelperOptionsVersion.OptionsGuidString)]
-    public class BIDSHelperOptionsPreferences : DialogPage
+    [Guid("5F8DEE5F-2790-4EE2-B709-A3F2D11E2042")]
+    public class BIDSHelperPreferencesDialogPage : DialogPage
     {
-        //    public const string OptionsGuidString = "9EBCE16B-26C2-4A22-A409-9752750A16AE";
-        BIDSHelperPreferencesPage page = null;
+        private BIDSHelperPreferencesPage page = null;
 
         protected override IWin32Window Window
         {
             get
             {
                 page = new BIDSHelperPreferencesPage();
-                //page.optionsPage = this;
+                page.OptionsPage = this;
                 page.Initialize();
                 return page;
             }

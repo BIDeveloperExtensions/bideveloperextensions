@@ -85,7 +85,7 @@
     <Compile Include="Core\Logger\LogLevels.cs" />
     <Compile Include="Core\Logger\NullLogger.cs" />
     <Compile Include="Core\Logger\OutputLogger.cs" />
-    <Compile Include="Core\Options\BIDSHelperOptionsPreferences.cs">
+    <Compile Include="Core\Options\BIDSHelperPreferencesDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Core\Options\BIDSHelperOptionsVersion.cs">
