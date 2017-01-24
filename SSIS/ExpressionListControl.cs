@@ -90,7 +90,7 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error occured while editing the expression: " + ex.Message);
+                MessageBox.Show("Error occured while editing the expression: " + ex.Message + "\r\n" + ex.StackTrace);
             }
         }
 
