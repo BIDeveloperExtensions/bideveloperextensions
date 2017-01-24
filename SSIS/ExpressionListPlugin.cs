@@ -255,6 +255,12 @@ namespace BIDSHelper.SSIS
                 PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(objectChanged);
                 System.ComponentModel.PropertyDescriptor expressionsProperty = properties.Find("Expressions", false);
 
+                if (designer == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("designer was null in SetPackageAsDirty");
+                    return;
+                }
+
                 // Mark package object as dirty
                 IComponentChangeService changeService = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
                 if (objectChanged == null)
