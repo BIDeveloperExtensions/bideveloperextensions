@@ -647,6 +647,10 @@
     <None Include="Resources\DeployMdxScript.xslt" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
+    </Reference>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
@@ -662,10 +666,6 @@
     <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
     </Reference>
     <Reference Include="ExpressionEditor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

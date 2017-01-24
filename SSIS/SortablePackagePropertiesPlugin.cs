@@ -258,7 +258,8 @@ namespace BIDSHelper.SSIS
             }
             else
             {
-                Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                //Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
                 package = app.LoadPackage(pi.get_FileNames(0), null);
             }
 
