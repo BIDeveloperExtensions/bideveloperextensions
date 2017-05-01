@@ -38,8 +38,11 @@
         /// All managed components in the data flow share the same wrapper, identified by this GUID.
         /// The specific type of managed component is identified by the UserComponentTypeName custom property of the component.
         /// The GUID is documented in the class Syntax section - https://technet.microsoft.com/en-gb/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.105).aspx
+        /// With newer versions, disassemble Microsoft.SqlServer.DTSPipelineWrap to find the GUID attribute on Microsoft.SqlServer.Dts.Pipeline.Wrapper.CManagedComponentWrapperClass
         /// </summary>
-#if SQL2016
+#if SQL2017
+        public const string ManagedComponentWrapper = "{8DC69D45-2AD5-40C6-AAEC-25722F92D6FC}";
+#elif SQL2016
         public const string ManagedComponentWrapper = "{4F885D04-B578-47B7-94A0-DE9C7DA25EE2}";
 #elif SQL2014
         public const string ManagedComponentWrapper = "{33D831DE-5DCF-48F0-B431-4D327B9E785D}";

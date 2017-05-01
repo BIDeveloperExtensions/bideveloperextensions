@@ -85,6 +85,7 @@ namespace BIDSHelper
         /// </summary>
         protected override void Initialize()
         {
+            bool bQuitting = false;
             base.Initialize();
 
 #if DEBUG
@@ -104,6 +105,13 @@ namespace BIDSHelper
                 DTE2 = this.GetService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)) as EnvDTE80.DTE2;
 
                 DebuggerService.AdviseDebuggerEvents(this, out debugEventCookie);
+
+                if (SwitchVsixManifest())
+                {
+                    bQuitting = true;
+                    RestartVisualStudio();
+                    return;
+                }
 
                 foreach (Type t in Assembly.GetExecutingAssembly().GetTypes())
                 {
@@ -157,7 +165,120 @@ namespace BIDSHelper
             }
             finally
             {
-                StatusBar.Clear();
+                if (!bQuitting)
+                    StatusBar.Clear();
+            }
+
+        }
+
+        private bool SwitchVsixManifest()
+        {
+#if SQL2017
+            string sVersion = VersionInfo.SqlServerVersion.ToString();
+            if (sVersion.StartsWith("13.")) //this DLL is for SQL 2017 but you have SSDT for SQL2016 installed
+            {
+                string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+                string sBackupManifestPath = sFolder + "\\extension2017.vsixmanifest";
+                string sOtherManifestPath = sFolder + "\\extension2016.vsixmanifest";
+
+                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+                string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
+                string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
+
+                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2016BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
+                {
+                    //backup the current SQL2017 manifest
+                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+
+                    //copy SQL2016 manifest over the current manifest
+                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+
+                    if (System.IO.File.Exists(sPkgdef2016Path))
+                        System.IO.File.Delete(sPkgdef2016BackupPath);
+                    else
+                        System.IO.File.Move(sPkgdef2016BackupPath, sPkgdef2016Path);
+
+                    if (System.IO.File.Exists(sPkgdef2017BackupPath))
+                        System.IO.File.Delete(sPkgdef2017Path);
+                    else
+                        System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
+
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    return true;
+                }
+                else
+                {
+                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2016 files!");
+                }
+            }
+#elif SQL2016
+            string sVersion = VersionInfo.SqlServerVersion.ToString();
+            if (sVersion.StartsWith("14.")) //this DLL is for SQL 2016 but you have SSDT for SQL2017 installed
+            {
+                string sFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName;
+                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+                string sBackupManifestPath = sFolder + "\\extension2016.vsixmanifest";
+                string sOtherManifestPath = sFolder + "\\extension2017.vsixmanifest";
+
+                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+                string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
+                string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
+
+                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2016Path))
+                {
+                    //backup the current SQL2016 manifest
+                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+
+                    //copy SQL2017 manifest over the current manifest
+                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+
+                    if (System.IO.File.Exists(sPkgdef2017Path))
+                        System.IO.File.Delete(sPkgdef2017BackupPath);
+                    else
+                        System.IO.File.Move(sPkgdef2017BackupPath, sPkgdef2017Path);
+
+                    if (System.IO.File.Exists(sPkgdef2016BackupPath))
+                        System.IO.File.Delete(sPkgdef2016Path);
+                    else
+                        System.IO.File.Move(sPkgdef2016Path, sPkgdef2016BackupPath);
+
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    return true;
+                }
+                else
+                {
+                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2017 files!");
+                }
+            }
+#endif
+            return false;
+
+        }
+
+        private void RestartVisualStudio()
+        {
+            System.Diagnostics.Process currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+            System.Diagnostics.Process newProcess = new System.Diagnostics.Process();
+            newProcess.StartInfo = new System.Diagnostics.ProcessStartInfo {
+                FileName = currentProcess.MainModule.FileName,
+                ErrorDialog = true,
+                UseShellExecute = true,
+                Arguments = DTE2.CommandLineArguments
+            };
+            newProcess.Start();
+
+            EnvDTE.Command command = DTE2.Commands.Item("File.Exit", -1);
+
+            if ((command != null) && command.IsAvailable)
+            {
+                DTE2.ExecuteCommand("File.Exit", "");
+            }
+            else
+            {
+                DTE2.Quit();
             }
 
         }
