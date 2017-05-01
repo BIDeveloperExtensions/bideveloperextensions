@@ -15,13 +15,16 @@ namespace BIDSHelper.SSIS
     {
         SQLServer2012 = 110,
         SQLServer2014 = 120,
-        SQLServer2016 = 130
+        SQLServer2016 = 130,
+        SQLServer2017 = 140
     }
 
     public static class SSISHelpers
     {
 
-#if SQL2016
+#if SQL2017
+        public const string CreationNameIndex = "6";
+#elif SQL2016
         public const string CreationNameIndex = "5";
 #elif SQL2014
         public const string CreationNameIndex = "4";
@@ -66,7 +69,9 @@ namespace BIDSHelper.SSIS
         {
             get
             {
-#if SQL2016
+#if SQL2017
+                return SsisTargetServerVersion.SQLServer2017;
+#elif SQL2016
                 return SsisTargetServerVersion.SQLServer2016;
 #elif SQL2014
                 return SsisTargetServerVersion.SQLServer2014;
@@ -74,7 +79,7 @@ namespace BIDSHelper.SSIS
                 return SsisTargetServerVersion.SQLServer2012;
 #endif
             }
-    }
+        }
 
     /// <summary>
     /// Get the SsisTargetServerVersion of a project. See PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion or actual usage.

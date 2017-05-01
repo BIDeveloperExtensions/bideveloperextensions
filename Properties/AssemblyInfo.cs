@@ -18,7 +18,9 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant(false)]
 [assembly: NeutralResourcesLanguage("en-US")]
 
-#if SQL2016
+#if SQL2017
+[assembly: AssemblyTitle("BIDS Helper for SQL Server 2017")]
+#elif SQL2016
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2016")]
 #elif SQL2014
 [assembly: AssemblyTitle("BIDS Helper for SQL Server 2014")]

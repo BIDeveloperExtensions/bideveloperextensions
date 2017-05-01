@@ -13,11 +13,11 @@ namespace BIDSHelper.Core
 {
     [ClassInterface(ClassInterfaceType.AutoDual)]
     [CLSCompliant(false), ComVisible(true)]
-    //[Guid(BIDSHelperOptionsVersion.OptionsGuidString)]
+    [Guid(BIDSHelperOptionsVersion.VersionGuidString)]
     public class BIDSHelperOptionsVersion: DialogPage
     {
-    //    public const string OptionsGuidString = "9EBCE16B-26C2-4A22-A409-9752750A16AE";
-        
+        public const string VersionGuidString = "9128d0ed-abbe-3002-9aee-4c06babd03ae";
+
         protected override IWin32Window Window
         {
             get

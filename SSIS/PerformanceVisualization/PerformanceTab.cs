@@ -68,6 +68,8 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
                     case SsisTargetServerVersion.SQLServer2016:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\130\SSIS\Setup\DTSPath";
+                    case SsisTargetServerVersion.SQLServer2017:
+                        return @"SOFTWARE\Microsoft\Microsoft SQL Server\140\SSIS\Setup\DTSPath";
                     default:
                         throw new Exception("Unknown deployment version, DTSPATH_REGISTRY_PATH cannot be determined.");
                 }
@@ -477,7 +479,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             if (this.dtexecPath == null && this.use64Bit)
                 this.dtexecPath = GetPathToDtsExecutable("dtexec.exe", false);
             if (this.dtexecPath == null)
-                throw new Exception("Can't find path to dtexec in registry!");
+                throw new Exception("Can't find path to dtexec in registry! Please make sure you have the SSIS service installed from the " + PackageHelper.TargetServerVersion.ToString() + " install media");
         }
 
         internal static void SetupCustomLogging(Package pkg, string sLogFilePath)

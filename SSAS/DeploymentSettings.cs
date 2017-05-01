@@ -92,7 +92,7 @@ public class DeploymentSettings
     private void SetDefaultTargetServer()
     {
         Microsoft.Win32.RegistryKey regKey;
-#if SQL2016
+#if SQL2016 || SQL2017
         regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
 #elif SQL2014
         regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\12.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
