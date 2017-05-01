@@ -127,6 +127,8 @@ namespace BIDSHelper.Core
                     return "2014";
                 else if (sVersion.StartsWith("13."))
                     return "2016";
+                else if (sVersion.StartsWith("14."))
+                    return "2017";
                 else
                     return string.Format("(SQL Unknown {0})", sVersion);
             }

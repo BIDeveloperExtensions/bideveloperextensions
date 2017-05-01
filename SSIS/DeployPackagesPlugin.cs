@@ -285,6 +285,10 @@ namespace BIDSHelper.SSIS
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.FileName = SSIS.PerformanceVisualization.PerformanceTab.GetPathToDtsExecutable("dtutil.exe", false); //makes the bat file less portable, but does workaround the problem if SSIS2005 and SSIS2008 are both installed... issue 21074
 
+                if (string.IsNullOrEmpty(process.StartInfo.FileName))
+                    throw new Exception("Can't find path to dtutil in registry! Please make sure you have the SSIS service installed from the " + PackageHelper.TargetServerVersion.ToString() + " install media");
+
+
                 if (newOptions.DeploymentType != DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
                 {
                     //create the directories

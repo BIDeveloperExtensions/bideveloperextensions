@@ -750,7 +750,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             Variable variable = dataFlowTask.Variables.Add("BIDS_HELPER_ROWCOUNT_" + output.ID, false, "User", (int)0);
 
             IDTSComponentMetaDataXX transform = pipeline.ComponentMetaDataCollection.New();
-#if SQL2016
+#if SQL2016 || SQL2017
             transform.ComponentClassID = "Microsoft.RowCount";
 #else
             transform.ComponentClassID = "DTSAdapter.RowCount";
@@ -771,7 +771,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private void HookupRawDestination(MainPipe pipeline, IDTSOutputXX output)
         {
             IDTSComponentMetaDataXX rawDestComponent = pipeline.ComponentMetaDataCollection.New();
-#if SQL2016
+#if SQL2016 || SQL2017
             rawDestComponent.ComponentClassID = "Microsoft.RawDestination";
 #else
             rawDestComponent.ComponentClassID = "DTSAdapter.RawDestination";
@@ -793,7 +793,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private static void HookupRawSource(MainPipe pipeline, MainPipe pipelineToReference, IDTSInputXX input, IDTSComponentMetaDataXX componentNextInPath, string sRawFilePath)
         {
             IDTSComponentMetaDataXX rawSourceComponent = pipeline.ComponentMetaDataCollection.New();
-#if SQL2016
+#if SQL2016 || SQL2017
             rawSourceComponent.ComponentClassID = "Microsoft.RawSource";
 #else
             rawSourceComponent.ComponentClassID = "DTSAdapter.RawSource";
