@@ -516,6 +516,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AdomdClient.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.Json.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.GridControl.dll" />
     <Content Include="License.rtf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -547,8 +552,6 @@
     <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Design.DLL" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.MPFProjectBase.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Project.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Tabular.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Tabular.Json.DLL" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.VSHost.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.Controls.DLL" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.Design.DLL" />
@@ -556,11 +559,6 @@
     <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.DLL" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.Interfaces.DLL" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.VsIntegration.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Common.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.DataVisualization.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Design.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.ProcessingObjectModel.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.WinForms.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.DlgGrid.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.Dts.Design.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.SQLServer.DTSPipelineWrap.dll" />
