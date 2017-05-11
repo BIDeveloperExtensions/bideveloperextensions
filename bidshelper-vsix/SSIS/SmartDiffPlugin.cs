@@ -132,7 +132,8 @@ namespace BIDSHelper
                     if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
                     if (sandboxWrapper.GetSandbox().IsTabularMetadata)
                     {
-                        System.Windows.Forms.MessageBox.Show("BIDS Helper Smart Diff is not supported for 1200 compatibility level models yet.", "BIDS Helper Smart Diff");
+                        string compatibility = sandboxWrapper.GetSandbox().DatabaseCompatibilityLevel.ToString();
+                        System.Windows.Forms.MessageBox.Show("BIDS Helper Smart Diff is not supported for " + compatibility + " compatibility level models yet.", "BIDS Helper Smart Diff");
                         return;
                     }
                 }
