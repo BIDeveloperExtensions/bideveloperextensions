@@ -520,6 +520,11 @@
     <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.Json.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Common.AppLocal.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.DataVisualization.AppLocal.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Design.AppLocal.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.ProcessingObjectModel.AppLocal.dll" />
+    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Winforms.AppLocal.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.GridControl.dll" />
     <Content Include="License.rtf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -735,24 +740,24 @@
       <Private>False</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.Common">
-      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.Common.dll</HintPath>
+    <Reference Include="Microsoft.ReportViewer.Common.AppLocal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2017\Reference\Microsoft.ReportViewer.Common.AppLocal.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.DataVisualization">
-      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.DataVisualization.DLL</HintPath>
+    <Reference Include="Microsoft.ReportViewer.DataVisualization.AppLocal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2017\Reference\Microsoft.ReportViewer.DataVisualization.AppLocal.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.Design">
-      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.Design.DLL</HintPath>
+    <Reference Include="Microsoft.ReportViewer.Design.AppLocal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2017\Reference\Microsoft.ReportViewer.Design.AppLocal.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel">
-      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.ProcessingObjectModel.DLL</HintPath>
+    <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel.AppLocal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2017\Reference\Microsoft.ReportViewer.ProcessingObjectModel.AppLocal.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.ReportViewer.WinForms">
-      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.WinForms.DLL</HintPath>
+    <Reference Include="Microsoft.ReportViewer.Winforms.AppLocal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2017\Reference\Microsoft.ReportViewer.Winforms.AppLocal.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.DlgGrid, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
