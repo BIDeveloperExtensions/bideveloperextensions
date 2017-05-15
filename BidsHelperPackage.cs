@@ -187,6 +187,8 @@ namespace BIDSHelper
                 string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
                 string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
 
+                string sDll2016Path = sFolder + "\\SQL2016\\BidsHelper2016.dll";
+
                 if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2016BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
                 {
                     //backup the current SQL2017 manifest
@@ -204,6 +206,11 @@ namespace BIDSHelper
                         System.IO.File.Delete(sPkgdef2017Path);
                     else
                         System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
+
+                    //it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
+                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
+                    regKey.SetValue("CodeBase", sDll2016Path, Microsoft.Win32.RegistryValueKind.String);
+                    regKey.Close();
 
                     System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
@@ -227,6 +234,8 @@ namespace BIDSHelper
                 string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
                 string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
 
+                string sDll2017Path = sFolder + "\\BidsHelper2017.dll";
+
                 if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2016Path))
                 {
                     //backup the current SQL2016 manifest
@@ -244,6 +253,11 @@ namespace BIDSHelper
                         System.IO.File.Delete(sPkgdef2016Path);
                     else
                         System.IO.File.Move(sPkgdef2016Path, sPkgdef2016BackupPath);
+
+                    //it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
+                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
+                    regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
+                    regKey.Close();
 
                     System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
