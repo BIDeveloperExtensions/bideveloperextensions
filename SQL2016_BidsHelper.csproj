@@ -685,89 +685,89 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.BackEnd">
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Common.FrontEnd">
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.Common.FrontEnd.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.Common.FrontEnd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.MPFProjectBase">
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Project">
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.Project.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.Project.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Tabular, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.Tabular.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.Tabular.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Tabular.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.Tabular.Json.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.Tabular.Json.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.VSHost">
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.VSHost.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.VSHost.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.Controls, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.DataTransformationServices.Controls.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.DataTransformationServices.Controls.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.Design">
-      <HintPath>DLLs\SQL2016\References\Microsoft.DataTransformationServices.Design.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.DataTransformationServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataTransformationServices.VsIntegration">
-      <HintPath>DLLs\SQL2016\References\Microsoft.DataTransformationServices.VsIntegration.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.DataTransformationServices.VsIntegration.DLL</HintPath>
       <Private>False</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.Common, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>DLLs\SQL2016\References\Microsoft.ReportViewer.Common.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>DLLs\SQL2016\References\Microsoft.ReportViewer.DataVisualization.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.DataVisualization.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.Design, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>DLLs\SQL2016\References\Microsoft.ReportViewer.Design.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>DLLs\SQL2016\References\Microsoft.ReportViewer.ProcessingObjectModel.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.ProcessingObjectModel.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.WinForms, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>DLLs\SQL2016\References\Microsoft.ReportViewer.WinForms.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.ReportViewer.WinForms.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.DlgGrid, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.DlgGrid.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.DlgGrid.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.Dts.Design.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.Dts.Design.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SQLServer.DTSPipelineWrap, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
-      <HintPath>DLLs\SQL2016\References\Microsoft.SQLServer.DTSPipelineWrap.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SQLServer.DTSPipelineWrap.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.DTSRuntimeWrap, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
       <SpecificVersion>True</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.DTSRuntimeWrap.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.DTSRuntimeWrap.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.ExecPackageTaskWrap, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -777,48 +777,48 @@
     </Reference>
     <Reference Include="Microsoft.SqlServer.Graph, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.Graph.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.Graph.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.IntegrationServices.Design">
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.IntegrationServices.Design.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.IntegrationServices.Design.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.IntegrationServices.Graph">
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.IntegrationServices.Graph.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.IntegrationServices.Graph.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.ManagedDTS, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.SqlServer.ManagedDTS.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.SqlServer.ManagedDTS.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls">
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.Controls.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.Controls.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Design">
-      <HintPath>DLLs\SQL2016\References\Microsoft.AnalysisServices.Design.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.AnalysisServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.DataWarehouse">
-      <HintPath>DLLs\SQL2016\References\Microsoft.DataWarehouse.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.DataWarehouse.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2016\References\Microsoft.DataWarehouse.Interfaces.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.DataWarehouse.Interfaces.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.DataWarehouse.VsIntegration">
-      <HintPath>DLLs\SQL2016\References\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
+      <HintPath>DLLs\SQL2016\Reference\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
