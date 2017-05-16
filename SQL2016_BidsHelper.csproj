@@ -668,9 +668,9 @@
       <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ExpressionEditor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="ExpressionEditor, Version=5.1.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=x86">
       <HintPath>DLLs\SQL2016\ExpressionEditor.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.AppLocal, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>False</Private>
