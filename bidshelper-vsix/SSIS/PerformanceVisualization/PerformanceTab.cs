@@ -474,6 +474,9 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             // Refreshes cached target version which is needed in GetPathToDtsExecutable below
             PackageHelper.SetTargetServerVersion(projectItem.ContainingProject);
 
+            //get a new copy of the SSIS app because we just set the target server version
+            ssisApp = SSIS.PackageHelper.Application;
+
             //get path to dtexec
             this.dtexecPath = GetPathToDtsExecutable("dtexec.exe", this.use64Bit);
             if (this.dtexecPath == null && this.use64Bit)
