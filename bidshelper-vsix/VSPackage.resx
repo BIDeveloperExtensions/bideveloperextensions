@@ -121,7 +121,7 @@
     <value>BIDSHelper Extension</value>
   </data>
   <data name="112" xml:space="preserve">
-    <value>BIDS Helper 2016 Visual Studio Extension v2.0.1 - An add-in to extend SQL Server Data Tools</value>
+    <value>BIDS Helper 2016 Visual Studio Extension v2.0.2 - An add-in to extend SQL Server Data Tools</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="400" type="System.Resources.ResXFileRef, System.Windows.Forms">
