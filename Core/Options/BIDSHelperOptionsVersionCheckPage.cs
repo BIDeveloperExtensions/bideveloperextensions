@@ -57,7 +57,18 @@ namespace BIDSHelper.Core
                         , BIDSHelperPackage.AddInLoadException.Message
                         , BIDSHelperPackage.AddInLoadException.StackTrace);
 
+                    Exception innerEx = BIDSHelperPackage.AddInLoadException.InnerException;
+                    while (innerEx != null)
+                    {
+                        this.lblBidsHelperLoadException.Text += string.Format("\r\nInner exception:\r\n{0}\r\n{1}"
+                        , innerEx.Message
+                        , innerEx.StackTrace);
+                        innerEx = innerEx.InnerException;
+                    }
+
                     ReflectionTypeLoadException ex = BIDSHelperPackage.AddInLoadException as ReflectionTypeLoadException;
+                    if (ex == null) ex = BIDSHelperPackage.AddInLoadException.InnerException as ReflectionTypeLoadException;
+                    if (ex == null && BIDSHelperPackage.AddInLoadException.InnerException != null) ex = BIDSHelperPackage.AddInLoadException.InnerException.InnerException as ReflectionTypeLoadException;
                     if (ex != null)
                     {
                         System.Text.StringBuilder sb = new System.Text.StringBuilder();
