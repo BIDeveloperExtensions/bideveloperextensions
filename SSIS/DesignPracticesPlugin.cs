@@ -21,9 +21,20 @@ namespace BIDSHelper.SSIS
         {
             CreateContextMenu(CommandList.DesignPracticeScannerId, ".dtsx");
 
-            foreach (Type t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes())
+            Type[] types = null;
+            try
             {
-                if (typeof(DesignPractice).IsAssignableFrom(t)
+                types = System.Reflection.Assembly.GetExecutingAssembly().GetTypes();
+            }
+            catch (System.Reflection.ReflectionTypeLoadException loadEx)
+            {
+                types = loadEx.Types; //if some types can't be loaded (possibly because SSIS SSDT isn't installed, just SSAS?) then proceed with the types that work
+            }
+
+            foreach (Type t in types)
+            {
+                if (t != null
+                    && typeof(DesignPractice).IsAssignableFrom(t)
                     && (!object.ReferenceEquals(t, typeof(DesignPractice)))
                     && (!t.IsAbstract))
                 {

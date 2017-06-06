@@ -113,10 +113,24 @@ namespace BIDSHelper
                     return;
                 }
 
-                foreach (Type t in Assembly.GetExecutingAssembly().GetTypes())
+                System.Collections.Generic.List<Exception> pluginExceptions = new System.Collections.Generic.List<Exception>();
+                Type[] types = null;
+                try
+                {
+                    types = Assembly.GetExecutingAssembly().GetTypes();
+                }
+                catch (ReflectionTypeLoadException loadEx)
+                {
+                    types = loadEx.Types; //if some types can't be loaded (possibly because SSIS SSDT isn't installed, just SSAS?) then proceed with the types that work
+                    pluginExceptions.Add(loadEx);
+                    Log.Exception("Problem loading BIDS Helper types list", loadEx);
+                }
+
+                foreach (Type t in types)
                 {
                     if (//typeof(IBIDSHelperPlugin).IsAssignableFrom(t.GetType())
-                        t.GetInterfaces().Contains(typeof(IBIDSHelperPlugin))
+                        t != null
+                        && t.GetInterfaces().Contains(typeof(IBIDSHelperPlugin))
                         && (!object.ReferenceEquals(t, typeof(IBIDSHelperPlugin)))
                         && (!t.IsAbstract))
                     {
@@ -134,9 +148,62 @@ namespace BIDSHelper
                             System.Windows.Forms.MessageBox.Show("Problem loading type " + t.Name + ". No constructor found.");
                             continue;
                         }
-                        feature = (BIDSHelperPluginBase)con.Invoke(new object[] { this });
-                        Plugins.Add(feature.FullName, feature);
+
+                        try
+                        {
+                            feature = (BIDSHelperPluginBase)con.Invoke(new object[] { this });
+                            Plugins.Add(feature.FullName, feature);
+                        }
+                        catch (Exception ex)
+                        {
+                            pluginExceptions.Add(new Exception("BIDS Helper plugin constructor failed on " + sAddInTypeName + ": " + ex.Message + "\r\n" + ex.StackTrace, ex));
+                            Log.Exception("BIDS Helper plugin constructor failed on " + sAddInTypeName, ex);
+                        }
                     }
+                }
+
+                if (pluginExceptions.Count > 0)
+                {
+                    string sException = "";
+                    foreach (Exception pluginEx in pluginExceptions)
+                    {
+                        sException += string.Format("BIDS Helper encountered an error when Visual Studio started:\r\n{0}\r\n{1}"
+                        , pluginEx.Message
+                        , pluginEx.StackTrace);
+
+                        Exception innerEx = pluginEx.InnerException;
+                        while (innerEx != null)
+                        {
+                            sException += string.Format("\r\nInner exception:\r\n{0}\r\n{1}"
+                            , innerEx.Message
+                            , innerEx.StackTrace);
+                            innerEx = innerEx.InnerException;
+                        }
+
+                        ReflectionTypeLoadException ex = pluginEx as ReflectionTypeLoadException;
+                        if (ex == null) ex = pluginEx.InnerException as ReflectionTypeLoadException;
+                        if (ex != null)
+                        {
+                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                            foreach (Exception exSub in ex.LoaderExceptions)
+                            {
+                                sb.AppendLine();
+                                sb.AppendLine(exSub.Message);
+                                System.IO.FileNotFoundException exFileNotFound = exSub as System.IO.FileNotFoundException;
+                                if (exFileNotFound != null)
+                                {
+                                    if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
+                                    {
+                                        sb.AppendLine("Fusion Log:");
+                                        sb.AppendLine(exFileNotFound.FusionLog);
+                                    }
+                                }
+                                sb.AppendLine();
+                            }
+                            sException += sb.ToString();
+                        }
+                    }
+                    AddInLoadException = new Exception(sException);
                 }
 
 #if DENALI
@@ -173,7 +240,7 @@ namespace BIDSHelper
 
         private bool SwitchVsixManifest()
         {
-#if SQL2017
+#if SQL2017 && !VS2017
             string sVersion = VersionInfo.SqlServerVersion.ToString();
             if (sVersion.StartsWith("13.")) //this DLL is for SQL 2017 but you have SSDT for SQL2016 installed
             {
@@ -220,7 +287,7 @@ namespace BIDSHelper
                     throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2016 files!");
                 }
             }
-#elif SQL2016
+#elif SQL2016 && !VS2017
             string sVersion = VersionInfo.SqlServerVersion.ToString();
             if (sVersion.StartsWith("14.")) //this DLL is for SQL 2016 but you have SSDT for SQL2017 installed
             {
