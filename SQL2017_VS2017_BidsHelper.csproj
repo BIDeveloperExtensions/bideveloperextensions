@@ -72,7 +72,7 @@
     <WarningLevel>4</WarningLevel>
     <CopyVsixExtensionFiles>True</CopyVsixExtensionFiles>
     <DeployExtension>True</DeployExtension>
-    <CopyVsixExtensionLocation>C:\Users\ggalloway\appdata\local\microsoft\VisualStudio\15.0_51708051Exp\Extensions\wz3p0wpo.mvh</CopyVsixExtensionLocation>
+    <CopyVsixExtensionLocation>C:\Users\ggalloway\AppData\Local\Microsoft\VisualStudio\15.0_31028247Exp\Extensions\Extensions-15.0_31028247\jor1u0ry.qod</CopyVsixExtensionLocation>
     <Prefer32Bit>false</Prefer32Bit>
     <PlatformTarget>x86</PlatformTarget>
     <RunCodeAnalysis>false</RunCodeAnalysis>
