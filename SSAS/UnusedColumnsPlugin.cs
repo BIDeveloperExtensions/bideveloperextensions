@@ -139,6 +139,7 @@ namespace BIDSHelper.SSAS
                             conn.Open();
                             System.Data.Common.DbCommand cmd = conn.CreateCommand();
                             cmd.CommandText = sandbox.GetSourceQueryDefinition(table.Id);
+                            cmd.CommandTimeout = 0;
                             cmd.Prepare();
                             System.Data.Common.DbDataReader reader = cmd.ExecuteReader(CommandBehavior.SchemaOnly);
                             DataTable tbl = reader.GetSchemaTable();

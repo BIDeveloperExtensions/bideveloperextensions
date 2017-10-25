@@ -178,7 +178,7 @@ namespace BIDSHelper
                 }
                 if (!bFoundVisibleMeasure && bIsBusMatrix) continue;
 
-                List<DimensionUsage> tmp = RecurseTabularRelationships(table, table, bIsBusMatrix);
+                List<DimensionUsage> tmp = RecurseTabularRelationships(table, table, bIsBusMatrix, new List<Microsoft.AnalysisServices.BackEnd.Relationship>(), false);
                 dimUsage.AddRange(tmp);
 
                 if (bFoundVisibleAttribute && bFoundVisibleMeasure) //if this table had a measure but no dimension relationships (except to itself)
@@ -287,30 +287,61 @@ namespace BIDSHelper
             return list;
         }
 
-        private static List<DimensionUsage> RecurseTabularRelationships(DataModelingTable dimensionTable, DataModelingTable outerFactTable, bool bIsBusMatrix)
+        private static List<DimensionUsage> RecurseTabularRelationships(DataModelingTable dimensionTable, DataModelingTable outerFactTable, bool bIsBusMatrix, List<Microsoft.AnalysisServices.BackEnd.Relationship> listRelationshipsTraversed, bool bManyToMany)
         {
             List<DimensionUsage> list = new List<DimensionUsage>();
             foreach (Microsoft.AnalysisServices.BackEnd.Relationship relOuter in dimensionTable.Sandbox.Relationships.RelationshipCollection)
             {
-                if (relOuter.FromColumn.Table.Name != dimensionTable.Name) continue; //find any relationships that start from the "dimensionTable" table
+                if (listRelationshipsTraversed.Contains(relOuter)) continue; //don't double back on path
 
-                string sActiveFlag = "Active";
+                DataModelingColumn reportedDimensionColumn = null;
+                DimensionUsage usage = null;
+                bool bThisRelationshipManyToMany = bManyToMany;
+                string sRelationshipType = "Active";
                 if (!relOuter.Active)
                 {
-                    sActiveFlag = "Inactive";
+                    sRelationshipType = "Inactive";
                     if (bIsBusMatrix) continue; //don't show inactive relationships in bus matrix view
                 }
-                
-                DimensionUsage usage = new DimensionUsage(sActiveFlag, outerFactTable, relOuter.ToColumn.Table);
-                usage.Column1Name = "Foreign Key Column";
-                usage.Column1Value = relOuter.FromColumn.Name;
-                usage.Column2Name = "Primary Key Column";
-                usage.Column2Value = relOuter.ToColumn.Name;
+
+                if (bThisRelationshipManyToMany)
+                    sRelationshipType = "Many to Many";
+
+                if (relOuter.ToColumn.Table.Name == dimensionTable.Name 
+                    && relOuter.CrossFilterDirection == Microsoft.AnalysisServices.BackEnd.CrossFilterDirection.Both
+                    && relOuter.Active)
+                {
+                    sRelationshipType = "Many to Many";
+                    reportedDimensionColumn = relOuter.FromColumn;
+                    bThisRelationshipManyToMany = true;
+
+                    usage = new DimensionUsage(sRelationshipType, outerFactTable, reportedDimensionColumn.Table);
+                    usage.Column1Name = "Foreign Key Column";
+                    usage.Column1Value = relOuter.ToColumn.Name;
+                    usage.Column2Name = "Primary Key Column";
+                    usage.Column2Value = relOuter.FromColumn.Name;
+
+                }
+                else if (relOuter.FromColumn.Table.Name != dimensionTable.Name)
+                {
+                    continue; //find any relationships that start from the "dimensionTable" table
+                }
+                else
+                {
+                    reportedDimensionColumn = relOuter.ToColumn;
+
+                    usage = new DimensionUsage(sRelationshipType, outerFactTable, reportedDimensionColumn.Table);
+                    usage.Column1Name = "Foreign Key Column";
+                    usage.Column1Value = relOuter.FromColumn.Name;
+                    usage.Column2Name = "Primary Key Column";
+                    usage.Column2Value = relOuter.ToColumn.Name;
+                }
+
 
                 bool bFoundVisibleAttribute = false;
-                foreach (DataModelingColumn col in relOuter.ToColumn.Table.Columns)
+                foreach (DataModelingColumn col in reportedDimensionColumn.Table.Columns)
                 {
-                    if (!relOuter.ToColumn.Table.IsPrivate && !col.IsPrivate && col.IsAttributeHierarchyQueriable)
+                    if (!col.Table.IsPrivate && !col.IsPrivate && col.IsAttributeHierarchyQueriable)
                     {
                         bFoundVisibleAttribute = true;
                         break;
@@ -321,8 +352,12 @@ namespace BIDSHelper
 
                 if (bIsBusMatrix)
                 {
+                    List<Microsoft.AnalysisServices.BackEnd.Relationship> listLatestRelationshipsTraversed = new List<Microsoft.AnalysisServices.BackEnd.Relationship>();
+                    listLatestRelationshipsTraversed.AddRange(listRelationshipsTraversed);
+                    listLatestRelationshipsTraversed.Add(relOuter);
+
                     //recurse if it's the bus matrix view
-                    list.AddRange(RecurseTabularRelationships(relOuter.ToColumn.Table, outerFactTable, bIsBusMatrix));
+                    list.AddRange(RecurseTabularRelationships(reportedDimensionColumn.Table, outerFactTable, bIsBusMatrix, listLatestRelationshipsTraversed, bThisRelationshipManyToMany));
                 }
             }
 

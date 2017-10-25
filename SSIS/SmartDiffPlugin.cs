@@ -562,8 +562,14 @@ namespace BIDSHelper
             System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
             System.Reflection.Assembly tfsAssembly = System.Reflection.Assembly.Load(TFS_ASSEMBLY_FULL_NAME);
             System.Reflection.Assembly tfsVersionControlAssembly = System.Reflection.Assembly.Load(TFS_VERSION_CONTROL_ASSEMBLY_FULL_NAME);
+            System.IServiceProvider server = null;
+#if VS2017
+            Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TfsTeamProjectCollectionFactory");
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetTeamProjectCollection", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { new Uri(sServer) });
+#else
             Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TeamFoundationServerFactory");
-            System.IServiceProvider server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+#endif
             object versionControl = server.GetService(tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer"));
 
             Type typeVersionSpec = tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionSpec");
@@ -591,8 +597,14 @@ namespace BIDSHelper
             System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
             System.Reflection.Assembly tfsAssembly = System.Reflection.Assembly.Load(TFS_ASSEMBLY_FULL_NAME);
             System.Reflection.Assembly tfsVersionControlAssembly = System.Reflection.Assembly.Load(TFS_VERSION_CONTROL_ASSEMBLY_FULL_NAME);
+            System.IServiceProvider server = null;
+#if VS2017
+            Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TfsTeamProjectCollectionFactory");
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetTeamProjectCollection", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { new Uri(sServer) });
+#else
             Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TeamFoundationServerFactory");
-            System.IServiceProvider server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+#endif
             object versionControl = server.GetService(tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer"));
 
             int iVersion = -1;
@@ -618,7 +630,7 @@ namespace BIDSHelper
             }
             return list.ToArray();
         }
-        #endregion
+#endregion
 
         private void PrepXmlForDiff(string sFilename, string sXSL, bool bNewLineOnAttributes)
         {
