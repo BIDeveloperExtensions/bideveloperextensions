@@ -4,10 +4,10 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyProduct("BIDS Helper")]
-[assembly: AssemblyDescription("Provides additional useful features to SQL Server Data Tools (formerly known as BI Development Studio)")]
-[assembly: AssemblyCompany("http://bidshelper.codeplex.com/")]
-[assembly: AssemblyCopyright("Copyright © 2016 BIDS Helper")]
+[assembly: AssemblyProduct("BI Developer Extensions")]
+[assembly: AssemblyDescription("BI Developer Extensions (formerly BIDS Helper) provides additional useful features to SQL Server Data Tools")]
+[assembly: AssemblyCompany("https://bideveloperextensions.github.io")]
+[assembly: AssemblyCopyright("Copyright © 2017 BI Developer Extensions")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -19,15 +19,15 @@ using System.Runtime.InteropServices;
 [assembly: NeutralResourcesLanguage("en-US")]
 
 #if SQL2017
-[assembly: AssemblyTitle("BIDS Helper for SQL Server 2017")]
+[assembly: AssemblyTitle("BI Developer Extensions for SQL Server 2017")]
 #elif SQL2016
-[assembly: AssemblyTitle("BIDS Helper for SQL Server 2016")]
+[assembly: AssemblyTitle("BI Developer Extensions for SQL Server 2016")]
 #elif SQL2014
-[assembly: AssemblyTitle("BIDS Helper for SQL Server 2014")]
+[assembly: AssemblyTitle("BI Developer Extensions for SQL Server 2014")]
 #elif DENALI
-[assembly: AssemblyTitle("BIDS Helper for SQL Server 2012")]
+[assembly: AssemblyTitle("BI Developer Extensions for SQL Server 2012")]
 #else
-Unknown SQL Sever version. Add a new clause for AssemblyTitle
+[assembly: AssemblyTitle("BI Developer Extensions for Unknown SQL Server version. Add a new clause for AssemblyTitle")]
 #endif
 
 #if DEBUG
