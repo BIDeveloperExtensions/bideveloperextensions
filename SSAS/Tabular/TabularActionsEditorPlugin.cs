@@ -149,7 +149,8 @@ namespace BIDSHelper
                                 TabularHelpers.SaveXmlAnnotation(cube, SSAS.TabularActionsEditorForm.ACTION_ANNOTATION, form.Annotation);
 
                                 cube.Update(UpdateOptions.ExpandFull);
-                                tran.Commit();
+                                tran.GetType().InvokeMember("Commit", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Public, null, tran, null); //The .Commit() function used to return a list of strings, but in the latest set of code it is a void method which leads to "method not found" errors
+                                //tran.Commit();
                             }
                         };
 #if DENALI || SQL2014
