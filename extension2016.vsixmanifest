@@ -1,6 +1,6 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="BIDSHelper_VSIX.b6deed2d-6c6f-46d4-94be-28027bf7d872" Version="2.1.0" Language="en-US" Publisher="BIDSHelper.codeplex.com" />
+    <Identity Id="BIDSHelper_VSIX.b6deed2d-6c6f-46d4-94be-28027bf7d872" Version="2.1.1" Language="en-US" Publisher="BIDSHelper.codeplex.com" />
     <DisplayName>BI Developer Extensions for Visual Studio 2015</DisplayName>
     <Description xml:space="preserve">BI Developer Extensions (formerly BIDS Helper) is an extension for SSDT that includes numerous enhancements for SQL Server BI projects</Description>
     <MoreInfo>https://bideveloperextensions.github.io/</MoreInfo>
