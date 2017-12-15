@@ -1,18 +1,16 @@
 using System;
-using Extensibility;
 using EnvDTE;
-using EnvDTE80;
 using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
-using System.Windows.Forms;
-using System.Collections.Generic;
 using Microsoft.AnalysisServices;
 
 namespace BIDSHelper
 {
     public class TabularHelpers
     {
+        public const string ANNOTATION_STYLE_ANNOTATION = "BIDS_Helper_Tabular_Annotation_Style";
+        public const string ANNOTATION_STYLE_STRING = "String";
+
         private static Microsoft.AnalysisServices.VSHost.VSHostManager GetVSHostManager(UIHierarchyItem hierItem, bool openIfNotOpen)
         {
             Microsoft.VisualStudio.Project.Automation.OAFileItem project = hierItem.Object as Microsoft.VisualStudio.Project.Automation.OAFileItem;
@@ -42,9 +40,9 @@ namespace BIDSHelper
             return ((Microsoft.VisualStudio.Project.ProjectNode)((((Microsoft.VisualStudio.Project.Automation.OAProjectItem<Microsoft.VisualStudio.Project.FileNode>)(hierItem.Object)).ContainingProject).Object)).Site;
         }
 
-        public static IServiceProvider GetTabularServiceProviderFromActiveWindow()
+        public static IServiceProvider GetTabularServiceProviderFromActiveWindow(BIDSHelperPackage package)
         {
-            return GetTabularServiceProviderFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+            return GetTabularServiceProviderFromProjectItem(package.DTE2.ActiveWindow.ProjectItem, false);
         }
 
         public static IServiceProvider GetTabularServiceProviderFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
@@ -53,17 +51,67 @@ namespace BIDSHelper
             GetVSHostManager(project, openIfNotOpen); //just to force the window open if not open
             return ((Microsoft.VisualStudio.Project.ProjectNode)((project.ContainingProject).Object)).Site;
         }
-
-        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(UIHierarchyItem hierItem, bool openIfNotOpen)
+        //#if DENALI || SQL2014
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromBimFile(Core.BIDSHelperPluginBase plugin, bool openIfNotOpen)
         {
-            Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
-            if (host == null) return null;
-            return host.Sandbox;
+            UIHierarchy solExplorer = plugin.ApplicationObject.ToolWindows.SolutionExplorer;
+            if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                return null;
+
+            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            string sFileName = "";
+            if (hierItem.Object is ProjectItem)
+            {
+                sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            }
+
+            if (sFileName.EndsWith(".bim"))
+            {
+                Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
+                if (host == null) return null;
+
+                return host.Sandbox;
+            }
+            else
+            {
+                foreach (UIHierarchyItem hierItem2 in VisualStudioHelpers.GetAllItemsFromSolutionExplorer(plugin.ApplicationObject.ToolWindows.SolutionExplorer))
+                {
+                    if (hierItem2.Name != null && hierItem2.Name.ToLower().EndsWith(".bim"))
+                    {
+                        Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem2, openIfNotOpen);
+                        if (host == null) return null;
+
+                        return host.Sandbox;
+                    }
+                }
+            }
+            return null;
         }
+        //#endif
 
-        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromActiveWindow()
+#if !DENALI && !SQL2014
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo GetTabularSandboxAmoFromBimFile(Core.BIDSHelperPluginBase plugin, bool openIfNotOpen)
         {
-            return GetTabularSandboxFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+            UIHierarchy solExplorer = plugin.ApplicationObject.ToolWindows.SolutionExplorer;
+            if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                return null;
+
+            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+            if (!(hierItem.Object is ProjectItem)) return null;
+            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+            if (sFileName.EndsWith(".bim"))
+            {
+                Microsoft.AnalysisServices.VSHost.VSHostManager host = GetVSHostManager(hierItem, openIfNotOpen);
+                if (host == null) return null;
+                if (!host.Sandbox.IsTabularMetadata) return (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)host.Sandbox.Impl;
+            }
+            return null;
+        }
+#endif
+        //TODO - replace these methods?
+        public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromActiveWindow(BIDSHelperPackage package)
+        {
+            return GetTabularSandboxFromProjectItem(package.DTE2.ActiveWindow.ProjectItem, false);
         }
 
         public static Microsoft.AnalysisServices.BackEnd.DataModelingSandbox GetTabularSandboxFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
@@ -81,10 +129,10 @@ namespace BIDSHelper
             return host.Editor;
         }
 
-        public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromActiveWindow()
-        {
-            return GetTabularSandboxEditorFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
-        }
+        //public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromActiveWindow()
+        //{
+        //    return GetTabularSandboxEditorFromProjectItem(Connect.Application.ActiveWindow.ProjectItem, false);
+        //}
 
         public static Microsoft.AnalysisServices.Common.SandboxEditor GetTabularSandboxEditorFromProjectItem(ProjectItem projectItem, bool openIfNotOpen)
         {
@@ -105,6 +153,24 @@ namespace BIDSHelper
             return diagram;
         }
 
+        public static bool AreAnnotationsStringStyle(MajorObject obj)
+        {
+            while (obj != null && !(obj is Database))
+            {
+                obj = (MajorObject)obj.Parent;
+            }
+            if (obj == null) throw new Exception("Can't find Database object!");
+            Database db = (Database)obj;
+            if (db.Annotations.Contains(ANNOTATION_STYLE_ANNOTATION))
+            {
+                if (db.Annotations[ANNOTATION_STYLE_ANNOTATION].Value.InnerText == ANNOTATION_STYLE_STRING)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static void SaveXmlAnnotation(MajorObject obj, string annotationName, object annotationValue)
         {
             System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(annotationValue.GetType());
@@ -114,7 +180,7 @@ namespace BIDSHelper
             System.Xml.XmlDocument xml = new XmlDocument();
             xml.LoadXml(sb.ToString());
             if (obj.Annotations.Contains(annotationName)) obj.Annotations.Remove(annotationName);
-            if (TabularAnnotationWorkaroundPlugin.AreAnnotationsStringStyle(obj))
+            if (AreAnnotationsStringStyle(obj))
             {
                 //this is just a workaround to this bug: https://connect.microsoft.com/SQLServer/feedback/details/776444/tabular-model-error-during-opening-bim-after-sp1-readelementcontentas-methods-cannot-be-called-on-an-element-that-has-child-elements
                 XmlWriterSettings settings = new XmlWriterSettings();
@@ -139,7 +205,7 @@ namespace BIDSHelper
 
         public static string GetAnnotationXml(MajorObject obj, string annotationName)
         {
-            if (TabularAnnotationWorkaroundPlugin.AreAnnotationsStringStyle(obj))
+            if (AreAnnotationsStringStyle(obj))
             {
                 return obj.Annotations[annotationName].Value.InnerText;
             }
@@ -193,19 +259,36 @@ namespace BIDSHelper
         /// <param name="sandbox"></param>
         public static bool EnsureDataSourceCredentials(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
+            System.Collections.Generic.List<string> dataSourceIDs = new System.Collections.Generic.List<string>();
+#if DENALI || SQL2014
             Database db = sandbox.Database;
             foreach (DataSource ds in db.DataSources)
             {
-                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, ds.ID, null))
+                if (ds.ConnectionString != "Provider=None") //for pushed data source (pasted data) skip
+                    dataSourceIDs.Add(ds.ID);
+            }
+#else
+            foreach (Microsoft.AnalysisServices.BackEnd.DataModelingDataSource ds in sandbox.DataSources)
+            {
+                if (ds.ConnectionString != "Provider=None") //for pushed data source (pasted data) skip
+                    dataSourceIDs.Add(ds.ID);
+            }
+#endif
+
+            foreach (string sDataSourceID in dataSourceIDs)
+            {
+                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPrompt(null, sandbox, sDataSourceID, null))
                 {
                     return false;
                 }
-                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPromptForImpersonation(null, sandbox, ds.ID, null))
+                if (!Microsoft.AnalysisServices.Common.CommonFunctions.HandlePasswordPromptForImpersonation(null, sandbox, sDataSourceID, null))
                 {
                     return false;
                 }
             }
             return true;
+
+
         }
     }
 }

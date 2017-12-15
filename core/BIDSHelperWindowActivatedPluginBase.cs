@@ -4,6 +4,7 @@ using System.Text;
 using EnvDTE;
 using EnvDTE80;
 using System.Runtime.InteropServices;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -22,16 +23,12 @@ namespace BIDSHelper
         private WindowEvents windowEvents;
 
                 #region "Constructors"
-        public BIDSHelperWindowActivatedPluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public BIDSHelperWindowActivatedPluginBase(BIDSHelperPackage package)
+            : base(package)
         {
             
         }
-
-        public BIDSHelperWindowActivatedPluginBase()
-        {
-
-        }
+        
         #endregion
 
         public virtual bool ShouldHookWindowCreated
@@ -49,6 +46,7 @@ namespace BIDSHelper
 
         public void HookWindowActivation()
         {
+            package.Log.Debug("BIDSHelperWindowActivatedPluginBase HookWindowActivation fired (" + this.GetType().Name + ")");
             windowEvents = base.GetWindowEvents();
             if (ShouldHookWindowActivated)
                 windowEvents.WindowActivated += new _dispWindowEvents_WindowActivatedEventHandler(windowEvents_WindowActivated);
@@ -78,6 +76,7 @@ namespace BIDSHelper
 
         public void OnActiveViewChanged()
         {
+            this.package.Log.Debug("BIDSHelperWindowActivatedPlugin " + this.IdeMode + " (" + this.GetType().Name + ")");
             if (this.IdeMode == enumIDEMode.Design)
             {
                 OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
@@ -100,6 +99,7 @@ namespace BIDSHelper
         }
         public override void OnEnable()
         {
+            package.Log.Debug("BIDSHelperWindowActivatedPluginBase OnEnable fired");
             base.OnEnable();
             this.HookWindowActivation();
             // force OnWindowActivate to fire

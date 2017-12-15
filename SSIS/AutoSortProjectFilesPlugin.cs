@@ -5,39 +5,33 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.DataWarehouse.VsIntegration.Hierarchy;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
+using BIDSHelper.Core;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     /// <summary>
     ///     Automatically sort packages in SSIS project. Sorting will not get persisted with Project deployment projects.
     /// </summary>
-    public class AutoSortProjectFilesPlugin : BIDSHelperPluginBase
+    public class AutoSortProjectFilesPlugin : BIDSHelperPluginBase, IVsSolutionEvents
     {
         // Declare as field, we need to keep the reference alive for it to work
-        private readonly SolutionEvents solutionEvents;
+        //private readonly SolutionEvents solutionEvents;
+        private readonly IVsSolution _solutionService;
+        private uint _solutionEventsCookie;
 
-        public AutoSortProjectFilesPlugin(Connect connect, DTE2 appObject, AddIn addinInstance)
-            : base(connect, appObject, addinInstance)
+        public AutoSortProjectFilesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
-            solutionEvents = appObject.Events.SolutionEvents;
-            solutionEvents.Opened += SolutionOpened;
+            _solutionService = this.ServiceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
         }
 
         public override string ShortName
         {
             get { return "AutoSortProjectFilesPlugin"; }
         }
-
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Auto sort by name"; }
-        }
-
+        
         public override string ToolTip
         {
             get { return string.Empty; }
@@ -60,6 +54,8 @@ namespace BIDSHelper
         {
             get { return "Automatically sorts by name the contents of the Connection Managers, SSIS Packages and Miscellaneous folders in a SSIS project when it is opened. Removes the need to manually use the sort by name option."; }
         }
+
+        public override string FeatureName { get { return "Auto sort by name"; } }
 
         private void SolutionOpened()
         {
@@ -147,15 +143,46 @@ namespace BIDSHelper
             }
         }
 
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            // No menu item to display, so always false
-            return false;
-        }
-
         public override void Exec()
         {
             // Nothing to do here, all the work is done via the solution opened event handler method
         }
+
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            if (_solutionService != null)
+            {
+                _solutionService.AdviseSolutionEvents(this, out _solutionEventsCookie);
+            }
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            _solutionService.UnadviseSolutionEvents(_solutionEventsCookie);
+        }
+
+        int IVsSolutionEvents.OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnAfterOpenSolution(object pUnkReserved, int fNewSolution) {
+            SolutionOpened();
+            return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnQueryCloseSolution(object pUnkReserved, ref int pfCancel) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnBeforeCloseSolution(object pUnkReserved) { return VSConstants.S_OK; }
+
+        int IVsSolutionEvents.OnAfterCloseSolution(object pUnkReserved) { return VSConstants.S_OK; }
     }
 }

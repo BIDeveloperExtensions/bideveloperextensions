@@ -506,8 +506,13 @@ namespace BIDSHelper.Resources {
         ///
         ///	&lt;xsl:template match=&quot;node()&quot;&gt;
         ///		&lt;xsl:copy&gt;
-        ///			&lt;!-- leave default sort order --&gt;
-        ///			&lt;xsl:apply-templates select=&quot;@*|node()[name()!=&apos;DTS:LogProvider&apos; and name()!=&apos;DTS:Executable&apos; and name()!=&apos;DTS:ConnectionManager&apos; and name()!=&apos;DTS:PrecedenceConstraint&apos; and name()!=&apos;component&apos; [rest of string was truncated]&quot;;.
+        ///      &lt;!-- sort attributes by name --&gt;
+        ///      &lt;xsl:apply-templates select=&quot;@*&quot;&gt;
+        ///        &lt;xsl:sort order=&quot;ascending&quot; select=&quot;name()&quot;/&gt;
+        ///      &lt;/xsl:apply-templates&gt;
+        ///      
+        ///      &lt;!-- leave default sort order --&gt;
+        ///			&lt;xsl:apply-temp [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SmartDiffDtsx {
             get {

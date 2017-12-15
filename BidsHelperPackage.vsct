@@ -1,0 +1,748 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--  This is the file that defines the actual layout and type of the commands.
+        It is divided in different sections (e.g. command definition, command
+        placement, ...), with each defining a specific set of properties.
+        See the comment before each section for more details about how to
+        use it. -->
+
+  <!--  The VSCT compiler (the tool that translates this file into the binary
+        format that VisualStudio will consume) has the ability to run a preprocessor
+        on the vsct file; this preprocessor is (usually) the C++ preprocessor, so
+        it is possible to define includes and macros with the same syntax used
+        in C++ files. Using this ability of the compiler here, we include some files
+        defining some of the constants that we will use inside the file. -->
+
+  <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
+  <Extern href="stdidcmd.h"/>
+
+  <!--This header contains the command ids for the menus provided by the shell. -->
+  <Extern href="vsshlids.h"/>
+
+  <!--The Commands section is where commands, menus, and menu groups are defined.
+      This section uses a Guid to identify the package that provides the command defined inside it. -->
+  <Commands package="guidBidsHelperPackage">
+    <!-- Inside this section we have different sub-sections: one for the menus, another
+    for the menu groups, one for the buttons (the actual commands), one for the combos
+    and the last one for the bitmaps used. Each element is identified by a command id that
+    is a unique pair of guid and numeric identifier; the guid part of the identifier is usually
+    called "command set" and is used to group different command inside a logically related
+    group; your package should define its own command set in order to avoid collisions
+    with command ids defined by other packages. -->
+
+    <!--<Menus>
+      <Menu guid="guidBidsHelperPackageCmdSet" id="menuExpressionWindow" priority="0x0000" type="ToolWindowToolbar">
+        <Strings>
+          <ButtonText>Expression Window 3 (BIDS Helper)</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>-->
+    
+    <!-- In this section you can define new menu groups. A menu group is a container for
+         other menus or buttons (commands); from a visual point of view you can see the
+         group as the part of a menu contained between two lines. The parent of a group
+         must be a menu. -->
+    <Groups>
+      <!-- Solution Explorer Item Menu Top -->
+      <Group guid="guidBidsHelperPackageCmdSet" id="myMenuGroupTop" priority="0x0001">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
+      </Group>
+      <!-- Solution Explorer Item Menu Bottom -->
+      <Group guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
+      </Group>
+
+      <!-- SSIS Connection Menu Bottom -->
+      <Group guid="guidBidsHelperPackageCmdSet" id="mySsisConnectionMenuGroup" priority="0x0600">
+        <Parent guid="guidSsisConnectionMenu" id="menuSsisConnectionId"/>
+      </Group>
+
+      <!-- View / Other Windows Menu -->
+      <Group guid="guidBidsHelperPackageCmdSet" id="MyMenuViewOtherWindowsGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
+      </Group>
+      
+      <!-- MeasureGroup Context Menu -->
+      <Group guid="guidBidsHelperPackageCmdSet" id="myMeasureGroupContextMenuGroup" priority="0x0000">
+        <Parent guid="measureGroupContextMenuGroup" id="measureGroupContextMenu"/>
+      </Group>
+    
+      <!-- Project Menu -->
+      <Group guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+      </Group>
+      <Group guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" priority="0x0001">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+      </Group>
+
+      <Group guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" priority="0x0600">
+        <Parent guid="guidSolutionFolder" id="contextMenuSolutionFolder"/>
+      </Group>
+        
+      <Group guid="guidBidsHelperPackageCmdSet" id="mySsisDesignerGroup" priority="0x0600">
+        <Parent guid="guidSsisDesignerMenu" id="menuSsisControlFlowItem" />
+      </Group>
+      <Group guid="guidBidsHelperPackageCmdSet" id="mySsisDataFlowGroup" priority="0x0600">
+        <Parent guid="guidSsisDesignerMenu" id="menuSsisDataFlowSurface" />
+      </Group>
+      <Group guid="guidBidsHelperPackageCmdSet" id="mySsisProjectNode" priority="0x0600">
+        <Parent guid="guidSsisDesignerMenu" id="menuSsisProjectNode"/>
+      </Group>
+    </Groups>
+
+    
+    
+    <!--Buttons section. -->
+    <!--This section defines the elements the user can interact with, like a menu command or a button
+        or combo box in a toolbar. -->
+    <Buttons>
+      <!--To define a menu group you have to specify its ID, the parent menu and its display priority.
+          The command is visible and enabled by default. If you need to change the visibility, status, etc, you can use
+          the CommandFlag node.
+          You can add more than one CommandFlag node e.g.:
+              <CommandFlag>DefaultInvisible</CommandFlag>
+              <CommandFlag>DynamicVisibility</CommandFlag>
+          If you do not want an image next to your command, remove the Icon node /> -->
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeployMdxScriptId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupTop" />
+        <Icon guid="guidSsasImages" id="picDeployMdxScript" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Deploy Mdx Script</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="AggregationManagerId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picAggManager" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Edit Aggregations...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="PrinterFriendlyDimensionUsageId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picPrinterFriendlyDimUsage" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Printer Friendly Dimension Usage...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="SyncDescriptionsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picSyncDescriptions" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Sync Descriptions...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="TabularActionsEditorId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picTabularActions" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Tabular Actions Editor...</ButtonText>
+        </Strings>
+      </Button>
+        
+      <Button guid="guidBidsHelperPackageCmdSet" id="TabularDisplayFoldersId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picTabularFolders" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Tabular Display Folders...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="TabularHideMemberIfId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picTabularHideMemberIf" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Tabular HideMemberIf...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="TabularTranslationsEditorId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picTabularTranslations" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Tabular Translations...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="PCDimNaturalizerId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picPCDimNaturalize" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Parent-Child Dimension Naturalizer...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="SmartDiffId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picSmartDiff" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Smart Diff...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="AttributeRelationshipNameFixId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidImages" id="picBlank" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Fix Attribute Relationship Names</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="DimensionHealthCheckId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picDimensionHealthCheck" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Dimension Health Check...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeleteUnusedIndexesId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picDeleteIndexes" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Delete Unused Indexes...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="DimensionOptimizationReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" />
+        <Icon guid="guidSsasImages" id="picDimOptimizationReport" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Dimension Optimization Report...</ButtonText>
+        </Strings>
+      </Button>
+        
+        
+      <Button guid="guidBidsHelperPackageCmdSet" id="DuplicateRolesId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picDuplicateRole" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Duplicate Role</ButtonText>
+        </Strings>
+      </Button>
+        
+      <Button guid="guidBidsHelperPackageCmdSet" id="ExpressionWindowId" priority="0x0100" type="Button">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+        <Icon guid="guidSsisImages" id="picExpressionList" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Expression List (BIDS Helper)</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="MeasureGroupHealthCheckId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMeasureGroupContextMenuGroup" />
+        <Icon guid="guidSsasImages" id="picMeasureGroupHealthCheck" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Measure Group Health Check...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="DataTypeDiscrepancyCheckId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" />
+        <Icon guid="guidSsasImages" id="picDimDataTypeCheck" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Data Type Discrepancy Check...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeployAggregationDesignsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Deploy Aggregation Designs</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="NonDefaultPropertiesReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picNonDefaultProperties" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Non-Default Properties Report...</ButtonText>
+        </Strings>
+      </Button>
+    
+      <Button guid="guidBidsHelperPackageCmdSet" id="NonDefaultPropertiesReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Icon guid="guidSsasImages" id="picNonDefaultProperties" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Non-Default Properties Report...</ButtonText>
+        </Strings>
+      </Button>
+        
+      <!-- Roles folder -->
+      <Button guid="guidBidsHelperPackageCmdSet" id="RolesReportPluginId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuFolderGroup" />
+        <Icon guid="guidSsasImages" id="picRolesReport" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Roles Report...</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- bim file -->
+    <Button guid="guidBidsHelperPackageCmdSet" id="RolesReportPluginId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picRolesReport" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Roles Report...</ButtonText>
+        </Strings>
+      </Button>  
+        
+    <Button guid="guidBidsHelperPackageCmdSet" id="UnusedColumnsReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picUnusedColumns" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Unused Columns Report...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="VisualizeAttributeLatticeId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+
+        <Icon guid="guidSsasImages" id="picVisualizeAttributeLattice" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Visualize Attribute Lattice</ButtonText>
+        </Strings>
+      </Button>
+        
+      <Button guid="guidBidsHelperPackageCmdSet" id="UsedColumnsReportId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsasImages" id="picUsedColumns" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Used Columns Report...</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- SSIS Buttons -->
+
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeploySSISPackageId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" />
+        <Icon guid="guidSsisImages" id="picBatchProperties" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Deploy</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeploySSISPackageId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupTop" />
+        <Icon guid="guidSsisImages" id="picBatchProperties" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Deploy</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="BatchPropertyUpdateId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsisImages" id="picBatchProperties" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Batch Property Update...</ButtonText>
+        </Strings>
+      </Button>
+    
+      <Button guid="guidBidsHelperPackageCmdSet" id="PerformanceVisualizationId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsisImages" id="picSsisPerformance" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Execute and Visualize Performance</ButtonText>
+        </Strings>
+      </Button>
+      
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="DesignPracticeScannerId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsisImages" id="picDesignScanner" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Design Warnings Scanner</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="AddNewBimlFileId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" />
+        <Icon guid="guidSsisImages" id="picBimlFile" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Add New Biml File</ButtonText>
+        </Strings>
+      </Button>
+    
+      <Button guid="guidBidsHelperPackageCmdSet" id="ExpandBimlFileId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsisImages" id="picBiml" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Expand Biml File</ButtonText>
+        </Strings>
+      </Button>
+  
+      <Button guid="guidBidsHelperPackageCmdSet" id="LearnMoreAboutBimlId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsisImages" id="picBimlHelp" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Learn More About Biml</ButtonText>
+        </Strings>
+      </Button>
+            
+      <Button guid="guidBidsHelperPackageCmdSet" id="CheckBimlForErrorsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsisImages" id="picBimlCheck" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Check Biml for Errors</ButtonText>
+        </Strings>
+      </Button>
+       
+      <Button guid="guidBidsHelperPackageCmdSet" id="FixedWidthColumnsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="mySsisConnectionMenuGroup" />
+        <Icon guid="guidSsisImages" id="picFixedColumns" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Create Fixed Width Columns...</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="PerformanceBreakdownId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="mySsisDesignerGroup" />
+        <Icon guid="guidSsisImages" id="picSsisPerformance" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Performance Breakdown</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="PerformanceBreakdownId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="mySsisDataFlowGroup" />
+        <Icon guid="guidSsisImages" id="picSsisPerformance" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Performance Breakdown</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidBidsHelperPackageCmdSet" id="SortablePackagePropertiesId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidImages" id="picBlank" />
+        <!-- the 2 lines below set the default visibility-->
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Sortable Package Properties Report...</ButtonText>
+        </Strings>
+      </Button>
+    
+      <Button guid="guidBidsHelperPackageCmdSet" id="SortablePackagePropertiesId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Sortable Package Properties Report...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="SortProjectFilesId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="mySsisProjectNode" />
+        <Icon guid="guidSsisImages" id="picSortPackages" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Sort by name (persisted)</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="ResetGUIDsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
+        <Icon guid="guidSsisImages" id="picNewGuid" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Reset GUIDs</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="FixRelativePathsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Icon guid="guidSsisImages" id="picRelativePaths" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Fix Relative Paths...</ButtonText>
+        </Strings>
+      </Button>
+<!-- 
+==========================================
+  SSRS Buttons 
+==========================================
+-->
+      <Button guid="guidBidsHelperPackageCmdSet" id="DeleteDatasetCacheId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Delete Dataset Cache Files</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="UnusedDatasetsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Unused Report Datasets...</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidBidsHelperPackageCmdSet" id="UsedDatasetsId" priority="0x0100" type="Button">
+        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroup" />
+        <Icon guid="guidImages" id="picBlank" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Used Report Datasets...</ButtonText>
+        </Strings>
+      </Button>
+
+
+      <!--
+      
+      -->
+    
+    </Buttons>
+    <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
+    <Bitmaps>
+      <!--  The bitmap id is defined in a way that is a little bit different from the others:
+            the declaration starts with a guid for the bitmap strip, then there is the resource id of the
+            bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
+            inside a button definition. An important aspect of this declaration is that the element id
+            must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
+      <Bitmap guid="guidImages" href="Resources\BIDSHelperIcons.png" usedList="picBlank, picDeployMdxScriptOld, picEditAggs, picPrinterFriendlyDimUsageOld"/>
+      <Bitmap guid="guidSsasImages" href="Resources\ssas-icons.png" usedList="picAggManager, picUsedColumns, picUnusedColumns, picDeleteAggs, picDeleteIndexes, picDeployMdxScript, picDimDataTypeCheck, picDimensionHealthCheck, picDimOptimizationReport, picDuplicateRole, picMeasureGroupHealthCheck, picNonDefaultProperties, picPCDimNaturalize, picPrinterFriendlyDimUsage, picRolesReport, picSmartDiff, picVisualizeAttributeLattice, picSyncDescriptions, picTabularActions, picTabularFolders, picTabularTranslations, picTabularAnnotationWorkaround, picTabularHideMemberIf" />
+      <Bitmap guid="guidSsisImages" href="Resources\ssis-icons.png" usedList="picBatchProperties, picBiml, picBimlFile, picBimlCheck, picBimlHelp, picDesignScanner, picSsisDeploy, picExpressionList, picRelativePaths, picSsisPerformance, picNewGuid, picFixedColumns, picSortPackages"  />
+    </Bitmaps>
+  </Commands>
+
+  <Symbols>
+    <!-- This is the package guid. -->
+    <GuidSymbol name="guidBidsHelperPackage" value="{d3474f10-475f-4a9d-84f6-85bc892ad3b6}" />
+    <GuidSymbol name="guidSsisConnectionMenu" value="{96B36E93-F71C-4160-A4EA-26AE801D2F63}" >
+      <IDSymbol name="menuSsisConnectionId" value="0x1008"/>
+    </GuidSymbol>
+    
+    <GuidSymbol name="guidSolutionFolder" value="{FA554DC1-6DD4-11D1-AF71-006097DF568C}">
+      <IDSymbol name="contextMenuSolutionFolder" value="0x0431"/>
+    </GuidSymbol>
+      
+    <GuidSymbol name="guidSsisDesignerMenu" value="{96B36E93-F71C-4160-A4EA-26AE801D2F63}">
+      <IDSymbol name="menuSsisControlFlowItem" value="0x1003"/>
+      <IDSymbol name="menuSsisDataFlowSurface" value="0x1014"/>
+      <IDSymbol name="menuSsisProjectNode" value="0x1020"/>
+    </GuidSymbol>
+    
+    <!-- This is the guid used to group the menu commands together -->
+    <GuidSymbol name="guidBidsHelperPackageCmdSet" value="{bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7}">  
+      <!-- Menus -->
+      <IDSymbol name="menuExpressionWindow" value="0x4000" />
+      <!-- Menu Groups -->
+      <IDSymbol name="myMenuGroupTop" value="0x1020" />
+      <IDSymbol name="myMenuGroupBottom" value="0x1030" />
+      <IDSymbol name="MyMenuViewOtherWindowsGroup" value ="0x1040" />
+      <IDSymbol name="myMeasureGroupContextMenuGroup" value="01050"/>
+      <IDSymbol name="myProjectMenuGroup" value="0x1060"/>
+      <IDSymbol name="mySsisConnectionMenuGroup" value="0x1070"/>
+      <IDSymbol name="mySsisDataFlowGroup" value="0x1080"/>
+      <IDSymbol name="mySsisDesignerGroup" value="0x1090" />
+      <IDSymbol name="mySsisProjectNode" value="0x10A0" />
+      <IDSymbol name="myProjectMenuGroupTop" value="0x10B0"/>
+      <IDSymbol name="myMenuFolderGroup" value="0x10C0"/>
+      <!-- Button IDs-->
+      <IDSymbol name="DeployMdxScriptId" value="0x0100" />
+      <IDSymbol name="AggregationManagerId" value="0x0101" />
+      <IDSymbol name="PrinterFriendlyDimensionUsageId" value="0x0102" />
+      <IDSymbol name="SyncDescriptionsId" value="0x0103" />
+      <IDSymbol name="TabularDeployDatabaseId" value="0x0104" />
+      <IDSymbol name="TabularActionsEditorId" value="0x0105" />
+      <IDSymbol name="TabularAnnotationsWorkaroundId" value="0x0106" />
+      <IDSymbol name="TabularDisplayFoldersId" value="0x0107" />
+      <IDSymbol name="TabularHideMemberIfId" value="0x0108" />
+      <IDSymbol name="TabularTranslationsEditorId" value="0x0109" />
+      <IDSymbol name="PCDimNaturalizerId" value="0x010A" />
+      <IDSymbol name="AttributeRelationshipNameFixId" value="0x010B" />
+      <IDSymbol name="ExpressionWindowId" value="0x010C" />
+      <IDSymbol name="SmartDiffId" value="0x010D" />
+      <IDSymbol name="MeasureGroupHealthCheckId" value="0x010E" />
+      <IDSymbol name="DataTypeDiscrepancyCheckId" value="0x010F" />
+      <IDSymbol name="DeployAggregationDesignsId" value="0x0110" />
+      <IDSymbol name="DimensionHealthCheckId" value="0x0111" />
+      <IDSymbol name="DeleteUnusedIndexesId" value="0x0112" />
+      <IDSymbol name="DuplicateRolesId" value="0x0113" />
+      <IDSymbol name="DimensionOptimizationReportId" value="0x0114" />
+      <IDSymbol name="RolesReportPluginId" value="0x0115" />
+      <IDSymbol name="NonDefaultPropertiesReportId" value="0x0116"/>
+      <IDSymbol name="UnusedColumnsReportId" value="0x0117"/>
+      <IDSymbol name="UsedColumnsReportId" value="0x0118"/>
+      <IDSymbol name="VisualizeAttributeLatticeId" value="0x0119"/>
+      <IDSymbol name="BatchPropertyUpdateId" value="0x011A"/>
+      <IDSymbol name="PerformanceVisualizationId" value="0x011B" />
+      <IDSymbol name="DesignPracticeScannerId" value="0x11C" />
+      <IDSymbol name="AddNewBimlFileId" value="0x011D" />
+      <IDSymbol name="ExpandBimlFileId" value="0x011E" />
+      <IDSymbol name="LearnMoreAboutBimlId" value="0x011F" />
+      <IDSymbol name="CheckBimlForErrorsId" value="0x0120" />
+      <IDSymbol name="FixedWidthColumnsId" value="0x0121" />
+      <IDSymbol name="PerformanceBreakdownId" value="0x0122" />
+      <IDSymbol name="SortablePackagePropertiesId" value="0x0123" />
+      <IDSymbol name="SortProjectFilesId" value="0x0124" />
+      <IDSymbol name="ResetGUIDsId" value="0x0125" />
+      <IDSymbol name="FixRelativePathsId" value="0x0126" />
+      <IDSymbol name="DeleteDatasetCacheId" value="0x0127" />
+      <IDSymbol name="UnusedDatasetsId" value="0x0128" />
+      <IDSymbol name="UsedDatasetsId" value="0x0129" />
+      <IDSymbol name="DeploySSISPackageId" value="0x012A" />
+    </GuidSymbol>
+
+    <GuidSymbol name="measureGroupContextMenuGroup" value="{FA554DC1-6DD4-11D1-AF71-006097DF568C}">
+      <IDSymbol name="measureGroupContextMenu" value="0x1220"/>
+    </GuidSymbol>
+    
+    <GuidSymbol name="guidImages" value="{feec21bd-6b4e-4eca-9c2f-14772de9478c}" >
+      <IDSymbol name="picBlank" value="1" />
+      <IDSymbol name="picDeployMdxScriptOld" value="2" />
+      <IDSymbol name="picEditAggs" value="3" />
+      <IDSymbol name="picPrinterFriendlyDimUsageOld" value="4" />
+    </GuidSymbol>
+    <GuidSymbol name="guidImages2" value="{feec21bd-6b4e-4eca-9c2f-14772de9478d}" >
+      <IDSymbol name="bmpIndex" value="1" />
+    </GuidSymbol>
+    <GuidSymbol name="guidSsasImages" value="{feec21bd-6b4e-4eca-9c2f-14772de9478e}" >
+      <IDSymbol name="picAggManager" value="1" />
+      <IDSymbol name="picUsedColumns" value="2" />
+      <IDSymbol name="picUnusedColumns" value="3" />
+      <IDSymbol name="picDeleteAggs" value="4" />
+      <IDSymbol name="picDeleteIndexes" value="5" />
+      <IDSymbol name="picDeployMdxScript" value="6" />
+      <IDSymbol name="picDimDataTypeCheck" value="7" />
+      <IDSymbol name="picDimensionHealthCheck" value="8" />
+      <IDSymbol name="picDimOptimizationReport" value="9" />
+      <IDSymbol name="picDuplicateRole" value="10" />
+      <IDSymbol name="picMeasureGroupHealthCheck" value="11" />
+      <IDSymbol name="picNonDefaultProperties" value="12" />
+      <IDSymbol name="picPCDimNaturalize" value="13" />
+      <IDSymbol name="picPrinterFriendlyDimUsage" value="14" />
+      <IDSymbol name="picRolesReport" value="15" />
+      <IDSymbol name="picSmartDiff" value="16" />
+      <IDSymbol name="picVisualizeAttributeLattice" value="17" />
+      <IDSymbol name="picSyncDescriptions" value="18" />
+      <IDSymbol name="picTabularActions" value="19" />
+      <IDSymbol name="picTabularFolders" value="20" />
+      <IDSymbol name="picTabularTranslations" value="21" />
+      <IDSymbol name="picTabularAnnotationWorkaround" value="22" />
+      <IDSymbol name="picTabularHideMemberIf" value="23" />
+      
+    </GuidSymbol>
+      <GuidSymbol name="guidSsisImages" value="{feec21bd-6b4e-4eca-9c2f-14772de9478f}" >
+      <IDSymbol name="picBatchProperties" value="1" />
+      <IDSymbol name="picBiml" value="2" />
+      <IDSymbol name="picBimlFile" value="3" />
+      <IDSymbol name="picBimlCheck" value="4" />
+      <IDSymbol name="picBimlHelp" value="5" />
+      <IDSymbol name="picDesignScanner" value="6" />
+      <IDSymbol name="picSsisDeploy" value="7" />
+      <IDSymbol name="picExpressionList" value="8" />
+      <IDSymbol name="picRelativePaths" value="9" />
+      <IDSymbol name="picSsisPerformance" value="10" />
+      <IDSymbol name="picNewGuid" value="11" />
+      <IDSymbol name="picFixedColumns" value="12" />
+      <IDSymbol name="picSortPackages" value="13" />
+      
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>

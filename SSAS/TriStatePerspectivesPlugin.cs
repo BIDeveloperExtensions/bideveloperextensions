@@ -1,17 +1,11 @@
-using Extensibility;
+//using Extensibility;
 using EnvDTE;
-using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
-using Microsoft.DataWarehouse.ComponentModel;
 using System;
-using Microsoft.Win32;
 using System.Collections;
 using System.Reflection;
 
@@ -22,29 +16,22 @@ namespace BIDSHelper
     {
         
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
-        private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForPerspectives = new System.Collections.Generic.Dictionary<string,EditorWindow>();
+        private System.Collections.Generic.Dictionary<string, EditorWindow> windowHandlesFixedForPerspectives = new System.Collections.Generic.Dictionary<string,EditorWindow>();
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForGridEvents = new System.Collections.Generic.Dictionary<string,EditorWindow>();
-#if DENALI || SQL2014
         private bool _IsMetroOrGreater = false;
-#endif
 
-        public TriStatePerspectivesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TriStatePerspectivesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
 
         }
 
-        public override bool ShouldHookWindowCreated
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool ShouldHookWindowCreated { get { return true; } }
 
         public override void OnDisable()
         {
             base.OnDisable();
+            package.Log.Debug("TriStatPerspectives OnDisable fired");
             foreach (EditorWindow win in windowHandlesFixedForGridEvents.Values)
             {
                 win.ActiveViewChanged -= win_ActiveViewChanged;            
@@ -53,9 +40,7 @@ namespace BIDSHelper
                 Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
                 grid.MouseClick -= grid_MouseClick;
                 grid.KeyPress -= grid_KeyPress;
-#if DENALI || SQL2014
                 HookCellPaintEvent(grid, false);
-#endif
             }
 
             foreach (EditorWindow win in windowHandlesFixedForPerspectives.Values)
@@ -64,7 +49,7 @@ namespace BIDSHelper
             }
         }
 
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
         //the CellPaint event is on an internal class Microsoft.AnalysisServices.Design.SquigglyFriendlyDlgGrid and it uses an internal Microsoft.AnalysisServices.Design.CellPaintEventArgs args, so you have to hook with reflection
         private void HookCellPaintEvent(object grid, bool add)
         {
@@ -121,6 +106,7 @@ namespace BIDSHelper
         {
             try
             {
+                package.Log.Debug("TriStatPerspectives OnWindowActivated fired");
                 if (GotFocus == null) return;
                 IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
@@ -152,7 +138,7 @@ namespace BIDSHelper
                     {
                         grid.MouseClick += new MouseEventHandler(grid_MouseClick);
                         grid.KeyPress += new KeyPressEventHandler(grid_KeyPress);
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
                         _IsMetroOrGreater = VisualStudioHelpers.IsMetroOrGreater(win);
                         HookCellPaintEvent(grid, true);
 #endif
@@ -162,7 +148,7 @@ namespace BIDSHelper
                     System.Reflection.BindingFlags getpropertyflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
 
                     object dlgStorage = null;
-#if KATMAI || DENALI || SQL2014
+#if !(YUKON)
                     dlgStorage = grid.GetType().BaseType.BaseType.InvokeMember("DlgStorage", getpropertyflags, null, grid, null);
 #else
                     dlgStorage = grid.GetType().BaseType.InvokeMember("DlgStorage", getpropertyflags, null, grid, null); //Microsoft.SqlServer.Management.UI.Grid.IDlgStorage
@@ -401,7 +387,7 @@ namespace BIDSHelper
                 brush = (System.Drawing.SolidBrush)columns[j + 1].GetType().InvokeMember("BkBrush", getpropertyflags, null, columns[j + 1], null);
             }
 
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
             //do this a new way that will work with VS2012 SSDT2012 and it's new usage of BkBrush to setup the new color scheme
             if (_IsMetroOrGreater)
             {
@@ -495,6 +481,7 @@ namespace BIDSHelper
         {
             try
             {
+                package.Log.Debug("TriStatPerspectives grid_MouseClick fired");
                 OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
             }
             catch { }
@@ -514,12 +501,12 @@ namespace BIDSHelper
             get { return "TriStatePerspectives"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; }
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Tri-State Perspectives"; }
         }
@@ -529,10 +516,10 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
+        //public override string MenuName
+        //{
+        //    get { return string.Empty; } //no need to have a menu command
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -540,7 +527,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -552,22 +539,11 @@ namespace BIDSHelper
             get { return "An addition to the Perspectives tab of the cube designer, which highlights any measure groups or dimensions in which not all visible children are part of the perspective."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
-
-
         public override void Exec()
         {
         }
 
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
         private class TriStatePerspectiveGridCell : Microsoft.SqlServer.Management.UI.Grid.GridCell
         {
             private Microsoft.SqlServer.Management.UI.Grid.GridCell _original;
@@ -580,6 +556,9 @@ namespace BIDSHelper
 
             public System.Drawing.SolidBrush OverrideBkBrush;
         }
+
+
+
 #endif
     }
 }

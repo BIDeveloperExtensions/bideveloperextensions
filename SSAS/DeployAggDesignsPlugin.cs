@@ -1,8 +1,6 @@
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
 using System.Xml.Xsl;
 using System.Text;
 using System.Windows.Forms;
@@ -11,16 +9,18 @@ using System.Resources;
 
 using Microsoft.AnalysisServices;
 using Microsoft.AnalysisServices.AdomdClient;
-
+using BIDSHelper.Core;
+using System;
 
 namespace BIDSHelper
 {
     public class DeployAggDesignsPlugin : BIDSHelperPluginBase
     {
 
-        public DeployAggDesignsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DeployAggDesignsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.DeployAggDesignsId, ".cube");
         }
 
         public override string ShortName
@@ -28,15 +28,10 @@ namespace BIDSHelper
             get { return "DeployAggDesigns"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 2605; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Deploy Aggregation Designs"; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 2605; }
+        //}
 
         public override string ToolTip
         {
@@ -49,7 +44,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -61,14 +56,12 @@ namespace BIDSHelper
             get { return "Deploy just the aggregation designs of a cube."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override string FeatureName
         {
-            return false;
+            get
+            {
+                return "Deploy Aggregation Designs";
+            }
         }
 
 

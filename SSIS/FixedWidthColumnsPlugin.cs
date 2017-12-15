@@ -1,31 +1,24 @@
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
 using System;
-using Microsoft.Win32;
-using MSDDS;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Security;
 using wrap = Microsoft.SqlServer.Dts.Runtime.Wrapper;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class FixedWidthColumnsPlugin : BIDSHelperPluginBase
     {
 
-        public FixedWidthColumnsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public FixedWidthColumnsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.FixedWidthColumnsId);
         }
 
 
@@ -34,15 +27,10 @@ namespace BIDSHelper
             get { return "FixedWidthColumnsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 636; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Create Fixed Width Columns..."; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 636; }
+        //}
 
         public override string FeatureName
         {
@@ -54,15 +42,10 @@ namespace BIDSHelper
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return "Connection"; }
-        }
-
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Connection"; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -87,7 +70,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {
@@ -127,7 +110,7 @@ namespace BIDSHelper
             EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
             Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
 
-#if DENALI || SQL2014
+
             Control lvwConnMgrs = null;
             package = (Package)win.PropertiesLinkComponent;
 
@@ -153,41 +136,6 @@ namespace BIDSHelper
             Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerModelElement connModelEl = cmControl.SelectedItem as Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers.ConnectionManagerModelElement;
             if (connModelEl == null) return null;
             ConnectionManager conn = connModelEl.ConnectionManager;
-#else
-            ListView lvwConnMgrs = null;
-            IDTSSequence container = null;
-            TaskHost taskHost = null;
-            DdsDiagramHostControl diagram = null;
-            if (win.SelectedIndex == 0) //Control Flow
-            {
-                diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-            }
-            else if (win.SelectedIndex == 1) //Data Flow
-            {
-                diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
-                container = (IDTSSequence)taskHost.Parent;
-                lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
-            }
-            else if (win.SelectedIndex == 2) //Event Handlers
-            {
-                diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
-                lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-                container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-            }
-            else
-            {
-                return null;
-            }
-
-            if (lvwConnMgrs.SelectedItems.Count != 1) return null;
-            package = GetPackageFromContainer((DtsContainer)container);
-
-            ListViewItem lviConn = lvwConnMgrs.SelectedItems[0];
-            ConnectionManager conn = FindConnectionManager(package, lviConn.Text);
-#endif
 
             return conn;
         }
@@ -240,13 +188,9 @@ namespace BIDSHelper
 
                 if (dialogResult == DialogResult.OK)
                 {
-#if KATMAI || DENALI || SQL2014
+
                     wrap.IDTSConnectionManagerFlatFile100 ff = conn.InnerObject as wrap.IDTSConnectionManagerFlatFile100;
                     DtsConvert.GetExtendedInterface(conn);
-#else
-                    wrap.IDTSConnectionManagerFlatFile90 ff = conn.InnerObject as wrap.IDTSConnectionManagerFlatFile90;
-                    DtsConvert.ToConnectionManager90(conn);
-#endif
 
                     while (ff.Columns.Count > 0)
                         ff.Columns.Remove(0);
@@ -267,13 +211,8 @@ namespace BIDSHelper
                         }
                         listUsedNames.Add(sName);
 
-#if KATMAI || DENALI || SQL2014
                         wrap.IDTSConnectionManagerFlatFileColumn100 col = ff.Columns.Add();
                         wrap.IDTSName100 name = col as wrap.IDTSName100;
-#else
-                        wrap.IDTSConnectionManagerFlatFileColumn90 col = ff.Columns.Add();
-                        wrap.IDTSName90 name = col as wrap.IDTSName90;
-#endif
 
                         name.Name = sName;
                         col.MaximumWidth = int.Parse(row.Cells[1].Value.ToString());

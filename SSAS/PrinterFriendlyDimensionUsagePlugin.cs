@@ -1,20 +1,18 @@
-using Extensibility;
+
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
+using BIDSHelper.Core;
 
-
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class PrinterFriendlyDimensionUsagePlugin : BIDSHelperPluginBase
     {
-        public PrinterFriendlyDimensionUsagePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public PrinterFriendlyDimensionUsagePlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.PrinterFriendlyDimensionUsageId, new string[] { ".cube", ".bim" } );
         }
 
         public override string ShortName
@@ -22,15 +20,10 @@ namespace BIDSHelper
             get { return "PrinterFriendlyDimensionUsage"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 3983; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Printer Friendly Dimension Usage..."; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 3983; }
+        //}
 
         public override string FeatureName
         {
@@ -42,10 +35,10 @@ namespace BIDSHelper
             get { return "Displays a Printer Friendly version of the DimensionUsage tab"; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -53,7 +46,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -70,28 +63,28 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //            return false;
                 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                if (sFileName.EndsWith(".bim"))
-                {
-                    return true;
-                }
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+        //        if (sFileName.EndsWith(".bim"))
+        //        {
+        //            return true;
+        //        }
 
-                return (((ProjectItem)hierItem.Object).Object is Cube);
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //        return (((ProjectItem)hierItem.Object).Object is Cube);
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
 
         public override void Exec()
@@ -103,12 +96,12 @@ namespace BIDSHelper
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
 
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-
 #if DENALI || SQL2014
                 Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = null;
+#else
+                //Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo sandbox = null;
+                DataModelingSandboxWrapper sandbox = null;
 #endif
-
-
                 bool bIsTabular = false;
                 Cube cub = null;
                 if (projItem.Object is Cube)
@@ -118,11 +111,18 @@ namespace BIDSHelper
                 else if (sFileName.EndsWith(".bim"))
                 {
 #if DENALI || SQL2014
-                    sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                    sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                     cub = sandbox.Cube;
                     bIsTabular = true;
                     Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Measures;
+#else
+                    sandbox = new DataModelingSandboxWrapper(this);
+                    //sandbox = TabularHelpers.GetTabularSandboxAmoFromBimFile(this, true);
+                    //cub = sandbox.Cube;
+                    bIsTabular = true;
+                    //Microsoft.AnalysisServices.BackEnd.IDataModelingObjectCollection<Microsoft.AnalysisServices.BackEnd.DataModelingMeasure> measures = sandbox.Cube.AllMeasures;
 #endif
+
                 }
                 else
                 {
@@ -137,7 +137,7 @@ namespace BIDSHelper
 
                 if (bIsTabular)
                 {
-#if DENALI || SQL2014
+
                     bool bIsBusMatrix = (res == DialogResult.No);
                     System.Collections.Generic.List<DimensionUsage> list = PrinterFriendlyDimensionUsage.GetTabularDimensionUsage(sandbox, bIsBusMatrix);
                     DeploymentSettings _deploymentSettings = new DeploymentSettings(projItem);
@@ -150,7 +150,7 @@ namespace BIDSHelper
                     }
 
                     frm.ReportBindingSource.DataSource = list;
-#endif
+
                 }
                 else
                 {
@@ -180,7 +180,7 @@ namespace BIDSHelper
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
             }
         }
     }

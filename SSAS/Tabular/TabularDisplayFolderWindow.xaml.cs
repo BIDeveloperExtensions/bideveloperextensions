@@ -18,7 +18,22 @@ namespace BIDSHelper.SSAS
     {
         public TabularDisplayFolderWindow()
         {
-            InitializeComponent();
+            //InitializeComponent();
+            //overriding the default InitializeComponent() method as it gets hardcoded to BidsHelper2017
+            if (_contentLoaded)
+            {
+                return;
+            }
+            _contentLoaded = true;
+            System.Uri resourceLocater = new System.Uri("/" + this.GetType().Assembly.GetName().Name + ";component/ssas/tabular/tabulardisplayfolderwindow.xaml", System.UriKind.Relative);
+
+#line 1 "..\..\..\..\SSAS\Tabular\TabularDisplayFolderWindow.xaml"
+            System.Windows.Application.LoadComponent(this, resourceLocater);
+
+#line default
+#line hidden
+
+
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)

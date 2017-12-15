@@ -1,29 +1,26 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using Microsoft.AnalysisServices;
-using System.Data;
 using System.IO;
+using BIDSHelper.Core;
+using BIDSHelper.SSAS;
 
 namespace BIDSHelper
 {
     public class TabularAnnotationWorkaroundPlugin : BIDSHelperPluginBase
     {
-        public const string ANNOTATION_STYLE_ANNOTATION = "BIDS_Helper_Tabular_Annotation_Style";
-        public const string ANNOTATION_STYLE_STRING = "String";
-
+        
         private const string BACKUP_FILE_SUFFIX = ".BeforeBidsHelperAnnotationFix.bim";
 
         #region Standard Plugin Overrides
-        public TabularAnnotationWorkaroundPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TabularAnnotationWorkaroundPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.TabularAnnotationsWorkaroundId);
         }
 
         public override string ShortName
@@ -31,35 +28,31 @@ namespace BIDSHelper
             get { return "TabularAnnotationWorkaroundPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 2116; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 2116; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Tabular Annotation Workaround..."; }
-        }
 
         public override string FeatureName
         {
             get { return "Tabular Annotation Workaround"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Item"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -67,7 +60,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASTabular; }
         }
 
         /// <summary>
@@ -84,25 +77,15 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
 #if DENALI
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (!(hierItem.Object is ProjectItem)) return false;
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                if (sFileName.EndsWith(".bim"))
+                if (TabularHelpers.GetTabularSandboxFromBimFile(this, false) == null)
                 {
-                    if (TabularHelpers.GetTabularSandboxFromBimFile(hierItem, false) == null)
-                    {
-                        return true; //.bim file is closed so show this menu item
-                    }
-                }
+                    return true; //.bim file is closed so show this menu item
+                }   
             }
             catch
             {
@@ -137,23 +120,7 @@ namespace BIDSHelper
             }
         }
 
-        public static bool AreAnnotationsStringStyle(MajorObject obj)
-        {
-            while (obj != null && !(obj is Database))
-            {
-                obj = (MajorObject)obj.Parent;
-            }
-            if (obj == null) throw new Exception("Can't find Database object!");
-            Database db = (Database)obj;
-            if (db.Annotations.Contains(ANNOTATION_STYLE_ANNOTATION))
-            {
-                if (db.Annotations[ANNOTATION_STYLE_ANNOTATION].Value.InnerText == ANNOTATION_STYLE_STRING)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+        
 
         public static void FixAnnotations(string sBimFilePath)
         {
@@ -163,7 +130,7 @@ namespace BIDSHelper
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
             nsmgr.AddNamespace("SSAS", doc.DocumentElement.NamespaceURI);
 
-            if (doc.SelectSingleNode("//SSAS:ObjectDefinition/SSAS:Database/SSAS:Annotations/SSAS:Annotation/SSAS:Name[text()='" + ANNOTATION_STYLE_ANNOTATION + "']/../SSAS:Value[text()='" + ANNOTATION_STYLE_STRING + "']", nsmgr) != null)
+            if (doc.SelectSingleNode("//SSAS:ObjectDefinition/SSAS:Database/SSAS:Annotations/SSAS:Annotation/SSAS:Name[text()='" + TabularHelpers.ANNOTATION_STYLE_ANNOTATION + "']/../SSAS:Value[text()='" + TabularHelpers.ANNOTATION_STYLE_STRING + "']", nsmgr) != null)
             {
                 throw new Exception("BIDS Helper has already switched annotations to the new format!!!");
             }
@@ -191,8 +158,8 @@ namespace BIDSHelper
                 XmlElement annotations = (XmlElement)doc.SelectSingleNode("//SSAS:ObjectDefinition/SSAS:Database/SSAS:Annotations", nsmgr);
                 if (annotations == null) throw new Exception("No Database annotations exist yet!");
                 XmlElement newAnnotation = doc.CreateElement("Annotation", doc.DocumentElement.NamespaceURI);
-                newAnnotation.AppendChild(doc.CreateElement("Name", doc.DocumentElement.NamespaceURI)).InnerText = ANNOTATION_STYLE_ANNOTATION;
-                newAnnotation.AppendChild(doc.CreateElement("Value", doc.DocumentElement.NamespaceURI)).InnerText = ANNOTATION_STYLE_STRING;
+                newAnnotation.AppendChild(doc.CreateElement("Name", doc.DocumentElement.NamespaceURI)).InnerText = TabularHelpers.ANNOTATION_STYLE_ANNOTATION;
+                newAnnotation.AppendChild(doc.CreateElement("Value", doc.DocumentElement.NamespaceURI)).InnerText = TabularHelpers.ANNOTATION_STYLE_STRING;
                 annotations.PrependChild(newAnnotation);
 
                 System.IO.File.Copy(sBimFilePath, sBimFilePath + BACKUP_FILE_SUFFIX, true);

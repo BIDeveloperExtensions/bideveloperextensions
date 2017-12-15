@@ -1,28 +1,22 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
 using Microsoft.AnalysisServices.BackEnd;
-using Microsoft.VisualStudio.CommandBars;
-using System.Xml.Xsl;
 using System.Text;
 using System.Windows.Forms;
-using System.IO;
-using System.Resources;
-
 using Microsoft.AnalysisServices;
-using Microsoft.AnalysisServices.AdomdClient;
-
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
     public class TabularDeployDatabasePlugin : BIDSHelperPluginBase
     {
 
-        public TabularDeployDatabasePlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TabularDeployDatabasePlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.TabularDeployDatabaseId, ".bim");
         }
 
         public override string ShortName
@@ -38,15 +32,10 @@ namespace BIDSHelper
             }
         }
 
-        public override int Bitmap
-        {
-            get { return 2605; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Deploy Tabular Database"; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 2605; }
+        //}
 
         public override string ToolTip
         {
@@ -68,7 +57,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASTabular; }
         }
 
         /// <summary>
@@ -85,24 +74,24 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //            return false;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (!(hierItem.Object is ProjectItem)) return false;
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                return (sFileName.EndsWith(".bim"));
-            }
-            catch
-            {
-            }
-            return false;
-        }
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        if (!(hierItem.Object is ProjectItem)) return false;
+        //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+        //        return (sFileName.EndsWith(".bim"));
+        //    }
+        //    catch
+        //    {
+        //    }
+        //    return false;
+        //}
 
 
         public override void Exec()
@@ -112,7 +101,7 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-                var sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                var sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                 if (sandbox == null) throw new Exception("Can't get Sandbox!");
 
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
@@ -127,16 +116,20 @@ namespace BIDSHelper
 
         private void ExecInternal(ProjectItem projItem, DataModelingSandbox sandbox)
         {
-            //sandbox.
+#if DENALI || SQL2014
+            var db = sandbox.Database;
+#else
+            var db = ((DataModelingSandboxAmo)sandbox.Impl).Database;
+#endif
             // extract deployment information
-                DeploymentSettings deploySet = new DeploymentSettings(projItem);
+            DeploymentSettings deploySet = new DeploymentSettings(projItem);
 
-                        ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 3, 5);
-                        // Connect to Analysis Services
-                        Microsoft.AnalysisServices.Server svr = new Microsoft.AnalysisServices.Server();
-                        svr.Connect(deploySet.TargetServer);
-                        ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 4, 5);
-                        // execute the xmla
+            ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 3, 5);
+            // Connect to Analysis Services
+            Microsoft.AnalysisServices.Server svr = new Microsoft.AnalysisServices.Server();
+            svr.Connect(deploySet.TargetServer);
+            ApplicationObject.StatusBar.Progress(true, "Deploying Tabular Database", 4, 5);
+            // execute the xmla
             try
             {
                 Microsoft.AnalysisServices.Scripter scr = new Microsoft.AnalysisServices.Scripter();
@@ -153,7 +146,8 @@ namespace BIDSHelper
                 xws.OmitXmlDeclaration = true;
                 xws.ConformanceLevel = ConformanceLevel.Fragment;
                 XmlWriter xwrtr = XmlWriter.Create(sb, xws);
-                scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[] {sandbox.Database}, xwrtr, true);
+                // TODO - do we need different code for JSON based models??
+                scr.ScriptAlter(new Microsoft.AnalysisServices.MajorObject[] {db}, xwrtr, true);
 
                 // update the MDX Script
                 XmlaResultCollection xmlaRC = svr.Execute(sb.ToString());
@@ -177,6 +171,7 @@ namespace BIDSHelper
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString(), "BIDSHelper - Deploy Tabular Database - Exception");
+                package.Log.Exception("Deploy Tabular Database Failed", ex);
             }
         }
 

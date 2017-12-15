@@ -69,24 +69,42 @@ namespace BIDSHelper.SSIS
             this.treeView.Enabled = false;
         }
 
-        private void VariableFound(object sender, VariableFoundEventArgs e)
-        {
-            // Report variable found via BackGroundWorker to ensure we are thread safe when accessing the form control later on
-            this.processPackage.ReportProgress(0, e);
-        }
 
         #region BackgroundWorker Events
 
         private void processPackage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            TreeNode parent = this.treeView.Nodes[0];
-
 #if DEBUG
             stopwatch.Stop();
             this.Text += (" " + stopwatch.ElapsedMilliseconds.ToString());
 #endif
-            this.treeView.Enabled = true;            
+            // Get the first node, if we have one
+            TreeNode node = null;
+            TreeNodeCollection nodes = this.treeView.Nodes;            
+            if (nodes != null && nodes.Count > 0)
+            {
+                node = nodes[0];
+            }
 
+            // Now select the leaf node, so that we have an expanded view with the property grid on our form showing something useful
+            while (node != null)
+            {
+                if (node.Nodes.Count > 0)
+                {
+                    // Drill down to the first child node
+                    node = node.Nodes[0];
+                    continue;
+                }
+                else
+                {
+                    // We have the leafe node, so set it as the selected node
+                    node.TreeView.SelectedNode = node;
+                    break;
+                }
+            }
+
+            this.treeView.Enabled = true;
+            this.treeView.Focus();
             this.progressBar.Visible = false;
         }
 
@@ -99,8 +117,9 @@ namespace BIDSHelper.SSIS
         }
         #endregion
 
-        private void treeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("treeView_AfterSelect");
             SetPropertyGrid(e.Node);
         }
 

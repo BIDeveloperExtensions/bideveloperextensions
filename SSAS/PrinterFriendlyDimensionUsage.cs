@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using Microsoft.AnalysisServices;
+using Microsoft.AnalysisServices.BackEnd;
+using BIDSHelper.SSAS;
 
 namespace BIDSHelper
 {
@@ -71,6 +73,7 @@ namespace BIDSHelper
 #if DENALI || SQL2014
         public static List<DimensionUsage> GetTabularDimensionUsage(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox, bool bIsBusMatrix)
         {
+
             Cube c = sandbox.Cube;
 
             List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
@@ -138,11 +141,100 @@ namespace BIDSHelper
 
             return dimUsage;
         }
+#else
+        public static List<DimensionUsage> GetTabularDimensionUsage(DataModelingSandboxWrapper sandbox, bool bIsBusMatrix)
+        {
 
+            //Cube c = sandbox.Cube;
+            DataModelingSandbox tomSandbox = sandbox.GetSandbox();
+
+            List<CubeDimension> listCubeDimensions = new List<CubeDimension>();
+            List<DimensionUsage> dimUsage = new List<DimensionUsage>();
+
+            List<DataModelingTable> listDimensions = new List<DataModelingTable>();
+
+            foreach (DataModelingTable table in tomSandbox.Tables)
+            {
+                bool bFoundVisibleAttribute = false;
+                foreach (DataModelingColumn col in table.Columns)
+                {
+                    if (!table.IsPrivate && !col.IsPrivate && col.IsAttributeHierarchyQueriable)
+                    {
+                        bFoundVisibleAttribute = true;
+                        break;
+                    }
+                }
+                if (bFoundVisibleAttribute)
+                    listDimensions.Add(table);
+
+                bool bFoundVisibleMeasure = false;
+                foreach (DataModelingMeasure m in sandbox.Measures)
+                {
+                    if (!m.IsPrivate && m.Table == table.Name)
+                    {
+                        bFoundVisibleMeasure = true;
+                        break;
+                    }
+                }
+                if (!bFoundVisibleMeasure && bIsBusMatrix) continue;
+
+                List<DimensionUsage> tmp = RecurseTabularRelationships(table, table, bIsBusMatrix, new List<Microsoft.AnalysisServices.BackEnd.Relationship>(), false);
+                dimUsage.AddRange(tmp);
+
+                if (bFoundVisibleAttribute && bFoundVisibleMeasure) //if this table had a measure but no dimension relationships (except to itself)
+                {
+                    DimensionUsage du = new DimensionUsage("Fact", table, table);
+                    dimUsage.Add(du);
+                }
+                else if (tmp.Count == 0 && bIsBusMatrix && bFoundVisibleMeasure) //if this table with a measure had no dimension relationships, add it as such...
+                {
+                    DimensionUsage du = new DimensionUsage(string.Empty, table, null);
+                    dimUsage.Add(du);
+                }
+                
+            }
+
+            List<DataModelingTable> listTables = new List<DataModelingTable>(sandbox.GetSandbox().Tables);
+
+            //remove dimensions in relationships or hidden or not having any visible columns
+            foreach (DimensionUsage du in dimUsage)
+            {
+                for (int i = 0; i < listTables.Count; i++)
+                {
+                    bool bFoundVisibleAttribute = false;
+                    foreach (DataModelingColumn col in listTables[i].Columns)
+                    {
+                        if (!col.IsPrivate && col.IsAttributeHierarchyQueriable)
+                        {
+                            bFoundVisibleAttribute = true;
+                            break;
+                        }
+                    }
+
+                    if (!bFoundVisibleAttribute || listTables[i].Name == du.DimensionName || listTables[i].IsPrivate)
+                    {
+                        listTables.RemoveAt(i);
+                        i--;
+                        continue;
+                    }
+
+                }
+            }
+
+            //add any dimensions which aren't related to any fact tables
+            foreach (DataModelingTable cd in listTables)
+            {
+                DimensionUsage du = new DimensionUsage(string.Empty, null, cd);
+                dimUsage.Add(du);
+            }
+
+            return dimUsage;
+        }
+#endif
         private static List<DimensionUsage> RecurseTabularRelationships(Dimension dMG, MeasureGroup mgOuter, bool bIsBusMatrix)
         {
             List<DimensionUsage> list = new List<DimensionUsage>();
-            foreach (Relationship relOuter in dMG.Relationships)
+            foreach (Microsoft.AnalysisServices.Relationship relOuter in dMG.Relationships)
             {
                 bool bFound = false;
                 MeasureGroup mgFrom = dMG.Parent.Cubes[0].MeasureGroups[relOuter.FromRelationshipEnd.DimensionID];
@@ -194,7 +286,84 @@ namespace BIDSHelper
 
             return list;
         }
-#endif
+
+        private static List<DimensionUsage> RecurseTabularRelationships(DataModelingTable dimensionTable, DataModelingTable outerFactTable, bool bIsBusMatrix, List<Microsoft.AnalysisServices.BackEnd.Relationship> listRelationshipsTraversed, bool bManyToMany)
+        {
+            List<DimensionUsage> list = new List<DimensionUsage>();
+            foreach (Microsoft.AnalysisServices.BackEnd.Relationship relOuter in dimensionTable.Sandbox.Relationships.RelationshipCollection)
+            {
+                if (listRelationshipsTraversed.Contains(relOuter)) continue; //don't double back on path
+
+                DataModelingColumn reportedDimensionColumn = null;
+                DimensionUsage usage = null;
+                bool bThisRelationshipManyToMany = bManyToMany;
+                string sRelationshipType = "Active";
+                if (!relOuter.Active)
+                {
+                    sRelationshipType = "Inactive";
+                    if (bIsBusMatrix) continue; //don't show inactive relationships in bus matrix view
+                }
+
+                if (bThisRelationshipManyToMany)
+                    sRelationshipType = "Many to Many";
+
+                if (relOuter.ToColumn.Table.Name == dimensionTable.Name 
+                    && relOuter.CrossFilterDirection == Microsoft.AnalysisServices.BackEnd.CrossFilterDirection.Both
+                    && relOuter.Active)
+                {
+                    sRelationshipType = "Many to Many";
+                    reportedDimensionColumn = relOuter.FromColumn;
+                    bThisRelationshipManyToMany = true;
+
+                    usage = new DimensionUsage(sRelationshipType, outerFactTable, reportedDimensionColumn.Table);
+                    usage.Column1Name = "Foreign Key Column";
+                    usage.Column1Value = relOuter.ToColumn.Name;
+                    usage.Column2Name = "Primary Key Column";
+                    usage.Column2Value = relOuter.FromColumn.Name;
+
+                }
+                else if (relOuter.FromColumn.Table.Name != dimensionTable.Name)
+                {
+                    continue; //find any relationships that start from the "dimensionTable" table
+                }
+                else
+                {
+                    reportedDimensionColumn = relOuter.ToColumn;
+
+                    usage = new DimensionUsage(sRelationshipType, outerFactTable, reportedDimensionColumn.Table);
+                    usage.Column1Name = "Foreign Key Column";
+                    usage.Column1Value = relOuter.FromColumn.Name;
+                    usage.Column2Name = "Primary Key Column";
+                    usage.Column2Value = relOuter.ToColumn.Name;
+                }
+
+
+                bool bFoundVisibleAttribute = false;
+                foreach (DataModelingColumn col in reportedDimensionColumn.Table.Columns)
+                {
+                    if (!col.Table.IsPrivate && !col.IsPrivate && col.IsAttributeHierarchyQueriable)
+                    {
+                        bFoundVisibleAttribute = true;
+                        break;
+                    }
+                }
+                if (bFoundVisibleAttribute) //only if the To end has visible attributes should we show it as a dimension
+                    list.Add(usage);
+
+                if (bIsBusMatrix)
+                {
+                    List<Microsoft.AnalysisServices.BackEnd.Relationship> listLatestRelationshipsTraversed = new List<Microsoft.AnalysisServices.BackEnd.Relationship>();
+                    listLatestRelationshipsTraversed.AddRange(listRelationshipsTraversed);
+                    listLatestRelationshipsTraversed.Add(relOuter);
+
+                    //recurse if it's the bus matrix view
+                    list.AddRange(RecurseTabularRelationships(reportedDimensionColumn.Table, outerFactTable, bIsBusMatrix, listLatestRelationshipsTraversed, bThisRelationshipManyToMany));
+                }
+            }
+
+            return list;
+        }
+
 
         /*
         * All relationships - Relationship Type
@@ -414,9 +583,26 @@ namespace BIDSHelper
             //mFactTableColumnName = factTableColumn;
             //mAttributeColumnName = attributeColumn;
         }
-#endregion
 
-#region Public Fields
+        public DimensionUsage(string relationshipType, DataModelingTable factTable, DataModelingTable dimensionTable)
+        {
+            if (factTable != null)
+            {
+                mCubeName = factTable.Sandbox.ModelName;
+                mDatabaseName = factTable.Sandbox.DatabaseName;
+                mMeasureGroup = factTable.Name;
+            }
+            if (dimensionTable != null)
+            {
+                mCubeName = dimensionTable.Sandbox.ModelName;
+                mDatabaseName = dimensionTable.Sandbox.DatabaseName;
+                mDimensionName = dimensionTable.Name;
+            }
+            mRelationshipType = relationshipType;
+        }
+        #endregion
+
+        #region Public Fields
         private string mDimensionName;
         //private string mGranularity;
         private string mMeasureGroup;

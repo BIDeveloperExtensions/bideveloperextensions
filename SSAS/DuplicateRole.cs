@@ -1,20 +1,17 @@
-﻿using Extensibility;
-using EnvDTE;
+﻿using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-using System;
+using BIDSHelper.Core;
 
 namespace BIDSHelper.SSAS
 {
     class DuplicateRole : BIDSHelperPluginBase
     {
-           public DuplicateRole(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+           public DuplicateRole(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.DuplicateRoleId, typeof(Role));
         }
 
         public override string ShortName
@@ -22,12 +19,12 @@ namespace BIDSHelper.SSAS
             get { return "DuplicateRole"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 19; } //Copy Icon
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 19; } //Copy Icon
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "Duplicate Role"; }
         }
@@ -36,11 +33,7 @@ namespace BIDSHelper.SSAS
         {
             get { return "Duplicates a Role and all the relate permissions"; }
         }
-
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -48,7 +41,7 @@ namespace BIDSHelper.SSAS
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -60,29 +53,7 @@ namespace BIDSHelper.SSAS
             get { return "Allows you to Duplicate a Role including all the related permissions."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                return (((ProjectItem)hierItem.Object).Object is Role);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-
+        
         public override void Exec()
         {
             try

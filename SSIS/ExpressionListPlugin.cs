@@ -1,17 +1,13 @@
+using EnvDTE;
+using Microsoft.DataWarehouse.Design;
+using Microsoft.SqlServer.Dts.Runtime;
+using Microsoft.Win32;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
+using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
-using EnvDTE;
-using EnvDTE80;
-using Microsoft.DataWarehouse.Controls;
-using Microsoft.DataWarehouse.Design;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-using Microsoft.SqlServer.Dts.Runtime;
-using Microsoft.Win32;
-using System.Drawing;
-using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
 
 namespace BIDSHelper.SSIS
 {
@@ -23,13 +19,14 @@ namespace BIDSHelper.SSIS
         
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private ExpressionListControl expressionListWindow = null;
-        private Window toolWindow = null;
         private EditorWindow win = null;
         private IDesignerHost designer = null;
         private BackgroundWorker processPackage = null;
+        private Guid guidToolWindow = new Guid("6679390F-A712-40EA-8729-E2184A1436BF");
 
-        public ExpressionListPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
+        public ExpressionListPlugin(BIDSHelperPackage package) : base(package)
         {
+            CreateContextMenu(Core.CommandList.ExpressionListId, new Guid(BIDSProjectKinds.SSIS));
         }
 
         public override bool ShouldHookWindowCreated
@@ -47,14 +44,14 @@ namespace BIDSHelper.SSIS
             base.OnDisable();
 
             // Hide the tool window
-            toolWindow.Visible = false;    
+            ToolWindowVisible = false;    
         }
 
         public override void OnEnable()
         {
             base.OnEnable();
-
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey(Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
+            // TODO - should we be using the base class property to get the registry key??
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH);
             bool windowIsVisible = false;
             if (rk != null)
             {
@@ -69,17 +66,16 @@ namespace BIDSHelper.SSIS
             processPackage.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(processPackage_ProgressChanged);
             processPackage.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(processPackage_RunWorkerCompleted);
 
-            object programmableObject = null;
-
             //This guid must be unique for each different tool window,
             // but you may use the same guid for the same tool window.
             //This guid can be used for indexing the windows collection,
             // for example: applicationObject.Windows.Item(guidstr)
-            String guidstr = "{6679390F-A712-40EA-8729-E2184A1436BF}";
+
             EnvDTE80.Windows2 windows2 = (EnvDTE80.Windows2)this.ApplicationObject.Windows;
             System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-            toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.SSIS.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
-            expressionListWindow = (ExpressionListControl)programmableObject;
+            //toolWindow = windows2.CreateToolWindow2( this.AddInInstance, asm.Location, "BIDSHelper.SSIS.ExpressionListControl", "Expressions", guidstr, ref programmableObject);
+            CreateToolWindow("Expressions", guidToolWindow, typeof(ExpressionListControl));
+            expressionListWindow = (ExpressionListControl)ToolWindowUserControl;
             expressionListWindow.RefreshExpressions += new EventHandler(expressionListWindow_RefreshExpressions);
             expressionListWindow.EditExpressionSelected += new EventHandler<EditExpressionSelectedEventArgs>(expressionListWindow_EditExpressionSelected);
 
@@ -88,11 +84,9 @@ namespace BIDSHelper.SSIS
             // during testing, otherwise we get some strange behaviour with this
             IntPtr icon = BIDSHelper.Resources.Common.ExpressionListIcon.ToBitmap().GetHbitmap();
 
-#if KATMAI || DENALI || SQL2014
-            toolWindow.SetTabPicture(icon.ToInt32()); 
-#else
-            toolWindow.SetTabPicture(icon); 
-#endif
+            // TODO - need to set the toolwindow icon
+           // toolWindow.SetTabPicture(icon.ToInt32()); 
+
 
             //if (windowIsVisible)
             //    toolWindow.Visible = true;
@@ -191,6 +185,10 @@ namespace BIDSHelper.SSIS
 
                 // Show the editor
                 Konesans.Dts.ExpressionEditor.ExpressionEditorPublic editor = new Konesans.Dts.ExpressionEditor.ExpressionEditorPublic(variables, variableDispenser, propertyType, propertyName, e.Expression);
+                editor.Editor.ExpressionFont = ExpressionFont;
+                editor.Editor.ExpressionColor = ExpressionColor;
+                editor.Editor.ResultFont = ResultFont;
+                editor.Editor.ResultColor = ResultColor;
                 if (editor.ShowDialog() == DialogResult.OK)
                 {
                     // Get expression
@@ -246,6 +244,7 @@ namespace BIDSHelper.SSIS
 
         private void SetPackageAsDirty(IDTSSequence container, string expression, object objectChanged)
         {
+            // TODO: DO we need this code still? We have several mark dirty methods, can we rationalise?
             try
             {
                 if (!string.IsNullOrEmpty(expression))
@@ -255,6 +254,12 @@ namespace BIDSHelper.SSIS
 
                 PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(objectChanged);
                 System.ComponentModel.PropertyDescriptor expressionsProperty = properties.Find("Expressions", false);
+
+                if (designer == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("designer was null in SetPackageAsDirty");
+                    return;
+                }
 
                 // Mark package object as dirty
                 IComponentChangeService changeService = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
@@ -298,6 +303,9 @@ namespace BIDSHelper.SSIS
 
                 expressionListWindow.StartProgressBar();
 
+                // Set target version on PackageHelper to ensure any ComponentInfos is for the correct info.
+                PackageHelper.SetTargetServerVersion(package);
+
                 IDTSSequence sequence = (IDTSSequence)package;
                 processPackage.RunWorkerAsync(sequence);
             }
@@ -309,44 +317,8 @@ namespace BIDSHelper.SSIS
 
         private Package GetCurrentPackage()
         {
-            #if DENALI || SQL2014
-            // This seems to simple, but it appears to work (Green)
+            // This seems too simple, but it appears to work (Darren Green). See source control history for lots of code in previous incarnation
             return (Package)win.PropertiesLinkComponent;
-            #else
-            Control viewControl = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null);
-
-            // Get the package, but may have to walk up the object hierarchy.
-            // We need to start at the top with the Package in the worker thread, 
-            // otherwise string path functions fail and stuff gets missed.
-            DtsContainer container = null;
-
-            if (win.SelectedIndex == 0) //Control Flow
-            {
-                // Parent of Control Flow diagram is the Package
-                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"];
-                container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
-            }
-            else if (win.SelectedIndex == 1) // Data flow
-            {
-                // Parent of Data Flow diagram is a Task
-                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls["PipelineTaskView"];
-                TaskHost taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
-                container = (DtsContainer)taskHost.Parent; // container is Package
-            }
-            else if (win.SelectedIndex == 2) //Event Handlers
-            {
-                // Parent of Event Handlers diagram is a DtsEventHandler
-                DdsDiagramHostControl diagram = (DdsDiagramHostControl)viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls["EventHandlerView"];
-                container = (DtsContainer)diagram.ComponentDiagram.RootComponent;
-            }
-            else
-            {
-                return null;
-            }
-
-            // Get the root container, i.e the Package
-            return GetPackageFromContainer(container);
-            #endif
         }
 
         #region Window Events
@@ -356,7 +328,6 @@ namespace BIDSHelper.SSIS
             processPackage.CancelAsync();
             win = null;
         }
-
         
         void win_ActiveViewChanged(object sender, EventArgs e)
         {
@@ -698,39 +669,14 @@ namespace BIDSHelper.SSIS
             get { return "ExpressionList"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 6; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Expression List (BIDS Helper)"; }
-        }
-
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
-
-        public override string MenuName
-        {
-            get { return "Other Windows"; }
-        }
-
         public override string FeatureName
         {
             get { return "Expression List"; }
-        }
-
-        public override bool Checked
-        {
-            get { return toolWindow.Visible; }
         }
 
         /// <summary>
@@ -751,50 +697,152 @@ namespace BIDSHelper.SSIS
             get { return "Provides a tool window listing expressions defined in a package, making it easy to review and manage expressions. Editing uses the integrated advanced expression editor."; }
         }
 
-        public override bool AddCommandToMultipleMenus
-        {
-            get { return false; } //the Other Windows menu is nested under other menus, so this Add to multiple menus logic won't work here
-        }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                if (toolWindow.Visible) return true;
-                if (this.ApplicationObject.Solution == null) return false;
-                foreach (EnvDTE.Project p in this.ApplicationObject.Solution.Projects)
-                {
-                    if (p.Kind == BIDSProjectKinds.SSIS) return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         public override void Exec()
         {
             try
             {
-                toolWindow.Visible = !toolWindow.Visible;
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
+                Checked = !Checked;
+                ToolWindowVisible = Checked;
+                //toolWindow.Visible = !toolWindow.Visible;
+                // TODO - should this be using the registry property from the base class??
+                string path = BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + REGISTRY_EXTENDED_PATH;
                 RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
                 if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
-                settingKey.SetValue(REGISTRY_SETTING_NAME, toolWindow.Visible, RegistryValueKind.DWord);
+                settingKey.SetValue(REGISTRY_SETTING_NAME, Checked, RegistryValueKind.DWord);
                 settingKey.Close();
                 expressionListWindow.ClearResults();
             }
             catch (Exception e)
             {
                 System.Windows.Forms.MessageBox.Show("The Expression List could not be toggled. Error: " + e.Message);
+                this.package.Log.Exception("The Expression List could not be toggled.", e);
             }
+        }
+
+        private const string REGISTRY_KEY_ExpressionEditorFont = "ExpressionFont";
+        private const string REGISTRY_KEY_ResultFont = "ResultFont";
+        private const string REGISTRY_KEY_ExpressionEditorColor = "ExpressionColor";
+        private const string REGISTRY_KEY_ResultColor = "ResultColor";
+
+        public static Font ExpressionFont
+        {
+            get
+            {
+                return GetFont(REGISTRY_KEY_ExpressionEditorFont);
+            }
+
+            set
+            {
+                SetFont(value, REGISTRY_KEY_ExpressionEditorFont);
+            }
+        }
+
+        public static Font ResultFont
+        {
+            get
+            {
+                return GetFont(REGISTRY_KEY_ResultFont);
+            }
+
+            set
+            {
+                SetFont(value, REGISTRY_KEY_ResultFont);
+            }
+        }
+
+        public static Color ExpressionColor
+        {
+            get
+            {
+                return GetColor(REGISTRY_KEY_ExpressionEditorColor);
+            }
+
+            set
+            {
+                SetValue(value.Name, REGISTRY_KEY_ExpressionEditorColor);
+            }
+        }
+
+        public static Color ResultColor
+        {
+            get
+            {
+                return GetColor(REGISTRY_KEY_ResultColor);
+            }
+
+            set
+            {
+                SetValue(value.Name, REGISTRY_KEY_ResultColor);
+            }
+        }
+
+        private static string GetValue(string registryKey)
+        {
+            string value = null;
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionListPlugin)));
+            if (key == null)
+                return null;
+
+            value = (string)key.GetValue(registryKey, null);
+            key.Close();
+
+            return value;
+        }
+
+        private static Font GetFont(string registryKey)
+        {
+            string fontString = GetValue(registryKey);
+            if (fontString == null)
+                return null;
+
+            TypeConverter converter = TypeDescriptor.GetConverter(typeof(Font));
+            return (Font)converter.ConvertFromString(fontString);
+        }
+
+        private static Color GetColor(string registryKey)
+        {
+            string colorString = GetValue(registryKey);
+            if (colorString == null)
+            {
+                // Default text colour for text string 
+                return SystemColors.WindowText;
+            }
+
+            return Color.FromName(colorString);
+        }
+
+        private static void SetValue(string value, string registryKey)
+        {
+            string path = BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionListPlugin));
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(path, true);
+            if (key == null)
+            {
+                key = Registry.CurrentUser.CreateSubKey(path);
+            }
+
+            if (value == null)
+            {
+                key.DeleteValue(registryKey, false);
+            }
+            else
+            {
+                key.SetValue(registryKey, value, RegistryValueKind.String);
+            }
+
+            key.Close();
+        }
+
+        private static void SetFont(Font value, string registryKey)
+        {
+            string fontString = null;
+
+            if (value != null)
+            { 
+                TypeConverter converter = TypeDescriptor.GetConverter(typeof(Font));
+                fontString = converter.ConvertToString(value);
+            }
+
+            SetValue(fontString, registryKey);
         }
 
         private struct ExpressionInfo
@@ -810,6 +858,5 @@ namespace BIDSHelper.SSIS
             public bool HasExpression;
             public Icon Icon;
         }
-
     }
 }

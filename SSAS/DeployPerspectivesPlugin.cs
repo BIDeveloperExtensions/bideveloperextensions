@@ -1,24 +1,18 @@
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
 using System.Xml.Xsl;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using System.Resources;
-
 using Microsoft.AnalysisServices;
-using Microsoft.AnalysisServices.AdomdClient;
-
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
 using System;
+using BIDSHelper.SSAS;
 
-
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class DeployPerspectivesPlugin : BIDSHelperWindowActivatedPluginBase
     {
@@ -27,8 +21,8 @@ namespace BIDSHelper
         private ToolBarButton newSeparatorButton = null;
         private System.Collections.Generic.Dictionary<string, EditorWindow> windowHandlesFixedDeployPerspectives = new System.Collections.Generic.Dictionary<string, EditorWindow>();
 
-        public DeployPerspectivesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DeployPerspectivesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
@@ -43,16 +37,6 @@ namespace BIDSHelper
             {
                 return "Deploy the perspectives for a cube";
             }
-        }
-
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Deploy Perspectives"; }
         }
 
         public override string ToolTip
@@ -75,7 +59,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -158,11 +142,11 @@ namespace BIDSHelper
                         newSeparatorButton.Name = this.FullName + ".Separator";
                         newSeparatorButton.Style = ToolBarButtonStyle.Separator;
 
-                        if (Connect.Plugins[DeployMDXScriptPlugin.BaseName + typeof(DeployPerspectivesPlugin).Name].Enabled)
+                        if (BIDSHelperPackage.Plugins[DeployMdxScriptPlugin.BaseName + typeof(DeployPerspectivesPlugin).Name].Enabled)
                         {
                             toolbar.ImageList.Images.Add(BIDSHelper.Resources.Common.DeployPerspectivesIcon);
                             newDeployPerspectivesButton = new ToolBarButton();
-                            newDeployPerspectivesButton.ToolTipText = this.ButtonText + " (BIDS Helper)";
+                            newDeployPerspectivesButton.ToolTipText = "Deploy Perspectives (BIDS Helper)";
                             newDeployPerspectivesButton.Name = this.FullName + ".DeployPerspectives";
                             newDeployPerspectivesButton.Tag = newDeployPerspectivesButton.Name;
                             newDeployPerspectivesButton.ImageIndex = toolbar.ImageList.Images.Count - 1;
@@ -207,18 +191,6 @@ namespace BIDSHelper
             {
                 MessageBox.Show(ex.Message);
             }
-        }
-
-
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
         }
 
 

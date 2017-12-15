@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.Data;
 using System.ComponentModel.Design;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
     public class SyncDescriptionsPlugin : BIDSHelperPluginBase
     {
-        public SyncDescriptionsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public SyncDescriptionsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.SyncDescriptionsId, typeof(Dimension));
         }
 
         public override string ShortName
@@ -24,15 +23,11 @@ namespace BIDSHelper
             get { return "SyncDescriptionsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 223; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 223; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Sync Descriptions..."; }
-        }
 
         public override string FeatureName
         {
@@ -47,10 +42,10 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -58,7 +53,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -69,36 +64,6 @@ namespace BIDSHelper
         {
             get { return "Sync descriptions from extended properties on SQL Sever tables to your dimensions."; }
         }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length == 0)
-                    return false;
-
-                foreach (object selectedItem in ((System.Array)solExplorer.SelectedItems))
-                {
-                    UIHierarchyItem hierItem = ((UIHierarchyItem)selectedItem);
-                    if (!(((ProjectItem)hierItem.Object).Object is Dimension))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
 
         public override void Exec()
         {
@@ -172,7 +137,7 @@ namespace BIDSHelper
             DataSource dataSource = d.DataSource;
 
             ColumnBinding colDimensionKey = null;
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
             if (d.KeyAttribute.KeyColumns[0].Source is RowNumberBinding)
             {
                 foreach (DimensionAttribute a in d.Attributes)
@@ -247,7 +212,7 @@ namespace BIDSHelper
                         DataSet dsExtendedProperties = new DataSet();
                         openedDataSourceConnection.Fill(dsExtendedProperties, sql);
 
-                        BIDSHelper.SSAS.SyncDescriptionsForm form = new BIDSHelper.SSAS.SyncDescriptionsForm();
+                        SSAS.SyncDescriptionsForm form = new SSAS.SyncDescriptionsForm();
                         form.cmbDescriptionProperty.DataSource = dsExtendedProperties.Tables[0];
                         form.cmbDescriptionProperty.DisplayMember = "Name";
                         form.cmbDescriptionProperty.ValueMember = "Name";
@@ -320,7 +285,7 @@ namespace BIDSHelper
                     {
                         ColumnBinding col = null;
 
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
                         if (a.Type == AttributeType.RowNumber)
                         {
                             continue;
@@ -415,6 +380,168 @@ namespace BIDSHelper
                 }
                 catch { }
             }
+            return iUpdatedDescriptions;
+        }
+
+        internal static int SyncDescriptions(Microsoft.AnalysisServices.BackEnd.DataModelingTable d, bool bPromptForProperties)
+        {
+            int iUpdatedDescriptions = 0;
+
+            Microsoft.AnalysisServices.BackEnd.EditMappingUtility util = new Microsoft.AnalysisServices.BackEnd.EditMappingUtility(d.Sandbox);
+
+            var conn = ((Microsoft.AnalysisServices.BackEnd.RelationalDataStorage)((util.GetDataSourceConnection(util.GetDataSourceID(d.Id), d.Sandbox)))).DataSourceConnection;
+            conn.Open();
+            System.Data.Common.DbCommand cmd = conn.CreateCommand();
+
+            string sDBTableName = d.SourceTableName;
+
+            sq = conn.Cartridge.IdentStartQuote;
+            fq = conn.Cartridge.IdentEndQuote;
+            //cartridge = conn.Cartridge;
+
+
+            if (conn.SourceType != Microsoft.AnalysisServices.BackEnd.DataSourceType.SqlServer && conn.SourceType != Microsoft.AnalysisServices.BackEnd.DataSourceType.SqlAzure)
+            {
+                MessageBox.Show("Data source [" + conn.ConnectionName + "] connects to " + conn.SourceType.ToString() + " which may not be supported.");
+            }
+
+            String sql = "select distinct Name from sys.extended_properties order by Name";
+
+            if (bPromptForProperties)
+            {
+
+                SSAS.SyncDescriptionsForm form = new SSAS.SyncDescriptionsForm();
+
+                cmd.CommandText = sql;
+                System.Data.Common.DbDataReader reader = cmd.ExecuteReader();
+                List<string> listNames = new List<string>();
+                while (reader.Read())
+                {
+                    listNames.Add(Convert.ToString(reader["Name"]));
+                    form.listOtherProperties.Items.Add(Convert.ToString(reader["Name"]));
+                }
+                reader.Close();
+
+                form.cmbDescriptionProperty.DataSource = listNames;
+
+                DialogResult result = form.ShowDialog();
+
+                if (result != DialogResult.OK) return iUpdatedDescriptions;
+
+                DescriptionPropertyName = form.cmbDescriptionProperty.GetItemText(form.cmbDescriptionProperty.SelectedItem);
+                List<string> listOtherProperties = new List<string>();
+                for (int i = 0; i < form.listOtherProperties.CheckedItems.Count; i++)
+                {
+                    listOtherProperties.Add(form.listOtherProperties.GetItemText(form.listOtherProperties.CheckedItems[i]));
+                }
+                OtherPropertyNamesToInclude = listOtherProperties.ToArray();
+                OverwriteExistingDescriptions = form.chkOverwriteExistingDescriptions.Checked;
+            }
+
+            if ((string.IsNullOrEmpty(d.Description) || OverwriteExistingDescriptions)
+            && !string.IsNullOrEmpty(sDBTableName))
+            {
+                sql = "SELECT PropertyName = p.name" + "\r\n"
+                 + ",PropertyValue = CAST(p.value AS sql_variant)" + "\r\n"
+                 + "FROM sys.all_objects AS tbl" + "\r\n"
+                 + "INNER JOIN sys.schemas sch ON sch.schema_id = tbl.schema_id" + "\r\n"
+                 + "INNER JOIN sys.extended_properties AS p ON p.major_id=tbl.object_id AND p.minor_id=0 AND p.class=1" + "\r\n"
+                 //+ "where sch.name = '" + oDimensionKeyTable.ExtendedProperties["DbSchemaName"].ToString().Replace("'", "''") + "'\r\n"
+                 + "where tbl.object_id = object_id('" + sDBTableName.Replace("'", "''") + "')\r\n"
+                 + "order by p.name";
+
+                string sNewDimensionDescription = "";
+                //DataSet dsTableProperties = new DataSet();
+                cmd.CommandText = sql;
+                System.Data.Common.DbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    if (string.Compare((string)reader["PropertyName"], DescriptionPropertyName, true) == 0)
+                    {
+                        sNewDimensionDescription = (string)reader["PropertyValue"];
+                    }
+                }
+                reader.Close();
+
+                reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    foreach (string sProp in OtherPropertyNamesToInclude)
+                    {
+                        if (string.Compare((string)reader["PropertyName"], sProp, true) == 0 && !string.IsNullOrEmpty((string)reader["PropertyValue"]))
+                        {
+                            if (sNewDimensionDescription.Length > 0) sNewDimensionDescription += "\r\n";
+                            sNewDimensionDescription += (string)reader["PropertyName"] + ": " + (string)reader["PropertyValue"];
+                        }
+                    }
+                }
+                reader.Close();
+
+
+
+                if (!string.IsNullOrEmpty(sNewDimensionDescription))
+                {
+                    d.Description = sNewDimensionDescription;
+                    iUpdatedDescriptions++;
+                }
+            }
+
+            foreach (Microsoft.AnalysisServices.BackEnd.DataModelingColumn a in d.Columns)
+            {
+                if (a.IsRowNumber || a.IsCalculated)
+                {
+                    continue;
+                }
+                if ((string.IsNullOrEmpty(a.Description) || OverwriteExistingDescriptions)
+                && (!string.IsNullOrEmpty(sDBTableName)))
+                {
+                    sql = "SELECT PropertyName = p.name" + "\r\n"
+                     + ",PropertyValue = CAST(p.value AS sql_variant)" + "\r\n"
+                     + "FROM sys.all_objects AS tbl" + "\r\n"
+                     + "INNER JOIN sys.schemas sch ON sch.schema_id = tbl.schema_id" + "\r\n"
+                     + "INNER JOIN sys.all_columns AS clmns ON clmns.object_id=tbl.object_id" + "\r\n"
+                     + "INNER JOIN sys.extended_properties AS p ON p.major_id=clmns.object_id AND p.minor_id=clmns.column_id AND p.class=1" + "\r\n"
+                     //+ "where sch.name = '" + oDsvTable.ExtendedProperties["DbSchemaName"].ToString().Replace("'", "''") + "'\r\n"
+                     + "where tbl.object_id = object_id('" + sDBTableName.Replace("'", "''") + "')\r\n"
+                     + "and clmns.name = '" + a.DBColumnName.Replace("'", "''") + "'\r\n"
+                     + "order by p.name";
+
+                    string sNewDescription = "";
+                    cmd.CommandText = sql;
+                    System.Data.Common.DbDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        if (string.Compare((string)reader["PropertyName"], DescriptionPropertyName, true) == 0)
+                        {
+                            sNewDescription = (string)reader["PropertyValue"];
+                        }
+                    }
+                    reader.Close();
+
+                    cmd.CommandText = sql;
+                    reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        foreach (string sProp in OtherPropertyNamesToInclude)
+                        {
+                            if (string.Compare((string)reader["PropertyName"], sProp, true) == 0 && !string.IsNullOrEmpty((string)reader["PropertyValue"]))
+                            {
+                                if (sNewDescription.Length > 0) sNewDescription += "\r\n";
+                                sNewDescription += (string)reader["PropertyName"] + ": " + (string)reader["PropertyValue"];
+                            }
+                        }
+                    }
+                    reader.Close();
+
+                    if (!string.IsNullOrEmpty(sNewDescription))
+                    {
+                        a.Description = sNewDescription;
+                        iUpdatedDescriptions++;
+                    }
+                }
+            }
+
+
             return iUpdatedDescriptions;
         }
 

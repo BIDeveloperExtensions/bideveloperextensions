@@ -2,55 +2,53 @@
 using Microsoft.DataWarehouse.Project;
 using Microsoft.SqlServer.Dts.Runtime;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
-    public class SSISHelpers
+
+    /// <summary>
+    /// BIDSHelper specific target version enumeration. 
+    /// This directly copies values Microsoft.SqlServer.Dts.Runtime.DTSTargetServerVersion
+    /// This allows us to simply cast between the two. 
+    /// "Latest" is not required because it is equal to another value, so when casting a specific version can alwasy be returned instead.
+    /// </summary>
+    public enum SsisTargetServerVersion
+    {
+        SQLServer2012 = 110,
+        SQLServer2014 = 120,
+        SQLServer2016 = 130,
+        SQLServer2017 = 140
+    }
+
+    public static class SSISHelpers
     {
 
-#if SQL2014
+#if SQL2017
+        public const string CreationNameIndex = "6";
+#elif SQL2016
+        public const string CreationNameIndex = "5";
+#elif SQL2014
         public const string CreationNameIndex = "4";
 #elif DENALI
         public const string CreationNameIndex = "3";
-#elif KATMAI
-        public const string CreationNameIndex = "2";
-#else
-        public const string CreationNameIndex = "1";
 #endif
 
         public enum SsisDesignerTabIndex
         {
             ControlFlow = 0,
             DataFlow = 1,
-#if DENALI || SQL2014
             Parameters = 2,
             EventHandlers = 3,
             PackageExplorer = 4
-#else
-            EventHandlers = 2,
-            PackageExplorer = 3
-#endif
         }
-
-        //this is only defined in the latest VS2013 OneDesigner, so it won't be available in older versions
-        public enum ProjectTargetVersion
-        {
-            LatestSQLServerVersion = 12,
-            SQLServer2012 = 11,
-            SQLServer2014 = 12
-        }
-
-        public static ProjectTargetVersion? LatestProjectTargetVersion = null;
 
         public static void MarkPackageDirty(Package package)
         {
             if (package == null) return;
-#if DENALI || SQL2014
+
             var trans = Cud.BeginTransaction(package);
             trans.ChangeComponent(package);
             trans.Commit();
-#else
-            Microsoft.DataTransformationServices.Design.DesignUtils.MarkPackageDirty(package);
-#endif
+
         }
 
         public static Package GetPackageFromContainer(DtsContainer container)
@@ -67,33 +65,59 @@ namespace BIDSHelper
             return v.Namespace.StartsWith("$");
         }
 
-        /// <summary>
-        /// Will return null if the TargetDeploymentVersion property isn't defined (i.e. we're using an older version of SSDTBI before that was introduced)
-        /// </summary>
-        /// <param name="project"></param>
-        /// <returns></returns>
-        public static ProjectTargetVersion? GetProjectTargetVersion(EnvDTE.Project project)
+        private static SsisTargetServerVersion CompilationVersion
         {
-            try
+            get
             {
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
-                Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
-                Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
-                object oVersion = options.GetType().InvokeMember("TargetDeploymentVersion", System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.FlattenHierarchy, null, options, null);
-                LatestProjectTargetVersion = (ProjectTargetVersion)System.Enum.Parse(typeof(ProjectTargetVersion), oVersion.ToString());
-                return LatestProjectTargetVersion;
+#if SQL2017
+                return SsisTargetServerVersion.SQLServer2017;
+#elif SQL2016
+                return SsisTargetServerVersion.SQLServer2016;
+#elif SQL2014
+                return SsisTargetServerVersion.SQLServer2014;
+#elif DENALI
+                return SsisTargetServerVersion.SQLServer2012;
+#endif
             }
-            catch
-            {
-                LatestProjectTargetVersion = null;
-                return null;
-            }
+        }
+
+    /// <summary>
+    /// Get the SsisTargetServerVersion of a project. See PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion or actual usage.
+    /// </summary>
+    /// <param name="project">The project to get the version of</param>
+    /// <returns>The DTSTargetServerVersion of the project specified.</returns>
+    /// <remarks>Do not use directly, see PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion for actual usage.</remarks>
+    internal static SsisTargetServerVersion GetTargetServerVersion(EnvDTE.Project project)
+        {
+#if DENALI || SQL2014
+            return CompilationVersion;
+#else
+            // TODO: If this doesn't work <2016, we can just hardcode, based on conditional compiation
+            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)PackageHelper.GetPropertyValue(settings, "ProjectManager");
+            Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
+            return (SsisTargetServerVersion)options.TargetServerVersion;         
+#endif              
+        }
+
+        /// <summary>s
+        /// Get the DTSTargetServerVersion of a package.
+        /// </summary>
+        /// <param name="package">The package to get the version of</param>
+        /// <returns>The DTSTargetServerVersion of the package specified.</returns>
+        /// <remarks>Do not use directly, see PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion for actual usage.</remarks>
+        internal static SsisTargetServerVersion GetTargetServerVersion(Package package)
+        {
+#if DENALI || SQL2014
+            return CompilationVersion;
+#else
+            DTSTargetServerVersion targetServerVersion = (DTSTargetServerVersion)PackageHelper.GetPropertyValue(package, "TargetServerVersion");
+            return (SsisTargetServerVersion)targetServerVersion;
+#endif
         }
 
         internal static DtsContainer FindContainer(DtsContainer component, string objectId)
         {
-            //DtsContainer container = component as DtsContainer;
-
             if (component == null)
             {
                 return null;

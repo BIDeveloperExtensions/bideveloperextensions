@@ -1,516 +1,168 @@
-namespace BIDSHelper
+﻿using EnvDTE;
+using EnvDTE80;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.Win32;
+using System;
+using System.ComponentModel.Design;
+using System.Globalization;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows;
+using Microsoft.DataWarehouse.VsIntegration.Shell.Project;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+namespace BIDSHelper.Core
 {
-    using System;
-    using System.Globalization;
-    using System.Windows.Forms;
-    using EnvDTE;
-    using EnvDTE80;
-    using Microsoft.VisualStudio.CommandBars;
-    using Microsoft.Win32;
 
-    public abstract class BIDSHelperPluginBase : IDisposable
+    public abstract class BIDSHelperPluginBase : IBIDSHelperPlugin
     {
-        /// <summary>
-        /// Defines the base Url for the plug-in help page. See the HelpUrl property.
-        /// </summary>
-        private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
-
-        /// <summary>
-        /// Standard caption for message boxes shown by plug-ins.
-        /// </summary>
+        private const string BASE_NAME = "BIDSHelperPackage.";
         protected const string DefaultMessageBoxCaption = "BIDS Helper";
-
-        private const string BASE_NAME = "BIDSHelper.Connect.";
-        private const int UNKNOWN_CMD_ID = -1;
-        private Command pluginCmd;
-        static CommandBarPopup toolsCommandBarPopup;
-        private DTE2 appObj;
-        private AddIn addIn;
-        private Connect addinCore;
+        private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
         private bool isEnabled;
         private bool isEnabledCached = false;
-        private static System.Collections.Generic.Dictionary<string, CommandBar> _cachedCommandBars = new System.Collections.Generic.Dictionary<string, CommandBar>();
+        public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
+        private IVsWindowFrame m_windowFrame = null;
+        private UserControl m_userControl;
+        private OleMenuCommand m_menuItem = null;
+        private Guid m_ProjectKind = Guid.Empty;
 
-        #region "Constructors"
-        public BIDSHelperPluginBase(Connect con, DTE2 appObject, AddIn addinInstance)
+        #region Constructor
+        public BIDSHelperPluginBase(BIDSHelperPackage package)
         {
-            addinCore = con;
-            appObj = appObject;
-            addIn = addinInstance;
+            Extensions = new List<string>();
+            if (package == null)
+            {
+                throw new ArgumentNullException("package");
+            }
+            this.package = (BIDSHelperPackage)package;
+            StatusBar = package.StatusBar;
             if (Enabled)
             {
                 OnEnable();
             }
         }
-
-        public string CommandName
-        {
-            get { return BASE_NAME + this.GetType().Name; }
-        }
-
-        public static string BaseName
-        {
-            get   { return BASE_NAME; }
-        }
-
-        public virtual void OnEnable()
-        {
-            AddCommand();
-        }
-
-        public virtual void OnDisable()
-        {
-            DeleteCommand();
-        }
-
-        
-        public bool Enabled
-        {
-            get {
-                if (!isEnabledCached)
-                {
-                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(this.PluginRegistryPath);
-                    isEnabled = ((int)regKey.GetValue("Enabled", 1) == 1) ? true : false;
-                    regKey.Close();
-                    isEnabledCached = true;
-                }
-                return isEnabled;
-            }
-
-            set {
-                // if the setting is being changed
-                if (value != Enabled)
-                {
-
-                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(this.PluginRegistryPath);
-                    isEnabled = value;
-
-                    if (isEnabled)
-                    {
-                        // the default state is enabled so we can remove the Enabled key
-                        regKey.DeleteValue("Enabled");
-                        regKey.Close();
-                        OnEnable();
-                    }
-                    else
-                    {
-                        // set the enabled property to 0
-                        regKey.SetValue("Enabled", isEnabled, RegistryValueKind.DWord);
-                        regKey.Close();
-                        OnDisable();
-                    }
-                    
-                }
-            }
-        }
-
-        public Connect AddinCore
-        {
-            set { addinCore = value; }
-            get { return addinCore; }
-        }
-
-        public enumIDEMode IdeMode
-        {
-            get { 
-                return addinCore.IdeMode; 
-            }
-        }
-
-        public BIDSHelperPluginBase()
-        {
-
-        }
         #endregion
 
-        #region "Helper Functions"
-        public void AddCommand()
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(this.MenuName))
-                {
-                    // No menu required
-                    return;
-                }
 
-                Command cmdTmp;
-                CommandBars cmdBars = (CommandBars)appObj.CommandBars;
+        #region Virtual/Abstract Methods
+        //=================================================================================
 
-                // Check any old versions of the command are not still hanging around
-                try
-                {
-                    cmdTmp = appObj.Commands.Item(this.CommandName, UNKNOWN_CMD_ID);
-                    cmdTmp.Delete();
-                }
-                catch { }
-
-                // this is an empty array for passing into the AddNamedCommand method
-                object[] contextUIGUIDs = null;
-                
-                cmdTmp = appObj.Commands.AddNamedCommand(
-                            this.addIn, 
-                            this.GetType().Name,
-                            this.ButtonText,
-                            this.ToolTip,
-                            true,
-                            this.Bitmap,
-                            ref contextUIGUIDs,
-                            (int)vsCommandStatus.vsCommandStatusSupported + (int)vsCommandStatus.vsCommandStatusEnabled);
-
-                foreach (string sMenuName in this.MenuName.Split(','))
-                {
-                    CommandBar pluginCmdBar = null;
-
-                    if (_cachedCommandBars.ContainsKey(sMenuName))
-                    {
-                        pluginCmdBar = _cachedCommandBars[sMenuName];
-                    }
-                    else
-                    {
-#if DENALI || SQL2014
-                        //in VS2010, performance of cmdBars[sMenuName] is terrible: http://www.mztools.com/articles/2011/MZ2011005.aspx
-                        //plus looking up cmdBars["Other Windows"] failsof the ones we're looking for are there
-                        //performs better when you look at the root level of the CommandBars since most 
-                        foreach (CommandBar bar in cmdBars)
-                        {
-                            if (bar.Name == sMenuName)
-                            {
-                                pluginCmdBar = bar;
-                                break;
-                            }
-                        }
-
-                        //if not yet found, then recurse
-                        if (pluginCmdBar == null)
-                        {
-                            foreach (CommandBar bar in cmdBars)
-                            {
-                                pluginCmdBar = RecurseCommandBarToFindCommandBarByName(bar, sMenuName);
-                                if (pluginCmdBar != null) break;
-                            }
-                        }
-#else
-                        pluginCmdBar = cmdBars[sMenuName];
-#endif
-                    }
-
-                    if (pluginCmdBar == null)
-                    {
-                        System.Windows.Forms.MessageBox.Show("Cannot get the " + this.MenuName + " menubar");
-                    }
-                    else
-                    {
-                        if (!_cachedCommandBars.ContainsKey(sMenuName))
-                        {
-                            _cachedCommandBars.Add(sMenuName, pluginCmdBar);
-                        }
+        //public virtual bool DisplayCommand(UIHierarchyItem item) { return false; }
 
 
-                        pluginCmd = cmdTmp;
-
-                        CommandBarButton btn;
-                        if (sMenuName == "Tools")
-                        {
-                            if (toolsCommandBarPopup == null)
-                            {
-                                toolsCommandBarPopup = (CommandBarPopup)pluginCmdBar.Controls.Add(MsoControlType.msoControlPopup, System.Type.Missing, System.Type.Missing, 1, true);
-                                toolsCommandBarPopup.CommandBar.Name = "BIDSHelperToolsCommandBarPopup";
-                                toolsCommandBarPopup.Caption = "BIDS Helper";
-                            }
-                            btn = pluginCmd.AddControl(toolsCommandBarPopup.CommandBar, 1) as CommandBarButton;
-                            SetCustomIcon(btn);
-                            btn.BeginGroup = BeginMenuGroup;
-                            toolsCommandBarPopup.Visible = true;
-                        }
-                        else if (AddCommandToMultipleMenus)
-                        {
-                            //note, this doesn't look recursively through command bars, so non-top level command bars like "Other Windows" won't work using this option
-                            foreach (CommandBar bar in (CommandBars)(appObj.CommandBars))
-                            {
-                                if (bar.Name == sMenuName)
-                                {
-                                    if (!ShouldPositionAtEnd)
-                                    {
-                                        btn = pluginCmd.AddControl(bar, 1) as CommandBarButton;
-                                    }
-                                    else
-                                    {
-                                        btn = pluginCmd.AddControl(bar, bar.Controls.Count - 1) as CommandBarButton;
-                                    }
-                                    SetCustomIcon(btn);
-                                    btn.BeginGroup = BeginMenuGroup;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (!ShouldPositionAtEnd)
-                            {
-                                btn = pluginCmd.AddControl(pluginCmdBar, 1) as CommandBarButton;
-                            }
-                            else
-                            {
-                                btn = pluginCmd.AddControl(pluginCmdBar, pluginCmdBar.Controls.Count - 1) as CommandBarButton;
-                            }
-                            SetCustomIcon(btn);
-                            btn.BeginGroup = BeginMenuGroup;
-                        }
-                    }
-                }
-            }
-            catch (System.Exception e)
-            {
-                MessageBox.Show("Problem registering " + this.FullName + " command: " + e.Message + "\r\n" + e.StackTrace);
-            }
-
-        }
-
-        private CommandBar RecurseCommandBarToFindCommandBarByName(CommandBar bar, string name)
-        {
-            //try
-            //{
-            //    CommandBarControl ctrl = bar.Controls[name]; //only works for US and international VS in VS2010
-            //    return ((CommandBarPopup)ctrl).CommandBar;
-            //}
-            //catch { }
-
-            //idea from http://www.mztools.com/articles/2007/MZ2007002.aspx
-            if (bar.Name == name)
-            {
-                return bar;
-            }
-            //foreach (CommandBarControl cmd in bar.Controls)
-            //{
-            //    if (cmd.Type == MsoControlType.msoControlPopup)
-            //    {
-            //        CommandBarPopup popup = (CommandBarPopup)cmd;
-            //        if (popup.CommandBar.Name == name)
-            //        {
-            //            return popup.CommandBar;
-            //        }
-            //    }
-            //}
-            foreach (CommandBarControl cmd in bar.Controls)
-            {
-                if (cmd.Type == MsoControlType.msoControlPopup)
-                {
-                    CommandBarPopup popup = (CommandBarPopup)cmd;
-                    CommandBar oReturnVal = RecurseCommandBarToFindCommandBarByName(popup.CommandBar, name);
-                    if (oReturnVal != null) return oReturnVal;
-                }
-            }
-            return null;
-        }
-
-        private void SetCustomIcon(CommandBarButton btn)
-        {
-            if (btn != null && this.CustomMenuIcon != null)
-            {
-                System.Drawing.Bitmap bmp = this.CustomMenuIcon.ToBitmap();
-                btn.Picture = (stdole.StdPicture)ImageToPictureDispConverter.GetIPictureDispFromImage(bmp);
-#if DENALI || SQL2014
-                //.Mask has been deprecated in VS2010: http://msmvps.com/blogs/carlosq/archive/2009/11/01/more-on-commandbarbutton-mask-property-deprecated-in-vs-2010.aspx
-#else
-                btn.Mask = (stdole.StdPicture)ImageToPictureDispConverter.GetMaskIPictureDispFromBitmap(bmp);
-#endif
-                bmp.Dispose();
-            }
-        }
-
-        public WindowEvents GetWindowEvents()
-        {
-            return appObj.Events.get_WindowEvents(null);
-        }
 
         /// <summary>
-        /// Deletes the plugin command
+        /// This virtual method gives you a chance to override the displaying of a menu command
+        /// to cater for any special pre-requisite of the command
         /// </summary>
-        public void DeleteCommand()
+        public virtual bool ShouldDisplayCommand() { return true; }
+
+        public abstract void Exec();
+        #endregion
+
+        #region Properties
+        protected List<string> Extensions { get; private set; }
+
+        public enumIDEMode IdeMode { get { return package.IdeMode; } }
+
+        public VsIntegration.StatusBar StatusBar { get; private set; }
+
+        public Type AssociatedObjectType { get; private set; }
+
+        #endregion
+
+        //=================================================================================
+
+        #region Dynamic Command Visibility
+        internal bool DisplayCommandInternal(FileInfo file)
+        {
+            if (file == null) return false;
+            return Extensions.Contains(file.Extension.ToLower());
+        }
+
+        internal bool DisplayCommandInternal()
+        {
+            if (Enabled)
+            {
+
+                if (Extensions.Count > 0)
+                {
+                    var f = GetSelectedFile();
+                    return DisplayCommandInternal(f);
+                }
+                else if (m_ProjectKind != Guid.Empty)
+                {
+                    return DisplayCommandInternal(m_ProjectKind);
+                }
+                else if (AssociatedObjectType != null)
+                {
+                    return DisplayCommandInternal(AssociatedObjectType);
+                }
+                else {
+                    package.Log.Verbose("Calling virtual ShouldDisplayCommand to see if we should be displaying this command " + this.GetType().Name);
+                    return ShouldDisplayCommand();
+                }
+            }
+            return false;
+        }
+
+        internal bool DisplayCommandInternal(Guid projectKind)
         {
             try
             {
-                if ((pluginCmd != null))
+                // TODO - do I need to add a ProjectKind overload to CreateContextMenu
+                //if (ToolWindowVisible) return true;
+                if (this.ApplicationObject.Solution == null) return false;
+                foreach (EnvDTE.Project p in this.ApplicationObject.Solution.Projects)
                 {
-                    pluginCmd.Delete();
+                    if (p.Kind == projectKind.ToString("B")) return true;
                 }
-                if (toolsCommandBarPopup != null)
-                {
-                    if (toolsCommandBarPopup.Controls.Count == 0)
-                    {
-                        toolsCommandBarPopup.Delete(true);
-                    }
-                }
+                return false;
             }
             catch
             {
-                // we are exiting here so we just swallow any exception, because most likely VS.Net is shutting down too.
+                return false;
             }
         }
 
-        public EnvDTE.vsCommandStatus QueryStatus(UIHierarchyItem item)
+        internal bool DisplayCommandInternal(Type objectType)
         {
-            //Dynamically enable & disable the command. If the selected file name is File1.cs, then make the command visible.
-            if (this.DisplayCommand(item))
+            try
             {
-                if (this.Checked) //enabled and checked
-                    return (vsCommandStatus)vsCommandStatus.vsCommandStatusEnabled | vsCommandStatus.vsCommandStatusSupported | vsCommandStatus.vsCommandStatusLatched;
-                else //enabled and unchecked
-                    return (vsCommandStatus)vsCommandStatus.vsCommandStatusEnabled | vsCommandStatus.vsCommandStatusSupported;
-            }
-            else
-            {
-                //\\ disabled
-                return (vsCommandStatus)vsCommandStatus.vsCommandStatusUnsupported | vsCommandStatus.vsCommandStatusInvisible;
-            }
-        }
+                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+                if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                    return false;
 
-        public string PluginRegistryPath
-        {
-            get { return Connect.PluginRegistryPath(this.GetType()); }
-        }
-
-        public static string StaticPluginRegistryPath
-        {
-            get
+                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+                return (((ProjectItem)hierItem.Object).Object.GetType() == objectType);
+            }
+            catch
             {
-                return Connect.PluginRegistryPath(new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().DeclaringType);
+                return false;
             }
         }
-
         #endregion
 
-        # region "Public Properties"
+        #region Options Page Properties
         /// <summary>
-        /// Gets the fully qualified name of the plug-in.
+        /// Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
-        /// <value>The full name.</value>
-        /// <remarks>The full name is built from the short name, and is used to unqiuely identify a plug-in, e.g. BIDSHelper.Connect.MyCleverPlugin.</remarks>
-        public string FullName
-        {
-            get { return BASE_NAME + this.ShortName; }
-        }
+        /// <value>The feature category.</value>
+        /// <remarks>The feature category is used to organise features into SSIS, SSAS, SSRS or Common.</remarks>
+        public abstract BIDSFeatureCategories FeatureCategory { get; }
 
-        public DTE2 ApplicationObject
-        {
-            get { return appObj; }
-        }
-
-        public AddIn AddInInstance
-        {
-            get { return addIn; }
-        }
-
-        #endregion
-
-        #region "methods that must be overridden"
+        public abstract string ToolTip { get; }
 
         /// <summary>
         /// Gets the short name, the unique internal plug-in name
         /// </summary>
         /// <value>The short name.</value>
         /// <remarks>The short name uniquely identiofies the plug-in within BIDS Helper. It is used to derive the full name, which is unique within all Visual Studio commands.</remarks>
-        public abstract string ShortName
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the button or command text, as displayed on the menu button.
-        /// </summary>
-        /// <value>The button text.</value>
-        /// <remarks>This is the first level of friendly naming.</remarks>
-        public abstract string ButtonText
-        {
-            get;
-        }
-
-        public abstract string ToolTip
-        {
-            get;
-        }
-
-        public abstract int Bitmap
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the feature category used to organise the plug-in in the enabled features list.
-        /// </summary>
-        /// <value>The feature category.</value>
-        /// <remarks>The feature category is used to organise features into SSIS, SSAS, SSRS or Common.</remarks>
-        public abstract BIDSFeatureCategories FeatureCategory
-        {
-            get;
-        }
-
-        public virtual void Dispose()
-        {
-            this.DeleteCommand();
-        }
-
-        public abstract void Exec();
-
-        public abstract bool DisplayCommand(UIHierarchyItem item);
-
-        #endregion
-
-        #region "virtual methods/properties
-
-        public virtual bool ShouldPositionAtEnd
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Controls whether to insert a separator before this menu item
-        /// </summary>
-        public virtual bool BeginMenuGroup
-        {
-            get { return false; }
-        }
-
-        public virtual string MenuName
-        {
-            get { return "Item"; }
-        }
-
-        public virtual bool Checked
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Gets the feature name as displayed in the enabled features list, previously known as the friendly name.
-        /// </summary>
-        /// <value>The feature name.</value>
-        /// <remarks>
-        ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
-        ///     The feature name is the default page title used for by the HelpUrl.
-        ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
-        /// </remarks>
-        public virtual string FeatureName
-        {
-            get { return this.ButtonText; }
-        }
-
-        /// <summary>
-        /// Gets the custom menu icon.
-        /// </summary>
-        /// <value>The custom menu icon.</value>
-        public virtual System.Drawing.Icon CustomMenuIcon
-        {
-            get { return null; }
-        }
-
-        /// <summary>
-        /// If there are multiple menus with the same MenuName, this setting controls whether this command is added to all of them or just the first
-        /// </summary>
-        public virtual bool AddCommandToMultipleMenus
-        {
-            get { return true; }
-        }
+        public virtual string ShortName { get { return this.GetType().Name; } }
 
         /// <summary>
         /// Gets the full description used for the features options dialog.
@@ -533,7 +185,83 @@ namespace BIDSHelper
             // Override this property if you need a different value
             get { return this.GetCodePlexHelpUrl(this.FeatureName); }
         }
+
+        /// <summary>
+        /// Gets the button or command text, as displayed on the menu button.
+        /// </summary>
+        /// <value>The button text.</value>
+        /// <remarks>This is the first level of friendly naming.</remarks>
+        //public abstract string ButtonText
+        //{
+        //    get;
+        //}
+
+        /// <summary>
+        /// Gets the feature name as displayed in the enabled features list, previously known as the friendly name.
+        /// </summary>
+        /// <value>The feature name.</value>
+        /// <remarks>
+        ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
+        ///     The feature name is the default page title used for by the HelpUrl.
+        ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
+        /// </remarks>
+        public abstract string FeatureName { get; }
+
         #endregion
+
+        #region Enable / Disable
+        public bool Enabled
+        {
+            get
+            {
+                if (!isEnabledCached)
+                {
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(this.PluginRegistryPath);
+                    isEnabled = ((int)regKey.GetValue("Enabled", 1) == 1) ? true : false;
+                    regKey.Close();
+                    isEnabledCached = true;
+                }
+                return isEnabled;
+            }
+
+            set
+            {
+                // if the setting is being changed
+                if (value != Enabled)
+                {
+
+                    RegistryKey regKey = Registry.CurrentUser.CreateSubKey(this.PluginRegistryPath);
+                    isEnabled = value;
+
+                    if (isEnabled)
+                    {
+                        // the default state is enabled so we can remove the Enabled key
+                        regKey.DeleteValue("Enabled");
+                        regKey.Close();
+                        // TODO - is this needed ??
+                        OnEnable();
+                    }
+                    else
+                    {
+                        // set the enabled property to 0
+                        regKey.SetValue("Enabled", isEnabled, RegistryValueKind.DWord);
+                        regKey.Close();
+                        // TODO - is this needed ??
+                        OnDisable();
+                    }
+
+                }
+            }
+        }
+
+
+
+        public virtual void OnEnable() { }
+        public virtual void OnDisable() { }
+
+        #endregion
+
+
 
         /// <summary>
         /// Gets the CodePlex help page URL.
@@ -546,6 +274,8 @@ namespace BIDSHelper
         {
             return string.Format(CultureInfo.InvariantCulture, DefaultUrlFormat, wikiTitle);
         }
+
+
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance. 
@@ -574,11 +304,424 @@ namespace BIDSHelper
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
+                System.Windows.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, DefaultMessageBoxCaption);
             }
         }
 
+        public static string BaseName
+        {
+            get { return BASE_NAME; }
+        }
+
+        public string CommandName
+        {
+            get { return BASE_NAME + this.GetType().Name; }
+        }
+
+        public string PluginRegistryPath
+        {
+            get { return BIDSHelperPackage.PluginRegistryPath(this.GetType()); }
+        }
+
+        //public static string StaticPluginRegistryPath
+        //{
+        //    get
+        //    {
+        //        return BIDSHelperPackage.PluginRegistryPath(new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().DeclaringType);
+        //    }
+        //}
+
+        /// <summary>
+        /// Gets the fully qualified name of the plug-in.
+        /// </summary>
+        /// <value>The full name.</value>
+        /// <remarks>The full name is built from the short name, and is used to unqiuely identify a plug-in, e.g. BIDSHelper.Connect.MyCleverPlugin.</remarks>
+        public string FullName
+        {
+            get { return BASE_NAME + this.GetType().Name; } //this.ShortName; }
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// VS Package that provides this command, not null.
+        /// </summary>
+        internal readonly BIDSHelperPackage package;
+
+        #region Service References
+        /// <summary>
+        /// Gets the service provider from the owner package.
+        /// </summary>
+        internal IServiceProvider ServiceProvider
+        {
+            get
+            {
+                return this.package;
+            }
+        }
+
+
+        internal OleMenuCommandService MenuCommandService
+        {
+            get
+            {
+                return this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            }
+        }
+
+        protected IVsShell VSShellService { get { return package.VsShell; } }
+
+        protected DTE2 DTE2Service { get { return package.DTE2; } }
+
+        #endregion
+
+        protected string RegistryRoot
+        {
+            get {
+                object regRoot;
+                VSShellService.GetProperty((int)__VSSPROPID.VSSPROPID_VirtualRegistryRoot, out regRoot);
+                return (string)regRoot;
+            }
+        }
+
+        #region Menu Methods
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// When only passing a CommandId you need to override ShouldDisplayCommand
+        /// if you need dynamic visibility for the menu command.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        public void CreateContextMenu(CommandList commandId)
+        {
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display for files with this extension (eg ".cube")</param>
+        public void CreateContextMenu(CommandList commandId, string extension)
+        {
+            if (!extension.StartsWith(".")) throw new ArgumentException("the extension argument to CreateContextMenu must start with a period (.)"); 
+            Extensions.Add(extension);
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display if projects matching the guid from BIDSHelperProjectKinds is in the current solution</param>
+        public void CreateContextMenu(CommandList commandId, Guid projectKind)
+        {
+            m_ProjectKind = projectKind;
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display for files that match one of the entries in this array of extensions (eg ".cube")</param>
+        public void CreateContextMenu(CommandList commandId, string[] extensions)
+        {
+            Extensions.AddRange(extensions);
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        /// <summary>
+        /// This method hooks up the click of the associated menu item in the 
+        /// BIDSHelperPackage.vsct file with the Exec method in this plugin.
+        /// </summary>
+        /// <param name="commandId">The ordinal of this commandID has to match the id in the BIDSHelperPackage.vsct file</param>
+        /// <param name="extension">This menu item will only display for files where the associated object is of this type</param>
+        public void CreateContextMenu(CommandList commandId, Type associatedObjectType)
+        {
+            AssociatedObjectType = associatedObjectType;
+            CreateMenu(CommandSet, (int)commandId);
+        }
+
+        internal void CreateMenu(Guid commandSet, int commandId)
+        {
+            OleMenuCommandService commandService = this.MenuCommandService;
+            if (commandService != null)
+            {
+                var menuCommandID = new CommandID(commandSet, commandId);
+                //var menuItem = new MenuCommand(this.MenuItemCallback, menuCommandID);
+
+                // AND REPLACE IT WITH A DIFFERENT TYPE
+                m_menuItem = new OleMenuCommand(MenuItemCallback, menuCommandID);
+                m_menuItem.BeforeQueryStatus += OnMenuBeforeQueryStatus;
+
+                commandService.AddCommand(m_menuItem);
+            }
+        }
+
+        protected virtual void OnMenuBeforeQueryStatus(object sender, EventArgs e)
+        {
+
+            // get the menu that fired the event
+            var menuCommand = sender as OleMenuCommand;
+            if (menuCommand != null)
+            {
+                // start by assuming that the menu will not be shown
+                menuCommand.Visible = false;
+                menuCommand.Enabled = false;
+
+                // leave the menu invisible and disabled if the current feature is not enabled
+                if (!Enabled) return;
+
+                //var selectedFileInfo = GetSelectedFile();
+
+                //// then check if the file is named '.cube'
+                //bool showMenu = DisplayCommand(selectedFileInfo);
+
+                bool showMenu = DisplayCommandInternal();
+
+                // if not leave the menu hidden
+                if (!showMenu) return;
+
+                menuCommand.Visible = true;
+                menuCommand.Enabled = true;
+            }
+        }
+
+        private void MenuItemCallback(object sender, EventArgs e)
+        {
+            this.Exec();
+        }
+        #endregion
+
+        #region ToolWindow Methods
+
+        protected bool Checked { get; set; }
+
+        protected bool ToolWindowVisible
+        {
+            get {
+                if (m_windowFrame == null) return false;
+                return m_windowFrame.IsVisible() != 0;
+            }
+            set {
+                if (m_windowFrame == null) return; // TODO - show we throw and error or even create the window here??
+                if (value) ShowToolWindow();
+                else HideToolWindow();
+            }
+        }
+
+        private void HideToolWindow() {
+            if (m_windowFrame == null) return;
+            m_windowFrame.Hide();
+            m_menuItem.Checked = false;
+        }
+
+        private void ShowToolWindow()
+        {
+            
+            if (m_windowFrame == null) 
+            {
+                //TODO - throw error here??
+                return;
+            }
+            m_windowFrame.Show();
+            m_menuItem.Checked = true;
+        }
+
+        public void SetToolWindowIcon(int icon)
+        {
+            // TODO - set tool window icon
+            //m_windowFrame.SetProperty(__VSFPROPID.VSFPROPID_BitmapResource,  )
+        }
+
+        protected UserControl ToolWindowUserControl { get { return m_userControl; } }
+
+        protected void  CreateToolWindow(string caption, Guid guid, Type controlType)
+        {
+            const int TOOL_WINDOW_INSTANCE_ID = 0; // Single-instance toolwindow
+
+            IVsUIShell uiShell;
+            //Guid toolWindowPersistenceGuid;
+            Guid guidNull = Guid.Empty;
+            int[] position = new int[1];
+            int result;
+            IVsWindowFrame windowFrame = null;
+            try {
+                uiShell = (IVsUIShell)package.ServiceProvider.GetService(typeof(SVsUIShell));
+
+                //toolWindowPersistenceGuid = new Guid(guid);
+
+                m_userControl = (UserControl)Activator.CreateInstance(controlType);
+
+                //m_windowFrame.SetProperty(__VSFPROPID.VSFPROPID_BitmapResource, )
+
+                // TODO: Initialize m_userControl if required adding a method like:
+                //    internal void Initialize(VSPackageToolWindowPackage package)
+                // and pass this instance of the package:
+                //    m_userControl.Initialize(this);
+
+                result = uiShell.CreateToolWindow((uint)__VSCREATETOOLWIN.CTW_fInitNew,
+                      TOOL_WINDOW_INSTANCE_ID, m_userControl, ref guidNull, ref guid,
+                      ref guidNull, null, caption, position, out windowFrame);
+
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(result);
+
+                m_windowFrame = windowFrame;
+            }
+            catch (Exception ex)
+            {
+                this.package.Log.Exception("Error Creating ToolWindow", ex);
+            }
+        }
+
+        #endregion
+
+        internal DTE2 ApplicationObject
+        {
+            get { return  Package.GetGlobalService(typeof(DTE)) as DTE2; }
+        }
+
+        internal WindowEvents GetWindowEvents()
+        {
+            return package.DTE2.Events.WindowEvents;
+        }
+
+        #region Solution Explorer Helpers
+        public static bool IsSingleProjectItemSelection(out IVsHierarchy hierarchy, out uint itemid)
+        {
+            hierarchy = null;
+            itemid = VSConstants.VSITEMID_NIL;
+            int hr = VSConstants.S_OK;
+
+            var monitorSelection = Package.GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
+            var solution = Package.GetGlobalService(typeof(SVsSolution)) as IVsSolution;
+            if (monitorSelection == null || solution == null)
+            {
+                return false;
+            }
+
+            IVsMultiItemSelect multiItemSelect = null;
+            IntPtr hierarchyPtr = IntPtr.Zero;
+            IntPtr selectionContainerPtr = IntPtr.Zero;
+
+            try
+            {
+                hr = monitorSelection.GetCurrentSelection(out hierarchyPtr, out itemid, out multiItemSelect, out selectionContainerPtr);
+
+                if (ErrorHandler.Failed(hr) || hierarchyPtr == IntPtr.Zero || itemid == VSConstants.VSITEMID_NIL)
+                {
+                    // there is no selection
+                    return false;
+                }
+
+                // multiple items are selected
+                if (multiItemSelect != null) return false;
+
+                // there is a hierarchy root node selected, thus it is not a single item inside a project
+
+                if (itemid == VSConstants.VSITEMID_ROOT) return false;
+
+                hierarchy = Marshal.GetObjectForIUnknown(hierarchyPtr) as IVsHierarchy;
+                if (hierarchy == null) return false;
+
+                Guid guidProjectID = Guid.Empty;
+
+                if (ErrorHandler.Failed(solution.GetGuidOfProject(hierarchy, out guidProjectID)))
+                {
+                    return false; // hierarchy is not a project inside the Solution if it does not have a ProjectID Guid
+                }
+
+                // if we got this far then there is a single project item selected
+                return true;
+            }
+            finally
+            {
+                if (selectionContainerPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(selectionContainerPtr);
+                }
+
+                if (hierarchyPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(hierarchyPtr);
+                }
+            }
+        }
+
+
+        public static IVsHierarchy GetSelectedProjectItem()
+        {
+            IVsHierarchy hierarchy = null;
+            uint itemid = VSConstants.VSITEMID_NIL;
+            int hr = VSConstants.S_OK;
+
+            var monitorSelection = Package.GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
+            var solution = Package.GetGlobalService(typeof(SVsSolution)) as IVsSolution;
+            if (monitorSelection == null || solution == null)
+            {
+                return null;
+            }
+
+            IVsMultiItemSelect multiItemSelect = null;
+            IntPtr hierarchyPtr = IntPtr.Zero;
+            IntPtr selectionContainerPtr = IntPtr.Zero;
+
+            try
+            {
+                hr = monitorSelection.GetCurrentSelection(out hierarchyPtr, out itemid, out multiItemSelect, out selectionContainerPtr);
+
+                if (ErrorHandler.Failed(hr) || hierarchyPtr == IntPtr.Zero || itemid == VSConstants.VSITEMID_NIL)
+                {
+                    // there is no selection
+                    return null;
+                }
+
+                // multiple items are selected
+                if (multiItemSelect != null) return null;
+
+                // there is a hierarchy root node selected, thus it is not a single item inside a project
+
+                if (itemid == VSConstants.VSITEMID_ROOT) return null;
+
+                hierarchy = Marshal.GetObjectForIUnknown(hierarchyPtr) as IVsHierarchy;
+                if (hierarchy == null) return null;
+
+                Guid guidProjectID = Guid.Empty;
+
+                if (ErrorHandler.Failed(solution.GetGuidOfProject(hierarchy, out guidProjectID)))
+                {
+                    return null; // hierarchy is not a project inside the Solution if it does not have a ProjectID Guid
+                }
+
+                // if we got this far then there is a single project item selected
+                return hierarchy;
+            }
+            finally
+            {
+                if (selectionContainerPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(selectionContainerPtr);
+                }
+
+                if (hierarchyPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(hierarchyPtr);
+                }
+            }
+        }
         protected Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetSelectedProjectReference()
+        {
+            return GetSelectedProjectReference(false);   
+        }
+
+        protected Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt GetSelectedProjectReference(bool onlyIfFileNotSelected)
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
@@ -588,27 +731,51 @@ namespace BIDSHelper
             // wrapped in a ProjectItem so we need to unwrap it to get to the project.
             if (proj == null && hierItem.Object is ProjectItem)
             {
-                var pi = (ProjectItem)hierItem.Object;
-                proj = pi.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                ProjectItem pi = (ProjectItem)hierItem.Object;
+                if ((pi.Object as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt) != null)
+                {
+                    proj = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)pi.Object;
+                }
+                else if (pi is Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)
+                {
+                    proj = pi as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                }
+                else if (!onlyIfFileNotSelected)
+                {
+                    proj = pi.ContainingProject as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                }
+                
             }
             return proj;
         }
 
-        protected void ShowErrorMessageBox(string message)
+        public FileInfo GetSelectedFile()
         {
-            ShowErrorMessageBox(message, null);
-        }
+            IVsHierarchy hierarchy;
+            uint itemId;
+            string itemFullPath;
+            if (!IsSingleProjectItemSelection(out hierarchy, out itemId)) return null;
+            ((IVsProject)hierarchy).GetMkDocument(itemId, out itemFullPath);
 
-        protected void ShowErrorMessageBox(string message, string captionSuffix)
+            var i = GetSelectedProjectItem();
+
+            return new FileInfo(itemFullPath);
+        }
+        #endregion
+
+        #region Static Methods
+
+        public static Type GetPrivateType(Type publicTypeInSameAssembly, string FullName)
         {
-            string caption = DefaultMessageBoxCaption;
-            if (string.IsNullOrEmpty(captionSuffix))
+            foreach (Type t in System.Reflection.Assembly.GetAssembly(publicTypeInSameAssembly).GetTypes())
             {
-                caption = string.Format("{0} - {1}", DefaultMessageBoxCaption, captionSuffix);
+                if (t.FullName == FullName)
+                {
+                    return t;
+                }
             }
-
-            MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return null;
         }
+        #endregion
     }
-
 }

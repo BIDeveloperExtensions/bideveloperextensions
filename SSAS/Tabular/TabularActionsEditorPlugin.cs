@@ -1,13 +1,13 @@
+#if !DENALI && !SQL2014
+extern alias localAdomdClient;
+#endif
+
 using System;
-using Extensibility;
 using EnvDTE;
-using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using Microsoft.AnalysisServices;
+using BIDSHelper.Core;
+//using AdomdLocal = localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
 
 namespace BIDSHelper
 {
@@ -17,9 +17,10 @@ namespace BIDSHelper
         private Cube cube;
 
         #region Standard Plugin Overrides
-        public TabularActionsEditorPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public TabularActionsEditorPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.TabularActionsEditorId);
         }
 
         public override string ShortName
@@ -27,43 +28,29 @@ namespace BIDSHelper
             get { return "TabularActionsEditor"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 144; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Tabular Actions Editor..."; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 144; }
+        //}
 
         public override string FeatureName
         {
             get { return "Tabular Actions Editor"; }
         }
-
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
-
+        
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
-
+        
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASTabular; }
         }
 
         /// <summary>
@@ -75,30 +62,23 @@ namespace BIDSHelper
             get { return "Provides a UI for editing actions such as drillthrough actions or report actions in Tabular models."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
-
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (!(hierItem.Object is ProjectItem)) return false;
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                return (sFileName.EndsWith(".bim"));
-            }
-            catch
-            {
-            }
-            return false;
-        }
         #endregion
+
+        public override bool ShouldDisplayCommand()
+        {
+            var selectedFile = GetSelectedFile();
+            if (selectedFile != null && selectedFile.Extension == ".bim")
+            {
+#if !DENALI && !SQL2014
+                var sb = TabularHelpers.GetTabularSandboxFromBimFile(this, false);
+                if (sb == null) return false;
+                return !sb.IsTabularMetadata;
+#else
+                return true;
+#endif
+            }
+            return false; 
+        }
 
         public override void Exec()
         {
@@ -107,7 +87,7 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
 
-                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                 ExecSandbox(sandbox);
             }
             catch (System.Exception ex)
@@ -121,15 +101,31 @@ namespace BIDSHelper
         {
             try
             {
-                sandbox = sandboxParam;
-                if (sandbox == null) throw new Exception("Can't get Sandbox!");
-                cube = sandbox.Cube;
+
+                
+#if DENALI || SQL2014
+                var sb = sandboxParam;
+                var conn = sandboxParam.AdomdConnection;
+#else
+                var sb = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
+                var localConn = sandboxParam.AdomdConnection;
+                var conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection(localConn.ConnectionString);
+#endif
+
+                if (sb == null) throw new Exception("Can't get Sandbox!");
+                cube = sb.Cube;
                 if (cube == null) throw new Exception("The workspace database cube doesn't exist.");
 
-                SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, sandbox.AdomdConnection);
+
+                SSAS.TabularActionsEditorForm form = new SSAS.TabularActionsEditorForm(cube, conn);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code = delegate
+#if DENALI || SQL2014
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.AMOCode code;
+#else
+                    Microsoft.AnalysisServices.BackEnd.AMOCode code;
+#endif
+                    code = delegate
                         {
                             using (Microsoft.AnalysisServices.BackEnd.SandboxTransaction tran = sandbox.CreateTransaction())
                             {
@@ -153,10 +149,15 @@ namespace BIDSHelper
                                 TabularHelpers.SaveXmlAnnotation(cube, SSAS.TabularActionsEditorForm.ACTION_ANNOTATION, form.Annotation);
 
                                 cube.Update(UpdateOptions.ExpandFull);
-                                tran.Commit();
+                                tran.GetType().InvokeMember("Commit", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Public, null, tran, null); //The .Commit() function used to return a list of strings, but in the latest set of code it is a void method which leads to "method not found" errors
+                                //tran.Commit();
                             }
                         };
+#if DENALI || SQL2014
                     sandbox.ExecuteAMOCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#else
+                    sandboxParam.ExecuteEngineCode(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationType.Update, Microsoft.AnalysisServices.BackEnd.DataModelingSandbox.OperationCancellability.AlwaysExecute, code, true);
+#endif
                 }
             }
             catch (System.Exception ex)
@@ -177,7 +178,7 @@ namespace BIDSHelper
             return annotation;
         }
 
-        #region ITabularOnPreBuildAnnotationCheck
+#region ITabularOnPreBuildAnnotationCheck
         public TabularOnPreBuildAnnotationCheckPriority TabularOnPreBuildAnnotationCheckPriority
         {
             get
@@ -188,7 +189,11 @@ namespace BIDSHelper
 
         public string GetPreBuildWarning(Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox)
         {
+#if DENALI || SQL2014
             cube = sandbox.Cube;
+#else
+            cube = ((Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandbox.Impl).Cube;
+#endif
             SSAS.TabularActionsAnnotation annotation = GetAnnotation(cube);
 
             bool bContainsPerspectiveListAnnotation = false;
@@ -222,7 +227,7 @@ namespace BIDSHelper
             //open the actions form and let it fix actions
             ExecSandbox(sandbox);
         }
-        #endregion
+#endregion
         
         public class DrillthroughColumn
         {

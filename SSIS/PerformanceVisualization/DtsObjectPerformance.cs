@@ -4,18 +4,9 @@ using System.Text;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
-
-#region Conditional compile for Yukon vs Katmai
-#if KATMAI || DENALI || SQL2014
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSPathXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPath100;
 using IDTSOutputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn100;
-#else
-using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
-using IDTSPathXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPath90;
-using IDTSOutputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn90;
-#endif
-#endregion
 
 namespace BIDSHelper.SSIS.PerformanceVisualization
 {
@@ -235,13 +226,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                 case DataType.DT_TEXT:
                 case DataType.DT_NTEXT:
                     return 24; //don't know length based on metadata so we guess... SSIS buffer tuning may use the same guess???
-#if DENALI || KATMAI || SQL2014
                 case DataType.DT_DBTIME2:
                 case DataType.DT_DBTIMESTAMP2:
                     return 8;
                 case DataType.DT_DBTIMESTAMPOFFSET:
                     return 10;
-#endif
                 default:
                     return 4;
             }

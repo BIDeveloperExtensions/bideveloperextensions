@@ -7,11 +7,14 @@ namespace BIDSHelper
     using EnvDTE;
     using EnvDTE80;
     using Microsoft.Win32;
-
-    public class VersionCheckPlugin : BIDSHelperPluginBase
+    using Core;
+    public class VersionCheckPlugin : BIDSHelperPluginBase, IDisposable
     {
-
-#if SQL2014
+#if SQL2016
+        private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2014CurrentReleaseVersion.xml"; //TODO
+        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2014";
+        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2014";
+#elif SQL2014
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2014CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2014";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2014";
@@ -19,10 +22,6 @@ namespace BIDSHelper
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2012CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2012";
         private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2012";
-#elif KATMAI
-        private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2008CurrentReleaseVersion.xml";
-        private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2008";
-        private const string REGISTRY_DISMISSED_VERSION_SETTING_NAME = "DismissedVersion2008";
 #else
         private static string CURRENT_VERSION_URL = "https://bidshelper.svn.codeplex.com/svn/SetupScript/SQL2005CurrentReleaseVersion.xml";
         private const string REGISTRY_LAST_VERSION_CHECK_SETTING_NAME = "LastVersionCheck2005";
@@ -36,7 +35,7 @@ namespace BIDSHelper
         private BackgroundWorker worker = new BackgroundWorker();
         private Core.VersionCheckNotificationForm versionCheckForm;
 
-        public static VersionCheckPlugin VersionCheckPluginInstance;
+        public static VersionCheckPlugin Instance { get; private set; }
 
         /// <summary>
         /// The latest version from CodePlex. Use a class field to prevent repeat calls, this acts as a cache.
@@ -49,9 +48,9 @@ namespace BIDSHelper
         /// <param name="con">The connect object.</param>
         /// <param name="appObject">The application object.</param>
         /// <param name="addinInstance">The add-in instance.</param>
-        public VersionCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance) : base(con, appObject, addinInstance)
+        public VersionCheckPlugin(BIDSHelperPackage package) : base(package)
         {
-            VersionCheckPluginInstance = this;
+            Instance = this;
 
             if (this.Enabled && LastVersionCheck.AddDays(CHECK_EVERY_DAYS) < DateTime.Today)
             {
@@ -101,7 +100,7 @@ namespace BIDSHelper
             }
             set
             {
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + this.ShortName;
+                string path = BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + this.ShortName;
                 RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
                 if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
                 settingKey.SetValue(REGISTRY_LAST_VERSION_CHECK_SETTING_NAME, value, RegistryValueKind.String);
@@ -125,7 +124,7 @@ namespace BIDSHelper
             }
             set
             {
-                string path = Connect.REGISTRY_BASE_PATH + "\\" + this.ShortName;
+                string path = BIDSHelperPackage.REGISTRY_BASE_PATH + "\\" + this.ShortName;
                 RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(path, true);
                 if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(path);
                 settingKey.SetValue(REGISTRY_DISMISSED_VERSION_SETTING_NAME, value, RegistryValueKind.String);
@@ -216,22 +215,17 @@ namespace BIDSHelper
             get { return "VersionCheckPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; }
+        //}
 
-        public override string ButtonText
+        public override string FeatureName
         {
             get { return "BIDS Helper Version Notification"; }
         }
 
         public override string ToolTip
-        {
-            get { return string.Empty; }
-        }
-
-        public override string MenuName
         {
             get { return string.Empty; }
         }
@@ -263,14 +257,23 @@ namespace BIDSHelper
             get { return "Get notified when a new BIDS Helper version is released. A balloon and icon will appear in the system tray, which will link to the download page for the new release."; }
         }
 
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
-        }
 
         public override void Exec()
         {
             // Nothing required
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            this.Dispose();
+        }
+
+        public void Dispose()
+        {
+            if (worker != null) worker.Dispose();
+            if (versionCheckForm != null) versionCheckForm.Dispose();
+
         }
     }
 

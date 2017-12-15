@@ -119,7 +119,7 @@ namespace PCDimNaturalizer
 
             foreach (string attr in SQLColsAsNonPCAttributes)
                 strQry += attr + ", ";
-            strQry = strQry.Remove(strQry.Length - 2) + "\r\nfrom " + table + ") CurrentMemberSubselect on CurrentMemberSubselect.CurrentMemberID = a.CurrentMemberID\r\n";
+            strQry = ASPCDimNaturalizer.RemoveLastComma(strQry) + "\r\nfrom " + table + ") CurrentMemberSubselect on CurrentMemberSubselect.CurrentMemberID = a.CurrentMemberID\r\n";
 
             for (int i = 2; i <= MinimumLevelCount + 1; i++)
             {
@@ -135,14 +135,14 @@ namespace PCDimNaturalizer
                 strQry += "left outer join (select " + id + " " + LevelName + ",\r\n";
                 foreach (string attr in SQLColsASPCAttributes)
                     strQry += "[" + attr + "] [" + LevelName + "_" + attr + "],\r\n"; 
-                strQry = strQry.Remove(strQry.Length - 3) + "\r\nfrom " + table + ") " + LevelName + "Subselect on " + LevelName + "Subselect." + LevelName + " = a." + LevelName + "\r\n";
+                strQry = ASPCDimNaturalizer.RemoveLastComma(strQry) + "\r\nfrom " + table + ") " + LevelName + "Subselect on " + LevelName + "Subselect." + LevelName + " = a." + LevelName + "\r\n";
             }
 
-            CTESel = CTESel.Remove(CTESel.Length - 2) + ")\r\n";
-            CTEQry = CTEQry.Remove(CTEQry.Length - 3) + "\r\n";
-            strCTELevelEnumeration = strCTELevelEnumeration.Remove(strCTELevelEnumeration.Length - 3) + " FROM " + table + " e " +
+            CTESel = ASPCDimNaturalizer.RemoveLastComma(CTESel) + ")\r\n";
+            CTEQry = ASPCDimNaturalizer.RemoveLastComma(CTEQry) + "\r\n";
+            strCTELevelEnumeration = ASPCDimNaturalizer.RemoveLastComma(strCTELevelEnumeration) + " FROM " + table + " e " +
                     "INNER JOIN PCStructure d ON e." + pid + " = d.CurrentMemberID)\r\n";
-            strQry = CTESel + CTEQry + strCTELevelEnumeration + strSel.Remove(strSel.Length - 2) + "\r\n" + strQry;
+            strQry = CTESel + CTEQry + strCTELevelEnumeration + ASPCDimNaturalizer.RemoveLastComma(strSel) + "\r\n" + strQry;
             cmd.CommandText = strQry;
             cmd.ExecuteNonQuery();
 
@@ -897,7 +897,7 @@ namespace PCDimNaturalizer
 
         private string GetNonPCUserHierarchyColumnNamesFromOriginalDimension()
         {
-            string strSubselect = " CurrentMemberSubselect.* from " + id.TableName + " b,\r\n(select " + id.ColumnName + " [" + dim.KeyAttribute.Name + "_KeyColumn], ";
+            string strSubselect = " CurrentMemberSubselect.* from " + id.TableName + " b,\r\n(select " + id.ColumnName + " [" + dim.KeyAttribute.Name + "_KeyColumn],\r\n";
             string strColAlias = "";
 
             if (dim.KeyAttribute.NameColumn != null && ColNameFromDataItem(dim.KeyAttribute.KeyColumns[0]) != ColNameFromDataItem(dim.KeyAttribute.NameColumn))
@@ -922,7 +922,17 @@ namespace PCDimNaturalizer
                             strSubselect += strCurCol.Replace(", -- End of column definition\r\n", "") + ",\r\n";
                 }
 
-            return strSubselect.Remove(strSubselect.Length - 3) + "\r\nfrom " + id.TableName + " b)\r\nCurrentMemberSubselect\r\n";
+            return RemoveLastComma(strSubselect) + "\r\nfrom " + id.TableName + " b)\r\nCurrentMemberSubselect\r\n";
+        }
+
+        public static string RemoveLastComma(string str)
+        {
+            if (str.EndsWith(",\r\n"))
+                return str.Remove(str.Length - 3);
+            else if (str.EndsWith(", "))
+                return str.Remove(str.Length - 2);
+            else
+                return str;
         }
 
         private void CreateNaturalizedView()
@@ -958,7 +968,7 @@ namespace PCDimNaturalizer
                         strCTELevelEnumeration += "WHEN " + j.ToString() + " THEN e." + id.ColumnName + "\r\n";
                     }
                     strCTELevelEnumeration += "WHEN " + i.ToString() + " THEN e." + id.ColumnName + " ELSE [" + LevelName + "_KeyColumn]\r\nEND\r\nAS [" + LevelName + "_KeyColumn],\r\n";
-                    strQry += "(select " + id.ColumnName + " [" + LevelName + "_KeyColumn], ";
+                    strQry += "(select " + id.ColumnName + " [" + LevelName + "_KeyColumn],\r\n";
 
 
                     if (PCParentAttribute().UnaryOperatorColumn != null)
@@ -1014,20 +1024,20 @@ namespace PCDimNaturalizer
                     }
 
                     if (i > 2)
-                        strQry = strQry.Remove(strQry.Length - 3) + "\r\n, Level" + (i - 1).ToString() + "Subselect.*\r\nfrom " + id.TableName + " b,\r\n";
+                        strQry = RemoveLastComma(strQry) + "\r\n, Level" + (i - 1).ToString() + "Subselect.*\r\nfrom " + id.TableName + " b,\r\n";
                     strSelEnd = ") Level" + i.ToString() + "Subselect\r\n" + strSelEnd;
                     strWhere += "Level" + (MinimumLevelCount + 1).ToString() + "Subselect.[" + LevelName + "_KeyColumn] = a.[" + LevelName + "_KeyColumn] and\r\n";
                     strLevelsEnumerations = strCTELevelEnumeration + strLevelsEnumerations;
                 }
 
                 CTESel = "CREATE VIEW " + txtNewView + " AS\r\n" +
-                    "WITH PCStructure(Level, " + pid.ColumnName + ", [" + dim.KeyAttribute.Name + "_KeyColumn], [" + GetNaturalizedLevelName(2) + "_KeyColumn]" + ((CTESel.Length > 0) ? ", " + CTESel.Remove(CTESel.Length - 2) : "") + ")\r\n";
-                CTEQry = "AS (SELECT 3 Level, " + pid.ColumnName + ", " + id.ColumnName + ",\r\n" + id.ColumnName + " as [" + GetNaturalizedLevelName(2) + "_KeyColumn]" + (CTEQry.Length > 0 ? ", \r\n" + CTEQry.Remove(CTEQry.Length - 3) : "") + "\r\n";
+                    "WITH PCStructure(Level, " + pid.ColumnName + ", [" + dim.KeyAttribute.Name + "_KeyColumn], [" + GetNaturalizedLevelName(2) + "_KeyColumn]" + ((CTESel.Length > 0) ? ", " + RemoveLastComma(CTESel) : "") + ")\r\n";
+                CTEQry = "AS (SELECT 3 Level, " + pid.ColumnName + ", " + id.ColumnName + ",\r\n" + id.ColumnName + " as [" + GetNaturalizedLevelName(2) + "_KeyColumn]" + (CTEQry.Length > 0 ? ", \r\n" + RemoveLastComma(CTEQry) : "") + "\r\n";
                 strWhere += "Level" + (MinimumLevelCount + 1).ToString() + "Subselect.[" + dim.KeyAttribute.Name + "_KeyColumn] = a.[" + dim.KeyAttribute.Name + "_KeyColumn]";
                 strLevelsEnumerations = "FROM " + id.TableName + " WHERE " + pid.ColumnName + " IS NULL OR " + pid.ColumnName + " = " + id.ColumnName + " " +
-                    "UNION ALL SELECT Level + 1, e." + pid.ColumnName + ", e." + id.ColumnName + ",\r\n" + strLevelsEnumerations.Remove(strLevelsEnumerations.Length - 3) + " FROM " + id.TableName + " e " +
+                    "UNION ALL SELECT Level + 1, e." + pid.ColumnName + ", e." + id.ColumnName + ",\r\n" + RemoveLastComma(strLevelsEnumerations) + " FROM " + id.TableName + " e " +
                     "INNER JOIN PCStructure d ON e." + pid.ColumnName + " = d.[" + dim.KeyAttribute.Name + "_KeyColumn] AND e." + pid.ColumnName + " != e." + id.ColumnName + ")\r\n";
-                strQry = CTESel + CTEQry + strLevelsEnumerations + strSel.Remove(strSel.Length - 2) + "\r\n" + strQry +
+                strQry = CTESel + CTEQry + strLevelsEnumerations + RemoveLastComma(strSel) + "\r\n" + strQry +
                     GetNonPCUserHierarchyColumnNamesFromOriginalDimension() + strSelEnd + strWhere;
                 cmd.CommandText = strQry;
 

@@ -12,9 +12,10 @@ namespace BIDSHelper.SSIS.Biml
     
     public class BimlExpandPlugin : BimlFeaturePluginBase
     {
-        public BimlExpandPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public BimlExpandPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(Core.CommandList.ExpandBimlFileId);
         }
 
         #region Standard Property Overrides
@@ -23,33 +24,20 @@ namespace BIDSHelper.SSIS.Biml
             get { return "BimlExpandPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override System.Drawing.Icon CustomMenuIcon
-        {
-            get { return BIDSHelper.Resources.Common.Biml; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Generate SSIS Packages"; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Generate SSIS Packages"; }
+        //}
 
         public override string ToolTip
         {
             get { return "Expand BimlScript file into one or more SSIS packages in your project"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item"; }
-        }
+        
         #endregion
 
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             foreach (object selected in ((System.Array)solExplorer.SelectedItems))
@@ -67,6 +55,8 @@ namespace BIDSHelper.SSIS.Biml
 
         public override void Exec()
         {
+            if (Biml.BimlUtility.ShowDisabledMessage()) return;
+
             if (!BimlUtility.CheckRequiredFrameworkVersion())
             {
                 return;
@@ -163,12 +153,10 @@ namespace BIDSHelper.SSIS.Biml
 
 
                     List<string> newProjectFiles = new List<string>();
-#if (!YUKON && !KATMAI)
-                    //IF DENALI or later...
+
                     // Read packages AND project connection managers
                     string[] newConnFiles = Directory.GetFiles(tempTargetDirectory, "*.conmgr", SearchOption.AllDirectories);
                     newProjectFiles.AddRange(newConnFiles);
-#endif
 
                     string[] newPackageFiles = Directory.GetFiles(tempTargetDirectory, "*.dtsx", SearchOption.AllDirectories);
                     newProjectFiles.AddRange(newPackageFiles);
@@ -208,7 +196,6 @@ namespace BIDSHelper.SSIS.Biml
                         }
                     }
 
-#if (DENALI || SQL2014)
                     /*
                      * Make sure that the package correctly references the Project connection manager, if used
                      */
@@ -335,7 +322,6 @@ namespace BIDSHelper.SSIS.Biml
                             doc.Save(fileFullPath);
                         }
                     }
-#endif
 
                     // Add files to VS Project
                     foreach (var tempFilePath in safePackageFilePaths)

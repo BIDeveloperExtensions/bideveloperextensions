@@ -1,15 +1,13 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
 using System.Xml.Xsl;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 using Microsoft.Win32;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -19,10 +17,12 @@ namespace BIDSHelper
         private static System.Collections.Generic.Dictionary<string, string> _dictPasswords = new System.Collections.Generic.Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
         private const string REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME = "CustomDiffViewer";
 
-        public SmartDiffPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public SmartDiffPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            // TODO - should we get this property without using the ApplicationObject
             _VisualStudioRegistryPath = this.ApplicationObject.RegistryRoot;
+            CreateContextMenu(CommandList.SmartDiffId, BI_FILE_EXTENSIONS);
         }
 
         public override string ShortName
@@ -30,15 +30,15 @@ namespace BIDSHelper
             get { return "SmartDiff"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 1836; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 1836; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Smart Diff..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Smart Diff..."; }
+        //}
 
         public override string FeatureName
         {
@@ -59,10 +59,6 @@ namespace BIDSHelper
             get { return "Compare differences between two versions of a file, including those in source control. Works across the BI stack including Packages, Cubes, Dimensions, Data Sources and Reports."; }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -77,43 +73,46 @@ namespace BIDSHelper
         private string[] SSAS_FILE_EXTENSIONS = { ".dim", ".cube", ".dmm", ".dsv", ".bim" };
         private string[] SSRS_FILE_EXTENSIONS = { ".rdl", ".rdlc" };
 
+        private string[] BI_FILE_EXTENSIONS = { ".dtsx", ".dim", ".cube", ".dmm", ".dsv", ".bim", ".rdl", ".rdlc" };
+
+
         /// <summary>
         /// Determines if the command should be displayed or not.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            try
-            {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                    return false;
+        //public override bool DisplayCommand(UIHierarchyItem item)
+        //{
+        //    try
+        //    {
+        //        UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //        if (((System.Array)solExplorer.SelectedItems).Length != 1)
+        //            return false;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-                foreach (string extension in DTS_FILE_EXTENSIONS)
-                {
-                    if (sFileName.EndsWith(extension))
-                        return true;
-                }
-                foreach (string extension in SSAS_FILE_EXTENSIONS)
-                {
-                    if (sFileName.EndsWith(extension))
-                        return true;
-                }
-                foreach (string extension in SSRS_FILE_EXTENSIONS)
-                {
-                    if (sFileName.EndsWith(extension))
-                        return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
+        //        foreach (string extension in DTS_FILE_EXTENSIONS)
+        //        {
+        //            if (sFileName.EndsWith(extension))
+        //                return true;
+        //        }
+        //        foreach (string extension in SSAS_FILE_EXTENSIONS)
+        //        {
+        //            if (sFileName.EndsWith(extension))
+        //                return true;
+        //        }
+        //        foreach (string extension in SSRS_FILE_EXTENSIONS)
+        //        {
+        //            if (sFileName.EndsWith(extension))
+        //                return true;
+        //        }
+        //        return false;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
         public static string PROVIDER_NAME_SOURCESAFE = "MSSCCI:Microsoft Visual SourceSafe";
         public static string PROVIDER_NAME_TFS = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
@@ -125,6 +124,20 @@ namespace BIDSHelper
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
+
+#if !(YUKON || KATMAI || DENALI || SQL2014)
+                if (projItem.Name.ToLower().EndsWith(".bim"))
+                {
+                    var sandboxWrapper = new BIDSHelper.SSAS.DataModelingSandboxWrapper(this);
+                    if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
+                    if (sandboxWrapper.GetSandbox().IsTabularMetadata)
+                    {
+                        string compatibility = sandboxWrapper.GetSandbox().DatabaseCompatibilityLevel.ToString();
+                        System.Windows.Forms.MessageBox.Show("BIDS Helper Smart Diff is not supported for " + compatibility + " compatibility level models yet.", "BIDS Helper Smart Diff");
+                        return;
+                    }
+                }
+#endif
 
                 SourceControl2 oSourceControl = ((SourceControl2)this.ApplicationObject.SourceControl);
                 string sProvider = "";
@@ -549,8 +562,14 @@ namespace BIDSHelper
             System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
             System.Reflection.Assembly tfsAssembly = System.Reflection.Assembly.Load(TFS_ASSEMBLY_FULL_NAME);
             System.Reflection.Assembly tfsVersionControlAssembly = System.Reflection.Assembly.Load(TFS_VERSION_CONTROL_ASSEMBLY_FULL_NAME);
+            System.IServiceProvider server = null;
+#if VS2017
+            Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TfsTeamProjectCollectionFactory");
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetTeamProjectCollection", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { new Uri(sServer) });
+#else
             Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TeamFoundationServerFactory");
-            System.IServiceProvider server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+#endif
             object versionControl = server.GetService(tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer"));
 
             Type typeVersionSpec = tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionSpec");
@@ -578,8 +597,14 @@ namespace BIDSHelper
             System.Reflection.BindingFlags getmethodflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
             System.Reflection.Assembly tfsAssembly = System.Reflection.Assembly.Load(TFS_ASSEMBLY_FULL_NAME);
             System.Reflection.Assembly tfsVersionControlAssembly = System.Reflection.Assembly.Load(TFS_VERSION_CONTROL_ASSEMBLY_FULL_NAME);
+            System.IServiceProvider server = null;
+#if VS2017
+            Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TfsTeamProjectCollectionFactory");
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetTeamProjectCollection", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { new Uri(sServer) });
+#else
             Type typeFactory = tfsAssembly.GetType("Microsoft.TeamFoundation.Client.TeamFoundationServerFactory");
-            System.IServiceProvider server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+            server = (System.IServiceProvider)typeFactory.InvokeMember("GetServer", getmethodflags | System.Reflection.BindingFlags.Static, null, null, new object[] { sServer });
+#endif
             object versionControl = server.GetService(tfsVersionControlAssembly.GetType("Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer"));
 
             int iVersion = -1;
@@ -605,7 +630,7 @@ namespace BIDSHelper
             }
             return list.ToArray();
         }
-        #endregion
+#endregion
 
         private void PrepXmlForDiff(string sFilename, string sXSL, bool bNewLineOnAttributes)
         {
@@ -649,11 +674,8 @@ namespace BIDSHelper
             System.IO.File.WriteAllBytes(xmlPath, memoryStream.GetBuffer()); //can't write out to the input file until after the Transform is done
         }
 
-
-#if DENALI || SQL2014
         //apparently this 11.0 DLL is used in VS2012 and VS2013... the 12.0 DLL didn't have the classes I need
         private static string VS2012_SHELL_INTEROP_ASSEMBLY_FULL_NAME = "Microsoft.VisualStudio.Shell.Interop.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-#endif
 
         private void ShowDiff(string oldFile, string newFile, bool bIgnoreCase, bool bIgnoreEOL, bool bIgnoreWhiteSpace, string sOldFileName, string sNewFileName)
         {
@@ -677,7 +699,7 @@ namespace BIDSHelper
 
             //try the VS2012 built-in diff viewer
             string sVS2012Error = string.Empty;
-#if DENALI || SQL2014
+
             if (this.ApplicationObject.Version.CompareTo("11.") == 1 || this.ApplicationObject.Version.CompareTo("12.") == 1)
             {
                 try
@@ -712,7 +734,6 @@ namespace BIDSHelper
                     sVS2012Error = exVS2012.Message;
                 }
             }
-#endif
 
             int fFlags = 0;
             string sFlags = "";
@@ -828,7 +849,7 @@ namespace BIDSHelper
             get
             {
                 string sCustomDiffViewer = null;
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(SmartDiffPlugin)));
                 if (rk != null)
                 {
                     sCustomDiffViewer = (string)rk.GetValue(REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME, null);
@@ -838,8 +859,9 @@ namespace BIDSHelper
             }
             set
             {
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                var regPath = BIDSHelperPackage.PluginRegistryPath(typeof(SmartDiffPlugin));
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(regPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(regPath);
                 if (value == null)
                 {
                     settingKey.DeleteValue(REGISTRY_CUSTOM_DIFF_VIEWER_SETTING_NAME, false);

@@ -27,6 +27,7 @@ namespace AggManager
         private bool _testNoAggs;
         private bool _testWithoutSomeAggs;
         private int _totalIterations;
+        public System.Windows.Forms.Form form;
 
         public AggregationPerformanceTester(AggregationDesign aggD, bool TestAgg, bool TestNoAggs, bool TestWithoutSomeAggs)
         {
@@ -560,7 +561,6 @@ namespace AggManager
                             + "    </Process>" + "\r\n"
                             + "  </Parallel>" + "\r\n"
                             + "</Batch>" + "\r\n");
-                        if (!string.IsNullOrEmpty(_errors)) throw new Exception(_errors);
 
                         if (_cancelled) return;
 
@@ -662,9 +662,27 @@ namespace AggManager
                 if (!_cancelled)
                 {
                     _errors += ex.Message + "\r\n" + ex.StackTrace + "\r\n";
-                    System.Windows.Forms.MessageBox.Show(_errors);
+                    PopupError();
+
                 }
             }
+        }
+
+        private void PopupError()
+        {
+            if (form != null && form.InvokeRequired)
+            {
+                form.BeginInvoke(new System.Windows.Forms.MethodInvoker(delegate () { PopupError(); }));
+            }
+            else if (form != null)
+            {
+                System.Windows.Forms.MessageBox.Show(form, _errors);
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show(_errors);
+            }
+
         }
 
         //unprocess partitions that use another (or no) agg design
@@ -750,6 +768,7 @@ namespace AggManager
 
         private void ServerExecute(Server server, string command)
         {
+            string sLocalErrors = string.Empty;
             XmlaResultCollection results = server.Execute(command);
             if (results != null)
             {
@@ -760,11 +779,12 @@ namespace AggManager
                         if (message is XmlaError)
                         {
                             _errors += message.Description + "\r\n";
+                            sLocalErrors += message.Description + "\r\n";
                         }
                     }
                 }
             }
-            if (!string.IsNullOrEmpty(_errors)) throw new Exception(_errors);
+            if (!string.IsNullOrEmpty(sLocalErrors)) throw new Exception(_errors);
         }
 
         private static string XMLEncode(string sString)

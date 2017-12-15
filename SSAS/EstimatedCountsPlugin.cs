@@ -1,18 +1,13 @@
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
 using System;
-using Microsoft.Win32;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class EstimatedCountsPlugin : BIDSHelperWindowActivatedPluginBase
     {
@@ -30,18 +25,12 @@ namespace BIDSHelper
 
         private bool bCancelEstimatedCountsClicked = false;
 
-        public EstimatedCountsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public EstimatedCountsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
         }
 
-        public override bool ShouldHookWindowCreated
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool ShouldHookWindowCreated { get { return true;} }
 
         public override void OnWindowActivated(Window GotFocus, Window LostFocus)
         {
@@ -528,25 +517,21 @@ namespace BIDSHelper
             get { return "SetAllEstimatedCounts"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Set All Estimated Counts"; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Set All Estimated Counts"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
 
         /// <summary>
         /// Gets the name of the friendly name of the plug-in.
@@ -566,7 +551,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -576,16 +561,6 @@ namespace BIDSHelper
         public override string FeatureDescription
         {
             get { return "Allows you to update the EstimatedCount property of every dimension attribute and partition with exact counts. Better counts help the Aggregation Design Wizard choose better aggregations."; }
-        }
-
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false;
         }
 
 

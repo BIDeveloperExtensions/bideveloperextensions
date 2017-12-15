@@ -5,6 +5,7 @@ using System.Text;
 
 namespace BIDSHelper.Core
 {
+    
     public class DirtyMonitoredDictionary<TKey, TValue> : Dictionary<int, string>
     {
         private bool _dirty = false;

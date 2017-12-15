@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
     using Microsoft.SqlServer.Dts.Runtime;
-    using System.Runtime.InteropServices;
+    using System.Reflection;
     internal class PackageHelper
     {
         public const string PackageCreationName = "Package";
@@ -38,17 +38,16 @@
         /// All managed components in the data flow share the same wrapper, identified by this GUID.
         /// The specific type of managed component is identified by the UserComponentTypeName custom property of the component.
         /// The GUID is documented in the class Syntax section - https://technet.microsoft.com/en-gb/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.105).aspx
+        /// With newer versions, disassemble Microsoft.SqlServer.DTSPipelineWrap to find the GUID attribute on Microsoft.SqlServer.Dts.Pipeline.Wrapper.CManagedComponentWrapperClass
         /// </summary>
-#if SQL2016
+#if SQL2017
+        public const string ManagedComponentWrapper = "{8DC69D45-2AD5-40C6-AAEC-25722F92D6FC}";
+#elif SQL2016
         public const string ManagedComponentWrapper = "{4F885D04-B578-47B7-94A0-DE9C7DA25EE2}";
 #elif SQL2014
         public const string ManagedComponentWrapper = "{33D831DE-5DCF-48F0-B431-4D327B9E785D}";
 #elif DENALI
         public const string ManagedComponentWrapper = "{2E42D45B-F83C-400F-8D77-61DDE6A7DF29}";
-#elif KATMAI
-        public const string ManagedComponentWrapper = "{874F7595-FB5F-40FF-96AF-FBFF8250E3EF}";
-#else
-        public const string ManagedComponentWrapper = "{BF01D463-7089-41EE-8F05-0A6DC17CE633}";
 #endif
 
         public static List<TaskHost> GetControlFlowObjects<T>(DtsContainer container)
@@ -85,6 +84,50 @@
             return returnItems;
         }
 
+        private static Application application;
+
+        internal static Application Application
+        {
+            get
+            {
+                if (application == null)
+                {
+                    application = new Application();
+#if DENALI || SQL2014
+                    // Do nothing
+#else
+                    // SQL2016 or above, set the version
+                    application.TargetServerVersion = (DTSTargetServerVersion)targetServerVersion;
+#endif
+                }
+
+                return application;
+            }
+        }
+
+        /// <summary>
+        /// Private field for the TargetServerVersion property
+        /// </summary>
+        private static SsisTargetServerVersion targetServerVersion;
+
+
+        public static SsisTargetServerVersion TargetServerVersion
+        {
+            get { return targetServerVersion; }
+            set
+            {
+                if (targetServerVersion == value)
+                {
+                    return;
+                }
+
+                componentInfos.Clear();
+                controlInfos.Clear();
+                application = null;
+                targetServerVersion = value;
+            }
+        }
+
         /// <summary>
         /// Gets the cached collection of Pipeline ComponentInfo objects.
         /// </summary>
@@ -99,8 +142,8 @@
                     {
                         if (componentInfos.Count == 0)
                         {
-                            Application application = new Application();
-                            PipelineComponentInfos pipelineComponentInfos = application.PipelineComponentInfos;
+
+                            PipelineComponentInfos pipelineComponentInfos = Application.PipelineComponentInfos;
 
                             foreach (PipelineComponentInfo pipelineComponentInfo in pipelineComponentInfos)
                             {
@@ -139,8 +182,7 @@
             {
                 if (controlInfos.Count == 0)
                 {
-                    Application application = new Application();
-                    TaskInfos taskInfos = application.TaskInfos;
+                    TaskInfos taskInfos = Application.TaskInfos;
 
                     foreach (TaskInfo taskInfo in taskInfos)
                     {
@@ -240,8 +282,6 @@
         {
             string containerKey = container.CreationName;
 
-            string typeName = container.GetType().Name;
-
             if (container is Package)
             {
                 containerKey = PackageHelper.PackageCreationName;
@@ -299,7 +339,7 @@
         ////    return containerKey;
         ////}
 
-#if KATMAI || DENALI || SQL2014
+
         public static string GetComponentKey(IDTSComponentMetaData100 component)
         {
             string key = component.ComponentClassID;
@@ -330,7 +370,32 @@
             return null;
 
         }
-#endif
+
+        internal static void SetTargetServerVersion(Package package)
+        {
+            // Get target version of the package, and set on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.TargetServerVersion = SSISHelpers.GetTargetServerVersion(package);
+        }
+
+        internal static void SetTargetServerVersion(EnvDTE.Project project)
+        {
+            // Get target version of the package, and set on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.TargetServerVersion = SSISHelpers.GetTargetServerVersion(project);
+        }
+
+        /// <summary>
+        /// Get property value from an object via reflection.
+        /// </summary>
+        /// <param name="target">The object which hosts the property to get the value of.</param>
+        /// <param name="propertyName">The name of the property to get the value of.</param>
+        /// <returns>The value of the named property from the target object.</returns>
+        internal static object GetPropertyValue(object target, string propertyName)
+        {
+            Type type = target.GetType();
+            PropertyInfo property = type.GetProperty(propertyName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+            object result = property.GetValue(target, null);
+            return result;
+        }
     }
 
     public enum SourceAccessMode : int

@@ -2,18 +2,15 @@ using EnvDTE;
 using EnvDTE80;
 using System.Text;
 using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
 using System;
-using Microsoft.VisualStudio.Shell.Interop;
-using System.ComponentModel;
 using System.Windows.Forms;
-using Microsoft.VisualStudio.CommandBars;
 using System.ComponentModel.Design;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.DataTransformationServices.Design;
 using Microsoft.DataWarehouse.Project;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class RelativePathsPlugin : BIDSHelperPluginBase
     {
@@ -21,9 +18,10 @@ namespace BIDSHelper
         private Package packageForFixButton = null;
         private string pathForPackageForFixButton;
 
-        public RelativePathsPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public RelativePathsPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.FixRelativePathsId, new Guid(BIDSProjectKinds.SSIS));
             CaptureClickEventForSSISMenu();
         }
 
@@ -68,13 +66,8 @@ namespace BIDSHelper
                         Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
                         
                         IWin32Window parentWin;
-                        #if DENALI || SQL2014
+
                         parentWin = viewControl;
-                        #else
-                        DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
-                        if (diagram == null || diagram.DDS == null) return;
-                        parentWin = diagram.DDS;
-                        #endif
                         
                         Button editSelectedButton = (Button)form.Controls["editSelectedConfiguration"];
                         Control packageConfigurationsGridControl1 = form.Controls["packageConfigurationsGridControl1"];
@@ -121,9 +114,7 @@ namespace BIDSHelper
             }
             else
             {
-                #if DENALI || SQL2014
                 Cud.Transaction trans = Cud.BeginTransaction(this.packageForFixButton);
-                #endif
 
                 bool bChanged = false;
                 foreach (Microsoft.SqlServer.Dts.Runtime.Configuration config in this.packageForFixButton.Configurations)
@@ -136,9 +127,7 @@ namespace BIDSHelper
                             sb.Append("Configuration ").Append(config.Name).AppendLine(" changed to relative path");
                             bChanged = true;
 
-                            #if DENALI || SQL2014
                             trans.ChangeProperty(config, "ConfigurationString");
-                            #endif
                         }
                     }
                 }
@@ -154,9 +143,7 @@ namespace BIDSHelper
                     Control packageConfigurationsGridControl1 = form.Controls["packageConfigurationsGridControl1"];
                     packageConfigurationsGridControl1.GetType().InvokeMember("RefreshConfigurations", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod, null, packageConfigurationsGridControl1, new object[] { });
 
-                    #if DENALI || SQL2014
                     trans.Commit();
-                    #endif
                 }
                 MessageBox.Show(sb.ToString(), "BIDS Helper - Fix Relative Paths");
             }
@@ -169,25 +156,20 @@ namespace BIDSHelper
             get { return "RelativePathsPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 1021; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Fix Relative Paths..."; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 1021; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return "Project"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Project"; }
+        //}
 
 
         /// <summary>
@@ -198,11 +180,6 @@ namespace BIDSHelper
         public override string FeatureName
         {
             get { return "Fix Relative Paths"; }
-        }
-
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
         }
 
         /// <summary>
@@ -225,20 +202,20 @@ namespace BIDSHelper
         #endregion
 
         #region Running from the Project node menu
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length == 1)
-            {
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                EnvDTE.Project proj = GetSelectedProjectReference();
-                if (proj != null)
-                {
-                    return (proj.Kind == BIDSProjectKinds.SSIS);
-                }
-            }
-            return false;
-        }
+        //public override bool ShouldDisplayCommand()
+        //{
+        //    UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
+        //    if (((System.Array)solExplorer.SelectedItems).Length == 1)
+        //    {
+        //        UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
+        //        EnvDTE.Project proj = GetSelectedProjectReference();
+        //        if (proj != null)
+        //        {
+        //            return (proj.Kind == BIDSProjectKinds.SSIS);
+        //        }
+        //    }
+        //    return false;
+        //}
 
         public override void Exec()
         {
@@ -306,9 +283,7 @@ namespace BIDSHelper
 
                     outputWindow.ReportStatusMessage("Package " + item.Name);
 
-                    #if DENALI || SQL2014
                     Cud.Transaction trans = Cud.BeginTransaction(package);
-                    #endif
 
                     bool bChanged = false;
                     foreach (Microsoft.SqlServer.Dts.Runtime.Configuration config in package.Configurations)
@@ -321,9 +296,7 @@ namespace BIDSHelper
                                 outputWindow.ReportStatusMessage("  Configuration " + config.Name + " changed to relative path");
                                 bChanged = true;
 
-                                #if DENALI || SQL2014
                                 trans.ChangeProperty(config, "ConfigurationString");
-                                #endif
                             }
                         }
                     }
@@ -335,9 +308,7 @@ namespace BIDSHelper
                             outputWindow.ReportStatusMessage("  Connection " + conn.Name + " changed to relative path");
                             bChanged = true;
 
-                            #if DENALI || SQL2014
                             trans.ChangeProperty(conn, "ConnectionString");
-                            #endif
                         }
                     }
                     if (bChanged)

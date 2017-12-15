@@ -22,7 +22,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager;
         private bool use64Bit;
         private string dtexecPath;
-        private Microsoft.SqlServer.Dts.Runtime.Application ssisApp = new Microsoft.SqlServer.Dts.Runtime.Application();
+        private Microsoft.SqlServer.Dts.Runtime.Application ssisApp = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
         private System.Diagnostics.Process process = null;
         private DtsPerformanceLogEventParser eventParser = null;
         private DtsTextLogFileLoader logFileLoader = null;
@@ -55,37 +55,38 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         //pipeline component performance breakdown
         private DtsPipelineTestDirector pipelineBreakdownTestDirector = null;
 
-#if SQL2014
-        //instead of making this a constant, make it dependent on the deploy target
-        //private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
-        private static string DTSPATH_REGISTRY_PATH
+        // Get the registery path, based on the deployment target version.
+        private static string DtsPathRegistryPath
         {
             get
             {
-                if (SSISHelpers.LatestProjectTargetVersion == SSISHelpers.ProjectTargetVersion.SQLServer2012)
+                switch (PackageHelper.TargetServerVersion)
                 {
-                    return @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
-                }
-                else
-                {
-                    return @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
+                    case SsisTargetServerVersion.SQLServer2012:
+                        return @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
+                    case SsisTargetServerVersion.SQLServer2014:
+                        return @"SOFTWARE\Microsoft\Microsoft SQL Server\120\SSIS\Setup\DTSPath";
+                    case SsisTargetServerVersion.SQLServer2016:
+                        return @"SOFTWARE\Microsoft\Microsoft SQL Server\130\SSIS\Setup\DTSPath";
+                    case SsisTargetServerVersion.SQLServer2017:
+                        return @"SOFTWARE\Microsoft\Microsoft SQL Server\140\SSIS\Setup\DTSPath";
+                    default:
+                        throw new Exception("Unknown deployment version, DTSPATH_REGISTRY_PATH cannot be determined.");
                 }
             }
         }
 
-        //it appears that when using the OneDesigner API to edit a package in downgraded SSIS2012 mode, you tell it to use a SSIS2014 (DTS.LogProviderTextFile.4) log provider and when it persists the package to a .dtsx file on disk it internally and automatically downgrades that to an SSIS2012 (DTS.LogProviderTextFile.3) log provider
-        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.4";
-#elif DENALI
-        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath";
-        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.3";
-#elif KATMAI
-        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\Microsoft SQL Server\100\SSIS\Setup\DTSPath";
-        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.2";
-#else
-        private const string DTSPATH_REGISTRY_PATH = @"SOFTWARE\Microsoft\MSDTS\Setup\DtsPath";
-        private const string TEXT_LOG_PROVIDER_IDENTIFIER = "DTS.LogProviderTextFile.1";
-#endif
-
+        private static string LogProviderCreationName
+        {
+            get
+            {
+                // It appears that when using the OneDesigner API to edit a package in downgraded SSIS2012 mode, 
+                // you tell it to use a SSIS2014 (DTS.LogProviderTextFile.4) log provider and when it persists the 
+                // package to a .dtsx file on disk it internally and automatically downgrades that to an 
+                // SSIS2012 (DTS.LogProviderTextFile.3) log provider
+                return string.Format("DTS.LogProviderTextFile.{0}", SSISHelpers.CreationNameIndex);
+            }
+        }        
 
         #region Layout
         public PerformanceTab()
@@ -470,17 +471,18 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
             this.use64Bit = options.Run64BitRuntime;
 
-#if SQL2014
-            //refreshes the cached target version which is needed in GetPathToDtsExecutable below
-            SSISHelpers.ProjectTargetVersion? projectTargetVersion = SSISHelpers.GetProjectTargetVersion(this.projectItem.ContainingProject);
-#endif
+            // Refreshes cached target version which is needed in GetPathToDtsExecutable below
+            PackageHelper.SetTargetServerVersion(projectItem.ContainingProject);
+
+            //get a new copy of the SSIS app because we just set the target server version
+            ssisApp = SSIS.PackageHelper.Application;
 
             //get path to dtexec
             this.dtexecPath = GetPathToDtsExecutable("dtexec.exe", this.use64Bit);
             if (this.dtexecPath == null && this.use64Bit)
                 this.dtexecPath = GetPathToDtsExecutable("dtexec.exe", false);
             if (this.dtexecPath == null)
-                throw new Exception("Can't find path to dtexec in registry!");
+                throw new Exception("Can't find path to dtexec in registry! Please make sure you have the SSIS service installed from the " + PackageHelper.TargetServerVersion.ToString() + " install media");
         }
 
         internal static void SetupCustomLogging(Package pkg, string sLogFilePath)
@@ -501,7 +503,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             RecurseTasksAndSetupLogging(pkg);
 
             //add BIDS Helper custom logging settings
-            LogProvider log = pkg.LogProviders.Add(TEXT_LOG_PROVIDER_IDENTIFIER);
+            LogProvider log = pkg.LogProviders.Add(LogProviderCreationName);
             log.ConfigString = cm.Name;
             log.Name = "BidsHelperPerformanceLogging";
             log.Description = log.Name;
@@ -889,7 +891,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             IntPtr zero = IntPtr.Zero;
             IntPtr HKEY_LOCAL_MACHINE = (IntPtr)(-2147483646);
 
-            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, DTSPATH_REGISTRY_PATH, 0, sam, out zero) == 0)
+            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, DtsPathRegistryPath, 0, sam, out zero) == 0)
             {
                 StringBuilder lpValue = new StringBuilder(260);
                 int lpcbValue = lpValue.Capacity * Marshal.SizeOf(typeof(char));

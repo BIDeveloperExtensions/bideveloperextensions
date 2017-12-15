@@ -5,8 +5,6 @@ using System.Collections;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
-#region Conditional compile for Yukon vs Katmai
-#if KATMAI || DENALI || SQL2014
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
 using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;
@@ -17,19 +15,6 @@ using IDTSPathCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPathCo
 using IDTSVirtualInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInput100;
 using IDTSVirtualInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumn100;
 using IDTSVirtualInputColumnCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumnCollection100;
-#else
-using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
-using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput90;
-using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput90;
-using IDTSPathXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPath90;
-using IDTSInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumn90;
-using IDTSOutputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn90;
-using IDTSPathCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSPathCollection90;
-using IDTSVirtualInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInput90;
-using IDTSVirtualInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumn90;
-using IDTSVirtualInputColumnCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumnCollection90;
-#endif
-#endregion
 
 
 namespace BIDSHelper.SSIS.PerformanceVisualization
@@ -69,7 +54,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             System.IO.File.Copy(OriginalPackagePath, this._OriginalPackagePath);
             System.IO.File.SetAttributes(this._OriginalPackagePath, System.IO.FileAttributes.Normal);
 
-            this._app = new Application();
+            this._app = PackageHelper.Application; //sets the property TargetServerVersion
         }
 
         //TODO: skip any step which is simply writing one raw file into another raw file
@@ -765,7 +750,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             Variable variable = dataFlowTask.Variables.Add("BIDS_HELPER_ROWCOUNT_" + output.ID, false, "User", (int)0);
 
             IDTSComponentMetaDataXX transform = pipeline.ComponentMetaDataCollection.New();
-            transform.ComponentClassID = "DTSTransform.RowCount";
+#if SQL2016 || SQL2017
+            transform.ComponentClassID = "Microsoft.RowCount";
+#else
+            transform.ComponentClassID = "DTSAdapter.RowCount";
+#endif
             CManagedComponentWrapper inst = transform.Instantiate();
             inst.ProvideComponentProperties();
             inst.SetComponentProperty("VariableName", variable.QualifiedName);
@@ -782,7 +771,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private void HookupRawDestination(MainPipe pipeline, IDTSOutputXX output)
         {
             IDTSComponentMetaDataXX rawDestComponent = pipeline.ComponentMetaDataCollection.New();
+#if SQL2016 || SQL2017
+            rawDestComponent.ComponentClassID = "Microsoft.RawDestination";
+#else
             rawDestComponent.ComponentClassID = "DTSAdapter.RawDestination";
+#endif
             CManagedComponentWrapper inst = rawDestComponent.Instantiate();
             inst.ProvideComponentProperties();
             inst.SetComponentProperty("FileName", GetRawFilePathForOutput(output));
@@ -800,7 +793,11 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
         private static void HookupRawSource(MainPipe pipeline, MainPipe pipelineToReference, IDTSInputXX input, IDTSComponentMetaDataXX componentNextInPath, string sRawFilePath)
         {
             IDTSComponentMetaDataXX rawSourceComponent = pipeline.ComponentMetaDataCollection.New();
+#if SQL2016 || SQL2017
+            rawSourceComponent.ComponentClassID = "Microsoft.RawSource";
+#else
             rawSourceComponent.ComponentClassID = "DTSAdapter.RawSource";
+#endif
             CManagedComponentWrapper inst = rawSourceComponent.Instantiate();
             inst.ProvideComponentProperties();
             inst.SetComponentProperty("FileName", sRawFilePath);
@@ -1075,9 +1072,9 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             }
             return matchingExecutable;
         }
-        #endregion
+#endregion
 
-        #region Pipeline Test Helper Classes
+#region Pipeline Test Helper Classes
         public class DtsPipelineComponentTest : IDtsGridRowData
         {
             public DtsPipelineComponentTestType TestType;
@@ -1224,6 +1221,6 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             /// </summary>
             UpstreamOnlyWithoutComponentItself
         }
-        #endregion
+#endregion
     }
 }

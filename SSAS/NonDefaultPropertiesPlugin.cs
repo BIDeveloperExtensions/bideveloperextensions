@@ -1,10 +1,6 @@
 using System;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
@@ -14,27 +10,17 @@ using System.ComponentModel.Design;
 using System.ComponentModel;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.SqlServer.Dts.Runtime;
-using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.InteropServices;
 using Microsoft.DataWarehouse.Controls;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
-#if KATMAI || DENALI || SQL2014
 using IDTSConnectionManagerDatabaseParametersXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerDatabaseParameters100;
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSCustomPropertyXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
 using IDTSObjectXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSObject100;
 using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
-#else
-using IDTSConnectionManagerDatabaseParametersXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerDatabaseParameters90;
-using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
-using IDTSCustomPropertyXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty90;
-using IDTSObjectXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSObject90;
-using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput90;
-#endif
+using BIDSHelper.Core;
 
-
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class NonDefaultPropertiesPlugin : BIDSHelperPluginBase
     {
@@ -46,9 +32,10 @@ namespace BIDSHelper
         private Dictionary<string, DtsObject> dictCachedDtsObjects = new Dictionary<string, DtsObject>();
 
         #region Standard Plugin Overrides
-        public NonDefaultPropertiesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public NonDefaultPropertiesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.NonDefaultPropertiesReportId);
         }
 
         public override string ShortName
@@ -56,36 +43,32 @@ namespace BIDSHelper
             get { return "NonDefaultProperties"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 2035; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 2035; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Non-Default Properties Report..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Non-Default Properties Report..."; }
+        //}
 
         public override string FeatureName
         {
             get { return "Non-Default Properties Report"; }
         }
 
-        public override string MenuName
-        {
-            get { return "Project,Item,Solution"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Project,Item,Solution"; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
-
+        
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
         /// </summary>
@@ -109,7 +92,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {
@@ -177,7 +160,7 @@ namespace BIDSHelper
                             {
                                 int iProgress = 0;
                                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
-                                Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                                Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
                                 foreach (ProjectItem pi in p.ProjectItems)
                                 {
                                     ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, p.ProjectItems.Count);
@@ -224,7 +207,7 @@ namespace BIDSHelper
                                 if (projExt.Kind == BIDSProjectKinds.SSIS)
                                 {
                                     int iProgress = 0;
-                                    Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                                    Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion;
                                     foreach (ProjectItem pi in proj.ProjectItems)
                                     {
                                         ApplicationObject.StatusBar.Progress(true, "Scanning project " + proj.Name + " package " + pi.Name, iProgress++, proj.ProjectItems.Count);
@@ -365,7 +348,7 @@ namespace BIDSHelper
             }
             else
             {
-                Microsoft.SqlServer.Dts.Runtime.Application app = new Microsoft.SqlServer.Dts.Runtime.Application();
+                Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
                 return app.LoadPackage(pi.get_FileNames(0), null);
             }
         }
@@ -499,7 +482,7 @@ namespace BIDSHelper
             {
                 IDTSObjectHost host = (IDTSObjectHost)o;
                 if (host.InnerObject is Microsoft.SqlServer.Dts.Pipeline.Wrapper.MainPipe)
-                    properties = typeof(Microsoft.SqlServer.Dts.Pipeline.Wrapper.MainPipeClass).GetProperties(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
+                    properties = typeof(Microsoft.SqlServer.Dts.Pipeline.Wrapper.MainPipe).GetProperties(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
                 else if (host.InnerObject is IDTSConnectionManagerDatabaseParametersXX)
                     properties = typeof(IDTSConnectionManagerDatabaseParametersXX).GetProperties(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
                 else //probably won't turn up any properties because reflection on a COM object Type doesn't work

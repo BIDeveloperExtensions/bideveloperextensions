@@ -7,26 +7,27 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.DataTransformationServices.Project;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
-using System.Xml.Serialization;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project.Configuration;
 using Microsoft.DataWarehouse.Project;
 using Microsoft.DataWarehouse.VsIntegration.Shell;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.CommandBars;
-using Microsoft.CSharp;
+using BIDSHelper.Core;
+using BIDSHelper.SSAS;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class DeployPackagesPlugin : BIDSHelperPluginBase
     {
         private CommandBarButton cmdButtonProperties = null;
         private Guid guidForCustomPropertyFrame;
 
-        public DeployPackagesPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DeployPackagesPlugin(BIDSHelperPackage package)
+            : base(package)
         {
             RegisterClassesForCOM();
             CaptureClickEventForProjectPropertiesMenu();
+            CreateContextMenu(CommandList.DeploySSISPackageId); //don't mark as SSIS project type menu so ShouldDisplayCommand called
         }
 
         #region Standard Property Overrides
@@ -35,25 +36,20 @@ namespace BIDSHelper
             get { return "DeployPackagesPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 1812; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Deploy"; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 1812; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return "Item,Project,Solution"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Item,Project,Solution"; }
+        //}
 
         public override string FeatureName
         {
@@ -80,14 +76,14 @@ namespace BIDSHelper
         #endregion
 
 
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
             if (((System.Array)solExplorer.SelectedItems).Length == 1)
             {
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 //Project proj = hierItem.Object as Project;
-                Project proj = this.GetSelectedProjectReference();
+                Project proj = this.GetSelectedProjectReference(true); //only return if project node selected
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 if (proj != null)
                 {
@@ -103,6 +99,7 @@ namespace BIDSHelper
                 }
                 else
                 {
+                    if (!(hierItem.Object is ProjectItem)) return false;
                     proj = ((ProjectItem)hierItem.Object).ContainingProject;
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
                     return (sFileName.EndsWith(".dtsx") && IsLegacyDeploymentMode(proj));
@@ -113,6 +110,7 @@ namespace BIDSHelper
                 foreach (object selected in ((System.Array)solExplorer.SelectedItems))
                 {
                     UIHierarchyItem hierItem = (UIHierarchyItem)selected;
+                    if (!(hierItem.Object is ProjectItem)) return false;
                     Project proj = ((ProjectItem)hierItem.Object).ContainingProject;
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
                     if (!sFileName.EndsWith(".dtsx") || !IsLegacyDeploymentMode(proj)) return false;
@@ -127,7 +125,7 @@ namespace BIDSHelper
             {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                Project pr = GetSelectedProjectReference();
+                Project pr = GetSelectedProjectReference(true); //only return if project node selected
 
                 bool bJustDeploySelectedPackages = false;
                 System.Collections.Generic.List<Project> projects = new System.Collections.Generic.List<Project>();
@@ -183,6 +181,7 @@ namespace BIDSHelper
                         selectedItems = list.ToArray();
                     }
 
+                    PackageHelper.SetTargetServerVersion(proj); //cache the target server version before you use it
                     DeployProject(proj, outputWindow, selectedItems, !bJustDeploySelectedPackages);
                 }
             }
@@ -212,11 +211,10 @@ namespace BIDSHelper
                     doc.Load(sConfigFileName);
                 }
 
-#if SQL2014
+#if !(YUKON || KATMAI || DENALI)
                 //refreshes the cached target version which is needed in GetPathToDtsExecutable below
-                SSISHelpers.ProjectTargetVersion? projectTargetVersion = SSISHelpers.GetProjectTargetVersion(proj);
+                SsisTargetServerVersion? projectTargetVersion = SSISHelpers.GetTargetServerVersion(proj);
 #endif
-
                 IProjectConfiguration config = projectManager.ConfigurationManager.CurrentConfiguration;
                 DtsProjectExtendedConfigurationOptions newOptions = new DtsProjectExtendedConfigurationOptions();
                 LoadFromBidsHelperConfiguration(doc, config.DisplayName, newOptions);
@@ -286,6 +284,10 @@ namespace BIDSHelper
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.FileName = SSIS.PerformanceVisualization.PerformanceTab.GetPathToDtsExecutable("dtutil.exe", false); //makes the bat file less portable, but does workaround the problem if SSIS2005 and SSIS2008 are both installed... issue 21074
+
+                if (string.IsNullOrEmpty(process.StartInfo.FileName))
+                    throw new Exception("Can't find path to dtutil in registry! Please make sure you have the SSIS service installed from the " + PackageHelper.TargetServerVersion.ToString() + " install media");
+
 
                 if (newOptions.DeploymentType != DtsProjectExtendedConfigurationOptions.DeploymentTypes.FilePathDestination)
                 {
@@ -566,13 +568,9 @@ namespace BIDSHelper
         /// <returns>true if the project uses the legacy package deployment model; otherwise else false.</returns>
         public static bool IsLegacyDeploymentMode(Project project)
         {
-#if DENALI || SQL2014
             Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
             return IsLegacyDeploymentMode(projectManager);
-#else
-            return true;
-#endif
         }
 
         /// <summary>
@@ -582,7 +580,6 @@ namespace BIDSHelper
         /// <returns>true if the project uses the legacy package deployment model; otherwise else false.</returns>
         public static bool IsLegacyDeploymentMode(DataWarehouseProjectManager projectManager)
         {
-#if DENALI || SQL2014
             Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager manager = projectManager as Microsoft.DataTransformationServices.Design.Project.IObjectModelProjectManager;
             if ((manager != null) && (manager.ObjectModelProject != null))
             {
@@ -593,9 +590,6 @@ namespace BIDSHelper
             {
                 return true;
             }
-#else
-            return true;
-#endif
         }
 
         private void LoadFromBidsHelperConfiguration(System.Xml.XmlDocument doc, string sConfigurationName, DtsProjectExtendedConfigurationOptions newOptions)
@@ -678,7 +672,7 @@ namespace BIDSHelper
         /// Immediately after closing the project properties dialog, it must be removed as it cannot be serialized with Microsoft's serialization code without causing problems.
         /// </summary>
         [DisplayableByPropertyPage(new Type[] { 
-#if SQL2014
+#if !(YUKON || KATMAI || DENALI)
             typeof(DtsGeneralPropertyPage),
 #endif
             typeof(DataTransformationsBuildPropertyPage), 
@@ -686,7 +680,7 @@ namespace BIDSHelper
             typeof(DebugPropertyPage), 
             typeof(DtsProjectExtendedDeployPropertyPage) })]
         public class DtsProjectExtendedConfigurationOptions : DataTransformationsProjectConfigurationOptions
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
             , ICustomTypeDescriptor
 #endif
         {
@@ -847,7 +841,7 @@ namespace BIDSHelper
 
 
 
-#if DENALI || SQL2014 //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
+#if !(YUKON || KATMAI) //in Denali they changed the DataTransformationsProjectConfigurationOptions class to implement ICustomTypeDescriptor so that it could conditionally show different project properties panes dependent on whether we're in project deployment mode or legacy deployment mode
 
 #pragma warning disable //disable warning that I'm hiding the GetAttributes method in the base class
             public AttributeCollection GetAttributes()

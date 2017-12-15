@@ -1,6 +1,6 @@
 using System;
 using System.Xml;
-using Extensibility;
+//using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.IO;
@@ -58,7 +58,7 @@ public class DeploymentSettings
             string sTargetDatabase = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetDatabase" });
             if (!String.IsNullOrEmpty(sTargetDatabase)) mTargetDatabase = sTargetDatabase;
         }
-#if DENALI || SQL2014
+
         else if (project.Object is Microsoft.AnalysisServices.VSHost.Integration.ProjectNode) //Tabular
         {
             //during Visual Studio debug of BIDS Helper on my laptop, this throws an HRESULT: 0x80070057 (E_INVALIDARG) which I haven't been able to fix. But this works fine when not debugging BIDS Helper
@@ -70,7 +70,6 @@ public class DeploymentSettings
             string sTargetCubeName = projectNode.GetProjectProperty("DeploymentServerCubeName");
             if (!String.IsNullOrEmpty(sTargetCubeName)) mTargetCubeName = sTargetCubeName;
         }
-#endif
         else
         {
             throw new Exception("Unable to find SSAS deployment settings. Unexpected project type.");
@@ -93,14 +92,14 @@ public class DeploymentSettings
     private void SetDefaultTargetServer()
     {
         Microsoft.Win32.RegistryKey regKey;
-#if SQL2014
+#if SQL2016 || SQL2017
+        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
+#elif SQL2014
         regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\12.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
 #elif DENALI //TODO: make this dynamic depending on the version of VS so that VS2010 and VS2012 both work
         regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\10.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
-#elif KATMAI
-        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\9.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
 #else
-        regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\8.0\Packages\{4a0c6509-bf90-43da-abee-0aba3a8527f1}\Settings\Analysis Services Project");
+        Unknown SQL Sever version. Add a new clause for regKey value
 #endif
         if (regKey == null) return;
         string targetSvr = (string)regKey.GetValue("DefaultTargetServer");

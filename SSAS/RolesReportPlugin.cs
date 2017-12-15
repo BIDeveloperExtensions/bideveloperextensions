@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-using System.Data;
+using BIDSHelper.Core;
 using System.DirectoryServices;
 
 //helps work around this error: "No mapping between account names and security IDs was done."
 
-namespace BIDSHelper
+namespace BIDSHelper.SSAS
 {
     public class RolesReportPlugin : BIDSHelperPluginBase
     {
@@ -28,9 +26,10 @@ namespace BIDSHelper
             }
         }
 
-        public RolesReportPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public RolesReportPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.RolesReportPluginId);
         }
 
         public override string ShortName
@@ -38,15 +37,15 @@ namespace BIDSHelper
             get { return "RolesReportPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 3709; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 3709; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Roles Report..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Roles Report..."; }
+        //}
 
         public override string FeatureName
         {
@@ -58,15 +57,11 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
-        public override string MenuName
-        {
-            get { return "Folder Node,Item"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Folder Node,Item"; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -74,7 +69,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -91,7 +86,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {
@@ -127,17 +122,39 @@ namespace BIDSHelper
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
                 Database db = null;
+#if !(DENALI || SQL2014)
+                Microsoft.AnalysisServices.BackEnd.DataModelingRoleCollection tomRoles = null;
+                Microsoft.AnalysisServices.BackEnd.IDataModelingTableCollection tomTables = null;
+#endif
 
                 string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
 
                 bool bIsTabular = false;
+                bool bIsTOM = false;
                 if (sFileName.EndsWith(".bim"))
                 {
+
+
 #if DENALI || SQL2014
-                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(hierItem, true);
+                    Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox = TabularHelpers.GetTabularSandboxFromBimFile(this, true);
                     db = sandbox.Database;
-                    bIsTabular = true;
+#else
+                    var sandboxWrapper = new BIDSHelper.SSAS.DataModelingSandboxWrapper(this);
+                    if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
+                    if (!sandboxWrapper.GetSandbox().IsTabularMetadata)
+                    {
+                        db = sandboxWrapper.GetSandboxAmo().Database;
+                    }
+                    else
+                    {
+                        tomRoles = sandboxWrapper.GetSandbox().Roles;
+                        tomTables = sandboxWrapper.GetSandbox().Tables;
+                        db = sandboxWrapper.GetSandbox().AMOServer.Databases[sandboxWrapper.GetSandbox().DatabaseID];
+                        bIsTOM = true;
+                    }
 #endif
+                    bIsTabular = true;
+
                 }
                 else
                 {
@@ -156,120 +173,179 @@ namespace BIDSHelper
                 List<RoleDimensionInfo> listRoleDimensions = new List<RoleDimensionInfo>();
                 List<RoleMiningInfo> listRoleMining = new List<RoleMiningInfo>();
 
-                foreach (Role r in db.Roles)
+                if (!bIsTOM)
                 {
-                    if (r.Members.Count == 0)
+                    foreach (Role r in db.Roles)
                     {
-                        RoleMemberInfo infoMember = new RoleMemberInfo();
-                        infoMember.TargetServerName = _deploymentTargetServer;
-                        infoMember.database = db;
-                        infoMember.role = r;
-                        listRoleMembers.Add(infoMember);
-                    }
-                    foreach (RoleMember rm in r.Members)
-                    {
-                        RoleMemberInfo infoMember = new RoleMemberInfo();
-                        infoMember.TargetServerName = _deploymentTargetServer;
-                        infoMember.database = db;
-                        infoMember.role = r;
-                        infoMember.directoryEntry = GetDirectoryEntry(rm.Name);
-                        infoMember.MemberName = GetDomainAndUserForDirectoryEntry(infoMember.directoryEntry);
-                        if (string.IsNullOrEmpty(infoMember.MemberName))
-                            infoMember.MemberName = rm.Name;
-                        listRoleMembers.Add(infoMember);
-
-                        listRoleMembers.AddRange(GetGroupMembers(infoMember.directoryEntry, db, r, 1));
-                    }
-
-                    if (!bIsTabular)
-                    {
-                        foreach (DataSource ds in db.DataSources)
+                        if (r.Members.Count == 0)
                         {
-                            RoleDataSourceInfo info = new RoleDataSourceInfo();
-                            info.role = r;
-                            info.dataSource = ds;
-                            listRoleDataSources.Add(info);
+                            RoleMemberInfo infoMember = new RoleMemberInfo();
+                            infoMember.TargetServerName = _deploymentTargetServer;
+                            infoMember.database = db;
+                            infoMember.role = r;
+                            listRoleMembers.Add(infoMember);
                         }
-
-                        foreach (Cube c in db.Cubes)
+                        foreach (RoleMember rm in r.Members)
                         {
-                            RoleCubeInfo info = new RoleCubeInfo();
-                            info.role = r;
-                            info.cube = c;
-                            listRoleCubes.Add(info);
+                            RoleMemberInfo infoMember = new RoleMemberInfo();
+                            infoMember.TargetServerName = _deploymentTargetServer;
+                            infoMember.database = db;
+                            infoMember.role = r;
+                            infoMember.directoryEntry = GetDirectoryEntry(rm.Name);
+                            infoMember.MemberName = GetDomainAndUserForDirectoryEntry(infoMember.directoryEntry);
+                            if (string.IsNullOrEmpty(infoMember.MemberName))
+                                infoMember.MemberName = rm.Name;
+                            listRoleMembers.Add(infoMember);
+
+                            listRoleMembers.AddRange(GetGroupMembers(infoMember.directoryEntry, db, r, 1));
                         }
-
-                        foreach (MiningStructure ms in db.MiningStructures)
-                        {
-                            RoleMiningInfo info = new RoleMiningInfo();
-                            info.role = r;
-                            info.miningStructure = ms;
-                            listRoleMining.Add(info);
-
-                            foreach (MiningModel mm in ms.MiningModels)
-                            {
-                                info = new RoleMiningInfo();
-                                info.role = r;
-                                info.miningStructure = ms;
-                                info.miningModel = mm;
-                                listRoleMining.Add(info);
-                            }
-                        }
-                    }
-
-                    foreach (Dimension d in db.Dimensions)
-                    {
-                        RoleDimensionInfo info = new RoleDimensionInfo();
-                        info.role = r;
-                        info.dimension = d;
-                        if (!bIsTabular || !string.IsNullOrEmpty(info.AllowedMemberSet))
-                            listRoleDimensions.Add(info);
 
                         if (!bIsTabular)
                         {
-                            foreach (DimensionAttribute da in d.Attributes)
+                            foreach (DataSource ds in db.DataSources)
                             {
-                                RoleDimensionInfo info2 = new RoleDimensionInfo();
-                                info2.role = r;
-                                info2.dimension = d;
-                                info2.dimensionAttribute = da;
-                                if (!string.IsNullOrEmpty(info2.AllowedMemberSet) || !string.IsNullOrEmpty(info2.DeniedMemberSet) || !string.IsNullOrEmpty(info2.DefaultMember) || !string.IsNullOrEmpty(info2.VisualTotals))
-                                    listRoleDimensions.Add(info2);
+                                RoleDataSourceInfo info = new RoleDataSourceInfo();
+                                info.role = r;
+                                info.dataSource = ds;
+                                listRoleDataSources.Add(info);
+                            }
+
+                            foreach (Cube c in db.Cubes)
+                            {
+                                RoleCubeInfo info = new RoleCubeInfo();
+                                info.role = r;
+                                info.cube = c;
+                                listRoleCubes.Add(info);
+                            }
+
+                            foreach (MiningStructure ms in db.MiningStructures)
+                            {
+                                RoleMiningInfo info = new RoleMiningInfo();
+                                info.role = r;
+                                info.miningStructure = ms;
+                                listRoleMining.Add(info);
+
+                                foreach (MiningModel mm in ms.MiningModels)
+                                {
+                                    info = new RoleMiningInfo();
+                                    info.role = r;
+                                    info.miningStructure = ms;
+                                    info.miningModel = mm;
+                                    listRoleMining.Add(info);
+                                }
                             }
                         }
-                    }
 
-                    if (!bIsTabular)
-                    {
-                        foreach (Cube c in db.Cubes)
+                        foreach (Dimension d in db.Dimensions)
                         {
-                            foreach (CubeDimension cd in c.Dimensions)
-                            {
-                                RoleDimensionInfo info = new RoleDimensionInfo();
-                                info.role = r;
-                                info.dimension = cd.Dimension;
-                                info.cubeDimension = cd;
-                                if (info.ReadAccess != "Inherited")
-                                    listRoleDimensions.Add(info);
+                            RoleDimensionInfo info = new RoleDimensionInfo();
+                            info.role = r;
+                            info.dimension = d;
+                            if (!bIsTabular || !string.IsNullOrEmpty(info.AllowedMemberSet))
+                                listRoleDimensions.Add(info);
 
-                                foreach (CubeAttribute ca in cd.Attributes)
+                            if (!bIsTabular)
+                            {
+                                foreach (DimensionAttribute da in d.Attributes)
                                 {
                                     RoleDimensionInfo info2 = new RoleDimensionInfo();
                                     info2.role = r;
-                                    info2.dimension = cd.Dimension;
-                                    info2.cubeDimension = cd;
-                                    info2.dimensionAttribute = ca.Attribute;
+                                    info2.dimension = d;
+                                    info2.dimensionAttribute = da;
                                     if (!string.IsNullOrEmpty(info2.AllowedMemberSet) || !string.IsNullOrEmpty(info2.DeniedMemberSet) || !string.IsNullOrEmpty(info2.DefaultMember) || !string.IsNullOrEmpty(info2.VisualTotals))
                                         listRoleDimensions.Add(info2);
                                 }
                             }
+                        }
 
-                            RoleDimensionInfo infoMeasures = new RoleDimensionInfo();
-                            infoMeasures.role = r;
-                            infoMeasures.isMeasuresDimension = true;
-                            infoMeasures.cube = c;
-                            if (!string.IsNullOrEmpty(infoMeasures.AllowedMemberSet) || !string.IsNullOrEmpty(infoMeasures.DeniedMemberSet) || !string.IsNullOrEmpty(infoMeasures.DefaultMember) || !string.IsNullOrEmpty(infoMeasures.VisualTotals))
-                                listRoleDimensions.Add(infoMeasures);
+                        if (!bIsTabular)
+                        {
+                            foreach (Cube c in db.Cubes)
+                            {
+                                foreach (CubeDimension cd in c.Dimensions)
+                                {
+                                    RoleDimensionInfo info = new RoleDimensionInfo();
+                                    info.role = r;
+                                    info.dimension = cd.Dimension;
+                                    info.cubeDimension = cd;
+                                    if (info.ReadAccess != "Inherited")
+                                        listRoleDimensions.Add(info);
+
+                                    foreach (CubeAttribute ca in cd.Attributes)
+                                    {
+                                        RoleDimensionInfo info2 = new RoleDimensionInfo();
+                                        info2.role = r;
+                                        info2.dimension = cd.Dimension;
+                                        info2.cubeDimension = cd;
+                                        info2.dimensionAttribute = ca.Attribute;
+                                        if (!string.IsNullOrEmpty(info2.AllowedMemberSet) || !string.IsNullOrEmpty(info2.DeniedMemberSet) || !string.IsNullOrEmpty(info2.DefaultMember) || !string.IsNullOrEmpty(info2.VisualTotals))
+                                            listRoleDimensions.Add(info2);
+                                    }
+                                }
+
+                                RoleDimensionInfo infoMeasures = new RoleDimensionInfo();
+                                infoMeasures.role = r;
+                                infoMeasures.isMeasuresDimension = true;
+                                infoMeasures.cube = c;
+                                if (!string.IsNullOrEmpty(infoMeasures.AllowedMemberSet) || !string.IsNullOrEmpty(infoMeasures.DeniedMemberSet) || !string.IsNullOrEmpty(infoMeasures.DefaultMember) || !string.IsNullOrEmpty(infoMeasures.VisualTotals))
+                                    listRoleDimensions.Add(infoMeasures);
+                            }
+                        }
+                    }
+                } else //TOM
+                {
+
+                    var fakeDatabase = new Database(_deploymentSettings.TargetDatabase);
+                    foreach (Microsoft.AnalysisServices.BackEnd.DataModelingTable table in tomTables)
+                    {
+                        var d = new Dimension(table.Name, table.Id);
+                        fakeDatabase.Dimensions.Add(d);
+                    }
+
+                    foreach (Microsoft.AnalysisServices.BackEnd.DataModelingRole r in tomRoles)
+                    {
+                        var fakeRole = new Role(r.Name, r.Id) { Description = r.Description };
+                        fakeDatabase.Roles.Add(fakeRole);
+                        DatabasePermission dbPerm = fakeDatabase.DatabasePermissions.Add(fakeRole.ID);
+                        dbPerm.Administer = (r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.Administrator);
+                        dbPerm.Process = (r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.Refresh || r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.ReadRefresh);
+                        dbPerm.Read = ((r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.Read || r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.ReadRefresh) ? ReadAccess.Allowed : ReadAccess.None);
+
+                        if (r.Members.Count == 0)
+                        {
+                            RoleMemberInfo infoMember = new RoleMemberInfo();
+                            infoMember.TargetServerName = _deploymentTargetServer;
+                            infoMember.database = fakeDatabase;
+                            infoMember.role = fakeRole;
+                            listRoleMembers.Add(infoMember);
+                        }
+                        foreach (Microsoft.AnalysisServices.BackEnd.DataModelingRoleMember rm in r.Members)
+                        {
+                            RoleMemberInfo infoMember = new RoleMemberInfo();
+                            infoMember.TargetServerName = _deploymentTargetServer;
+                            infoMember.database = fakeDatabase;
+                            infoMember.role = fakeRole;
+                            infoMember.directoryEntry = GetDirectoryEntry(rm.Name);
+                            infoMember.MemberName = GetDomainAndUserForDirectoryEntry(infoMember.directoryEntry);
+                            if (string.IsNullOrEmpty(infoMember.MemberName))
+                                infoMember.MemberName = rm.Name;
+                            listRoleMembers.Add(infoMember);
+
+                            listRoleMembers.AddRange(GetGroupMembers(infoMember.directoryEntry, fakeDatabase, fakeRole, 1));
+                        }
+
+                        foreach (Microsoft.AnalysisServices.BackEnd.DataModelingTable table in tomTables)
+                        {
+                            string sExpression = table.Permissions.ExpressionOfRole(r.Id);
+                            if (!string.IsNullOrEmpty(sExpression))
+                            {
+                                RoleDimensionInfo info = new RoleDimensionInfo();
+                                info.role = fakeRole;
+                                info.dimension = fakeDatabase.Dimensions.GetByName(table.Name);
+                                var dimPerm = info.dimension.DimensionPermissions.Add(fakeRole.ID);
+                                dimPerm.AllowedRowsExpression = sExpression;
+                                listRoleDimensions.Add(info);
+                            }
                         }
                     }
                 }
@@ -469,7 +545,7 @@ namespace BIDSHelper
         }
 
 
-        #region RoleMemberInfo classes
+#region RoleMemberInfo classes
         public class RoleMemberInfo
         {
             public Role role;
@@ -764,9 +840,9 @@ namespace BIDSHelper
                 NoAuthDataRequired = 33554432
             }
         }
-        #endregion
+#endregion
 
-        #region RoleDataSourceInfo class
+#region RoleDataSourceInfo class
         public class RoleDataSourceInfo
         {
             public Role role;
@@ -807,9 +883,9 @@ namespace BIDSHelper
                 }
             }
         }
-        #endregion
+#endregion
 
-        #region RoleCubeInfo class
+#region RoleCubeInfo class
         public class RoleCubeInfo
         {
             public Role role;
@@ -917,9 +993,9 @@ namespace BIDSHelper
                 return null;
             }
         }
-        #endregion
+#endregion
 
-        #region RoleDimensionInfo class
+#region RoleDimensionInfo class
         public class RoleDimensionInfo
         {
             public Role role;
@@ -1064,7 +1140,7 @@ namespace BIDSHelper
             {
                 get
                 {
-#if DENALI || SQL2014
+#if !(YUKON || KATMAI)
                     try //Tabular
                     {
                         if (dimensionAttribute == null)
@@ -1154,9 +1230,9 @@ namespace BIDSHelper
                 }
             }
         }
-        #endregion
+#endregion
 
-        #region RoleMiningInfo class
+#region RoleMiningInfo class
         public class RoleMiningInfo
         {
             public Role role;
@@ -1249,7 +1325,7 @@ namespace BIDSHelper
                     {
                         MiningStructurePermission perm = miningStructure.MiningStructurePermissions.FindByRole(role.ID);
                         if (perm == null) return "None";
-#if KATMAI || DENALI || SQL2014
+#if !(YUKON)
                         return perm.AllowDrillThrough ? "Drillthrough" : "None";
 #else
                         return "None";
@@ -1258,6 +1334,6 @@ namespace BIDSHelper
                 }
             }
         }
-        #endregion
+#endregion
     }
 }

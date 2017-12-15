@@ -2,8 +2,8 @@
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using Microsoft.SqlServer.Dts.Tasks.ExecutePackageTask;
-using Microsoft.SqlServer.Dts.Tasks.ExecuteSQLTask;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -27,6 +27,7 @@ namespace BIDSHelper.SSIS
         public const string IconKeyVariableExpression = "VariableExpression";
         public const string IconKeyProperty = "Property";
         public const string IconKeyPropertyExpression = "PropertyExpression";
+        public const string IconKeyError = "ErrorIcon";
 
         public event EventHandler<VariableFoundEventArgs> VariableFound;
 
@@ -59,6 +60,9 @@ namespace BIDSHelper.SSIS
 
             List<string> expressions = new List<string>();
             List<string> properties = new List<string>();
+
+            // Set target version on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.SetTargetServerVersion(package);
 
             foreach (Variable variable in variables)
             {
@@ -251,6 +255,7 @@ namespace BIDSHelper.SSIS
             AddImageListItem(IconKeyVariableExpression, SharedIcons.VariableExpressionIcon);
             AddImageListItem(IconKeyProperty, BIDSHelper.Resources.Versioned.Variable);
             AddImageListItem(IconKeyPropertyExpression, SharedIcons.VariableExpressionIcon);
+            AddImageListItem(IconKeyError, SharedIcons.ErrorIcon);
         }
 
         delegate void AddImageListItemCallback(string creationName, Icon image);
@@ -551,14 +556,7 @@ namespace BIDSHelper.SSIS
                         continue;
                     }
 
-
-                    if (PropertyMatch(propertyName, value, out match))
-                    {
-                        VariableFoundEventArgs info = new VariableFoundEventArgs();
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
-                        AddNode(parent, propertyName, GetImageIndex(IconKeyProperty), property, true);
-                    }
+                    PropertyMatch(parent, property, propertyName, value);
                 }
             }
         }
@@ -665,13 +663,7 @@ namespace BIDSHelper.SSIS
                     string value = property.GetValue(provider) as string;
                     if (!string.IsNullOrEmpty(value))
                     {
-                        if (PropertyMatch(propertyName, value, out match))
-                        {
-                            VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
-                            foundArgument.Match = match;
-                            OnRaiseVariableFound(foundArgument);
-                            AddNode(properties, propertyName, GetImageIndex(IconKeyProperty), new DisplayProperty(property, value), true);
-                        }
+                        PropertyMatch(properties, new DisplayProperty(property, value), propertyName, value);
                     }
                 }
                 #endregion
@@ -713,29 +705,33 @@ namespace BIDSHelper.SSIS
             return false;
         }
 
-        private bool PropertyMatch(string propertyName, string value, out string match)
+
+        private void PropertyMatch(TreeNode parent, object property, string propertyName, string value)
         {
+            IEnumerable valueList;
+
+            // If the property value contains a delimited list, we need to split it, e.g Script Task
             if (propertyName == "ReadOnlyVariables" || propertyName == "ReadWriteVariables")
             {
-                // Comma delimited list of variable names, split and then search
-                foreach (string item in value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (PropertyMatchEval(item, out match))
-                    {
-                        return true;
-                    }
-                }
+                // Comma delimited list of variable names, split and then search below
+                valueList = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             }
             else
             {
-                if (PropertyMatchEval(value, out match))
+                valueList = new string[] { value };
+            }
+            
+            foreach (string item in valueList)
+            {
+                string match;
+                if (PropertyMatchEval(item, out match))
                 {
-                    return true;
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                    AddNode(parent, propertyName, GetImageIndex(IconKeyProperty), property, true);
                 }
             }
-
-            match = null;
-            return false;
         }
 
         private bool PropertyMatchEval(string value, out string match)
@@ -769,37 +765,14 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecuteSQLTask(TaskHost taskHost, TreeNode parent)
         {
-            ExecuteSQLTask task = taskHost.InnerObject as ExecuteSQLTask;
-
+            // Use reflection to examine parameter and result binding collections, so that we avoid a direct reference to the assembly
+            // That causes issues when changing target versions in VS 2015 and SQL 2016 (OneDesigner) tools
+            // Could investigate C# dynamic keyword, but this is tried and tested for now.
             TreeNode parameterBindings = AddFolder("ParameterBindings", parent);
-
-            foreach (IDTSParameterBinding binding in task.ParameterBindings)
-            {
-                string match;
-                string value = binding.DtsVariableName;
-                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
-                {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs();
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
-                    AddNode(parameterBindings, binding.ParameterName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
-                }
-            }
+            EnumerateCollection(taskHost.InnerObject, parameterBindings, "ParameterBindings", "DtsVariableName", "ParameterName");
 
             TreeNode resultSetBindings = AddFolder("ResultSetBindings", parent);
-
-            foreach (IDTSResultBinding binding in task.ResultSetBindings)
-            {
-                string match;
-                string value = binding.DtsVariableName;
-                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
-                {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs();
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
-                    AddNode(resultSetBindings, binding.ResultName.ToString(), GetImageIndex(IconKeyProperty), binding, true);
-                }
-            }
+            EnumerateCollection(taskHost.InnerObject, resultSetBindings, "ResultSetBindings", "DtsVariableName", "ResultName");
         }
 
         private void CheckExpressionTask(TaskHost taskHost, TreeNode parent)
@@ -813,16 +786,31 @@ namespace BIDSHelper.SSIS
 
         private void CheckExecutePackageTask(TaskHost taskHost, TreeNode parent)
         {
-            ExecutePackageTask task = taskHost.InnerObject as ExecutePackageTask;
+            // We have a reference to Microsoft.SqlServer.ExecPackageTaskWrap.dll
+            // Only ever use interfaces which are consistent between versions of SSIS, cannot use reflection because task is native, not managed code.
+            IDTSExecutePackage100 task = taskHost.InnerObject as IDTSExecutePackage100;
+
+            // Potential issue because of multiple version support in SQL Server 2016+. Is the reference to the correct version?
+            if (task == null)
+            {
+                // Task is null following cast to IDTSExecutePackage100, therefore we have the wrong Microsoft.SqlServer.ExecPackageTaskWrap reference
+                // Produce a false found variable for feedback to the UI, else a null referece exception will break the search
+                VariableFoundEventArgs info = new VariableFoundEventArgs();
+                info.Match = "Invalid IDTSExecutePackage100 reference";
+                OnRaiseVariableFound(info);
+                AddNode(parent, info.Match, GetImageIndex(IconKeyError), new DisplayProperty("InvalidIDTSExecutePackage100", info.Match), true);
+                return;
+            }
 
             TreeNode parameterAssignments = AddFolder("ParameterAssignments", parent);
 
             // IDTSParameterAssignment doesn't support foreach enumeration, so use for loop instead.
+            // Why? ParameterAssignments -> IDTSParameterAssignments -> IEnumerable
             for (int i = 0; i < task.ParameterAssignments.Count; i++)
             {
                 IDTSParameterAssignment assignment = task.ParameterAssignments[i];
 
-                string match;                
+                string match;
                 string value = assignment.BindedVariableOrParameterName;
                 if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
                 {
@@ -894,6 +882,24 @@ namespace BIDSHelper.SSIS
             }
         }
 
+        private void EnumerateCollection(object task, TreeNode parameterBindings, string propertyName, string valueProperty, string textProperty)
+        {
+            IEnumerable listObject = PackageHelper.GetPropertyValue(task, propertyName) as IEnumerable;
+
+            foreach (object binding in listObject)
+            {
+                string match;
+                string value = PackageHelper.GetPropertyValue(binding, valueProperty).ToString();
+                if (!string.IsNullOrEmpty(value) && PropertyMatchEval(value, out match))
+                {
+                    VariableFoundEventArgs info = new VariableFoundEventArgs();
+                    info.Match = match;
+                    OnRaiseVariableFound(info);
+                    AddNode(parameterBindings, PackageHelper.GetPropertyValue(binding, textProperty).ToString(), GetImageIndex(IconKeyProperty), binding, true);
+                }
+            }
+        }
+
         private void PropertyAsExpressionMatch(DtsProperty property, string expression, TreeNode parent)
         {
             string match;
@@ -960,6 +966,11 @@ namespace BIDSHelper.SSIS
     [DisplayName("Property")]
     public class DisplayProperty
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DisplayProperty"/> wrapper class based on an existing <see cref="DtsProperty"/>.
+        /// </summary>
+        /// <param name="property">The <see cref="DtsProperty"/> to wrap for display.</param>
+        /// <param name="value">The property value.</param>
         public DisplayProperty(DtsProperty property, object value)
         {
             this.Name = property.Name;
@@ -967,6 +978,20 @@ namespace BIDSHelper.SSIS
             this.Type =  PackageHelper.GetTypeFromTypeCode(property.Type);
             this.Get = property.Get;
             this.Set = property.Set;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DisplayProperty"/> wrapper class for infromation purposes, as no valid property is supplied.
+        /// </summary>
+        /// <param name="name">The infromation string used as the property name.</param>
+        /// <param name="value">The information string used as the property value.</param>
+        public DisplayProperty(string name, string value)
+        {
+            this.Name = name;
+            this.Value = value;
+            this.Type = null;
+            this.Get = false;
+            this.Set = false;
         }
 
         [ParenthesizePropertyName(), Browsable(true), Category("General"), Description("The name of the property which contains the reference.")]
@@ -978,7 +1003,7 @@ namespace BIDSHelper.SSIS
         [Category("Accessors"), Description("Indicates whether the property value is changeable.")]
         public bool Set { get; private set; }
 
-        [Category("General"), Description("THe property value, including the reference.")]
+        [Category("General"), Description("The property value, including the reference.")]
         public object Value { get; private set; }
 
         [Category("General"), Description("The data type of the property value.")]

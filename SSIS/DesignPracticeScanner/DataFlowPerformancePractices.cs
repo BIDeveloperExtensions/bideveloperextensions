@@ -6,7 +6,7 @@
     using Microsoft.SqlServer.Dts.Runtime;
 
     //TODO: Update this to work with 2005
-#if KATMAI || DENALI || SQL2014
+#if !(YUKON)
     class DataFlowAsynchPathsPractice : DesignPractice
     {
         //private ComponentInfos _componentInfos;
@@ -37,8 +37,10 @@
             foreach (IDTSPath100 path in mainPipe.PathCollection)
             {
                 string key = PackageHelper.GetComponentKey(path.StartPoint.Component);
-                if (path.StartPoint.SynchronousInputID != 0)
+                if (path.StartPoint.SynchronousInputID != 0)  continue;
+                if (!PackageHelper.ComponentInfos.ContainsKey(key))
                 {
+                    System.Diagnostics.Debug.WriteLine("DataFlowPerformancePractice (43): Key not found '" + key + "'");
                     continue;
                 }
                 if (PackageHelper.ComponentInfos[key].ComponentType != DTSPipelineComponentType.SourceAdapter)
@@ -78,7 +80,6 @@
 
     }
 
-#if KATMAI || DENALI || SQL2014
     class DataFlowSortPractice : DesignPractice
     {
         public DataFlowSortPractice(string registryPath)
@@ -90,6 +91,9 @@
 
         public override void Check(Package package, EnvDTE.ProjectItem projectItem)
         {
+            // Set target version on PackageHelper to ensure any ComponentInfos is for the correct info.
+            PackageHelper.SetTargetServerVersion(package);
+
             Results.Clear();
             List<TaskHost> pipelines = PackageHelper.GetControlFlowObjects<MainPipe>(package);
             foreach (TaskHost host in pipelines)
@@ -102,10 +106,15 @@
         private void ProcessDataFlow(MainPipe mainPipe, TaskHost taskHost)
         {
             int sortCount = 0;
+
             foreach (IDTSComponentMetaData100 comp in mainPipe.ComponentMetaDataCollection)
             {
                 string key = PackageHelper.GetComponentKey(comp);
-
+                if (!PackageHelper.ComponentInfos.ContainsKey(key))
+                {
+                    System.Diagnostics.Debug.WriteLine("DataFlowPerformancePractice ProcessDataFlow(113): Key not found '" + key + "'");
+                    continue;
+                }
                 if (PackageHelper.ComponentInfos[key].CreationName == "DTSTransform.Sort.2")
                 {
                     sortCount++;
@@ -130,9 +139,7 @@
             }
         }
     }
-#endif
 
-#if KATMAI || DENALI || SQL2014
     class AccessModePractice : DesignPractice
     {
         public AccessModePractice(string registryPath)
@@ -158,7 +165,11 @@
             foreach (IDTSComponentMetaData100 comp in mainPipe.ComponentMetaDataCollection)
             {
                 string key = PackageHelper.GetComponentKey(comp);
-
+                if (!PackageHelper.ComponentInfos.ContainsKey(key))
+                {
+                    System.Diagnostics.Debug.WriteLine("DataFlowPerformancePractice (170): Key not found '" + key + "'");
+                    continue;
+                }
                 if (PackageHelper.ComponentInfos[key].Name == "OLE DB Source" ||
                     PackageHelper.ComponentInfos[key].Name == "ADO NET Source" ||
                     PackageHelper.ComponentInfos[key].Name == "Lookup")
@@ -184,7 +195,6 @@
             }
         }
     }
-#endif
 }
 
 

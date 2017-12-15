@@ -28,7 +28,25 @@ namespace BIDSHelper.SSAS
             _iLanguageColumnIndexForContextMenu = -1;
             _defaultLanguage = defaultLanguage;
             _languages = languages;
-            InitializeComponent();
+
+            //InitializeComponent();
+            //overriding the default InitializeComponent() method as it gets hardcoded to BidsHelper2017
+
+            if (_contentLoaded)
+            {
+                return;
+            }
+            _contentLoaded = true;
+            System.Uri resourceLocater = new System.Uri("/" + this.GetType().Assembly.GetName().Name + ";component/ssas/tabular/tabulartranslationseditorwindow.xaml", System.UriKind.Relative);
+
+#line 1 "..\..\..\..\SSAS\Tabular\TabularTranslationsEditorWindow.xaml"
+            System.Windows.Application.LoadComponent(this, resourceLocater);
+
+#line default
+#line hidden
+
+
+
             RefreshFields();
         }
 

@@ -5,26 +5,14 @@ namespace BIDSHelper.SSIS
     using System.Windows.Forms;
     using System.ComponentModel.Design;
     using Microsoft.DataWarehouse.Design;
-    using Microsoft.DataWarehouse.Controls;
     using System;
-    using MSDDS;
     using Microsoft.SqlServer.Dts.Runtime;
-    using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
     using System.Collections.Generic;
     using System.Threading;
     using Microsoft.Win32;
-
-#if KATMAI || DENALI || SQL2014
-    using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
-#else
-    using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
-#endif
-
-#if DENALI || SQL2014
     using Microsoft.SqlServer.IntegrationServices.Designer.Model;
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
-#endif
-
+    using Core;
     public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
@@ -40,9 +28,10 @@ namespace BIDSHelper.SSIS
         private Dictionary<EditorWindow, DateTime> mostRecentDDSRefresh = new Dictionary<EditorWindow, DateTime>();
         private DateTime mostRecentComponentEvent = DateTime.MinValue;
 
-        public ExpressionHighlighterPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public ExpressionHighlighterPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            this.package.Log.Debug("ExpressionHighlighterPlugin constructing");
             workerToDos.WorkerReportsProgress = false;
             workerToDos.WorkerSupportsCancellation = true;
             workerToDos.DoWork += new System.ComponentModel.DoWorkEventHandler(workerToDos_DoWork);
@@ -57,7 +46,8 @@ namespace BIDSHelper.SSIS
             get
             {
                 int iColor = ExpressionColorDefault.ToArgb();
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin)));
+                
                 if (rk != null)
                 {
                     iColor = (int)rk.GetValue(REGISTRY_EXPRESSION_COLOR_SETTING_NAME, iColor);
@@ -67,8 +57,9 @@ namespace BIDSHelper.SSIS
             }
             set
             {
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                string regPath = BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin));
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(regPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(regPath);
                 settingKey.SetValue(REGISTRY_EXPRESSION_COLOR_SETTING_NAME, value.ToArgb(), RegistryValueKind.DWord);
                 settingKey.Close();
                 HighlightingToDo.expressionColor = value;
@@ -81,7 +72,7 @@ namespace BIDSHelper.SSIS
             get
             {
                 int iColor = ConfigurationColorDefault.ToArgb();
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath);
+                RegistryKey rk = Registry.CurrentUser.OpenSubKey(BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin)));
                 if (rk != null)
                 {
                     iColor = (int)rk.GetValue(REGISTRY_CONFIGURATION_COLOR_SETTING_NAME, iColor);
@@ -91,8 +82,9 @@ namespace BIDSHelper.SSIS
             }
             set
             {
-                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(StaticPluginRegistryPath, true);
-                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(StaticPluginRegistryPath);
+                string regPath = BIDSHelperPackage.PluginRegistryPath(typeof(ExpressionHighlighterPlugin));
+                RegistryKey settingKey = Registry.CurrentUser.OpenSubKey(regPath, true);
+                if (settingKey == null) settingKey = Registry.CurrentUser.CreateSubKey(regPath);
                 settingKey.SetValue(REGISTRY_CONFIGURATION_COLOR_SETTING_NAME, value.ToArgb(), RegistryValueKind.DWord);
                 settingKey.Close();
                 HighlightingToDo.configurationColor = value;
@@ -100,35 +92,35 @@ namespace BIDSHelper.SSIS
         }
 
         #region Window Events Overrides and Disable Event
-        public override bool ShouldHookWindowCreated
-        {
-            get { return false; }
-        }
-        public override bool ShouldHookWindowClosing
-        {
-            get { return true; }
-        }
+        public override bool ShouldHookWindowCreated { get { return false; } }
+        public override bool ShouldHookWindowClosing { get { return true; } }
+        public override bool ShouldHookWindowActivated { get { return true; } }
 
         public override void OnWindowActivated(Window GotFocus, Window lostFocus)
         {
             try
             {
+                package.Log.Debug("ExpressionHighlighterPlugin OnWindowActivated fired");
                 System.Diagnostics.Debug.WriteLine("OnWindowActivated: GotFocus=" + (GotFocus == null ? "Null" : "NotNull") + "  LostFocus=" + (lostFocus == null ? "Null" : "NotNull"));
+                package.Log.Debug("OnWindowActivated: GotFocus=" + (GotFocus == null ? "Null" : "NotNull") + "  LostFocus=" + (lostFocus == null ? "Null" : "NotNull"));
                 BuildToDos(GotFocus, null);
             }
-            catch { }
+            catch (Exception ex) {
+                package.Log.Exception("ExpressionHighlighterPlugin.OnWindowOverride", ex);
+            }
         }
         public override void OnWindowClosing(Window ClosingWindow)
         {
             try
             {
+                this.package.Log.Debug("ExpressionHighlighterPlugin.OnWindowClosing");
                 if (ClosingWindow == null) return;
                 IDesignerHost designer = ClosingWindow.Object as IDesignerHost;
                 if (designer == null) return;
-#if !DENALI && !SQL2014 //apparently ProjectItem is null in Denali and above
-                ProjectItem pi = ClosingWindow.ProjectItem;
-                if (pi == null || !(pi.Name.ToLower().EndsWith(".dtsx"))) return;
-#endif
+//#if !DENALI && !SQL2014 //apparently ProjectItem is null in Denali and above
+//                ProjectItem pi = ClosingWindow.ProjectItem;
+//                if (pi == null || !(pi.Name.ToLower().EndsWith(".dtsx"))) return;
+//#endif
 
                 EditorWindow win = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator)) as EditorWindow;
                 if (win == null) return;
@@ -156,6 +148,7 @@ namespace BIDSHelper.SSIS
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message + " " + ex.StackTrace);
+                this.package.Log.Exception("ExpressionHighlighterPlugin.OnWindowClosing", ex);
             }
         }
 
@@ -202,7 +195,7 @@ namespace BIDSHelper.SSIS
                 IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
-                if (!(pi.Name.ToLower().EndsWith(".dtsx"))) return;
+                if (pi == null || !(pi.Name.ToLower().EndsWith(".dtsx"))) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
                 if (win == null) // Happens with bad packages and flipping between XML and code, and on save. Not 100% clear, but caused stability issues
                     return;
@@ -219,87 +212,14 @@ namespace BIDSHelper.SSIS
 
                 try
                 {
-#if DENALI || SQL2014
                     IClipboardService clipboardService = (IClipboardService)package.Site.GetService(typeof(IClipboardService));
                     if (clipboardService.IsPasteActive)
                         bRequeue = true;
-#else
-                    for (int iViewIndex = 0; iViewIndex < 3; iViewIndex++)
-                    {
-                        if (bRequeue) break;
-                        EditorWindow.EditorView view = win.Views[iViewIndex];
-                        Control viewControl = (Control)view.GetType().InvokeMember("ViewControl", getflags, null, view, null);
-                        if (viewControl == null) continue;
-
-                        if (iViewIndex == 0) //Control Flow
-                        {
-                            //((Microsoft.DataTransformationServices.Design.DtsBasePackageDesigner)(((Microsoft.DataTransformationServices.Design.DtsPackageView)(win)).packageDesigner)).ClipboardService.IsPasteActive
-                            //(((Microsoft.DataTransformationServices.Design.SurfaceCommandHelper)(((Microsoft.DataTransformationServices.Design.ControlFlowControl)(viewControl)).m_surfaceCommands))).ClipboardService.IsPasteActive
-                            //((Microsoft.DataTransformationServices.Design.DtsBasePackageDesigner)(((Microsoft.DataTransformationServices.Design.ControlFlowControl)(viewControl)).PackageDesigner)).ClipboardService
-                            //Microsoft.DataTransformationServices.Design.Control
-                            DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
-                            if (diagram == null) continue;
-                            if (diagram.ComponentDiagram == null) continue;
-                            object oDtrControlFlowDiagram = diagram.ComponentDiagram;
-                            Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipoardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)oDtrControlFlowDiagram.GetType().InvokeMember("clipboardCommandHandler", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
-                            bool bPasteInProgress = (bool)clipoardCommandHelper.GetType().InvokeMember("PasteInProgress", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance, null, clipoardCommandHelper, null);
-                            if (bPasteInProgress)
-                            {
-                                //limiting to this allowed an ex SQL with event handler to be pasted: oIncrementalObject is Microsoft.SqlServer.Dts.Runtime.DtsEventHandler
-                                System.Diagnostics.Debug.WriteLine("paste in progress on control flow");
-                                bRequeue = true;
-                                break;
-                            }
-                        }
-                        else if (iViewIndex == 2) //Event Handlers
-                        {
-                            foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
-                            {
-                                DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
-                                if (diagram == null) continue;
-                                if (diagram.ComponentDiagram == null) continue;
-                                object oDtrControlFlowDiagram = diagram.ComponentDiagram;
-                                Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipoardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)oDtrControlFlowDiagram.GetType().InvokeMember("clipboardCommandHandler", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
-                                bool bPasteInProgress = (bool)clipoardCommandHelper.GetType().InvokeMember("PasteInProgress", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance, null, clipoardCommandHelper, null);
-                                if (bPasteInProgress)
-                                {
-                                    System.Diagnostics.Debug.WriteLine("paste in progress on event handlers");
-                                    bRequeue = true;
-                                    break;
-                                }
-                            }
-                        }
-                        else if (iViewIndex == 1) //Data Flow
-                        {
-                            foreach (Control c in viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls)
-                            {
-                                DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
-                                if (diagram == null) continue;
-                                if (diagram.ComponentDiagram == null) continue;
-                                ComponentDiagram oDtrControlFlowDiagram = diagram.ComponentDiagram;
-
-                                //#if DENALI || SQL2014
-                                //IClipboardService clipService = diagram.Site.GetService(typeof(IClipboardService)) as IClipboardService;
-                                //#else
-                                Microsoft.DataWarehouse.Design.ClipboardCommandHelper clipboardCommandHelper = (Microsoft.DataWarehouse.Design.ClipboardCommandHelper)typeof(ComponentDiagram).InvokeMember("clipboardCommands", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, oDtrControlFlowDiagram, null);
-                                Microsoft.SqlServer.Dts.Design.IDtsClipboardService clipService = (Microsoft.SqlServer.Dts.Design.IDtsClipboardService)clipboardCommandHelper.GetType().BaseType.InvokeMember("dtsClipboardService", System.Reflection.BindingFlags.ExactBinding | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField, null, clipboardCommandHelper, null);
-                                //#endif
-
-                                bool bPasteInProgress = clipService.IsPasteActive;
-                                if (bPasteInProgress)
-                                {
-                                    System.Diagnostics.Debug.WriteLine("paste in progress on data flow");
-                                    bRequeue = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-#endif
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine("Problem checking if there is a paste underway: " + ex.Message + "\r\n" + ex.StackTrace);
+                    this.package.Log.Exception("Problem checking if there is a paste underway", ex);
                 }
 
                 if (bRequeue)
@@ -325,40 +245,12 @@ namespace BIDSHelper.SSIS
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#if !DENALI && !SQL2014
-                try
-                {
-                    if (!mostRecentDDSRefresh.ContainsKey(win))
-                        mostRecentDDSRefresh.Add(win, DateTime.MinValue);
-
-                    //only call this code if the last time you called it is less than the last time one of the component added events fired for this package
-                    if (mostRecentDDSRefresh[win] < mostRecentComponentEvent)
-                    {
-                        mostRecentDDSRefresh[win] = DateTime.Now;
-                        ExpressionListPlugin.shouldSkipExpressionHighlighting = true; //don't come into this design time properties code until the prior one finished
-
-                        //refresh DDS objects as all their properties aren't updated until you save the DTSX file
-                        //this code is to workaround a problem such that a newly copied/pasted TaskHost isn't linked in via the DDS objects correctly until this refresh
-                        System.Diagnostics.Debug.WriteLine("refreshing DDS objects");
-                        System.Collections.Hashtable designTimeProperties = new System.Collections.Hashtable();
-                        System.Reflection.BindingFlags publicstaticflags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
-                        TYPE_DTS_SERIALIZATION.InvokeMember("CollectDesignTimeProperties", publicstaticflags, null, null, new object[] { package, designTimeProperties });
-                        TYPE_DTS_SERIALIZATION.InvokeMember("SaveDesignTimePropertiesToPackage", publicstaticflags, null, null, new object[] { package, designTimeProperties });
-                    }
-                }
-                finally
-                {
-                    ExpressionListPlugin.shouldSkipExpressionHighlighting = false;
-                }
-#endif
-
-                if (win.Tag == null)
+                if (win.SetTagExpressionHighlighterPlugin())
                 {
                     win.ActiveViewChanged += new EventHandler(win_ActiveViewChanged);
                     IComponentChangeService configurationsChangeService = (IComponentChangeService)designer;
                     configurationsChangeService.ComponentChanged += new ComponentChangedEventHandler(configurationsChangeService_ComponentChanged);
                     configurationsChangeService.ComponentAdded += new ComponentEventHandler(configurationsChangeService_ComponentAdded);
-                    win.Tag = true;
                     bRescan = true;
                 }
 
@@ -370,19 +262,13 @@ namespace BIDSHelper.SSIS
 
                     if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.ControlFlow)
                     {
-#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        ListView lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-                        BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
-#endif
 
-#if DENALI || SQL2014
                         Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement ctlFlowModel = (Microsoft.SqlServer.IntegrationServices.Designer.Model.ControlFlowGraphModelElement)viewControl.GetType().InvokeMember("GraphModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, viewControl, null);
                         foreach (Microsoft.SqlServer.Graph.Model.ModelElement task in ctlFlowModel)
                         {
@@ -402,6 +288,7 @@ namespace BIDSHelper.SSIS
                                     TaskHighlightingToDo todo;
                                     lock (highlightingToDos)
                                     {
+                                        this.package.Log.Debug("ExpressionHighlighter scanning task: " + task.Name);
                                         if (highlightingToDos.ContainsKey(executable))
                                             todo = (TaskHighlightingToDo)highlightingToDos[executable];
                                         else
@@ -416,50 +303,6 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        DdsDiagramHostControl diagram = viewControl.Controls["panel1"].Controls["ddsDiagramHostControl1"] as DdsDiagramHostControl;
-                        if (diagram == null) continue;
-
-                        IDTSSequence container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-
-                        foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
-                        {
-                            if (o.Type != DdsLayoutObjectType.dlotShape) continue;
-                            MSDDS.IDdsExtendedProperty prop = o.IDdsExtendedProperties.Item("LogicalObject");
-                            if (prop == null) continue;
-                            string sObjectGuid = prop.Value.ToString();
-
-                            Executable executable = null;
-                            bool bRescanThisTask = bRescan;
-                            if (oIncrementalContainer != null && oIncrementalContainer.ID == sObjectGuid)
-                            {
-                                executable = oIncrementalContainer;
-                                bRescanThisTask = true;
-                            }
-                            else
-                            {
-                                executable = FindExecutable(container, sObjectGuid);
-                            }
-                            if (executable != null)
-                            {
-                                TaskHighlightingToDo todo;
-                                lock (highlightingToDos)
-                                {
-                                    if (highlightingToDos.ContainsKey(executable))
-                                        todo = (TaskHighlightingToDo)highlightingToDos[executable];
-                                    else
-                                        highlightingToDos.Add(executable, todo = new TaskHighlightingToDo());
-                                    todo.package = package;
-                                    todo.executable = executable;
-                                    todo.controlFlowDesigner = designer;
-                                    todo.controlFlowDiagram = diagram;
-                                    todo.controlFlowDiagramTask = o;
-                                    todo.BackgroundOnly = !(!todo.BackgroundOnly || (view.Selected && diagram.Visible));
-                                    todo.Rescan = bRescanThisTask;
-                                }
-                            }
-                        }
-#endif
                     }
                     else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.EventHandlers)
                     {
@@ -471,19 +314,13 @@ namespace BIDSHelper.SSIS
                             //don't need to monitor the Base Control (leftmost) combo box because changing it will trigger a change to the event handler combo: ((Microsoft.DataWarehouse.Controls.BaseControlComboBox)(viewControl.Controls["panel1"].Controls["panel2"].Controls["Custom ComboBox"]))
                         }
 
-#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        ListView lvwConnMgrs = (ListView)viewControl.Controls["controlFlowTrayTabControl"].Controls["controlFlowConnectionsTabPage"].Controls["controlFlowConnectionsListView"];
-                        BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
-#endif                        
 
-#if DENALI || SQL2014
                         foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
                         {
                             if (!(c is Microsoft.DataTransformationServices.Design.EventHandlerElementHost)) continue;
@@ -506,6 +343,7 @@ namespace BIDSHelper.SSIS
                                         TaskHighlightingToDo todo;
                                         lock (highlightingToDos)
                                         {
+                                            this.package.Log.Debug("ExpressionHightlighter scanning task: " + task.Name);
                                             if (highlightingToDos.ContainsKey(executable))
                                                 todo = (TaskHighlightingToDo)highlightingToDos[executable];
                                             else
@@ -521,69 +359,16 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        foreach (Control c in viewControl.Controls["panel1"].Controls["panelDiagramHost"].Controls)
-                        {
-                            DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
-                            if (diagram == null) continue;
-
-                            IDTSSequence container = (IDTSSequence)diagram.ComponentDiagram.RootComponent;
-
-                            foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
-                            {
-                                if (o.Type != DdsLayoutObjectType.dlotShape) continue;
-                                MSDDS.IDdsExtendedProperty prop = o.IDdsExtendedProperties.Item("LogicalObject");
-                                if (prop == null) continue;
-                                string sObjectGuid = prop.Value.ToString();
-
-                                Executable executable = null;
-                                bool bRescanThisTask = bRescan;
-                                if (oIncrementalContainer != null && oIncrementalContainer.ID == sObjectGuid)
-                                {
-                                    executable = oIncrementalContainer;
-                                    bRescanThisTask = true;
-                                }
-                                else
-                                {
-                                    executable = FindExecutable(container, sObjectGuid);
-                                }
-                                if (executable != null)
-                                {
-                                    TaskHighlightingToDo todo;
-                                    lock (highlightingToDos)
-                                    {
-                                        if (highlightingToDos.ContainsKey(executable))
-                                            todo = (TaskHighlightingToDo)highlightingToDos[executable];
-                                        else
-                                            highlightingToDos.Add(executable, todo = new TaskHighlightingToDo());
-                                        todo.package = package;
-                                        todo.executable = executable;
-                                        todo.controlFlowDesigner = designer;
-                                        todo.controlFlowDiagram = diagram;
-                                        todo.controlFlowDiagramTask = o;
-                                        todo.BackgroundOnly = !(!todo.BackgroundOnly || (view.Selected && diagram.Visible));
-                                        todo.Rescan = bRescanThisTask;
-                                    }
-                                }
-                            }
-                        }
-#endif
                     }
                     else if (iViewIndex == (int)SSISHelpers.SsisDesignerTabIndex.DataFlow)
                     {
-#if DENALI || SQL2014
                         //it's now a Microsoft.DataTransformationServices.Design.Controls.DtsConnectionsListView object which doesn't inherit from ListView and which is internal
                         Control lvwConnMgrs = (Control)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
                         if (lvwConnMgrs != null)
                         {
                             BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
                         }
-#else
-                        ListView lvwConnMgrs = (ListView)viewControl.Controls["dataFlowsTrayTabControl"].Controls["dataFlowConnectionsTabPage"].Controls["dataFlowConnectionsListView"];
-                        BuildConnectionManagerToDos(package, lvwConnMgrs, bIncremental, bRescan, oIncrementalConnectionManager);
-#endif
 
-#if DENALI || SQL2014
                         Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox pipelineComboBox = (Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox)(viewControl.Controls["panel1"].Controls["tableLayoutPanel"].Controls["pipelineComboBox"]);
                         if (pipelineComboBox.Tag == null)
                         {
@@ -617,6 +402,7 @@ namespace BIDSHelper.SSIS
                                     TransformHighlightingToDo transformTodo;
                                     lock (highlightingToDos)
                                     {
+                                        this.package.Log.Debug("ExpressionHighlighter scanning transform: " + sName);
                                         if (highlightingToDos.ContainsKey(sObjectGuid))
                                             transformTodo = (TransformHighlightingToDo)highlightingToDos[sObjectGuid];
                                         else
@@ -654,85 +440,8 @@ namespace BIDSHelper.SSIS
                                 }
                             }
                         }
-#else
-                        Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox pipelineComboBox = (Microsoft.DataTransformationServices.Design.Controls.PipelineComboBox)(viewControl.Controls["panel1"].Controls["pipelineComboBox"]);
-                        if (pipelineComboBox.Tag == null)
-                        {
-                            pipelineComboBox.SelectedIndexChanged += new EventHandler(comboBox_SelectedIndexChanged);
-                            pipelineComboBox.Tag = true;
-                        }
-
-                        foreach (Control c in viewControl.Controls["panel2"].Controls["pipelineDetailsControl"].Controls)
-                        {
-                            DdsDiagramHostControl diagram = c as DdsDiagramHostControl;
-                            if (diagram == null) continue;
-
-                            TaskHost taskHost = (TaskHost)diagram.ComponentDiagram.RootComponent;
-                            Executable executable = (Executable)taskHost;
-                            MainPipe pipe = (MainPipe)taskHost.InnerObject;
-                            IDTSSequence container = (IDTSSequence)taskHost.Parent;
-                            if (bIncremental && !bRescan && oIncrementalContainer != taskHost) continue;
-
-                            List<string> transforms = new List<string>();
-                            foreach (MSDDS.IDdsDiagramObject o in diagram.DDS.Objects)
-                            {
-                                if (o.Type == DdsLayoutObjectType.dlotShape)
-                                {
-                                    MSDDS.IDdsExtendedProperty prop = o.IDdsExtendedProperties.Item("LogicalObject");
-                                    if (prop == null) continue;
-                                    string sObjectGuid = prop.Value.ToString();
-                                    int id = int.Parse(sObjectGuid.Substring(sObjectGuid.LastIndexOf("/") + 1));
-                                    sObjectGuid = pi.Name + "/" + sObjectGuid; //this is the todo key... (trying to use the IDTSComponentMetaDataXX as the key caused problems with COM object references and threading)
-                                    IDTSComponentMetaDataXX transform = pipe.ComponentMetaDataCollection.GetObjectByID(id);
-                                    transforms.Add(sObjectGuid);
-
-                                    TransformHighlightingToDo transformTodo;
-                                    lock (highlightingToDos)
-                                    {
-                                        if (highlightingToDos.ContainsKey(sObjectGuid))
-                                            transformTodo = (TransformHighlightingToDo)highlightingToDos[sObjectGuid];
-                                        else
-                                            highlightingToDos.Add(sObjectGuid, transformTodo = new TransformHighlightingToDo());
-                                        transformTodo.package = package;
-                                        transformTodo.dataFlowDesigner = designer;
-                                        transformTodo.dataFlowDiagram = diagram;
-                                        transformTodo.dataFlowDiagramTask = o;
-                                        transformTodo.taskHost = taskHost;
-                                        transformTodo.transformName = transform.Name;
-                                        transformTodo.transformUniqueID = sObjectGuid;
-                                        transformTodo.BackgroundOnly = !(!transformTodo.BackgroundOnly || (view.Selected && diagram.Visible));
-                                    }
-                                    System.Runtime.InteropServices.Marshal.FinalReleaseComObject(transform);
-                                }
-                            }
-
-                            TaskHighlightingToDo todo;
-                            lock (highlightingToDos)
-                            {
-                                if (highlightingToDos.ContainsKey(executable))
-                                    todo = (TaskHighlightingToDo)highlightingToDos[executable];
-                                else
-                                    highlightingToDos.Add(executable, todo = new TaskHighlightingToDo());
-                                todo.package = package;
-                                todo.executable = executable;
-                                todo.BackgroundOnly = !(!todo.BackgroundOnly || (view.Selected && diagram.Visible));
-                                if (todo.transforms == null)
-                                {
-                                    todo.transforms = transforms;
-                                }
-                                else
-                                {
-                                    lock (todo.transforms)
-                                    {
-                                        todo.transforms = transforms;
-                                    }
-                                }
-                            }
-                        }
-#endif
                     }
                 }
-
 
                 //if taking a long time, offer to disable for this package
                 if (dtToDoBuildingStartTime.AddSeconds(MAX_SECONDS_BUILDING_TO_DOS_BEFORE_OFFER_DISABLE) < DateTime.Now && !disableHighlighting.ContainsKey(win))
@@ -756,11 +465,11 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
+                this.package.Log.Exception("ExpressionHighlightingPlugin.BuildToDos", ex);
                 System.Diagnostics.Debug.WriteLine(ex.Message + " " + ex.StackTrace);
             }
         }
 
-#if DENALI || SQL2014
         private void BuildConnectionManagerToDos(Package package, Control lvwConnMgrs, bool bIncremental, bool bRescan, ConnectionManager oIncrementalConnectionManager)
         {
             ConnectionManagerUserControl cmControl = (ConnectionManagerUserControl)lvwConnMgrs.GetType().InvokeMember("m_connectionManagerUserControl", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, lvwConnMgrs, null);
@@ -777,6 +486,7 @@ namespace BIDSHelper.SSIS
                     ConnectionManagerHighlightingToDo todo;
                     lock (highlightingToDos)
                     {
+                        this.package.Log.Debug("ExpressionHighlighter Scanning Connection: " + conn.Name);
                         if (highlightingToDos.ContainsKey(conn))
                             todo = (ConnectionManagerHighlightingToDo)highlightingToDos[conn];
                         else
@@ -790,40 +500,12 @@ namespace BIDSHelper.SSIS
                 }
             }
         }
-#else
-        private void BuildConnectionManagerToDos(Package package, ListView lvwConnMgrs, bool bIncremental, bool bRescan, ConnectionManager oIncrementalConnectionManager)
-        {
-            foreach (ListViewItem lviConn in lvwConnMgrs.Items)
-            {
-                ConnectionManager conn = lviConn.GetType().InvokeMember("Component", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, lviConn, null) as ConnectionManager;
-                if (conn == null) continue;
-                ConnectionManagerHighlightingToDo todo;
-                lock (highlightingToDos)
-                {
-                    if (highlightingToDos.ContainsKey(conn))
-                        todo = (ConnectionManagerHighlightingToDo)highlightingToDos[conn];
-                    else
-                        highlightingToDos.Add(conn, todo = new ConnectionManagerHighlightingToDo());
-                    todo.package = package;
-                    todo.connection = conn;
-                    todo.listConnectionLVIs.Add(lviConn);
-                    todo.BackgroundOnly = false;
-                    todo.Rescan = (conn == oIncrementalConnectionManager) || bRescan;
-                }
-            }
-            if (lvwConnMgrs.Tag == null)
-            {
-                lvwConnMgrs.DrawItem += new DrawListViewItemEventHandler(lvwConnMgrs_DrawItem);
-                lvwConnMgrs.OwnerDraw = true; //forces the DrawItem event to fire so that we can detect when we need to fix the icon
-                lvwConnMgrs.Tag = true;
-            }
-        }
-#endif
         #endregion
 
         #region Worker Thread
         private void StartToDosThread(DateTime dtSynchronousHighlightingCutoff)
         {
+            this.package.Log.Debug("ExpressionHighlighter StartToDosThread enter");
             while (bWorkerThreadDoneWithWork && workerToDos.IsBusy)
             {
                 System.Windows.Forms.Application.DoEvents();
@@ -896,6 +578,7 @@ namespace BIDSHelper.SSIS
                     if (todo.BackgroundOnly && !bWorkerThreadEventSet)
                     {
                         System.Diagnostics.Debug.WriteLine("finished foreground highlighting tasks");
+                        this.package.Log.Debug("finished foreground highlighting tasks");
                         workerThreadEvent.Set();
                         bWorkerThreadEventSet = true;
                     }
@@ -924,6 +607,7 @@ namespace BIDSHelper.SSIS
                         if (bWorkerThreadEventSet)
                         {
                             System.Diagnostics.Debug.WriteLine("100% complete with foreground tasks");
+                            this.package.Log.Debug("100% complete with foreground tasks");
                             ApplicationObject.StatusBar.Progress(false, STATUS_BAR_PROGRESS_CAPTION, 100, 100);
                         }
                         else
@@ -941,6 +625,7 @@ namespace BIDSHelper.SSIS
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Error inside expression highlighter DoWork: " + ex.Message + " " + ex.StackTrace);
+                this.package.Log.Exception("ExpressionHighlighterPlugin.workerToDos_DoWork",ex);
             }
             finally
             {
@@ -989,21 +674,21 @@ namespace BIDSHelper.SSIS
         #endregion
 
         #region Event Handlers For Incremental Highlighting
-#if !DENALI && !SQL2014
-        private void lvwConnMgrs_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            try
-            {
-                if (this.Enabled)
-                    ConnectionManagerHighlightingToDo.HighlightConnectionManagerLVI(e.Item);
-                e.DrawDefault = true;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("problem in lvwConnMgrs_DrawItem: " + ex.Message + " " + ex.StackTrace);
-            }
-        }
-#endif
+//#if !DENALI && !SQL2014
+//        private void lvwConnMgrs_DrawItem(object sender, DrawListViewItemEventArgs e)
+//        {
+//            try
+//            {
+//                if (this.Enabled)
+//                    ConnectionManagerHighlightingToDo.HighlightConnectionManagerLVI(e.Item);
+//                e.DrawDefault = true;
+//            }
+//            catch (Exception ex)
+//            {
+//                System.Diagnostics.Debug.WriteLine("problem in lvwConnMgrs_DrawItem: " + ex.Message + " " + ex.StackTrace);
+//            }
+//        }
+//#endif
 
         void comboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1237,17 +922,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-        public static Type GetPrivateType(Type publicTypeInSameAssembly, string FullName)
-        {
-            foreach (Type t in System.Reflection.Assembly.GetAssembly(publicTypeInSameAssembly).GetTypes())
-            {
-                if (t.FullName == FullName)
-                {
-                    return t;
-                }
-            }
-            return null;
-        }
+
         #endregion
 
         #region Standard Plugin Overrides
@@ -1256,25 +931,12 @@ namespace BIDSHelper.SSIS
             get { return "ExpressionHighlighterPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
-
-        public override string ButtonText
-        {
-            get { return "Expression Highlighter"; }
-        }
 
         public override string ToolTip
         {
             get { return string.Empty; }
         }
 
-        public override string MenuName
-        {
-            get { return string.Empty; } //no need to have a menu command
-        }
 
         /// <summary>
         /// Gets the name of the friendly name of the plug-in.
@@ -1304,21 +966,11 @@ namespace BIDSHelper.SSIS
             get { return "Highlight objects in your SSIS Packages that have configurations or expressions applied making them easy to identify."; }
         }
 
-        /// <summary>
-        /// Determines if the command should be displayed or not.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            return false; //no menu item
-        }
+        
 
         public override void Exec()
         {
         }
         #endregion
-
-
     }
 }

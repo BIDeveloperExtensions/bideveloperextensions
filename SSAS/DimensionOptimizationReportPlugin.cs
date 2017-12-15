@@ -1,22 +1,18 @@
 using System;
-using Extensibility;
 using EnvDTE;
-using EnvDTE80;
-using System.Xml;
-using Microsoft.VisualStudio.CommandBars;
-using System.Text;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Microsoft.AnalysisServices;
-using System.Data;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
     public class DimensionOptimizationReportPlugin : BIDSHelperPluginBase
     {
-        public DimensionOptimizationReportPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DimensionOptimizationReportPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.DimensionOptimizationReportId);
         }
 
         public override string ShortName
@@ -29,30 +25,26 @@ namespace BIDSHelper
             get { return "Dimension Optimization Report"; }
         }
         
-        public override int Bitmap
-        {
-            get { return 44; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 44; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Dimension Optimization Report..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Dimension Optimization Report..."; }
+        //}
 
         public override string ToolTip
         {
             get { return string.Empty; } //not used anywhere
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
 
-        public override string MenuName
-        {
-            get { return "Folder Node"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Folder Node"; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -60,7 +52,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -77,7 +69,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {

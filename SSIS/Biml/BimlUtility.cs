@@ -1,5 +1,6 @@
 ﻿namespace BIDSHelper.SSIS.Biml
 {
+    using System;
     using System.Collections.Generic;
     using System.Text;
     using EnvDTE;
@@ -9,9 +10,14 @@
     using Varigence.Flow.FlowFramework.Validation;
     using Varigence.Languages.Biml;
     using Varigence.Languages.Biml.Platform;
-    
+
     internal static class BimlUtility
     {
+        private static string bimlDisabledText = "BIML Features are currently unavailable while we wait for Varigence to provide an update to the BimlEngine component.";
+        private static string bimlDisabledCaption = "BIML Features Not Available";
+
+        public static bool IsDisabled { get { return true; } }
+
         public static bool CheckRequiredFrameworkVersion()
         {
             RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5");
@@ -43,18 +49,33 @@
         internal static ValidationReporter GetValidationReporter(List<string> bimlScriptPaths, Project project, string projectDirectory, string tempTargetDirectory)
         {
             // ArgumentNullException - Value cannot be null. Parameter: input - Caused when using the 1.6 BIML engine version but 1.7 code, BidsHelperPhaseWorkflows xml file name mismatched. Biml vs Hadron 
-#if KATMAI
-            SsisVersion ssisVersion = BimlUtility.GetSsisVersion2008Variant();
-            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, ssisVersion, SsasVersion.Ssas2008, SsisDeploymentModel.Package);
+#if SQL2016
+            // This is a placeholder only, as BIML doesn't support 2016 yet
+            // Assume default of 2014 for now.
+            SsisVersion version = SsisVersion.Ssis2014;
+            if (SSISHelpers.GetTargetServerVersion(project) == SsisTargetServerVersion.SQLServer2012)
+            {
+                // Downgrade Biml target version to match project target.
+                version = SsisVersion.Ssis2012;
+            }
+
+            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, version, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
+#elif SQL2014
+            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2014, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
 #elif DENALI
             ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, SsisVersion.Ssis2012, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
-#elif SQL2014
-            SsisVersion version = (SSISHelpers.GetProjectTargetVersion(project) == SSISHelpers.ProjectTargetVersion.SQLServer2012 ? SsisVersion.Ssis2012 : SsisVersion.Ssis2014);
-            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2008, version, SsasVersion.Ssas2008, DeployPackagesPlugin.IsLegacyDeploymentMode(project) ? SsisDeploymentModel.Package : SsisDeploymentModel.Project);
-#else
-            ValidationReporter validationReporter = BidsHelper.CompileBiml(typeof(AstNode).Assembly, "Varigence.Biml.BidsHelperPhaseWorkflows.xml", "Compile", bimlScriptPaths, new List<string>(), tempTargetDirectory, projectDirectory, SqlServerVersion.SqlServer2005, SsisVersion.Ssis2005, SsasVersion.Ssas2005, SsisDeploymentModel.Package);
 #endif
             return validationReporter;
+        }
+
+        internal static bool ShowDisabledMessage()
+        {
+            if (IsDisabled)
+            {
+                System.Windows.MessageBox.Show(bimlDisabledText, bimlDisabledCaption, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Stop);
+                return true;
+            }
+            return false;
         }
 
         internal static void ProcessValidationReport(IOutputWindow outputWindow, ValidationReporter validationReporter, bool showWarnings)

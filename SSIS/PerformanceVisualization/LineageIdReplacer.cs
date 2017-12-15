@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using System.Text.RegularExpressions;
-
-#region Conditional compile for Yukon vs Katmai
-#if KATMAI || DENALI || SQL2014
 using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
 using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
 using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;
@@ -13,16 +10,6 @@ using IDTSInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColu
 using IDTSOutputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn100;
 using IDTSCustomPropertyCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomPropertyCollection100;
 using IDTSCustomPropertyXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
-#else
-using IDTSComponentMetaDataXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData90;
-using IDTSOutputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput90;
-using IDTSInputXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput90;
-using IDTSInputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumn90;
-using IDTSOutputColumnXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn90;
-using IDTSCustomPropertyCollectionXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomPropertyCollection90;
-using IDTSCustomPropertyXX = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty90;
-#endif
-#endregion
 
 namespace BIDSHelper.SSIS.PerformanceVisualization
 {

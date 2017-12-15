@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.VisualStudio.CommandBars;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
@@ -12,6 +10,7 @@ using System.Data.OleDb;
 using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Controls;
+using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
@@ -19,9 +18,10 @@ namespace BIDSHelper
     {
         private const System.Reflection.BindingFlags getfieldflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
 
-        public DataTypeDiscrepancyCheckPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        public DataTypeDiscrepancyCheckPlugin(BIDSHelperPackage package)
+            : base(package)
         {
+            CreateContextMenu(CommandList.DataTypeDiscrepancyCheckId);
         }
 
         public override string ShortName
@@ -29,15 +29,15 @@ namespace BIDSHelper
             get { return "DataTypeDiscrepancyCheck"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 163; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 163; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Data Type Discrepancy Check..."; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Data Type Discrepancy Check..."; }
+        //}
 
         public override string FeatureName
         {
@@ -49,15 +49,15 @@ namespace BIDSHelper
             get { return string.Empty; /*doesn't show anywhere*/ }
         }
 
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
-        }
+        //public override bool ShouldPositionAtEnd
+        //{
+        //    get { return true; }
+        //}
 
-        public override string MenuName
-        {
-            get { return "Folder Node"; }
-        }
+        //public override string MenuName
+        //{
+        //    get { return "Folder Node"; }
+        //}
 
         /// <summary>
         /// Gets the feature category used to organise the plug-in in the enabled features list.
@@ -65,7 +65,7 @@ namespace BIDSHelper
         /// <value>The feature category.</value>
         public override BIDSFeatureCategories FeatureCategory
         {
-            get { return BIDSFeatureCategories.SSAS; }
+            get { return BIDSFeatureCategories.SSASMulti; }
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace BIDSHelper
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override bool DisplayCommand(UIHierarchyItem item)
+        public override bool ShouldDisplayCommand()
         {
             try
             {

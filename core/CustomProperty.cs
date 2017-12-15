@@ -17,13 +17,13 @@
         private Type type;
         private Collection<CustomProperty> childern;
 
-        internal BIDSHelperPluginBase Plugin;
+        internal IBIDSHelperPlugin Plugin;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomProperty"/> class, using a <see cref="BIDSHelperPluginBase"/> instance.
         /// </summary>
         /// <param name="plugin">The BIDS Helper plugin to represent as a feature enabled property.</param>
-        public CustomProperty(BIDSHelperPluginBase plugin)
+        public CustomProperty(IBIDSHelperPlugin plugin)
         {
             this.Plugin = plugin;
             this.name = plugin.FeatureName;
@@ -52,8 +52,10 @@
             {
                 case BIDSFeatureCategories.General:
                     return "General";
-                case BIDSFeatureCategories.SSAS:
-                    return "SQL Server Analysis Services (SSAS)";
+                case BIDSFeatureCategories.SSASMulti:
+                    return "SQL Server Analysis Services (SSAS) - Multi-Dimensional";
+                case BIDSFeatureCategories.SSASTabular:
+                    return "SQL Server Analysis Services (SSAS) - Tabular";
                 case BIDSFeatureCategories.SSIS:
                     return "SQL Server Integration Services (SSIS)";
                 case BIDSFeatureCategories.SSRS:

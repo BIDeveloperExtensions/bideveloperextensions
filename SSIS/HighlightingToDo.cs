@@ -7,10 +7,7 @@ namespace BIDSHelper.SSIS
     using EnvDTE;
     using Microsoft.DataWarehouse.Controls;
     using Microsoft.SqlServer.Dts.Runtime;
-
-#if DENALI || SQL2014
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
-#endif
 
     public abstract class HighlightingToDo
     {
@@ -296,7 +293,7 @@ namespace BIDSHelper.SSIS
             }
         }
 
-#if DENALI || SQL2014
+
         private static Dictionary<string, System.Windows.Media.Imaging.BitmapSource> _cacheBitmapSource = new Dictionary<string, System.Windows.Media.Imaging.BitmapSource>();
         public static System.Windows.Media.Imaging.BitmapSource GetBitmapSource(System.Drawing.Color color)
         {
@@ -338,7 +335,6 @@ namespace BIDSHelper.SSIS
             bits[x * 4 + y * stride + 2] = c.R;
             bits[x * 4 + y * stride + 3] = c.A;
         }
-#endif
 
         protected void HighlightDdsDiagramObjectIcon(DdsDiagramHostControl diagram, object managedShape, bool bHasExpression, bool bHasConfiguration)
         {
@@ -391,21 +387,7 @@ namespace BIDSHelper.SSIS
     {
         public Executable executable = null;
         public IDesignerHost controlFlowDesigner = null;
-
-#if DENALI || SQL2014
         public Microsoft.SqlServer.Graph.Model.ModelElement controlFlowTaskModelElement;
-#else
-        public DdsDiagramHostControl controlFlowDiagram = null;
-
-        private object taskManagedShape = null;
-        public MSDDS.IDdsDiagramObject controlFlowDiagramTask
-        {
-            set
-            {
-                taskManagedShape = TYPE_MANAGED_BASE_SHAPE.InvokeMember("GetManagedShape", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, null, new object[] { value });
-            }
-        }
-#endif
 
         public List<string> transforms = null;
         public override void Highlight()
@@ -452,7 +434,6 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("highlighting task from cache");
             }
 
-#if DENALI || SQL2014
             this.controlFlowTaskModelElement.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
                 (System.Windows.Threading.DispatcherPriority.Normal,
                 (Action)(() =>
@@ -460,14 +441,13 @@ namespace BIDSHelper.SSIS
                     System.Windows.FrameworkElement fe = (System.Windows.FrameworkElement)this.controlFlowTaskModelElement.View;
                     if (fe != null) //the sequence container for the Package object itself has a null view. TODO is how to add a configuration highlight to the background of the package itself... this seems to do the trick but there's more formatting work to do: fe = (System.Windows.FrameworkElement)(((Microsoft.SqlServer.IntegrationServices.Designer.Model.SequenceModelElement)(controlFlowTaskModelElement)).GraphModelElement).GraphControl
                     {
+                        System.Diagnostics.Debug.WriteLine("ExpressionHighlighter - adding task adorner " + controlFlowTaskModelElement.Name);
                         Adorners.BIDSHelperConfigurationAdorner adorner = new Adorners.BIDSHelperConfigurationAdorner(fe, typeof(Microsoft.SqlServer.Graph.Model.ModelElement));
                         adorner.UpdateAdorner(false, status.bHasConfiguration); //only highlight configurations
                     }
                 }
                 ));
-#else
-            HighlightDdsDiagramObjectIcon(controlFlowDiagram, taskManagedShape, status.bHasExpression, status.bHasConfiguration);
-#endif
+
 
             if (cacheTasks.ContainsKey(executable))
                 cacheTasks[executable] = status;
@@ -496,21 +476,7 @@ namespace BIDSHelper.SSIS
             IDTSPropertiesProvider task = (IDTSPropertiesProvider)executable;
             bool returnValue = false;
             HasConfiguration = false;
-
-#if !DENALI && !SQL2014 //has built-in expression highlighting
-            foreach (DtsProperty p in task.Properties)
-            {
-                try
-                {
-                    if (!string.IsNullOrEmpty(task.GetExpression(p.Name)))
-                    {
-                        returnValue = true;
-                        break;
-                    }
-                }
-                catch { }
-            }
-#endif
+            
 
             //check for package configurations separately so you can break out of the expensive expressions search as soon as you find one
             foreach (DtsProperty p in task.Properties)
@@ -531,23 +497,6 @@ namespace BIDSHelper.SSIS
                 if (forEachEnumerator == null)
                     return returnValue;
 
-#if !DENALI && !SQL2014 //has built-in expression highlighting
-                if (!returnValue)
-                {
-                    foreach (DtsProperty p in forEachEnumerator.Properties)
-                    {
-                        try
-                        {
-                            if (!string.IsNullOrEmpty(forEachEnumerator.GetExpression(p.Name)))
-                            {
-                                returnValue = true;
-                                break;
-                            }
-                        }
-                        catch { }
-                    }
-                }
-#endif
 
                 if (!HasConfiguration)
                 {
@@ -580,20 +529,8 @@ namespace BIDSHelper.SSIS
         public string transformName = null;
         public string transformUniqueID = null;
 
-#if DENALI || SQL2014
         public Microsoft.SqlServer.Graph.Model.ModelElement dataFlowTransformModelElement;
-#else
-        public IDesignerHost dataFlowDesigner = null;
-        public DdsDiagramHostControl dataFlowDiagram = null;
-        private object transformManagedShape = null;
-        public MSDDS.IDdsDiagramObject dataFlowDiagramTask
-        {
-            set
-            {
-                transformManagedShape = TYPE_MANAGED_BASE_SHAPE.InvokeMember("GetManagedShape", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static, null, null, new object[] { value });
-            }
-        }
-#endif
+
 
         public override void Highlight()
         {
@@ -618,11 +555,12 @@ namespace BIDSHelper.SSIS
                 System.Diagnostics.Debug.WriteLine("highlighting from cache for: " + transformUniqueID);
             }
 
-#if DENALI || SQL2014
+
             this.dataFlowTransformModelElement.Dispatcher.BeginInvoke //enables this code to run on the application thread or something like that and avoids errors
                 (System.Windows.Threading.DispatcherPriority.Normal,
                 (Action)(() =>
                 {
+                    System.Diagnostics.Debug.WriteLine("ExpressionHighlighter - adding transform adorner " + transformName);
                     System.Windows.FrameworkElement fe = (System.Windows.FrameworkElement)this.dataFlowTransformModelElement.View;
                     if (fe != null) //the sequence container for the Package object itself has a null view. TODO is how to add a configuration highlight to the background of the package itself
                     {
@@ -631,9 +569,7 @@ namespace BIDSHelper.SSIS
                     }
                 }
                 ));
-#else
-            HighlightDdsDiagramObjectIcon(dataFlowDiagram, transformManagedShape, status.bHasExpression, status.bHasConfiguration);
-#endif
+
 
             if (cacheTransforms.ContainsKey(transformUniqueID))
                 cacheTransforms[transformUniqueID] = status;
@@ -690,11 +626,8 @@ namespace BIDSHelper.SSIS
     public class ConnectionManagerHighlightingToDo : HighlightingToDo
     {
         public ConnectionManager connection = null;
-#if DENALI || SQL2014
         public List<System.Windows.FrameworkElement> listConnectionLVIs = new List<System.Windows.FrameworkElement>();
-#else
-        public List<ListViewItem> listConnectionLVIs = new List<ListViewItem>();
-#endif
+
         public override void Highlight()
         {
             List<string> listConfigPaths;
@@ -730,7 +663,6 @@ namespace BIDSHelper.SSIS
 
             lock (listConnectionLVIs)
             {
-#if DENALI || SQL2014
                 foreach (System.Windows.FrameworkElement fe in listConnectionLVIs)
                 {
                     if (fe != null)
@@ -739,124 +671,19 @@ namespace BIDSHelper.SSIS
                             (System.Windows.Threading.DispatcherPriority.Normal,
                             (Action)(() =>
                             {
+                                System.Diagnostics.Debug.WriteLine("ExpressionHighlighter - adding connection adorner " + connection.Name);
                                 Adorners.BIDSHelperConfigurationAdorner adorner = new Adorners.BIDSHelperConfigurationAdorner(fe, typeof(ConnectionManagerModelElement));
                                 adorner.UpdateAdorner(false, bHasConfiguration); //only highlight configurations
                             }
                             ));
                     }
                 }
-#else
-                foreach (ListViewItem lvi in listConnectionLVIs)
-                {
-                    HighlightConnectionManagerLVI(lvi, bHasExpression, bHasConfiguration, true); //ensure the connection manager is invalidated... this only helps the connection manager repaint in a few situations, but it's necessary
-                }
-#endif
+
             }
 
             //the lvwConnMgrs_DrawItem event will take care of painting the connection managers 90% of the time
             //unfortunately we had to use the lvwConnMgrs_DrawItem to catch all the appropriate times we needed to refix the icon
         }
-
-
-#if !DENALI && !SQL2014
-        public static void HighlightConnectionManagerLVI(ListViewItem lviConn)
-        {
-            ConnectionManager connection = (ConnectionManager)lviConn.GetType().InvokeMember("Component", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, lviConn, null);
-            Package package = null;
-            List<string> listConfigPaths = new List<string>();
-            lock (cacheConfigPaths)
-            {
-                foreach (Package p in cacheConfigPaths.Keys)
-                {
-                    if (p.Connections.Contains(connection.ID) && p.Connections[connection.ID] == connection)
-                    {
-                        package = p;
-                        listConfigPaths = cacheConfigPaths[package];
-                        break;
-                    }
-                }
-                if (package == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("HighlightConnectionManager: can't find package for connection!!!");
-                    return;
-                }
-            }
-
-            bool bHasConfiguration = false;
-            bool bHasExpression = false;
-            if (!cacheConnectionManagers.ContainsKey(connection))
-            {
-                System.Diagnostics.Debug.WriteLine("HighlightConnectionManager: not cached!!!");
-                bHasExpression = HasExpression(connection, listConfigPaths, out bHasConfiguration);
-                if (cacheConnectionManagers.ContainsKey(connection))
-                    cacheConnectionManagers[connection] = new CachedHighlightStatus(package, bHasExpression, bHasConfiguration);
-                else
-                {
-                    lock (cacheConnectionManagers)
-                        cacheConnectionManagers.Add(connection, new CachedHighlightStatus(package, bHasExpression, bHasConfiguration));
-                }
-            }
-            else
-            {
-                CachedHighlightStatus ccm = cacheConnectionManagers[connection];
-                bHasExpression = ccm.bHasExpression;
-                bHasConfiguration = ccm.bHasConfiguration;
-            }
-            HighlightConnectionManagerLVI(lviConn, bHasExpression, bHasConfiguration, false);
-        }
-
-        private static void HighlightConnectionManagerLVI(ListViewItem lviConn, bool bHasExpression, bool bHasConfiguration, bool bInvalidate)
-        {
-            lock (lviConn)
-            {
-                System.Drawing.Bitmap icon = null;
-                if (lviConn.ImageList != null && lviConn.ListView != null && lviConn.ImageList.Images.Count > lviConn.ImageIndex)
-                {
-                    icon = lviConn.ImageList.Images[lviConn.ImageIndex] as System.Drawing.Bitmap;
-                }
-                else
-                {
-                    // ImageList is null on the first pass following the renaming of a connection, with an expression
-                    // Other cases too....
-                    System.Diagnostics.Debug.WriteLine("couldn't find current connection manager icon");
-                }
-
-                if (icon == null)
-                {
-                    return;
-                }
-
-                System.Diagnostics.Debug.WriteLine("connection has " + (bHasExpression || bHasConfiguration ? " an " : " no ") + " expression/configuration");
-                System.Diagnostics.Debug.WriteLine("lviConn.Tag: " + (lviConn.Tag == null ? "null" : lviConn.Tag.ToString()));
-
-                if (!bHasExpression && !bHasConfiguration && lviConn.Tag != null)
-                {
-                    lviConn.ImageIndex = (int)lviConn.Tag;
-                    lviConn.Tag = null;
-                    if (bInvalidate) lviConn.ListView.Invalidate(lviConn.Bounds, true);
-                }
-                else if ((bHasExpression || bHasConfiguration))
-                {
-                    System.Drawing.Image oldimg = lviConn.ImageList.Images[lviConn.ImageIndex];
-                    System.Drawing.Bitmap newicon = new System.Drawing.Bitmap(oldimg);
-                    if (lviConn.Tag == null)
-                        lviConn.Tag = lviConn.ImageIndex; //save the old index
-                    System.Diagnostics.Debug.WriteLine("new lviConn.Tag: " + (lviConn.Tag == null ? "null" : lviConn.Tag.ToString()));
-                    if (bHasExpression && !bHasConfiguration)
-                        ModifyIcon(newicon, expressionColor);
-                    else if (bHasConfiguration && !bHasExpression)
-                        ModifyIcon(newicon, configurationColor);
-                    else
-                        ModifyIcon(newicon, expressionColor, configurationColor);
-                    lviConn.ImageList.Images.Add(newicon);
-                    lviConn.ImageIndex = lviConn.ImageList.Images.Count - 1;
-                    lviConn.ImageList.Images[lviConn.ImageIndex].Tag = newicon.Tag;
-                    System.Diagnostics.Debug.WriteLine("after assignment lviConn.Tag: " + (lviConn.Tag == null ? "null" : lviConn.Tag.ToString()));
-                    if (bInvalidate) lviConn.ListView.Invalidate(lviConn.Bounds, true);
-                }
-            }
-        }
-#endif
 
         private static bool HasExpression(ConnectionManager connectionManager, List<string> listConfigPaths, out bool HasConfiguration)
         {
@@ -865,18 +692,6 @@ namespace BIDSHelper.SSIS
             HasConfiguration = false;
 
 #if !DENALI && !SQL2014 //connection managers already have built-in expression highlighting in Denali, so don't run this code in Denali
-            foreach (DtsProperty p in dtsObject.Properties)
-            {
-                try
-                {
-                    if (!string.IsNullOrEmpty(dtsObject.GetExpression(p.Name)))
-                    {
-                        returnValue = true;
-                        break;
-                    }
-                }
-                catch { }
-            }
 #endif
 
             //check for package configurations separately so you can break out of the expensive expressions search as soon as you find one
@@ -885,6 +700,7 @@ namespace BIDSHelper.SSIS
                 string sPackagePath = p.GetPackagePath(dtsObject);
                 if (listConfigPaths.Contains(sPackagePath))
                 {
+                    
                     HasConfiguration = true;
                     break;
                 }

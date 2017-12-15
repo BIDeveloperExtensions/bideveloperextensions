@@ -4,8 +4,13 @@
 
 	<xsl:template match="node()">
 		<xsl:copy>
-			<!-- leave default sort order -->
-			<xsl:apply-templates select="@*|node()[name()!='DTS:LogProvider' and name()!='DTS:Executable' and name()!='DTS:ConnectionManager' and name()!='DTS:PrecedenceConstraint' and name()!='component' and name()!='ProjectItem']"/>
+      <!-- sort attributes by name -->
+      <xsl:apply-templates select="@*">
+        <xsl:sort order="ascending" select="name()"/>
+      </xsl:apply-templates>
+      
+      <!-- leave default sort order -->
+			<xsl:apply-templates select="node()[name()!='DTS:LogProvider' and name()!='DTS:Executable' and name()!='DTS:ConnectionManager' and name()!='DTS:PrecedenceConstraint' and name()!='component' and name()!='ProjectItem']"/>
 
 			<!-- customize sort order -->
 			<xsl:apply-templates select="./DTS:LogProvider">
@@ -30,7 +35,7 @@
 	</xsl:template>
 	<xsl:template match="@*">
 		<xsl:attribute namespace="{namespace-uri()}" name="{name()}">
-			<xsl:value-of select="."/>
+      <xsl:value-of select="."/>
 		</xsl:attribute>
 	</xsl:template>
 	<xsl:template match="text()">

@@ -1,4 +1,3 @@
-using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.Text;
@@ -6,32 +5,45 @@ using System.ComponentModel.Design;
 using Microsoft.DataWarehouse.Design;
 using System;
 using Microsoft.SqlServer.Dts.Runtime;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.DataTransformationServices.Project;
-using System.Runtime.InteropServices;
-using Microsoft.DataTransformationServices.Project.DebugEngine;
 using System.Windows.Forms;
 using Microsoft.DataWarehouse.Controls;
 using System.Collections.Generic;
 using BIDSHelper.SSIS.PerformanceVisualization;
+using BIDSHelper.Core;
 
-namespace BIDSHelper
+namespace BIDSHelper.SSIS
 {
     public class PerformanceVisualizationPlugin : BIDSHelperPluginBase
     {
-        private DTEEvents events;
-        public PerformanceVisualizationPlugin(Connect con, DTE2 appObject, AddIn addinInstance)
-            : base(con, appObject, addinInstance)
+        //private DTEEvents events;
+        public PerformanceVisualizationPlugin(BIDSHelperPackage package)
+            : base(package)
         {
-            this.events = this.ApplicationObject.Events.DTEEvents;
-            this.events.ModeChanged += new _dispDTEEvents_ModeChangedEventHandler(DTEEvents_ModeChanged);
+         //   this.events = this.ApplicationObject.Events.DTEEvents;
+         //   this.events.ModeChanged += new _dispDTEEvents_ModeChangedEventHandler(DTEEvents_ModeChanged);
+
+            CreateContextMenu(CommandList.PerformanceVisualizationId, ".dtsx");
+
         }
 
-        void DTEEvents_ModeChanged(vsIDEMode LastMode)
+        public override void OnEnable()
         {
+            base.OnEnable();
+            package.IdeModeChanged += Package_IdeModeChanged;
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            package.IdeModeChanged -= Package_IdeModeChanged;
+        }
+
+        private void Package_IdeModeChanged(object sender, enumIDEMode newMode)
+        {
+       
             try
             {
-                if (LastMode == vsIDEMode.vsIDEModeDebug) return;
+                if (newMode != enumIDEMode.Debug) return;
                 StringBuilder sb = new StringBuilder();
                 foreach (PerformanceTab tab in PerformanceEditorViews.Values)
                 {
@@ -58,20 +70,20 @@ namespace BIDSHelper
             get { return "SSISPerformanceVisualizationPlugin"; }
         }
 
-        public override int Bitmap
-        {
-            get { return 0; }
-        }
+        //public override int Bitmap
+        //{
+        //    get { return 0; }
+        //}
 
-        public override System.Drawing.Icon CustomMenuIcon
-        {
-            get { return BIDSHelper.Resources.Common.Performance; }
-        }
+        //public override System.Drawing.Icon CustomMenuIcon
+        //{
+        //    get { return BIDSHelper.Resources.Common.Performance; }
+        //}
 
-        public override string ButtonText
-        {
-            get { return "Execute and Visualize Performance"; }
-        }
+        //public override string ButtonText
+        //{
+        //    get { return "Execute and Visualize Performance"; }
+        //}
 
         public override string ToolTip
         {
@@ -81,11 +93,6 @@ namespace BIDSHelper
         public override string FeatureName
         {
             get { return "SSIS Performance Visualization"; }
-        }
-
-        public override bool ShouldPositionAtEnd
-        {
-            get { return true; }
         }
 
         /// <summary>
@@ -105,18 +112,6 @@ namespace BIDSHelper
         {
             get { return "Adds a new Performance tab with a graphical Gantt chart view of the execution durations and dependencies for your package to help you visualize performance."; }
         }
-
-        public override bool DisplayCommand(UIHierarchyItem item)
-        {
-            UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-            if (((System.Array)solExplorer.SelectedItems).Length != 1)
-                return false;
-
-            UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-            string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
-            return (sFileName.EndsWith(".dtsx"));
-        }
-
 
         public override void Exec()
         {
