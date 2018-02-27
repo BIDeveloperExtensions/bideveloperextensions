@@ -311,7 +311,7 @@ namespace BIDSHelper.SSAS
                         dbPerm.Process = (r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.Refresh || r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.ReadRefresh);
                         dbPerm.Read = ((r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.Read || r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.ReadRefresh) ? ReadAccess.Allowed : ReadAccess.None);
 
-                        if (r.Members.Count == 0)
+                        if (r.Members.Count == 0 && r.ExternalMembers.Count == 0)
                         {
                             RoleMemberInfo infoMember = new RoleMemberInfo();
                             infoMember.TargetServerName = _deploymentTargetServer;
@@ -332,6 +332,24 @@ namespace BIDSHelper.SSAS
                             listRoleMembers.Add(infoMember);
 
                             listRoleMembers.AddRange(GetGroupMembers(infoMember.directoryEntry, fakeDatabase, fakeRole, 1));
+                        }
+                        foreach (Microsoft.AnalysisServices.BackEnd.DataModelingRoleExternalMember rm in r.ExternalMembers)
+                        {
+                            RoleMemberInfo infoMember = new RoleMemberInfo();
+                            infoMember.TargetServerName = _deploymentTargetServer;
+                            infoMember.database = fakeDatabase;
+                            infoMember.role = fakeRole;
+                            infoMember.MemberName = rm.Name;
+
+                            //TODO: properly handle AAD members and groups
+                            //infoMember.directoryEntry = GetDirectoryEntry(rm.Name);
+                            //infoMember.MemberName = GetDomainAndUserForDirectoryEntry(infoMember.directoryEntry);
+                            //if (string.IsNullOrEmpty(infoMember.MemberName))
+                            //    infoMember.MemberName = rm.Name;
+                            listRoleMembers.Add(infoMember);
+
+                            //TODO:
+                            //listRoleMembers.AddRange(GetGroupMembers(infoMember.directoryEntry, fakeDatabase, fakeRole, 1));
                         }
 
                         foreach (Microsoft.AnalysisServices.BackEnd.DataModelingTable table in tomTables)
