@@ -242,7 +242,7 @@ namespace BIDSHelper
         {
 #if SQL2019
             string sVersion = VersionInfo.SqlServerVersion.ToString();
-            if (sVersion.StartsWith("14.")) //this DLL is for SQL 2019 but you have SSDT for SQL2017 installed
+            if (sVersion.StartsWith("14.")) //this BI Dev Extensions DLL is for SQL 2019 but you have SSDT for SQL2017 installed
             {
                 string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
                 string sManifestPath = sFolder + "\\extension.vsixmanifest";
@@ -254,7 +254,7 @@ namespace BIDSHelper
                 string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
                 string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
 
-                ////string sDll2017Path = sFolder + "\\SQL2016\\BidsHelper2017.dll";
+                string sDll2017Path = sFolder + "\\SQL2017\\BidsHelper2017.dll";
 
                 if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2019Path))
                 {
@@ -276,13 +276,16 @@ namespace BIDSHelper
 
 
 
-                    ////////it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
-                    //////Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
-                    //////if (regKey != null) 
-                    //////{
-                    //////    regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
-                    //////    regKey.Close();
-                    //////}
+                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
+                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
+                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
+                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
+                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
+                    if (regKey != null)
+                    {
+                        regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
+                        regKey.Close();
+                    }
 
                     System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
@@ -296,7 +299,7 @@ namespace BIDSHelper
             string sVersion = VersionInfo.SqlServerVersion.ToString();
             if (sVersion.StartsWith("15.")) //this BI Dev Extensions DLL is for SQL 2017 but you have SSDT for SQL2019 installed
             {
-                string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+                string sFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName;
                 string sManifestPath = sFolder + "\\extension.vsixmanifest";
                 string sBackupManifestPath = sFolder + "\\extension2017.vsixmanifest";
                 string sOtherManifestPath = sFolder + "\\extension2019.vsixmanifest";
@@ -306,7 +309,7 @@ namespace BIDSHelper
                 string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
                 string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
 
-                ////string sDll2017Path = sFolder + "\\SQL2017\\BidsHelper2017.dll";
+                string sDll2019Path = sFolder + "\\BidsHelper2019.dll";
 
                 if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2019BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
                 {
@@ -326,13 +329,16 @@ namespace BIDSHelper
                     else
                         System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
 
-                    ////////it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
-                    //////Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
-                    //////if (regKey != null) 
-                    //////{
-                    //////    regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
-                    //////    regKey.Close();
-                    //////}
+                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
+                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
+                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
+                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
+                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
+                    if (regKey != null)
+                    {
+                        regKey.SetValue("CodeBase", sDll2019Path, Microsoft.Win32.RegistryValueKind.String);
+                        regKey.Close();
+                    }
 
                     System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
