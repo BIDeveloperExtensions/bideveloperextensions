@@ -524,6 +524,7 @@
     <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.ProcessingObjectModel.AppLocal.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Winforms.AppLocal.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.GridControl.dll" />
+    <Content Include="DLLs\SQL2019\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.Core.dll" />
@@ -711,9 +712,9 @@
       <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ExpressionEditor, Version=6.1.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=x86">
-      <HintPath>DLLs\SQL2019\ExpressionEditor.dll</HintPath>
+    <Reference Include="ExpressionEditor, Version=7.1.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLs\SQL2019\ExpressionEditor.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.AppLocal, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>False</Private>
