@@ -70,6 +70,8 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\130\SSIS\Setup\DTSPath";
                     case SsisTargetServerVersion.SQLServer2017:
                         return @"SOFTWARE\Microsoft\Microsoft SQL Server\140\SSIS\Setup\DTSPath";
+                    case SsisTargetServerVersion.SQLServer2019:
+                        return @"SOFTWARE\Microsoft\Microsoft SQL Server\150\SSIS\Setup\DTSPath";
                     default:
                         throw new Exception("Unknown deployment version, DTSPATH_REGISTRY_PATH cannot be determined.");
                 }

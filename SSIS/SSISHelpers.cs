@@ -16,13 +16,16 @@ namespace BIDSHelper.SSIS
         SQLServer2012 = 110,
         SQLServer2014 = 120,
         SQLServer2016 = 130,
-        SQLServer2017 = 140
+        SQLServer2017 = 140,
+        SQLServer2019 = 150
     }
 
     public static class SSISHelpers
     {
 
-#if SQL2017
+#if SQL2019
+        public const string CreationNameIndex = "7";
+#elif SQL2017
         public const string CreationNameIndex = "6";
 #elif SQL2016
         public const string CreationNameIndex = "5";
@@ -69,7 +72,9 @@ namespace BIDSHelper.SSIS
         {
             get
             {
-#if SQL2017
+#if SQL2019
+                return SsisTargetServerVersion.SQLServer2019;
+#elif SQL2017
                 return SsisTargetServerVersion.SQLServer2017;
 #elif SQL2016
                 return SsisTargetServerVersion.SQLServer2016;

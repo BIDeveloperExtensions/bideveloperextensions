@@ -6,4 +6,7 @@
     <StartArguments>/rootsuffix Exp</StartArguments>
     <DeployTargetInstanceId />
   </PropertyGroup>
+  <PropertyGroup>
+    <ProjectView>ShowAllFiles</ProjectView>
+  </PropertyGroup>
 </Project>
