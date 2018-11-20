@@ -21,7 +21,7 @@ namespace BIDSHelper.Core
     {
         private const string BASE_NAME = "BIDSHelperPackage.";
         protected const string DefaultMessageBoxCaption = "BIDS Helper";
-        private const string DefaultUrlFormat = "http://bidshelper.codeplex.com/wikipage?title={0}";
+        private const string DefaultUrlFormat = "https://bideveloperextensions.github.io/features/{0}/";
         private bool isEnabled;
         private bool isEnabledCached = false;
         public static readonly Guid CommandSet = new Guid("bd8ea5c7-1cc4-490b-a7b8-8484dc5532e7");
@@ -272,7 +272,7 @@ namespace BIDSHelper.Core
         /// available for derived classes that need to override that property.</remarks>
         protected string GetCodePlexHelpUrl(string wikiTitle)
         {
-            return string.Format(CultureInfo.InvariantCulture, DefaultUrlFormat, wikiTitle);
+            return string.Format(CultureInfo.InvariantCulture, DefaultUrlFormat, wikiTitle.Replace(" ",""));
         }
 
 

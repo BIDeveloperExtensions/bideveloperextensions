@@ -39,19 +39,19 @@ namespace BIDSHelper.Core
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
+            //VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
         }
 
         private void upgradeNowToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
+            //VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
         }
 
         private void remindMeLaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                _versionCheckPlugin.LastVersionCheck = DateTime.Today;
+                //_versionCheckPlugin.LastVersionCheck = DateTime.Today;
                 _mtx.ReleaseMutex();
                 this.Close();
             }
@@ -65,7 +65,7 @@ namespace BIDSHelper.Core
         {
             try
             {
-                _versionCheckPlugin.DismissedVersion = _versionCheckPlugin.ServerVersion;
+                //_versionCheckPlugin.DismissedVersion = _versionCheckPlugin.ServerVersion;
                 _mtx.ReleaseMutex();
                 this.Close();
             }
@@ -86,27 +86,27 @@ namespace BIDSHelper.Core
 
         public void ShowNotification()
         {
-            try
-            {
-                if (this.InvokeRequired)
-                {
-                    //important to show the notification on the main thread of BIDS
-                    this.BeginInvoke(new MethodInvoker(delegate() { ShowNotification(); }));
-                }
-                else
-                {
-                    if (_mtx.WaitOne(0, false)) //only returns true if no other BIDS Helper notification is open
-                    {
-                        notifyIcon1.BalloonTipText = "You are currently running BIDS Helper version " + VersionCheckPlugin.LocalVersion + "\r\nThe latest version of BIDS Helper available is version " + _versionCheckPlugin.ServerVersion + "\r\nClick to download the latest version.";
-                        notifyIcon1.Visible = true;
-                        notifyIcon1.ShowBalloonTip(int.MaxValue);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Problem showing BIDS Helper version notification: " + ex.Message + "\r\n" + ex.StackTrace);
-            }
+            //try
+            //{
+            //    if (this.InvokeRequired)
+            //    {
+            //        //important to show the notification on the main thread of BIDS
+            //        this.BeginInvoke(new MethodInvoker(delegate() { ShowNotification(); }));
+            //    }
+            //    else
+            //    {
+            //        if (_mtx.WaitOne(0, false)) //only returns true if no other BIDS Helper notification is open
+            //        {
+            //            notifyIcon1.BalloonTipText = "You are currently running BIDS Helper version " + VersionCheckPlugin.LocalVersion + "\r\nThe latest version of BIDS Helper available is version " + _versionCheckPlugin.ServerVersion + "\r\nClick to download the latest version.";
+            //            notifyIcon1.Visible = true;
+            //            notifyIcon1.ShowBalloonTip(int.MaxValue);
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show("Problem showing BIDS Helper version notification: " + ex.Message + "\r\n" + ex.StackTrace);
+            //}
         }
 
         private void VersionCheckNotificationForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -117,13 +117,13 @@ namespace BIDSHelper.Core
 
         private void notifyIcon1_BalloonTipClicked(object sender, EventArgs e)
         {
-            VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
+            //VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
         }
 
         private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-                VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
+            //if (e.Button == MouseButtons.Left)
+            //    VersionCheckPlugin.OpenBidsHelperReleasePageInBrowser();
         }
     }
 }

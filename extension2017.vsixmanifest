@@ -1,0 +1,26 @@
+﻿<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
+  <Metadata>
+    <Identity Id="BIDSHelper_VSIX.b6deed2d-6c6f-46d4-94be-28027bf7d873" Version="2.2.0" Language="en-US" Publisher="bideveloperextensions.github.io" />
+    <DisplayName>BI Developer Extensions for Visual Studio 2017</DisplayName>
+    <Description xml:space="preserve">BI Developer Extensions (formerly BIDS Helper) is an extension for BIDS / SSDT that includes numerous enhancements for SQL Server BI projects.</Description>
+    <MoreInfo>https://bideveloperextensions.github.io</MoreInfo>
+    <License>License.rtf</License>
+    <Icon>BIDSHelper.ico</Icon>
+    <PreviewImage>BIDSHelperMontage.gif</PreviewImage>
+    <Tags>SSDT,SSIS,SSAS,SSRS,BIDS,SQL Server Data Tools,Integration Services,Analysis Services,Reporting Services</Tags>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.IntegratedShell" Version="15.0" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" Version="[4.5,)" />
+    <Dependency Id="Microsoft.VisualStudio.MPF.11.0" DisplayName="Visual Studio MPF 11.0" Version="[11.0,12.0)" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" Path="BidsHelper2017.pkgdef" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="SQL2017\BidsHelper2017.dll" />
+  </Assets>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.Net.Component.4.5.TargetingPack" Version="[15.0.26621.2,16.0)" DisplayName=".NET Framework 4.5 targeting pack" />
+  </Prerequisites>
+</PackageManifest>
