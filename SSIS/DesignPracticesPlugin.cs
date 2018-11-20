@@ -112,6 +112,8 @@ namespace BIDSHelper.SSIS
                 Package package = win.PropertiesLinkComponent as Package;
                 if (package == null) return;
 
+                PackageHelper.SetTargetServerVersion(package); //set the TargetServerVersion variable so that we can retrieve it later
+
                 Results results = new Results();
 
                 foreach (DesignPractice practice in _practices)

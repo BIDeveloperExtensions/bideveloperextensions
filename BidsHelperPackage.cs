@@ -287,7 +287,7 @@ namespace BIDSHelper
                         regKey.Close();
                     }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
                 }
                 else
@@ -340,7 +340,7 @@ namespace BIDSHelper
                         regKey.Close();
                     }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
                 }
                 else
@@ -390,7 +390,7 @@ namespace BIDSHelper
                         regKey.Close();
                     }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
                 }
                 else
@@ -440,7 +440,7 @@ namespace BIDSHelper
                         regKey.Close();
                     }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
                 }
                 else

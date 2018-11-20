@@ -750,11 +750,13 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Project.DLL</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Server.Tabular">
+    <Reference Include="Microsoft.AnalysisServices.Server.Tabular, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Server.Tabular.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Server.Tabular.Json">
+    <Reference Include="Microsoft.AnalysisServices.Server.Tabular.Json, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Server.Tabular.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -840,7 +842,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+      <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <Private>False</Private>
     </Reference>

@@ -23,7 +23,7 @@ namespace BIDSHelper.SSIS
         /// TODO: Make thks a base class, and inherit for variables and parameters window controls
         /// </summary>
         /// See vNextDebugCode comment below on how to get this GUID
-#if SQL2017
+#if SQL2017 //also good for SQL2019 in VS2017
         internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{DDC39177-57E8-413D-9382-9E92CE5DA83B}";
 #elif SQL2016
         internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{9F0B409F-14B8-4D44-AFD0-1099A3FB8BA3}";

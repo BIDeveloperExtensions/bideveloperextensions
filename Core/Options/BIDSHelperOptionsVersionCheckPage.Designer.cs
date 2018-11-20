@@ -75,7 +75,7 @@ namespace BIDSHelper.Core
             this.linkLabelCodePlexUrl.Size = new System.Drawing.Size(155, 13);
             this.linkLabelCodePlexUrl.TabIndex = 5;
             this.linkLabelCodePlexUrl.TabStop = true;
-            this.linkLabelCodePlexUrl.Text = "http://bidshelper.codeplex.com";
+            this.linkLabelCodePlexUrl.Text = "https://bideveloperextensions.github.io";
             this.linkLabelCodePlexUrl.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelCodePlexUrl_LinkClicked);
             // 
             // linkNewVersion
