@@ -1,3 +1,7 @@
+#if SQL2017
+extern alias localAdomdClient;
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,12 +11,19 @@ using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 
+#if SQL2017
+using localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices.AdomdClient;
+#endif
+
+
 namespace BIDSHelper.SSAS
 {
     public partial class TabularActionsEditorForm : Form
     {
         private Microsoft.AnalysisServices.Cube cube;
-        private Microsoft.AnalysisServices.AdomdClient.AdomdConnection conn;
+        private AdomdConnection conn;
         private List<TabularActionsEditorPlugin.DrillthroughColumn> _listDrillthroughColumns;
         private List<ReportParameter> _listReportParameters;
         private List<Microsoft.AnalysisServices.Action> _listActionClones;
@@ -45,9 +56,9 @@ namespace BIDSHelper.SSAS
                 if (mg != null) //if this is a drillthrough action targeting a whole measure group, MeasureGroupMeasures doesn't actually return the calculated measures in a measure group, so we have to take this one drillthrough action and clone it for each measure under the covers
                 {
                     if (conn.State != ConnectionState.Open) conn.Open();
-                    Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection restrictions = new Microsoft.AnalysisServices.AdomdClient.AdomdRestrictionCollection();
-                    restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("CUBE_NAME", cube.Name));
-                    restrictions.Add(new Microsoft.AnalysisServices.AdomdClient.AdomdRestriction("MEASUREGROUP_NAME", mg.Name));
+                    AdomdRestrictionCollection restrictions = new AdomdRestrictionCollection();
+                    restrictions.Add(new AdomdRestriction("CUBE_NAME", cube.Name));
+                    restrictions.Add(new AdomdRestriction("MEASUREGROUP_NAME", mg.Name));
                     DataSet dataset = conn.GetSchemaDataSet("MDSCHEMA_MEASURES", restrictions);
                     int i = 0;
                     foreach (DataRow r in dataset.Tables[0].Rows)
@@ -113,7 +124,7 @@ namespace BIDSHelper.SSAS
             get { return annotation; }
         }
 
-        public TabularActionsEditorForm(Microsoft.AnalysisServices.Cube cube, Microsoft.AnalysisServices.AdomdClient.AdomdConnection conn)
+        public TabularActionsEditorForm(Microsoft.AnalysisServices.Cube cube, AdomdConnection conn)
         {
             InitializeComponent();
             this.MinimumSize = this.Size;
@@ -330,14 +341,14 @@ namespace BIDSHelper.SSAS
             }
         }
 
-        private static List<string> GetRelatedTables(Dimension dMG, MeasureGroup mgOuter)
+        private static List<string> GetRelatedTables(Microsoft.AnalysisServices.Dimension dMG, MeasureGroup mgOuter)
         {
             List<string> list = new List<string>();
             foreach (Relationship relOuter in dMG.Relationships)
             {
                 bool bFound = false;
                 MeasureGroup mgFrom = dMG.Parent.Cubes[0].MeasureGroups[relOuter.FromRelationshipEnd.DimensionID];
-                Dimension dTo = dMG.Parent.Dimensions[relOuter.ToRelationshipEnd.DimensionID];
+                Microsoft.AnalysisServices.Dimension dTo = dMG.Parent.Dimensions[relOuter.ToRelationshipEnd.DimensionID];
                 CubeDimension dToCube = dMG.Parent.Cubes[0].Dimensions[relOuter.ToRelationshipEnd.DimensionID];
                 foreach (MeasureGroupDimension mgdOuter in mgFrom.Dimensions)
                 {
@@ -922,7 +933,7 @@ namespace BIDSHelper.SSAS
                     {
                         cmbTarget.Items.Add(string.Format("[" + cd.Name + "].[" + a.Name + "]"));
                     }
-                    foreach (Hierarchy a in cd.Dimension.Hierarchies)
+                    foreach (Microsoft.AnalysisServices.Hierarchy a in cd.Dimension.Hierarchies)
                     {
                         cmbTarget.Items.Add(string.Format("[" + cd.Name + "].[" + a.Name + "]"));
                     }
@@ -934,9 +945,9 @@ namespace BIDSHelper.SSAS
                 cmbTarget.Items.Add(string.Format("[Measures].[MeasuresLevel]"));
                 foreach (CubeDimension cd in cube.Dimensions)
                 {
-                    foreach (Hierarchy a in cd.Dimension.Hierarchies)
+                    foreach (Microsoft.AnalysisServices.Hierarchy a in cd.Dimension.Hierarchies)
                     {
-                        foreach (Level l in a.Levels)
+                        foreach (Microsoft.AnalysisServices.Level l in a.Levels)
                         {
                             cmbTarget.Items.Add(string.Format("[" + cd.Name + "].[" + a.Name + "].[" + l.Name + "]"));
                         }
@@ -950,7 +961,7 @@ namespace BIDSHelper.SSAS
         {
             try
             {
-                System.Diagnostics.Process.Start("http://bidshelper.codeplex.com/wikipage?title=Tabular%20Actions%20Editor");
+                System.Diagnostics.Process.Start("https://bideveloperextensions.github.io/features/TabularActionsEditor/");
             }
             catch (Exception ex)
             {
@@ -1122,7 +1133,7 @@ namespace BIDSHelper.SSAS
             {
                 SaveAction();
 
-                Microsoft.AnalysisServices.AdomdClient.AdomdCommand cmd = new Microsoft.AnalysisServices.AdomdClient.AdomdCommand();
+                AdomdCommand cmd = new AdomdCommand();
                 cmd.CommandTimeout = 0;
                 cmd.Connection = conn;
                 if (conn.State != ConnectionState.Open) conn.Open();
@@ -1170,7 +1181,7 @@ namespace BIDSHelper.SSAS
                     cmd.CommandText = sb.ToString();
                     try
                     {
-                        Microsoft.AnalysisServices.AdomdClient.CellSet cs = cmd.ExecuteCellSet();
+                        CellSet cs = cmd.ExecuteCellSet();
                         sbResult.AppendLine(sKey + ": " + Convert.ToString(cs.Cells[0].Value));
                     }
                     catch (Exception exMDX)

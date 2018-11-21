@@ -30,6 +30,13 @@
  * http://www.codeplex.com/MSFTASProdSamples                                   
  *                                                                             
  ============================================================================*/
+#if SQL2017
+extern alias localAdomdClient;
+using localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices.AdomdClient;
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -88,7 +95,7 @@ namespace AggManager
         {
             try
             {
-                Microsoft.AnalysisServices.AdomdClient.AdomdConnection conn = new Microsoft.AnalysisServices.AdomdClient.AdomdConnection("Data Source=" + lblServer.Text + ";Initial Catalog=" + lblDatabase.Text);
+                AdomdConnection conn = new AdomdConnection("Data Source=" + lblServer.Text + ";Initial Catalog=" + lblDatabase.Text);
                 conn.Open();
 
                 bool bASSPExists = AggManager.AggregationPerformanceTester.ASSPExists(conn);
@@ -305,7 +312,7 @@ namespace AggManager
 
         private void lnkASSP_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("http://asstoredprocedures.codeplex.com/wikipage?title=FileSystemCache");
+            System.Diagnostics.Process.Start("https://asstoredprocedures.github.io/functions/FileSystemCache/");
         }
 
     }

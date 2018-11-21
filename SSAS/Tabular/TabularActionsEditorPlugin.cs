@@ -102,10 +102,14 @@ namespace BIDSHelper
             try
             {
 
-                
+
 #if DENALI || SQL2014
                 var sb = sandboxParam;
                 var conn = sandboxParam.AdomdConnection;
+#elif SQL2017
+                var sb = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
+                var localConn = sandboxParam.AdomdConnection;
+                var conn = new localAdomdClient.Microsoft.AnalysisServices.AdomdClient.AdomdConnection(localConn.ConnectionString);
 #else
                 var sb = (Microsoft.AnalysisServices.BackEnd.DataModelingSandboxAmo)sandboxParam.Impl;
                 var localConn = sandboxParam.AdomdConnection;
