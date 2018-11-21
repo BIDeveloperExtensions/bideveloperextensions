@@ -794,11 +794,6 @@
       <HintPath>DLLs\SQL2017\Reference\Microsoft.SqlServer.ManagedDTS.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls">
       <HintPath>DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Controls.DLL</HintPath>
       <Private>False</Private>

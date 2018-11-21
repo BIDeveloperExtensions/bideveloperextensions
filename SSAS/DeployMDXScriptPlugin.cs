@@ -3,6 +3,12 @@
 //     Copyright (c) Company.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
+#if SQL2017
+extern alias localAdomdClient;
+using localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices.AdomdClient;
+#endif
 
 using System;
 using Microsoft.VisualStudio.Shell;
@@ -14,7 +20,6 @@ using System.Xml;
 using System.Text;
 using Microsoft.AnalysisServices;
 using EnvDTE80;
-using Microsoft.AnalysisServices.AdomdClient;
 using BIDSHelper.Core;
 using BIDSHelper.Core.VsIntegration;
 

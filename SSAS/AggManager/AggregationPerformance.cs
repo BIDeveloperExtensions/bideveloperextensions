@@ -1,8 +1,14 @@
-﻿using System;
+﻿#if SQL2017
+extern alias localAdomdClient;
+using localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices.AdomdClient;
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AnalysisServices;
-using Microsoft.AnalysisServices.AdomdClient;
 using System.Data;
 
 namespace AggManager

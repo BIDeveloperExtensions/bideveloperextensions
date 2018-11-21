@@ -38,7 +38,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
 
 
 namespace AggManager
