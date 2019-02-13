@@ -25,6 +25,7 @@ build/
 [Bb]in/
 [Oo]bj/
 [Pp]ackage/
+[Pp]ackages/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
