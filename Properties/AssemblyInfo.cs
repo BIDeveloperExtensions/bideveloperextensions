@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("BI Developer Extensions")]
 [assembly: AssemblyDescription("BI Developer Extensions (formerly BIDS Helper) provides additional useful features to SQL Server Data Tools")]
 [assembly: AssemblyCompany("https://bideveloperextensions.github.io")]
-[assembly: AssemblyCopyright("Copyright © 2017 BI Developer Extensions")]
+[assembly: AssemblyCopyright("Copyright © 2018 BI Developer Extensions")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -18,7 +18,9 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant(false)]
 [assembly: NeutralResourcesLanguage("en-US")]
 
-#if SQL2017
+#if SQL2019
+[assembly: AssemblyTitle("BI Developer Extensions for SQL Server 2019")]
+#elif SQL2017
 [assembly: AssemblyTitle("BI Developer Extensions for SQL Server 2017")]
 #elif SQL2016
 [assembly: AssemblyTitle("BI Developer Extensions for SQL Server 2016")]

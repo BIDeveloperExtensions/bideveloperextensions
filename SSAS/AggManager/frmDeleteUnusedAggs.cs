@@ -18,7 +18,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
 using Microsoft.AnalysisServices;
 using System.Data.SqlClient;
 

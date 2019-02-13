@@ -52,7 +52,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BIDSHelper</RootNamespace>
-    <AssemblyName>BidsHelperVS2017</AssemblyName>
+    <AssemblyName>BidsHelper2017</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
@@ -66,7 +66,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;OUTPUT_LOGGER,SQL2016,SQL2017,VS2017</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SQL2016,SQL2017,VS2017</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CopyVsixExtensionFiles>False</CopyVsixExtensionFiles>
@@ -792,11 +792,6 @@
     <Reference Include="Microsoft.SqlServer.ManagedDTS, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2017\Reference\Microsoft.SqlServer.ManagedDTS.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls">

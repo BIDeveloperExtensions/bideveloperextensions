@@ -9,7 +9,7 @@ namespace BIDSHelper.Core
     {
         // BIDS Helper Assembly & VSIX Version
         // N.B. Manually update the manifest file, if you change this - See source.extension.vsixmanifest
-        public const string Version = "2.1.1";
+        public const string Version = "2.2.1";
 
         private static readonly object lockResource = new object();
         private static Version visualStudioVersion;
@@ -129,6 +129,8 @@ namespace BIDSHelper.Core
                     return "2016";
                 else if (sVersion.StartsWith("14."))
                     return "2017";
+                else if (sVersion.StartsWith("15."))
+                    return "2019";
                 else
                     return string.Format("(SQL Unknown {0})", sVersion);
             }

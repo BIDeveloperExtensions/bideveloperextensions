@@ -1,3 +1,10 @@
+#if SQL2017
+extern alias localAdomdClient;
+using localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices.AdomdClient;
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,7 +12,6 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using Microsoft.AnalysisServices.AdomdClient;
 using Microsoft.AnalysisServices;
 using System.Data.SqlClient;
 using System.ComponentModel.Design;

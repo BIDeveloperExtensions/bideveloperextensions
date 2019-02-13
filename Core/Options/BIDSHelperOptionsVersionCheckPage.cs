@@ -173,27 +173,29 @@ namespace BIDSHelper.Core
                 }
 
 
-                try
-                {
-                    VersionCheckPlugin.Instance.LastVersionCheck = DateTime.Today;
-                    if (!VersionCheckPlugin.VersionIsLatest(VersionCheckPlugin.LocalVersion, VersionCheckPlugin.Instance.ServerVersion))
-                    {
-                        lblServerVersion.Text = "Version " + VersionCheckPlugin.Instance.ServerVersion + " is available...";
-                        lblServerVersion.Visible = true;
-                        linkNewVersion.Visible = true;
-                    }
-                    else
-                    {
-                        lblServerVersion.Text = "BIDS Helper is up to date.";
-                        lblServerVersion.Visible = true;
-                        linkNewVersion.Visible = false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    lblServerVersion.Text = "Unable to retrieve current available BIDS Helper version from Codeplex: " + ex.Message + "\r\n" + ex.StackTrace;
-                    linkNewVersion.Visible = false;
-                }
+                lblServerVersion.Visible = false;
+                linkNewVersion.Visible = false;
+                //try
+                //{
+                //    //VersionCheckPlugin.Instance.LastVersionCheck = DateTime.Today;
+                //    //if (!VersionCheckPlugin.VersionIsLatest(VersionCheckPlugin.LocalVersion, VersionCheckPlugin.Instance.ServerVersion))
+                //    //{
+                //    //    lblServerVersion.Text = "Version " + VersionCheckPlugin.Instance.ServerVersion + " is available...";
+                //    //    lblServerVersion.Visible = true;
+                //    //    linkNewVersion.Visible = true;
+                //    //}
+                //    //else
+                //    //{
+                //    //    lblServerVersion.Text = "BIDS Helper is up to date.";
+                //    //    lblServerVersion.Visible = true;
+                //    //    linkNewVersion.Visible = false;
+                //    //}
+                //}
+                //catch (Exception ex)
+                //{
+                //    lblServerVersion.Text = "Unable to retrieve current available BIDS Helper version from Codeplex: " + ex.Message + "\r\n" + ex.StackTrace;
+                //    linkNewVersion.Visible = false;
+                //}
             }
             catch (Exception ex)
             {
@@ -218,7 +220,7 @@ namespace BIDSHelper.Core
         /// <param name="e">The <see cref="System.Windows.Forms.LinkLabelLinkClickedEventArgs"/> instance containing the event data.</param>
         private void linkNewVersion_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            OpenUrl(VersionCheckPlugin.BIDS_HELPER_RELEASE_URL);
+            //OpenUrl(VersionCheckPlugin.BIDS_HELPER_RELEASE_URL);
         }
 
         /// <summary>

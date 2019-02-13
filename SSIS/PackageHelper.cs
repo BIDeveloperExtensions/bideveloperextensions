@@ -40,7 +40,9 @@
         /// The GUID is documented in the class Syntax section - https://technet.microsoft.com/en-gb/library/microsoft.sqlserver.dts.pipeline.wrapper.cmanagedcomponentwrapperclass(v=sql.105).aspx
         /// With newer versions, disassemble Microsoft.SqlServer.DTSPipelineWrap to find the GUID attribute on Microsoft.SqlServer.Dts.Pipeline.Wrapper.CManagedComponentWrapperClass
         /// </summary>
-#if SQL2017
+#if SQL2019
+        public const string ManagedComponentWrapper = "{7CDF593F-DE06-4ABD-B356-7976EF7AC8E0}";
+#elif SQL2017
         public const string ManagedComponentWrapper = "{8DC69D45-2AD5-40C6-AAEC-25722F92D6FC}";
 #elif SQL2016
         public const string ManagedComponentWrapper = "{4F885D04-B578-47B7-94A0-DE9C7DA25EE2}";
@@ -97,6 +99,7 @@
                     // Do nothing
 #else
                     // SQL2016 or above, set the version
+                    if (targetServerVersion == 0) throw new Exception("TargetServerVersion not set. This function cannot proceed.");
                     application.TargetServerVersion = (DTSTargetServerVersion)targetServerVersion;
 #endif
                 }

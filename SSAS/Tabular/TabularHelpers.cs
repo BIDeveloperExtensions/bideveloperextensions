@@ -21,7 +21,7 @@ namespace BIDSHelper
         private static Microsoft.AnalysisServices.VSHost.VSHostManager GetVSHostManager(Microsoft.VisualStudio.Project.Automation.OAFileItem project, bool openIfNotOpen)
         {
             if (project == null) return null;
-            if (openIfNotOpen && !project.get_IsOpen(EnvDTE.Constants.vsViewKindPrimary))
+            if (openIfNotOpen && (!project.get_IsOpen(EnvDTE.Constants.vsViewKindPrimary) || project.get_IsOpen(EnvDTE.Constants.vsViewKindCode))) //having the code view open was passing this test previously
             {
                 Window win = project.Open(EnvDTE.Constants.vsViewKindPrimary);
                 if (win == null) throw new Exception("BIDS Helper was unable to open designer window.");

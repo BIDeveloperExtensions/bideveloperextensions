@@ -1,3 +1,10 @@
+#if SQL2017
+extern alias localAdomdClient;
+using localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
+#else
+using Microsoft.AnalysisServices.AdomdClient;
+#endif
+
 using EnvDTE;
 using EnvDTE80;
 using System.Xml;
@@ -8,7 +15,6 @@ using System.IO;
 using System.Resources;
 
 using Microsoft.AnalysisServices;
-using Microsoft.AnalysisServices.AdomdClient;
 using BIDSHelper.Core;
 using System;
 

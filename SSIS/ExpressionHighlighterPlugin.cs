@@ -417,6 +417,8 @@ namespace BIDSHelper.SSIS
                                 }
                             }
 
+                            if (executable == null) continue; //are going to get an error on ContainsKey anyway
+
                             TaskHighlightingToDo todo;
                             lock (highlightingToDos)
                             {

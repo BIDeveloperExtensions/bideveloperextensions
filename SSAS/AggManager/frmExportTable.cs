@@ -20,7 +20,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Data.SqlClient;
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
 using Microsoft.AnalysisServices;
 
 

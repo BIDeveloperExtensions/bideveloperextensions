@@ -240,7 +240,115 @@ namespace BIDSHelper
 
         private bool SwitchVsixManifest()
         {
-#if SQL2017 && !VS2017
+#if SQL2019
+            string sVersion = VersionInfo.SqlServerVersion.ToString();
+            if (sVersion.StartsWith("14.")) //this BI Dev Extensions DLL is for SQL 2019 but you have SSDT for SQL2017 installed
+            {
+                string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+                string sBackupManifestPath = sFolder + "\\extension2019.vsixmanifest";
+                string sOtherManifestPath = sFolder + "\\extension2017.vsixmanifest";
+
+                string sPkgdef2019Path = sFolder + "\\BidsHelper2019.pkgdef";
+                string sPkgdef2019BackupPath = sFolder + "\\BidsHelper2019.pkgdef.bak";
+                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+
+                string sDll2017Path = sFolder + "\\SQL2017\\BidsHelper2017.dll";
+
+                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2019Path))
+                {
+                    //backup the current SQL2019 manifest
+                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+
+                    //copy SQL2017 manifest over the current manifest
+                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+
+                    if (System.IO.File.Exists(sPkgdef2017Path))
+                        System.IO.File.Delete(sPkgdef2017BackupPath);
+                    else
+                        System.IO.File.Move(sPkgdef2017BackupPath, sPkgdef2017Path);
+
+                    if (System.IO.File.Exists(sPkgdef2019BackupPath))
+                        System.IO.File.Delete(sPkgdef2019Path);
+                    else
+                        System.IO.File.Move(sPkgdef2019Path, sPkgdef2019BackupPath);
+
+
+
+                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
+                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
+                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
+                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
+                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
+                    if (regKey != null)
+                    {
+                        regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
+                        regKey.Close();
+                    }
+
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    return true;
+                }
+                else
+                {
+                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2017 files!");
+                }
+            }
+#elif SQL2017 && VS2017
+            string sVersion = VersionInfo.SqlServerVersion.ToString();
+            if (sVersion.StartsWith("15.")) //this BI Dev Extensions DLL is for SQL 2017 but you have SSDT for SQL2019 installed
+            {
+                string sFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName;
+                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+                string sBackupManifestPath = sFolder + "\\extension2017.vsixmanifest";
+                string sOtherManifestPath = sFolder + "\\extension2019.vsixmanifest";
+
+                string sPkgdef2019Path = sFolder + "\\BidsHelper2019.pkgdef";
+                string sPkgdef2019BackupPath = sFolder + "\\BidsHelper2019.pkgdef.bak";
+                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+
+                string sDll2019Path = sFolder + "\\BidsHelper2019.dll";
+
+                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2019BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
+                {
+                    //backup the current SQL2017 manifest
+                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+
+                    //copy SQL2019 manifest over the current manifest
+                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+
+                    if (System.IO.File.Exists(sPkgdef2019Path))
+                        System.IO.File.Delete(sPkgdef2019BackupPath);
+                    else
+                        System.IO.File.Move(sPkgdef2019BackupPath, sPkgdef2019Path);
+
+                    if (System.IO.File.Exists(sPkgdef2017BackupPath))
+                        System.IO.File.Delete(sPkgdef2017Path);
+                    else
+                        System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
+
+                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
+                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
+                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
+                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
+                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
+                    if (regKey != null)
+                    {
+                        regKey.SetValue("CodeBase", sDll2019Path, Microsoft.Win32.RegistryValueKind.String);
+                        regKey.Close();
+                    }
+
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    return true;
+                }
+                else
+                {
+                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2019 files!");
+                }
+            }
+#elif SQL2017 && !VS2017
             string sVersion = VersionInfo.SqlServerVersion.ToString();
             if (sVersion.StartsWith("13.")) //this DLL is for SQL 2017 but you have SSDT for SQL2016 installed
             {
@@ -282,7 +390,7 @@ namespace BIDSHelper
                         regKey.Close();
                     }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
                 }
                 else
@@ -332,7 +440,7 @@ namespace BIDSHelper
                         regKey.Close();
                     }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BIDS Helper can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
                     return true;
                 }
                 else

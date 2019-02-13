@@ -40,7 +40,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.Reflection;
 
-using Microsoft.AnalysisServices.AdomdClient;
+//using Microsoft.AnalysisServices.AdomdClient;
 using Microsoft.AnalysisServices;
 
 namespace AggManager
