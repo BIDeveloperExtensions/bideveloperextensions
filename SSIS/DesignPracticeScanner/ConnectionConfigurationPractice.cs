@@ -1,4 +1,5 @@
-﻿using System;
+﻿extern alias sharedDataWarehouseInterfaces;
+using System;
 using System.Collections.Generic;
 //using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace BIDSHelper.SSIS.DesignPracticeScanner
             bool bOfflineMode = false;
             try
             {
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)projectItem.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)projectItem.ContainingProject).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                 bOfflineMode = (bool)settings.GetSetting("OfflineMode");
             }
             catch { }

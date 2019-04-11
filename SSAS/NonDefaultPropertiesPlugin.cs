@@ -1,3 +1,4 @@
+extern alias asAlias;
 using System;
 using EnvDTE;
 using EnvDTE80;
@@ -103,12 +104,19 @@ namespace BIDSHelper.SSAS
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 var proj = GetSelectedProjectReference();
+                var projAS = GetSelectedProjectReferenceAS();
 
                 if (proj != null)
                 {
-                    if (!(proj.Object is Database)) return false;
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
-                    return (projExt.Kind == BIDSProjectKinds.SSAS || projExt.Kind == BIDSProjectKinds.SSIS);
+                    if (proj.Object == null || proj.Object.GetType().FullName != "Microsoft.AnalysisServices.Database") return false; //this should be a reference to Microsoft.AnalysisServices.AppLocal.dll
+                    //Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
+                    return (proj.Kind == BIDSProjectKinds.SSAS || proj.Kind == BIDSProjectKinds.SSIS);
+                }
+                else if (projAS != null)
+                {
+                    if (!(projAS.Object is Database)) return false;
+                    //asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)projAS;
+                    return (projAS.Kind == BIDSProjectKinds.SSAS || projAS.Kind == BIDSProjectKinds.SSIS);
                 }
                 else if (solution != null)
                 {
@@ -140,11 +148,12 @@ namespace BIDSHelper.SSAS
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 EnvDTE.Project p = GetSelectedProjectReference();
-
+                if (p == null) p = GetSelectedProjectReferenceAS();
                 if (p != null)
                 {
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)p;
-                    if (projExt.Kind == BIDSProjectKinds.SSAS)
+                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = p as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                    asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExtAS = p as asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+                    if (projExtAS != null && projExtAS.Kind == BIDSProjectKinds.SSAS)
                     {
                         Database db = (Database)p.Object;
                         ScanAnalysisServicesProperties(db);
@@ -158,11 +167,13 @@ namespace BIDSHelper.SSAS
                         {
                             using (WaitCursor cursor1 = new WaitCursor())
                             {
+                                SSIS.PackageHelper.SetTargetServerVersion(p);
                                 int iProgress = 0;
                                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
                                 Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
                                 foreach (ProjectItem pi in p.ProjectItems)
                                 {
+                                    if (hierItem.Name != null && hierItem.Name.ToLower().EndsWith(".dtsx") && hierItem.Name != pi.Name) continue;
                                     ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, p.ProjectItems.Count);
                                     string sFileName = pi.Name.ToLower();
                                     if (!sFileName.EndsWith(".dtsx")) continue;

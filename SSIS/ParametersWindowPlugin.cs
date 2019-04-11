@@ -155,7 +155,7 @@ namespace BIDSHelper.SSIS
             }
 
             EditorWindow.EditorView view = editorWindow.SelectedView;
-            if (view.Caption == "Parameters") // Microsoft.DataTransformationServices.Design.SR.PackageParametersViewCaption
+            if (view != null && view.Caption == "Parameters") // Microsoft.DataTransformationServices.Design.SR.PackageParametersViewCaption
             {
                 object viewControl = view.GetType().InvokeMember("viewControl", ParametersWindowPlugin.getFieldFlags, null, view, null);
                 UserControl control = (UserControl)viewControl; // PackageParametersControl

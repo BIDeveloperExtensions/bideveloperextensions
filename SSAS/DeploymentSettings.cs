@@ -1,9 +1,11 @@
+extern alias sharedDataWarehouseInterfaces;
 using System;
 using System.Xml;
 //using Extensibility;
 using EnvDTE;
 using EnvDTE80;
 using System.IO;
+using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces;
 
 // =========================================================================================
 // Class      : DeploymentSettings.cs
@@ -52,7 +54,7 @@ public class DeploymentSettings
         object oService = null;
         if (project is System.IServiceProvider) //Multidimensional
         {
-            oService = typeof(System.IServiceProvider).InvokeMember("GetService", flags, null, project, new object[] { typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings) });
+            oService = typeof(System.IServiceProvider).InvokeMember("GetService", flags, null, project, new object[] { typeof(IConfigurationSettings) });
             string sTargetServer = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetServer" });
             if (!String.IsNullOrEmpty(sTargetServer)) mTargetServer = sTargetServer;
             string sTargetDatabase = (string)oService.GetType().InvokeMember("GetSetting", flags, null, oService, new object[] { "TargetDatabase" });

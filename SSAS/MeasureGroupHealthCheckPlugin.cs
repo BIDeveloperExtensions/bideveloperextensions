@@ -1,3 +1,18 @@
+#if SQL2019
+extern alias asAlias;
+using asAlias.Microsoft.DataWarehouse;
+using asAlias.Microsoft.DataWarehouse.Design;
+using asAlias.Microsoft.DataWarehouse.Controls;
+using asAlias::Microsoft.AnalysisServices.Controls;
+using asAlias::Microsoft.DataWarehouse.ComponentModel;
+#else
+using Microsoft.DataWarehouse;
+using Microsoft.DataWarehouse.Design;
+using Microsoft.AnalysisServices.Design;
+using Microsoft.AnalysisServices.Controls;
+using Microsoft.DataWarehouse.ComponentModel;
+#endif
+
 using System;
 using System.Collections.Generic;
 using EnvDTE;
@@ -8,8 +23,8 @@ using Microsoft.AnalysisServices;
 using System.Data;
 using System.Data.OleDb;
 using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
+//using Microsoft.DataWarehouse.Design;
+//using Microsoft.DataWarehouse.Controls;
 using Microsoft.Win32;
 using BIDSHelper.Core;
 
@@ -154,13 +169,14 @@ namespace BIDSHelper
         private MeasureGroup GetCurrentlySelectedMeasureGroup(IDesignerHost designer)
         {
             if (designer == null) return null;
-            EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+            EditorWindow win = (EditorWindow)designer.GetService(typeof(IComponentNavigator));
             //if (win.SelectedView.Caption != "Cube Structure") return null;
             if (win.SelectedView.MenuItemCommandID.ID != (int)BIDSViewMenuItemCommandID.CubeStructure) return null;
             object cubeBuilderView = win.SelectedView.GetType().InvokeMember("viewControl", getfieldflags, null, win.SelectedView, null);
             object measuresView = cubeBuilderView.GetType().InvokeMember("measuresView", getfieldflags, null, cubeBuilderView, null);
             MultipleStateTreeView measuresTreeview = (MultipleStateTreeView)measuresView.GetType().InvokeMember("measuresTreeview", getfieldflags, null, measuresView, null);
-            Microsoft.AnalysisServices.Controls.LateNamedComponentTreeNode selectedNode = (Microsoft.AnalysisServices.Controls.LateNamedComponentTreeNode)measuresTreeview.SelectedNode;
+            //Microsoft.AnalysisServices.Controls.
+            LateNamedComponentTreeNode selectedNode = (LateNamedComponentTreeNode)measuresTreeview.SelectedNode;
             if (selectedNode.NamedComponent is MeasureGroup)
                 return (MeasureGroup)selectedNode.NamedComponent;
             return null;

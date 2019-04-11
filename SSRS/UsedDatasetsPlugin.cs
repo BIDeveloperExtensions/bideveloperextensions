@@ -148,7 +148,7 @@ namespace BIDSHelper.SSRS
             System.Reflection.ConstructorInfo constructorExpressionContext = typeExpressionContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)[0];
 
             //get InternalPublishingContext constructor
-            Type typeInternalPublishingContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportPublishing.InternalPublishingContext");
+            Type typeInternalPublishingContext = BIDSHelper.SSIS.ExpressionHighlighterPlugin.GetPrivateType(assembly.GetTypes()[0], "Microsoft.ReportingServices.ReportProcessing.PublishingContext"); //used to be ReportPublishing.InternalPublishingContext which doesn't exist anymore?
             System.Reflection.ConstructorInfo constructorInternalPublishingContext = null;
             foreach (System.Reflection.ConstructorInfo c in typeInternalPublishingContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
             {
@@ -210,7 +210,7 @@ namespace BIDSHelper.SSRS
                     object itemContext = typeItemContext.GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)[0].Invoke(null);
 
                     //signature of this function call is: public InternalPublishingContext(ICatalogItemContext catalogContext, Microsoft.ReportingServices.ReportProcessing.ReportProcessing.CheckSharedDataSource checkDataSourceCallback, Microsoft.ReportingServices.ReportProcessing.ReportProcessing.ResolveTemporaryDataSource resolveTemporaryDataSourceCallback, DataSourceInfoCollection originalDataSources, IConfiguration configuration, IDataProtection dataProtection, bool traceAtomicScopes, bool isPackagedReportArchive)
-                    object oInternalPublishingContext = constructorInternalPublishingContext.Invoke(new object[] { itemContext, null, null, null, null, null, false, false });
+                    object oInternalPublishingContext = constructorInternalPublishingContext.Invoke(new object[] { itemContext, null, null, null, null, null, null, null }); //last two params used to be: false, false
 
                     //create ExpressionContext
                     //signature of this function call is: internal ExpressionContext(ExpressionParser.ExpressionType expressionType, DataType constantType, LocationFlags location, ObjectType objectType, string objectName, string propertyName, string dataSetName, int maxExpressionLength, InternalPublishingContext publishingContext);

@@ -1,3 +1,4 @@
+extern alias sharedDataWarehouseInterfaces;
 using EnvDTE;
 using EnvDTE80;
 using System.Text;
@@ -151,7 +152,7 @@ namespace BIDSHelper.SSIS
                     bJustDeploySelectedPackages = true;
                 }
 
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)projects[0]).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)projects[0]).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                 DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                 this.ApplicationObject.ToolWindows.OutputWindow.Parent.SetFocus();
@@ -198,7 +199,7 @@ namespace BIDSHelper.SSIS
 
         private void DeployProject(Project proj, IOutputWindow outputWindow, System.Array selectedItems, bool bCreateBat)
         {
-            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
             StringBuilder sBatFileContents = new StringBuilder();
@@ -509,7 +510,7 @@ namespace BIDSHelper.SSIS
 
                     if (proj == null || proj.Kind != BIDSProjectKinds.SSIS) return;
 
-                    Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                    sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                     projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                     if (!IsLegacyDeploymentMode(projectManager))
@@ -568,7 +569,7 @@ namespace BIDSHelper.SSIS
         /// <returns>true if the project uses the legacy package deployment model; otherwise else false.</returns>
         public static bool IsLegacyDeploymentMode(Project project)
         {
-            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
             return IsLegacyDeploymentMode(projectManager);
         }

@@ -1,3 +1,12 @@
+#if SQL2019
+extern alias asAlias;
+using asAlias::Microsoft.DataWarehouse.VsIntegration.Designer;
+#else
+using Microsoft.DataWarehouse.VsIntegration.Designer;
+#endif
+
+
+
 using System;
 using System.Collections.Generic;
 using EnvDTE;
@@ -447,7 +456,7 @@ namespace BIDSHelper.SSAS
                             IDesignerHost host1 = (IDesignerHost)provider.GetService(typeof(IDesignerHost));
                             transaction1 = host1.CreateTransaction("BidsHelperAnnotationCollectionEditorUndoBatchDesc");
                             IComponentChangeService service1 = (IComponentChangeService)context.GetService(typeof(IComponentChangeService));
-                            Microsoft.DataWarehouse.VsIntegration.Designer.NamedCustomTypeDescriptor instance = (Microsoft.DataWarehouse.VsIntegration.Designer.NamedCustomTypeDescriptor)context.Instance;
+                            NamedCustomTypeDescriptor instance = (NamedCustomTypeDescriptor)context.Instance;
                             ModelComponent m = (ModelComponent)instance.BrowsableObject; //use ModelComponent from which Cube, Dimension, Measure, etc. are derived... ModelComponent contains the definition for Annotations
                             service1.OnComponentChanging(m, null);
                             m.Annotations.Clear();

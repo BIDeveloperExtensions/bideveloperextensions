@@ -93,9 +93,9 @@ namespace BIDSHelper.SSIS
 
                 if (proj != null)
                 {
-                    if (!(proj.Object is Database)) return false;
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
-                    return (projExt.Kind == BIDSProjectKinds.SSIS);
+                    if (proj.Object == null || proj.Object.GetType().FullName != "Microsoft.AnalysisServices.Database") return false; //this should be a reference to Microsoft.AnalysisServices.AppLocal.dll
+                    //Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
+                    return (proj.Kind == BIDSProjectKinds.SSIS);
                 }
                 else if (solution != null)
                 {
@@ -129,7 +129,9 @@ namespace BIDSHelper.SSIS
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
                         this.DatabaseName = "Project: " + proj.Name;
 
-                        try
+                    PackageHelper.SetTargetServerVersion(proj); //sets the target version
+
+                    try
                         {
                             using (WaitCursor cursor1 = new WaitCursor())
                             {
