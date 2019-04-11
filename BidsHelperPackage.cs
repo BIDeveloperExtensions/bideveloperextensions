@@ -515,6 +515,7 @@ namespace BIDSHelper
         }
 #else
         string _recursiveAssemblyResolveNameToSkip = null;
+        System.Collections.Generic.List<string> _assemblyLoadsFailed = new System.Collections.Generic.List<string>();
 
         /// <summary>
         /// Only fires if an assembly fails to load. This gives us a chance to redirect to a DLL that does exist.
@@ -543,14 +544,20 @@ namespace BIDSHelper
                     for (int i = 0; i < 500; i++)
                     {
                         assemblyname.Version = new Version(originalVersion.Major, i, 0, 0);
+                        string sAssemblyName = assemblyname.ToString();
+                        if (_assemblyLoadsFailed.Contains(sAssemblyName)) continue;
                         try
                         {
-                            _recursiveAssemblyResolveNameToSkip = assemblyname.ToString();
+                            _recursiveAssemblyResolveNameToSkip = sAssemblyName;
                             var assembly = Assembly.Load(assemblyname);
                             System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
                             return assembly;
                         }
-                        catch { }
+                        catch
+                        {
+                            if (!_assemblyLoadsFailed.Contains(sAssemblyName))
+                                _assemblyLoadsFailed.Add(sAssemblyName);
+                        }
                         finally
                         {
                             _recursiveAssemblyResolveNameToSkip = null;
