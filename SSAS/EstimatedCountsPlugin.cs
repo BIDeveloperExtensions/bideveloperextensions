@@ -1,10 +1,25 @@
+#if SQL2019
+extern alias asAlias;
+using asAlias.Microsoft.DataWarehouse;
+using asAlias.Microsoft.DataWarehouse.Design;
+using asAlias::Microsoft.AnalysisServices.Design;
+using asAlias::Microsoft.DataWarehouse.ComponentModel;
+using asAlias::Microsoft.DataWarehouse.Controls;
+#else
+using Microsoft.DataWarehouse;
+using Microsoft.DataWarehouse.Design;
+using Microsoft.AnalysisServices.Design;
+using Microsoft.DataWarehouse.ComponentModel;
+using Microsoft.DataWarehouse.Controls;
+#endif
+
 using EnvDTE;
 using EnvDTE80;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
+//using Microsoft.DataWarehouse.Design;
+//using Microsoft.DataWarehouse.Controls;
 using System;
 
 namespace BIDSHelper.SSAS
@@ -41,7 +56,7 @@ namespace BIDSHelper.SSAS
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if (!(pi.Object is Cube)) return;
-                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                EditorWindow win = (EditorWindow)designer.GetService(typeof(IComponentNavigator));
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
 
                 IntPtr ptr = win.Handle;
@@ -157,7 +172,7 @@ namespace BIDSHelper.SSAS
                     if (info.instance.CheckCancelled()) return;
                     try
                     {
-                        Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInAttributes(info.aggDesign, info.measureGroupDimension, new Partition[] { info.partition }, null);
+                        PartitionUtilities.SetEstimatedCountInAttributes(info.aggDesign, info.measureGroupDimension, new Partition[] { info.partition }, null);
                     }
                     catch (Exception ex)
                     {
@@ -168,7 +183,7 @@ namespace BIDSHelper.SSAS
                 if (info.instance.CheckCancelled() || info.partition.EstimatedRows > 0) return;
                 try
                 {
-                    Microsoft.AnalysisServices.Design.PartitionUtilities.SetEstimatedCountInPartition(info.partition, null);
+                    PartitionUtilities.SetEstimatedCountInPartition(info.partition, null);
                 }
                 catch (Exception ex)
                 {
@@ -190,7 +205,7 @@ namespace BIDSHelper.SSAS
             {
                 if (info.instance.CheckCancelled()) return;
                 System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Static;
-                object cnt = typeof(Microsoft.AnalysisServices.Design.PartitionUtilities).InvokeMember("GetAttributeCountInDimension", getflags, null, null, new object[] { info.attribute, info.connection.Cartridge, info.connection });
+                object cnt = typeof(PartitionUtilities).InvokeMember("GetAttributeCountInDimension", getflags, null, null, new object[] { info.attribute, info.connection.Cartridge, info.connection });
                 info.attribute.EstimatedCount = Convert.ToInt64(cnt);
             }
             catch (Exception ex)
@@ -389,7 +404,7 @@ namespace BIDSHelper.SSAS
                         {
                             try
                             {
-                                DataSourceConnection openedDataSourceConnection = Microsoft.AnalysisServices.Design.DSVUtilities.GetOpenedDataSourceConnection(dim.DataSource);
+                                DataSourceConnection openedDataSourceConnection = DSVUtilities.GetOpenedDataSourceConnection(dim.DataSource);
                                 foreach (DimensionAttribute attr in dim.Attributes)
                                 {
                                     SetEstimatedCountsOnDimensionThreadInfo info = new SetEstimatedCountsOnDimensionThreadInfo();

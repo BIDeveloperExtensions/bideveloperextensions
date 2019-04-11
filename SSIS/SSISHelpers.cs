@@ -1,4 +1,5 @@
-﻿using Microsoft.DataWarehouse.Design;
+﻿extern alias sharedDataWarehouseInterfaces;
+using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Project;
 using Microsoft.SqlServer.Dts.Runtime;
 
@@ -98,7 +99,7 @@ namespace BIDSHelper.SSIS
             return CompilationVersion;
 #else
             // TODO: If this doesn't work <2016, we can just hardcode, based on conditional compiation
-            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)PackageHelper.GetPropertyValue(settings, "ProjectManager");
             Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
             return (SsisTargetServerVersion)options.TargetServerVersion;         

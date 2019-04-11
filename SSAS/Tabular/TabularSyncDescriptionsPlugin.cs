@@ -188,6 +188,11 @@ namespace BIDSHelper.SSAS
                             }
 #if !(DENALI || SQL2014)
                             Microsoft.AnalysisServices.BackEnd.DataModelingTable table = sandbox.Tables[tableName];
+                            if (table.IsStructuredDataSource)
+                            {
+                                MessageBox.Show("BI Developer Extensions does not yet support modern (Power Query) data sources.", "BI Developer Extensions");
+                                return;
+                            }
                             iDescriptionsSet = SyncDescriptionsPlugin.SyncDescriptions(table, true);
                             if (iDescriptionsSet > 0)
                             {

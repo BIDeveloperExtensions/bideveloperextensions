@@ -1,6 +1,7 @@
+extern alias sharedDataWarehouseInterfaces;
 using BIDSHelper.Core;
 using EnvDTE;
-using Microsoft.DataWarehouse.Interfaces;
+using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces;
 using Microsoft.DataWarehouse.Project;
 using Microsoft.DataWarehouse.VsIntegration.Hierarchy;
 using Microsoft.DataWarehouse.VsIntegration.Shell.Project;

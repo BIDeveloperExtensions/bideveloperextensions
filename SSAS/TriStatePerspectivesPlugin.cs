@@ -1,10 +1,25 @@
+#if SQL2019
+extern alias asAlias;
+//extern alias sharedDataWarehouseInterfaces;
+using asAlias::Microsoft.DataWarehouse.Design;
+using asAlias::Microsoft.DataWarehouse.Controls;
+//using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Design;
+using asAlias::Microsoft.AnalysisServices.Design;
+using asAlias::Microsoft.DataWarehouse.ComponentModel;
+#else
+using Microsoft.DataWarehouse.Design;
+using Microsoft.DataWarehouse.Controls;
+using Microsoft.AnalysisServices.Design;
+using Microsoft.DataWarehouse.ComponentModel;
+#endif
+
 //using Extensibility;
 using EnvDTE;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
+//using Microsoft.DataWarehouse.Design;
+//using Microsoft.DataWarehouse.Controls;
 using System;
 using System.Collections;
 using System.Reflection;
@@ -112,7 +127,7 @@ namespace BIDSHelper
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if ((pi==null) || (!(pi.Object is Cube))) return;
-                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                EditorWindow win = (EditorWindow)designer.GetService(typeof(IComponentNavigator));
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
                 Cube cube = (Cube)pi.Object;
 
@@ -129,7 +144,7 @@ namespace BIDSHelper
                 //if (win.SelectedView.Caption == "Perspectives")
                 if (win.SelectedView.MenuItemCommandID.ID == (int) BIDSViewMenuItemCommandID.Perspectives)
                 {
-                    Microsoft.AnalysisServices.Design.Scripts mdxScriptCache = new Microsoft.AnalysisServices.Design.Scripts(cube);
+                    Scripts mdxScriptCache = new Scripts(cube);
 
                     Control perspectiveBuilder = (Control)win.SelectedView.GetType().InvokeMember("ViewControl", getflags, null, win.SelectedView, null); //Microsoft.AnalysisServices.Design.PerspectivesBuilder
                     Control grid = perspectiveBuilder.Controls[0]; //Microsoft.SqlServer.Management.UI.Grid.DlgGridControl
@@ -351,7 +366,7 @@ namespace BIDSHelper
                                 Perspective perspective = cube.Perspectives.GetByName(perspectiveName);
                                 cell = columns[j];
 
-                                Microsoft.AnalysisServices.Design.Script calc = (Microsoft.AnalysisServices.Design.Script)allGridCubeObjects[i].GetType().InvokeMember("Object", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetField, null, allGridCubeObjects[i], null);
+                                Script calc = (Script)allGridCubeObjects[i].GetType().InvokeMember("Object", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetField, null, allGridCubeObjects[i], null);
                                 if (CalcIsHidden(calc)) continue;
                                                                 
                                 bool bHighlight = false;
@@ -419,7 +434,7 @@ namespace BIDSHelper
             }
         }
 
-        private bool ShouldPerspectiveKpiBeHighlighted(PerspectiveKpi pkpi, Microsoft.AnalysisServices.Design.Scripts mdxScript)
+        private bool ShouldPerspectiveKpiBeHighlighted(PerspectiveKpi pkpi, Scripts mdxScript)
         {
             return ShouldPerspectiveKpiColumnBeHighlighted(pkpi, mdxScript, pkpi.Kpi.Value)
             || ShouldPerspectiveKpiColumnBeHighlighted(pkpi, mdxScript, pkpi.Kpi.Goal)
@@ -428,7 +443,7 @@ namespace BIDSHelper
         }
 
         //return true if the kpi column is a reference to a measure, and if that measure isn't in the perspective or is hidden
-        private bool ShouldPerspectiveKpiColumnBeHighlighted(PerspectiveKpi pkpi, Microsoft.AnalysisServices.Design.Scripts mdxScript, string column)
+        private bool ShouldPerspectiveKpiColumnBeHighlighted(PerspectiveKpi pkpi, Scripts mdxScript, string column)
         {
             if (string.IsNullOrEmpty(column)) return false;
             foreach (MeasureGroup mg in pkpi.ParentCube.MeasureGroups)
@@ -460,7 +475,7 @@ namespace BIDSHelper
             return false;
         }
 
-        public static bool CalcIsHidden(Microsoft.AnalysisServices.Design.Script calc)
+        public static bool CalcIsHidden(Script calc)
         {
             //calc.CalculationProperty.Visible doesn't seem to work
             object mdxCodeCalc = calc.GetType().InvokeMember("mdxCodeCalc", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, calc, null);

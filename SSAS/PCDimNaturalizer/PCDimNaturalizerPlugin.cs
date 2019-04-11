@@ -1,3 +1,5 @@
+extern alias sharedDataWarehouseInterfaces;
+extern alias asAlias;
 using System;
 using EnvDTE;
 using EnvDTE80;
@@ -174,9 +176,9 @@ namespace PCDimNaturalizer
 
                     Program.SQLFlattener = null;
 
-                    Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy projectService = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy));
-                    Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
-                    Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
+                    asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy projectService = (asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy));
+                    sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                    asAlias::Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager = (asAlias::Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                     Dimension dimNew = dim.Clone();
                     dimNew.Name = dim.Name + "_Naturalized";
@@ -200,11 +202,11 @@ namespace PCDimNaturalizer
                         Microsoft.AnalysisServices.Utils.Serialize(writer, dimNew, false);
                         writer.Close();
 
-                        Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectNode parentNode = null;
-                        Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectNode projNode = projectManager.CreateFileProjectNode(ref parentNode, 1, sNewDimProjectItemName, sFullPath, 0, 0);
+                        asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectNode parentNode = null;
+                        asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectNode projNode = projectManager.CreateFileProjectNode(ref parentNode, 1, sNewDimProjectItemName, sFullPath, 0, 0);
 
                         projectService.Add(projNode, parentNode);
-                        ((Microsoft.DataWarehouse.VsIntegration.Shell.Project.ComponentModel.IFileProjectComponentManager)projectManager).UpdateComponentModel(Microsoft.DataWarehouse.VsIntegration.Shell.Project.ComponentModel.UpdateOperationType.AddObject, projNode);
+                        ((asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.ComponentModel.IFileProjectComponentManager)projectManager).UpdateComponentModel(asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.ComponentModel.UpdateOperationType.AddObject, projNode);
                     }
                     else
                     {
@@ -219,7 +221,7 @@ namespace PCDimNaturalizer
                         Window winDesigner = piDsv.Open(BIDSViewKinds.Designer);
                         winDesigner.Activate();
                         System.ComponentModel.Design.IDesignerHost host = (System.ComponentModel.Design.IDesignerHost)(winDesigner.Object);
-                        Microsoft.AnalysisServices.Design.DataSourceDesigner designer = (Microsoft.AnalysisServices.Design.DataSourceDesigner)host.GetDesigner(dim.DataSourceView);
+                        asAlias::Microsoft.AnalysisServices.Design.DataSourceDesigner designer = (asAlias::Microsoft.AnalysisServices.Design.DataSourceDesigner)host.GetDesigner(dim.DataSourceView);
                         designer.MakeDesignerDirty();
                     }
 

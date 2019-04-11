@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("BI Developer Extensions")]
 [assembly: AssemblyDescription("BI Developer Extensions (formerly BIDS Helper) provides additional useful features to SQL Server Data Tools")]
 [assembly: AssemblyCompany("https://bideveloperextensions.github.io")]
-[assembly: AssemblyCopyright("Copyright © 2018 BI Developer Extensions")]
+[assembly: AssemblyCopyright("Copyright © 2019 BI Developer Extensions")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

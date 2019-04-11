@@ -1,5 +1,6 @@
 namespace BIDSHelper.SSIS
 {
+    extern alias sharedDataWarehouseInterfaces;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.Design;
@@ -55,7 +56,7 @@ namespace BIDSHelper.SSIS
             bool bOfflineMode = false;
             try
             {
-                Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
                 bOfflineMode = (bool)settings.GetSetting("OfflineMode");
             }
             catch { }

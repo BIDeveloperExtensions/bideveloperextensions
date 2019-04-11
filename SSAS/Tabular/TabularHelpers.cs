@@ -270,7 +270,7 @@ namespace BIDSHelper
 #else
             foreach (Microsoft.AnalysisServices.BackEnd.DataModelingDataSource ds in sandbox.DataSources)
             {
-                if (ds.ConnectionString != "Provider=None") //for pushed data source (pasted data) skip
+                if (ds.ConnectionString != "Provider=None" && !ds.IsStructuredDataSource) //for pushed data source (pasted data) skip
                     dataSourceIDs.Add(ds.ID);
             }
 #endif
@@ -289,6 +289,18 @@ namespace BIDSHelper
             return true;
 
 
+        }
+
+        public static string CleanNameOfInvalidChars(string s)
+        {
+            if (s.IndexOfAny(BIDSHelper.SsasCharacters.Invalid_Name_Characters.ToCharArray()) >= 0)
+            {
+                foreach (char c in BIDSHelper.SsasCharacters.Invalid_Name_Characters.ToCharArray())
+                {
+                    s = s.Replace(c.ToString(), string.Empty);
+                }
+            }
+            return s;
         }
     }
 }
