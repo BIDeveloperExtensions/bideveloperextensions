@@ -99,6 +99,12 @@ namespace BIDSHelper
             string sAddInTypeName = string.Empty;
             try
             {
+#if !DENALI
+                //given the version numbers seem to be changing frequently, try this approach to increment version numbers of references
+                AppDomain currentDomain = AppDomain.CurrentDomain;
+                currentDomain.AssemblyResolve += new ResolveEventHandler(currentDomain_AssemblyResolve);
+#endif
+
                 StatusBar = new Core.VsIntegration.StatusBar(this);
                 StatusBar.Text = "Loading BIDSHelper (" + this.GetType().Assembly.GetName().Version.ToString() + ")...";
                 VsShell = (IVsShell)this.GetService(typeof(SVsShell));
@@ -106,12 +112,12 @@ namespace BIDSHelper
 
                 DebuggerService.AdviseDebuggerEvents(this, out debugEventCookie);
 
-                if (SwitchVsixManifest())
-                {
-                    bQuitting = true;
-                    RestartVisualStudio();
-                    return;
-                }
+                //if (SwitchVsixManifest())
+                //{
+                //    bQuitting = true;
+                //    RestartVisualStudio();
+                //    return;
+                //}
 
                 System.Collections.Generic.List<Exception> pluginExceptions = new System.Collections.Generic.List<Exception>();
                 Type[] types = null;
@@ -238,245 +244,245 @@ namespace BIDSHelper
 
         }
 
-        private bool SwitchVsixManifest()
-        {
-#if SQL2019
-            string sVersion = VersionInfo.SqlServerVersion.ToString();
-            if (sVersion.StartsWith("14.")) //this BI Dev Extensions DLL is for SQL 2019 but you have SSDT for SQL2017 installed
-            {
-                string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
-                string sManifestPath = sFolder + "\\extension.vsixmanifest";
-                string sBackupManifestPath = sFolder + "\\extension2019.vsixmanifest";
-                string sOtherManifestPath = sFolder + "\\extension2017.vsixmanifest";
+//        private bool SwitchVsixManifest()
+//        {
+//#if SQL2019
+//            string sVersion = VersionInfo.SqlServerVersion.ToString();
+//            if (sVersion.StartsWith("14.")) //this BI Dev Extensions DLL is for SQL 2019 but you have SSDT for SQL2017 installed
+//            {
+//                string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+//                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+//                string sBackupManifestPath = sFolder + "\\extension2019.vsixmanifest";
+//                string sOtherManifestPath = sFolder + "\\extension2017.vsixmanifest";
 
-                string sPkgdef2019Path = sFolder + "\\BidsHelper2019.pkgdef";
-                string sPkgdef2019BackupPath = sFolder + "\\BidsHelper2019.pkgdef.bak";
-                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
-                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+//                string sPkgdef2019Path = sFolder + "\\BidsHelper2019.pkgdef";
+//                string sPkgdef2019BackupPath = sFolder + "\\BidsHelper2019.pkgdef.bak";
+//                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+//                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
 
-                string sDll2017Path = sFolder + "\\SQL2017\\BidsHelper2017.dll";
+//                string sDll2017Path = sFolder + "\\SQL2017\\BidsHelper2017.dll";
 
-                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2019Path))
-                {
-                    //backup the current SQL2019 manifest
-                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+//                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2019Path))
+//                {
+//                    //backup the current SQL2019 manifest
+//                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
 
-                    //copy SQL2017 manifest over the current manifest
-                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+//                    //copy SQL2017 manifest over the current manifest
+//                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
 
-                    if (System.IO.File.Exists(sPkgdef2017Path))
-                        System.IO.File.Delete(sPkgdef2017BackupPath);
-                    else
-                        System.IO.File.Move(sPkgdef2017BackupPath, sPkgdef2017Path);
+//                    if (System.IO.File.Exists(sPkgdef2017Path))
+//                        System.IO.File.Delete(sPkgdef2017BackupPath);
+//                    else
+//                        System.IO.File.Move(sPkgdef2017BackupPath, sPkgdef2017Path);
 
-                    if (System.IO.File.Exists(sPkgdef2019BackupPath))
-                        System.IO.File.Delete(sPkgdef2019Path);
-                    else
-                        System.IO.File.Move(sPkgdef2019Path, sPkgdef2019BackupPath);
+//                    if (System.IO.File.Exists(sPkgdef2019BackupPath))
+//                        System.IO.File.Delete(sPkgdef2019Path);
+//                    else
+//                        System.IO.File.Move(sPkgdef2019Path, sPkgdef2019BackupPath);
 
 
 
-                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
-                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
-                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
-                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
-                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
-                    if (regKey != null)
-                    {
-                        regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
-                        regKey.Close();
-                    }
+//                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
+//                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
+//                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
+//                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
+//                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
+//                    if (regKey != null)
+//                    {
+//                        regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
+//                        regKey.Close();
+//                    }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2017 files!");
-                }
-            }
-#elif SQL2017 && VS2017
-            string sVersion = VersionInfo.SqlServerVersion.ToString();
-            if (sVersion.StartsWith("15.")) //this BI Dev Extensions DLL is for SQL 2017 but you have SSDT for SQL2019 installed
-            {
-                string sFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName;
-                string sManifestPath = sFolder + "\\extension.vsixmanifest";
-                string sBackupManifestPath = sFolder + "\\extension2017.vsixmanifest";
-                string sOtherManifestPath = sFolder + "\\extension2019.vsixmanifest";
+//                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+//                    return true;
+//                }
+//                else
+//                {
+//                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2017 files!");
+//                }
+//            }
+//#elif SQL2017 && VS2017
+//            string sVersion = VersionInfo.SqlServerVersion.ToString();
+//            if (sVersion.StartsWith("15.")) //this BI Dev Extensions DLL is for SQL 2017 but you have SSDT for SQL2019 installed
+//            {
+//                string sFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName;
+//                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+//                string sBackupManifestPath = sFolder + "\\extension2017.vsixmanifest";
+//                string sOtherManifestPath = sFolder + "\\extension2019.vsixmanifest";
 
-                string sPkgdef2019Path = sFolder + "\\BidsHelper2019.pkgdef";
-                string sPkgdef2019BackupPath = sFolder + "\\BidsHelper2019.pkgdef.bak";
-                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
-                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+//                string sPkgdef2019Path = sFolder + "\\BidsHelper2019.pkgdef";
+//                string sPkgdef2019BackupPath = sFolder + "\\BidsHelper2019.pkgdef.bak";
+//                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+//                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
 
-                string sDll2019Path = sFolder + "\\BidsHelper2019.dll";
+//                string sDll2019Path = sFolder + "\\BidsHelper2019.dll";
 
-                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2019BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
-                {
-                    //backup the current SQL2017 manifest
-                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+//                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2019BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
+//                {
+//                    //backup the current SQL2017 manifest
+//                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
 
-                    //copy SQL2019 manifest over the current manifest
-                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+//                    //copy SQL2019 manifest over the current manifest
+//                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
 
-                    if (System.IO.File.Exists(sPkgdef2019Path))
-                        System.IO.File.Delete(sPkgdef2019BackupPath);
-                    else
-                        System.IO.File.Move(sPkgdef2019BackupPath, sPkgdef2019Path);
+//                    if (System.IO.File.Exists(sPkgdef2019Path))
+//                        System.IO.File.Delete(sPkgdef2019BackupPath);
+//                    else
+//                        System.IO.File.Move(sPkgdef2019BackupPath, sPkgdef2019Path);
 
-                    if (System.IO.File.Exists(sPkgdef2017BackupPath))
-                        System.IO.File.Delete(sPkgdef2017Path);
-                    else
-                        System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
+//                    if (System.IO.File.Exists(sPkgdef2017BackupPath))
+//                        System.IO.File.Delete(sPkgdef2017Path);
+//                    else
+//                        System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
 
-                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
-                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
-                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
-                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
-                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
-                    if (regKey != null)
-                    {
-                        regKey.SetValue("CodeBase", sDll2019Path, Microsoft.Win32.RegistryValueKind.String);
-                        regKey.Close();
-                    }
+//                    //VS2017 seems to use the registry after the first run to denote which DLL to launch
+//                    //the 15.0* hive is special in that it is actually "C:\Users\<user>\AppData\Local\Microsoft\VisualStudio\15.0_31028247\privateregistry.bin"
+//                    //if you want to view this in regedit then close all VS2017 and go to HKEY_LOCAL_MACHINE... File... Load Hive... choose that privateregistry.bin
+//                    //remember to click on the new hive folder and do File... Unload Hive before trying to open VS2017
+//                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\15.0_Config\Packages\{" + PackageGuidString + "}", true);
+//                    if (regKey != null)
+//                    {
+//                        regKey.SetValue("CodeBase", sDll2019Path, Microsoft.Win32.RegistryValueKind.String);
+//                        regKey.Close();
+//                    }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2019 files!");
-                }
-            }
-#elif SQL2017 && !VS2017
-            string sVersion = VersionInfo.SqlServerVersion.ToString();
-            if (sVersion.StartsWith("13.")) //this DLL is for SQL 2017 but you have SSDT for SQL2016 installed
-            {
-                string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
-                string sManifestPath = sFolder + "\\extension.vsixmanifest";
-                string sBackupManifestPath = sFolder + "\\extension2017.vsixmanifest";
-                string sOtherManifestPath = sFolder + "\\extension2016.vsixmanifest";
+//                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+//                    return true;
+//                }
+//                else
+//                {
+//                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2019 files!");
+//                }
+//            }
+//#elif SQL2017 && !VS2017
+//            string sVersion = VersionInfo.SqlServerVersion.ToString();
+//            if (sVersion.StartsWith("13.")) //this DLL is for SQL 2017 but you have SSDT for SQL2016 installed
+//            {
+//                string sFolder = System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName;
+//                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+//                string sBackupManifestPath = sFolder + "\\extension2017.vsixmanifest";
+//                string sOtherManifestPath = sFolder + "\\extension2016.vsixmanifest";
 
-                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
-                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
-                string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
-                string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
+//                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+//                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+//                string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
+//                string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
 
-                string sDll2016Path = sFolder + "\\SQL2016\\BidsHelper2016.dll";
+//                string sDll2016Path = sFolder + "\\SQL2016\\BidsHelper2016.dll";
 
-                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2016BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
-                {
-                    //backup the current SQL2017 manifest
-                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+//                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2016BackupPath) && System.IO.File.Exists(sPkgdef2017Path))
+//                {
+//                    //backup the current SQL2017 manifest
+//                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
 
-                    //copy SQL2016 manifest over the current manifest
-                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+//                    //copy SQL2016 manifest over the current manifest
+//                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
 
-                    if (System.IO.File.Exists(sPkgdef2016Path))
-                        System.IO.File.Delete(sPkgdef2016BackupPath);
-                    else
-                        System.IO.File.Move(sPkgdef2016BackupPath, sPkgdef2016Path);
+//                    if (System.IO.File.Exists(sPkgdef2016Path))
+//                        System.IO.File.Delete(sPkgdef2016BackupPath);
+//                    else
+//                        System.IO.File.Move(sPkgdef2016BackupPath, sPkgdef2016Path);
 
-                    if (System.IO.File.Exists(sPkgdef2017BackupPath))
-                        System.IO.File.Delete(sPkgdef2017Path);
-                    else
-                        System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
+//                    if (System.IO.File.Exists(sPkgdef2017BackupPath))
+//                        System.IO.File.Delete(sPkgdef2017Path);
+//                    else
+//                        System.IO.File.Move(sPkgdef2017Path, sPkgdef2017BackupPath);
 
-                    //it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
-                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
-                    if (regKey != null) 
-                    {
-                        regKey.SetValue("CodeBase", sDll2016Path, Microsoft.Win32.RegistryValueKind.String);
-                        regKey.Close();
-                    }
+//                    //it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
+//                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
+//                    if (regKey != null) 
+//                    {
+//                        regKey.SetValue("CodeBase", sDll2016Path, Microsoft.Win32.RegistryValueKind.String);
+//                        regKey.Close();
+//                    }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2016 files!");
-                }
-            }
-#elif SQL2016 && !VS2017
-            string sVersion = VersionInfo.SqlServerVersion.ToString();
-            if (sVersion.StartsWith("14.")) //this DLL is for SQL 2016 but you have SSDT for SQL2017 installed
-            {
-                string sFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName;
-                string sManifestPath = sFolder + "\\extension.vsixmanifest";
-                string sBackupManifestPath = sFolder + "\\extension2016.vsixmanifest";
-                string sOtherManifestPath = sFolder + "\\extension2017.vsixmanifest";
+//                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+//                    return true;
+//                }
+//                else
+//                {
+//                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2016 files!");
+//                }
+//            }
+//#elif SQL2016 && !VS2017
+//            string sVersion = VersionInfo.SqlServerVersion.ToString();
+//            if (sVersion.StartsWith("14.")) //this DLL is for SQL 2016 but you have SSDT for SQL2017 installed
+//            {
+//                string sFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName).FullName;
+//                string sManifestPath = sFolder + "\\extension.vsixmanifest";
+//                string sBackupManifestPath = sFolder + "\\extension2016.vsixmanifest";
+//                string sOtherManifestPath = sFolder + "\\extension2017.vsixmanifest";
 
-                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
-                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
-                string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
-                string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
+//                string sPkgdef2017Path = sFolder + "\\BidsHelper2017.pkgdef";
+//                string sPkgdef2017BackupPath = sFolder + "\\BidsHelper2017.pkgdef.bak";
+//                string sPkgdef2016Path = sFolder + "\\BidsHelper2016.pkgdef";
+//                string sPkgdef2016BackupPath = sFolder + "\\BidsHelper2016.pkgdef.bak";
 
-                string sDll2017Path = sFolder + "\\BidsHelper2017.dll";
+//                string sDll2017Path = sFolder + "\\BidsHelper2017.dll";
 
-                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2016Path))
-                {
-                    //backup the current SQL2016 manifest
-                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
+//                if (System.IO.File.Exists(sOtherManifestPath) && System.IO.File.Exists(sPkgdef2017BackupPath) && System.IO.File.Exists(sPkgdef2016Path))
+//                {
+//                    //backup the current SQL2016 manifest
+//                    System.IO.File.Copy(sManifestPath, sBackupManifestPath, true);
 
-                    //copy SQL2017 manifest over the current manifest
-                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
+//                    //copy SQL2017 manifest over the current manifest
+//                    System.IO.File.Copy(sOtherManifestPath, sManifestPath, true);
 
-                    if (System.IO.File.Exists(sPkgdef2017Path))
-                        System.IO.File.Delete(sPkgdef2017BackupPath);
-                    else
-                        System.IO.File.Move(sPkgdef2017BackupPath, sPkgdef2017Path);
+//                    if (System.IO.File.Exists(sPkgdef2017Path))
+//                        System.IO.File.Delete(sPkgdef2017BackupPath);
+//                    else
+//                        System.IO.File.Move(sPkgdef2017BackupPath, sPkgdef2017Path);
 
-                    if (System.IO.File.Exists(sPkgdef2016BackupPath))
-                        System.IO.File.Delete(sPkgdef2016Path);
-                    else
-                        System.IO.File.Move(sPkgdef2016Path, sPkgdef2016BackupPath);
+//                    if (System.IO.File.Exists(sPkgdef2016BackupPath))
+//                        System.IO.File.Delete(sPkgdef2016Path);
+//                    else
+//                        System.IO.File.Move(sPkgdef2016Path, sPkgdef2016BackupPath);
 
-                    //it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
-                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
-                    if (regKey != null)
-                    {
-                        regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
-                        regKey.Close();
-                    }
+//                    //it looks like some earlier versions of VS2015 use the registry while newer versions of VS2015 (like Update 3) just use the vsixmanifest and pkgdef files?
+//                    Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\VisualStudio\14.0_Config\Packages\{" + PackageGuidString +"}", true);
+//                    if (regKey != null)
+//                    {
+//                        regKey.SetValue("CodeBase", sDll2017Path, Microsoft.Win32.RegistryValueKind.String);
+//                        regKey.Close();
+//                    }
 
-                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2017 files!");
-                }
-            }
-#endif
-            return false;
+//                    System.Windows.Forms.MessageBox.Show("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed. Please restart Visual Studio so BI Developer Extensions can reconfigure itself to work properly with that version of SSDT.", "BIDS Helper");
+//                    return true;
+//                }
+//                else
+//                {
+//                    throw new Exception("You have SSDT for SQL Server " + VersionInfo.SqlServerFriendlyVersion + " installed but we couldn't find BIDS Helper 2017 files!");
+//                }
+//            }
+//#endif
+//            return false;
 
-        }
+//        }
 
-        private void RestartVisualStudio()
-        {
-            System.Diagnostics.Process currentProcess = System.Diagnostics.Process.GetCurrentProcess();
-            System.Diagnostics.Process newProcess = new System.Diagnostics.Process();
-            newProcess.StartInfo = new System.Diagnostics.ProcessStartInfo {
-                FileName = currentProcess.MainModule.FileName,
-                ErrorDialog = true,
-                UseShellExecute = true,
-                Arguments = DTE2.CommandLineArguments
-            };
-            newProcess.Start();
+        //private void RestartVisualStudio()
+        //{
+        //    System.Diagnostics.Process currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+        //    System.Diagnostics.Process newProcess = new System.Diagnostics.Process();
+        //    newProcess.StartInfo = new System.Diagnostics.ProcessStartInfo {
+        //        FileName = currentProcess.MainModule.FileName,
+        //        ErrorDialog = true,
+        //        UseShellExecute = true,
+        //        Arguments = DTE2.CommandLineArguments
+        //    };
+        //    newProcess.Start();
 
-            EnvDTE.Command command = DTE2.Commands.Item("File.Exit", -1);
+        //    EnvDTE.Command command = DTE2.Commands.Item("File.Exit", -1);
 
-            if ((command != null) && command.IsAvailable)
-            {
-                DTE2.ExecuteCommand("File.Exit", "");
-            }
-            else
-            {
-                DTE2.Quit();
-            }
+        //    if ((command != null) && command.IsAvailable)
+        //    {
+        //        DTE2.ExecuteCommand("File.Exit", "");
+        //    }
+        //    else
+        //    {
+        //        DTE2.Quit();
+        //    }
 
-        }
+        //}
 
 
 #if DENALI
@@ -504,6 +510,63 @@ namespace BIDSHelper
             catch (Exception ex)
             {
                 System.Windows.Forms.MessageBox.Show("Problem during AssemblyResolve in BIDS Helper:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper");
+                return null;
+            }
+        }
+#else
+        string _recursiveAssemblyResolveNameToSkip = null;
+
+        /// <summary>
+        /// Only fires if an assembly fails to load. This gives us a chance to redirect to a DLL that does exist.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        System.Reflection.Assembly currentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            try
+            {
+                if (_recursiveAssemblyResolveNameToSkip == args.Name)
+                    return null; //skip recursion
+                System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
+                DateTime dtStart = DateTime.Now;
+                if (
+                    args.Name.StartsWith("Microsoft.AnalysisServices.")
+                    || args.Name.ToLower().StartsWith("microsoft.sqlserver.")
+                    || args.Name.StartsWith("Microsoft.ReportViewer.")
+                    || args.Name.StartsWith("Microsoft.DataWarehouse.")
+                    || args.Name.StartsWith("Microsoft.DataTransformationServices.")
+                )
+                {
+                    var assemblyname = new AssemblyName(args.Name);
+                    Version originalVersion = (Version)assemblyname.Version.Clone();
+                    for (int i = 0; i < 500; i++)
+                    {
+                        assemblyname.Version = new Version(originalVersion.Major, i, 0, 0);
+                        try
+                        {
+                            _recursiveAssemblyResolveNameToSkip = assemblyname.ToString();
+                            var assembly = Assembly.Load(assemblyname);
+                            System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                            return assembly;
+                        }
+                        catch { }
+                        finally
+                        {
+                            _recursiveAssemblyResolveNameToSkip = null;
+                        }
+                    }
+                    System.Diagnostics.Debug.WriteLine("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    return null;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Problem during AssemblyResolve in BIDS Helper:\r\n" + ex.Message + "\r\n" + ex.StackTrace);
                 return null;
             }
         }

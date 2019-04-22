@@ -526,25 +526,31 @@
     <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.GridControl.dll" />
     <Content Include="DLLs\SQL2019\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll" />
-    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll" />
-    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.Core.dll" />
-    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.dll" />
-    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.Tabular.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.BackEnd.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Common.FrontEnd.dll" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Controls.AS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Controls.DLL" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Core.dll" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Design.AS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Design.DLL" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.MPFProjectBase.dll" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Project.AS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Project.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Server.Tabular.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Server.Tabular.Json.dll" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Tabular.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.VSHost.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataTransformationServices.Controls.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataTransformationServices.Design.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataTransformationServices.VsIntegration.DLL" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.AS.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.Interfaces.DLL" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.RS.dll" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.AS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.DLL" />
+    <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.RS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.ReportViewer.Common.AppLocal.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.ReportViewer.DataVisualization.AppLocal.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.ReportViewer.Design.AppLocal.dll" />
@@ -564,7 +570,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="packagesVS2017.config" />
     <None Include="Properties\vsix-compress.props" />
     <None Include="Manifest\SQL2017\source.extension.vsixmanifest">
       <SubType>Designer</SubType>
@@ -660,11 +665,6 @@
     <Content Include="Resources\stop.ico" />
     <Content Include="Resources\TaskSmall.ico" />
     <Content Include="Resources\TreeViewTab.ico" />
-    <Content Include="extension2017.vsixmanifest">
-      <SubType>Designer</SubType>
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="SSAS\AggManager\Graphics\AggDesign.ico" />
     <Content Include="SSAS\AggManager\Graphics\Aggregation.ico" />
     <Content Include="SSAS\AggManager\Graphics\Checked.ico" />
@@ -716,23 +716,35 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2019\ExpressionEditor.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AppLocal, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>False</Private>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.dll</HintPath>
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AppLocal.AdomdClient, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll</HintPath>
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <Aliases>localAdomdClient</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AppLocal.Core, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.DataWarehouse.AS, Version=15.1.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.AS.dll</HintPath>
+      <Aliases>asAlias</Aliases>
       <Private>False</Private>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AppLocal.Tabular, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.DataWarehouse.RS, Version=15.1.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.RS.dll</HintPath>
+      <Aliases>rsAlias</Aliases>
       <Private>False</Private>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AppLocal.Tabular.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Tabular.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.BackEnd">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.BackEnd.dll</HintPath>
@@ -749,6 +761,11 @@
     <Reference Include="Microsoft.AnalysisServices.Project">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Project.DLL</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Project.AS">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Project.AS.DLL</HintPath>
+      <Private>False</Private>
+      <Aliases>asAlias</Aliases>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Server.Tabular, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>True</SpecificVersion>
@@ -778,6 +795,16 @@
       <Private>False</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Microsoft.DataWarehouse.VsIntegration.AS">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.AS.DLL</HintPath>
+      <Private>False</Private>
+      <Aliases>asAlias</Aliases>
+    </Reference>
+    <Reference Include="Microsoft.DataWarehouse.VsIntegration.RS">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.RS.DLL</HintPath>
+      <Private>False</Private>
+      <Aliases>rsAlias</Aliases>
+    </Reference>
     <Reference Include="Microsoft.ReportViewer.Common.AppLocal, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.ReportViewer.Common.AppLocal.dll</HintPath>
       <Private>False</Private>
@@ -798,7 +825,7 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.ReportViewer.Winforms.AppLocal.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.DlgGrid, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.SqlServer.DlgGrid, Version=15.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.DlgGrid.dll</HintPath>
       <Private>False</Private>
@@ -849,16 +876,27 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Controls.AS">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Controls.AS.DLL</HintPath>
+      <Private>False</Private>
+      <Aliases>asAlias</Aliases>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Design.AS">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Design.AS.DLL</HintPath>
+      <Private>False</Private>
+      <Aliases>asAlias</Aliases>
+    </Reference>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.DataWarehouse">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.DLL</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=15.1.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.Interfaces.DLL</HintPath>
       <Private>False</Private>
+      <Aliases>sharedDataWarehouseInterfaces</Aliases>
     </Reference>
     <Reference Include="Microsoft.DataWarehouse.VsIntegration">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
@@ -1157,14 +1195,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SqlServerTypes\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="SQL2017_VS2017_BidsHelper.csproj">
-      <Project>{0828f434-598d-4e5b-983a-9fad3bfde857}</Project>
-      <Name>SQL2017_VS2017_BidsHelper</Name>
-      <VSIXSubPath>SQL2017</VSIXSubPath>
-      <Aliases>SQL2017_BidsHelper</Aliases>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />

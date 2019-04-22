@@ -298,13 +298,17 @@ namespace BIDSHelper.SSAS
                     var fakeDatabase = new Database(_deploymentSettings.TargetDatabase);
                     foreach (Microsoft.AnalysisServices.BackEnd.DataModelingTable table in tomTables)
                     {
-                        var d = new Dimension(table.Name, table.Id);
+                        string sCleanName = TabularHelpers.CleanNameOfInvalidChars(table.Name);
+                        string sCleanID = TabularHelpers.CleanNameOfInvalidChars(table.Id);
+                        var d = new Dimension(sCleanName, sCleanID);
                         fakeDatabase.Dimensions.Add(d);
                     }
 
                     foreach (Microsoft.AnalysisServices.BackEnd.DataModelingRole r in tomRoles)
                     {
-                        var fakeRole = new Role(r.Name, r.Id) { Description = r.Description };
+                        string sCleanName = TabularHelpers.CleanNameOfInvalidChars(r.Name);
+                        string sCleanID = TabularHelpers.CleanNameOfInvalidChars(r.Id);
+                        var fakeRole = new Role(sCleanName, sCleanID) { Description = r.Description };
                         fakeDatabase.Roles.Add(fakeRole);
                         DatabasePermission dbPerm = fakeDatabase.DatabasePermissions.Add(fakeRole.ID);
                         dbPerm.Administer = (r.Permission == Microsoft.AnalysisServices.BackEnd.DataModelingRolePermission.Administrator);
@@ -359,7 +363,8 @@ namespace BIDSHelper.SSAS
                             {
                                 RoleDimensionInfo info = new RoleDimensionInfo();
                                 info.role = fakeRole;
-                                info.dimension = fakeDatabase.Dimensions.GetByName(table.Name);
+                                string sCleanName2 = TabularHelpers.CleanNameOfInvalidChars(table.Name);
+                                info.dimension = fakeDatabase.Dimensions.GetByName(sCleanName2);
                                 var dimPerm = info.dimension.DimensionPermissions.Add(fakeRole.ID);
                                 dimPerm.AllowedRowsExpression = sExpression;
                                 listRoleDimensions.Add(info);

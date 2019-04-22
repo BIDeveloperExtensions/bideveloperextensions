@@ -1,4 +1,5 @@
-﻿using System;
+﻿extern alias sharedDataWarehouseInterfaces;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -278,7 +279,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             this.projectItem = pi;
 
             //capture the project manager object
-            Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
             this.projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
             //capture the output window object
@@ -484,7 +485,9 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
             if (this.dtexecPath == null && this.use64Bit)
                 this.dtexecPath = GetPathToDtsExecutable("dtexec.exe", false);
             if (this.dtexecPath == null)
+            {
                 throw new Exception("Can't find path to dtexec in registry! Please make sure you have the SSIS service installed from the " + PackageHelper.TargetServerVersion.ToString() + " install media");
+            }
         }
 
         internal static void SetupCustomLogging(Package pkg, string sLogFilePath)
@@ -570,7 +573,8 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
 
                     lTickerCounter++;
 
-                    if (process.HasExited)
+                    bool bProcessExited = process.HasExited; //capture the status of the process at this point so we can ensure to execute the logic below as a unit rather than the process exiting halfway through the logic below and leaving things in an inconsistent state
+                    if (bProcessExited)
                     {
                         string sStatus = "Finished";
                         if (this.ExecutionCancelled)
@@ -590,7 +594,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                         if (lTickerCounter % 2 == 1) return;
                     }
 
-                    if (process.HasExited)
+                    if (bProcessExited)
                     {
                         timer1.Enabled = false;
                         timer1.Stop();
@@ -598,7 +602,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                         System.Threading.Thread.Sleep(1000); //pause just in case we need another second for the log events to quit flowing
                     }
 
-                    DtsLogEvent[] events = logFileLoader.GetEvents(process.HasExited);
+                    DtsLogEvent[] events = logFileLoader.GetEvents(bProcessExited);
                     foreach (DtsLogEvent ee in events)
                     {
                         eventParser.LoadEvent(ee);
@@ -614,7 +618,7 @@ namespace BIDSHelper.SSIS.PerformanceVisualization
                     this.ganttGrid.Refresh();
                     this.ganttGrid.ResumeLayout();
 
-                    if (process.HasExited)
+                    if (bProcessExited)
                     {
                         System.IO.File.Delete(this.modifiedPackagePath);
 

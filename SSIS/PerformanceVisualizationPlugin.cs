@@ -156,6 +156,7 @@ namespace BIDSHelper.SSIS
                     return;
                 }
                 Package package = (Package)win.PropertiesLinkComponent;
+                PackageHelper.SetTargetServerVersion(package);
 
                 EditorWindow.EditorView view = null;
                 if (PerformanceEditorViews.ContainsKey(win))

@@ -3,6 +3,7 @@
 //     Copyright (c) Company.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
+extern alias asAlias;
 #if SQL2017
 extern alias localAdomdClient;
 using localAdomdClient.Microsoft.AnalysisServices.AdomdClient;
@@ -22,6 +23,7 @@ using Microsoft.AnalysisServices;
 using EnvDTE80;
 using BIDSHelper.Core;
 using BIDSHelper.Core.VsIntegration;
+using asAlias::Microsoft.AnalysisServices.Design;
 
 namespace BIDSHelper.SSAS
 {
@@ -160,7 +162,7 @@ namespace BIDSHelper.SSAS
             try
             {
                 //validate the script because deploying an invalid script makes cube unusable
-                Microsoft.AnalysisServices.Design.Scripts script = new Microsoft.AnalysisServices.Design.Scripts(oCube);
+                Scripts script = new Scripts(oCube);
             }
             catch (Microsoft.AnalysisServices.Design.ScriptParsingFailed ex)
             {

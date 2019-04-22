@@ -1,10 +1,11 @@
 namespace BIDSHelper.SSIS
 {
+    extern alias sharedDataWarehouseInterfaces;
     using EnvDTE;
     using EnvDTE80;
     using Microsoft.DataTransformationServices.Design;
     using Microsoft.DataWarehouse.Design;
-    using Microsoft.DataWarehouse.Interfaces;
+    using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces;
     using Microsoft.SqlServer.Dts.Design;
     using Microsoft.SqlServer.Dts.Runtime;
     using Microsoft.SqlServer.Management.UI.Grid;
@@ -38,7 +39,7 @@ namespace BIDSHelper.SSIS
         private ToolBarButton editExpressionButton;
         private ToolBarButton findReferencesButton;
         private ToolBarButton findUnusedButton;
-        private static DlgGridControl grid;
+        private static Microsoft.DataTransformationServices.Controls.DlgGridControl grid;
         private static UserControl variablesToolWindowControl;
         private static IComponentChangeService changesvc;
         private static IDesignerHost serviceProvider;
@@ -118,7 +119,7 @@ namespace BIDSHelper.SSIS
                     // Get grid and toolbar
 
                     // "tableLayoutPanelMain" - "tableLayoutPanelVariable" - "dlgGridControl1" | "toolBarVariable"
-                    grid = (DlgGridControl)variablesToolWindowControl.Controls[0].Controls[0].Controls[0];
+                    grid = (Microsoft.DataTransformationServices.Controls.DlgGridControl)variablesToolWindowControl.Controls[0].Controls[0].Controls[0];
                     ToolBar toolbar = (ToolBar)variablesToolWindowControl.Controls[0].Controls[0].Controls[1];
 
                     // If buttons already added, no need to do it again so exit 

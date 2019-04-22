@@ -1,3 +1,18 @@
+#if SQL2019
+extern alias asAlias;
+//extern alias sharedDataWarehouseInterfaces;
+using asAlias::Microsoft.DataWarehouse.Design;
+using asAlias::Microsoft.DataWarehouse.Controls;
+//using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Design;
+//using asAlias::Microsoft.AnalysisServices.Design;
+using asAlias::Microsoft.DataWarehouse.ComponentModel;
+#else
+using Microsoft.DataWarehouse.Design;
+using Microsoft.DataWarehouse.Controls;
+//using Microsoft.AnalysisServices.Design;
+using Microsoft.DataWarehouse.ComponentModel;
+#endif
+
 using System;
 using System.Collections.Generic;
 using EnvDTE;
@@ -5,8 +20,8 @@ using EnvDTE80;
 using System.Windows.Forms;
 using Microsoft.AnalysisServices;
 using System.ComponentModel.Design;
-using Microsoft.DataWarehouse.Design;
-using Microsoft.DataWarehouse.Controls;
+//using Microsoft.DataWarehouse.Design;
+//using Microsoft.DataWarehouse.Controls;
 
 namespace BIDSHelper.SSAS
 {
@@ -78,7 +93,7 @@ namespace BIDSHelper.SSAS
                 if (designer == null) return;
                 ProjectItem pi = GotFocus.ProjectItem;
                 if ((pi == null) || (!(pi.Object is Cube))) return;
-                EditorWindow win = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                EditorWindow win = (EditorWindow)designer.GetService(typeof(IComponentNavigator));
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
 
                 IntPtr ptr = win.Handle;

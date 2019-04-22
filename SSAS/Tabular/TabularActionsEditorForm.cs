@@ -532,7 +532,7 @@ namespace BIDSHelper.SSAS
                 _listActionClones[iIndex] = _currentAction;
             }
 
-            _currentAction.Name = CleanNameOfInvalidChars(txtName.Text);
+            _currentAction.Name = TabularHelpers.CleanNameOfInvalidChars(txtName.Text);
             _currentAction.Caption = txtCaption.Text;
             _currentAction.CaptionIsMdx = chkCaptionIsMdx.Checked;
             _currentAction.Description = txtDescription.Text;
@@ -766,7 +766,7 @@ namespace BIDSHelper.SSAS
             {
                 if (cmbAction.SelectedIndex < 0) return;
                 string sNameErrorReason = string.Empty;
-                string sName = CleanNameOfInvalidChars(txtName.Text);
+                string sName = TabularHelpers.CleanNameOfInvalidChars(txtName.Text);
                 bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
                 if (bIsValidName) //change the name of the current action if the name is valid... if not, the Leave event will trap this
                 {
@@ -785,7 +785,7 @@ namespace BIDSHelper.SSAS
         private void txtName_Leave(object sender, EventArgs e)
         {
             string sNameErrorReason = string.Empty;
-            string sName = CleanNameOfInvalidChars(txtName.Text);
+            string sName = TabularHelpers.CleanNameOfInvalidChars(txtName.Text);
             bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
             if (!bIsValidName)
             {
@@ -813,17 +813,6 @@ namespace BIDSHelper.SSAS
             return true;
         }
 
-        private string CleanNameOfInvalidChars(string s)
-        {
-            if (s.IndexOfAny(BIDSHelper.SsasCharacters.Invalid_Name_Characters.ToCharArray()) >= 0)
-            {
-                foreach (char c in BIDSHelper.SsasCharacters.Invalid_Name_Characters.ToCharArray())
-                {
-                    s = s.Replace(c.ToString(), string.Empty);
-                }
-            }
-            return s;
-        }
 
         private void cmbActionType_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -974,7 +963,7 @@ namespace BIDSHelper.SSAS
             try
             {
                 string sNameErrorReason = string.Empty;
-                string sName = CleanNameOfInvalidChars(txtName.Text);
+                string sName = TabularHelpers.CleanNameOfInvalidChars(txtName.Text);
                 bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
                 if (bIsValidName)
                 {
@@ -1055,7 +1044,7 @@ namespace BIDSHelper.SSAS
         {
             if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel) return;
             string sNameErrorReason = string.Empty;
-            string sName = CleanNameOfInvalidChars(txtName.Text);
+            string sName = TabularHelpers.CleanNameOfInvalidChars(txtName.Text);
             bool bIsValidName = IsValidActionName(sName, out sNameErrorReason);
             if (!bIsValidName)
             {
