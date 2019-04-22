@@ -12,6 +12,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class FixedWidthColumnsPlugin : BIDSHelperPluginBase
     {
 
@@ -74,15 +75,14 @@ namespace BIDSHelper.SSIS
         {
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                if (((System.Array)solExplorer.SelectedItems).Length != 1)
+                if (this.ApplicationObject.ActiveWindow == null || this.ApplicationObject.ActiveWindow.ProjectItem == null)
                     return false;
 
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                if (hierItem.Name.ToLower().EndsWith(".dtsx"))
+                ProjectItem pi = this.ApplicationObject.ActiveWindow.ProjectItem;
+                if (pi == null) return false;
+
+                if (pi.Name.ToLower().EndsWith(".dtsx"))
                 {
-                    ProjectItem pi = (ProjectItem)hierItem.Object;
-                    if (pi == null) return false;
                     Window win = pi.Document.ActiveWindow;
                     if (win == null) return false;
                     if (pi.Document.ActiveWindow.DTE.Mode == vsIDEMode.vsIDEModeDebug) return false;
@@ -165,10 +165,9 @@ namespace BIDSHelper.SSIS
         {
             try
             {
-                UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
-                UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                ProjectItem pi = (ProjectItem)hierItem.Object;
+                ProjectItem pi = this.ApplicationObject.ActiveWindow.ProjectItem;
                 Window win = pi.Document.ActiveWindow;
+
                 IDesignerHost designer = (IDesignerHost)pi.Document.ActiveWindow.Object;
                 Package package = null;
                 ConnectionManager conn = GetSelectedConnectionManager(designer, out package);

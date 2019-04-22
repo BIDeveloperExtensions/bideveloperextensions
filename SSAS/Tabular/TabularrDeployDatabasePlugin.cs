@@ -10,6 +10,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularDeployDatabasePlugin : BIDSHelperPluginBase
     {
 

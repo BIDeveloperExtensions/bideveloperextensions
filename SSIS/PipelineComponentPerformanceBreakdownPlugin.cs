@@ -9,6 +9,8 @@ namespace BIDSHelper.SSIS
     using System.Windows.Forms;
     using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
     using Core;
+
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class PipelineComponentPerformanceBreakdownPlugin : BIDSHelperPluginBase
     {
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;

@@ -129,6 +129,11 @@ namespace BIDSHelper.Core
                 this.lblLocalVersion.Text += string.Format(CultureInfo.InvariantCulture, " (Debug Build {0:yyyy-MM-dd HH:mm:ss})", buildDateTime);
 #endif
 
+                this.lblSqlVersion.Text += string.Format("\r\nSSDT Extensions Installed: SSAS ({0}), SSIS ({1}), SSRS ({2})",
+                     (BIDSHelperPackage.SSASExtensionVersion == null ? "N/A" : BIDSHelperPackage.SSASExtensionVersion.ToString()),
+                     (BIDSHelperPackage.SSISExtensionVersion == null ? "N/A" : BIDSHelperPackage.SSISExtensionVersion.ToString()),
+                     (BIDSHelperPackage.SSRSExtensionVersion == null ? "N/A" : BIDSHelperPackage.SSRSExtensionVersion.ToString()));
+
                 // First check we have a valid instance, the add-in may be disabled.
                 if (VersionCheckPlugin.Instance == null)
                 {

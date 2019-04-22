@@ -18,6 +18,7 @@ namespace BIDSHelper.SSIS
     using System.Windows.Forms;
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
 
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public partial class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
         /// <summary>

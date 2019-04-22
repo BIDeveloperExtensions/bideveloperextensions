@@ -7,6 +7,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSRS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSRS)]
     public class DeleteDatasetCachePlugin : BIDSHelperPluginBase
     {
         public DeleteDatasetCachePlugin(BIDSHelperPackage package)

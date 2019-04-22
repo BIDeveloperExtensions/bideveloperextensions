@@ -22,10 +22,18 @@ namespace BIDSHelper.Core
         {
             get
             {
-                page = new BIDSHelperPreferencesPage();
-                page.OptionsPage = this;
-                page.Initialize();
-                return page;
+                try
+                {
+                    page = new BIDSHelperPreferencesPage();
+                    page.OptionsPage = this;
+                    page.Initialize();
+                    return page;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    return null;
+                }
             }
         }
 

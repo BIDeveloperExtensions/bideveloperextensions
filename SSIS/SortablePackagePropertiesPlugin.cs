@@ -12,6 +12,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class SortablePackagePropertiesPlugin : BIDSHelperPluginBase
     {
         private List<PackageProperties> listPackageProperties;

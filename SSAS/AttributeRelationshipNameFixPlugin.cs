@@ -7,6 +7,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class AttributeRelationshipNameFixPlugin : BIDSHelperPluginBase
     {
         

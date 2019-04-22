@@ -16,6 +16,7 @@ namespace BIDSHelper.SSIS
     /// This persistence only works on projects which use the older Package deployment model. 
     /// The sorting itself works on newer Project deployment model projects but it doesn't get saved, so no benefit over native SSDT sorting.
     /// </summary>
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class SortProjectFilesPlugin : BIDSHelperPluginBase
     {
         public SortProjectFilesPlugin(BIDSHelperPackage package)

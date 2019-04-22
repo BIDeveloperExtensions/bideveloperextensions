@@ -19,6 +19,7 @@ using System.ComponentModel.Design;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class ExtraPropertiesPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private bool bInEffect = true;

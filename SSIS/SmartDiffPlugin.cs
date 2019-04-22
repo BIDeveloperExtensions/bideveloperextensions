@@ -11,6 +11,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.General)]
     public class SmartDiffPlugin : BIDSHelperPluginBase
     {
         private static string _VisualStudioRegistryPath;
@@ -121,6 +122,26 @@ namespace BIDSHelper
         {
             try
             {
+                ExecInternal();
+            }
+            catch (Exception ex)
+            {
+                string sError = "";
+                Exception exLoop = ex;
+                while (exLoop != null)
+                {
+                    sError += exLoop.Message + "\r\n";
+                    exLoop = exLoop.InnerException;
+                }
+                sError += ex.StackTrace;
+                MessageBox.Show(sError, "BIDS Helper Smart Diff Error");
+            }
+        }
+
+        private void ExecInternal()
+        {
+            try
+            {
                 UIHierarchy solExplorer = this.ApplicationObject.ToolWindows.SolutionExplorer;
                 UIHierarchyItem hierItem = (UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0);
                 ProjectItem projItem = (ProjectItem)hierItem.Object;
@@ -129,10 +150,9 @@ namespace BIDSHelper
                 if (projItem.Name.ToLower().EndsWith(".bim"))
                 {
                     var sandboxWrapper = new BIDSHelper.SSAS.DataModelingSandboxWrapper(this);
-                    if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
-                    if (sandboxWrapper.GetSandbox().IsTabularMetadata)
+                    if (sandboxWrapper.IsTabularMetadata)
                     {
-                        string compatibility = sandboxWrapper.GetSandbox().DatabaseCompatibilityLevel.ToString();
+                        string compatibility = sandboxWrapper.DatabaseCompatibilityLevel.ToString();
                         System.Windows.Forms.MessageBox.Show("BIDS Helper Smart Diff is not supported for " + compatibility + " compatibility level models yet.", "BIDS Helper Smart Diff");
                         return;
                     }

@@ -11,6 +11,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularActionsEditorPlugin : BIDSHelperPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         private Microsoft.AnalysisServices.BackEnd.DataModelingSandbox sandbox;

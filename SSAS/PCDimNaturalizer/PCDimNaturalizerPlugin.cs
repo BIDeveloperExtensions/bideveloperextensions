@@ -12,6 +12,7 @@ using BIDSHelper;
 
 namespace PCDimNaturalizer
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class PCDimNaturalizerPlugin : BIDSHelperPluginBase
     {
         #region Standard Plugin Overrides

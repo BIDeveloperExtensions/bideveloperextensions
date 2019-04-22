@@ -27,6 +27,7 @@ using System.Reflection;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class TriStatePerspectivesPlugin : BIDSHelperWindowActivatedPluginBase
     {
         

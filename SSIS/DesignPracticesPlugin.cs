@@ -12,6 +12,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     class DesignPracticesPlugin : BIDSHelperPluginBase
     {
         private static DesignPractices _practices = new DesignPractices();

@@ -24,6 +24,7 @@ using System;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class EstimatedCountsPlugin : BIDSHelperWindowActivatedPluginBase
     {
         //private WindowEvents windowEvents;

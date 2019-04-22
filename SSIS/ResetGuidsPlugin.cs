@@ -9,6 +9,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class ResetGuidsPlugin : BIDSHelperPluginBase
     {
         public ResetGuidsPlugin(BIDSHelperPackage package)

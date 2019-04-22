@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularPreBuildPlugin : BIDSHelperBuildEventPluginBase
     {
 

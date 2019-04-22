@@ -7,6 +7,7 @@ using System;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class VisualizeAttributeLatticePlugin : BIDSHelperPluginBase
     {
         public VisualizeAttributeLatticePlugin(BIDSHelperPackage package)

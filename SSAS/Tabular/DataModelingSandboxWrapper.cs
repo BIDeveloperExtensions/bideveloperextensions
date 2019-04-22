@@ -26,6 +26,25 @@ namespace BIDSHelper.SSAS
         {
             return _sandbox;
         }
+
+        public bool IsTabularMetadata
+        {
+            get
+            {
+                if (GetSandbox() == null) throw new System.Exception("Can't get Sandbox!");
+                return GetSandbox().IsTabularMetadata;
+            }
+        }
+
+        public int DatabaseCompatibilityLevel
+        {
+            get
+            {
+                if (GetSandbox() == null) throw new System.Exception("Can't get Sandbox!");
+                return GetSandbox().DatabaseCompatibilityLevel;
+            }
+        }
+
 #if DENALI || SQL2014
         public Microsoft.AnalysisServices.AdomdClient.AdomdConnection GetAdomdConnection()
         {
