@@ -146,25 +146,30 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                     try
                     {
                         Microsoft.VisualStudio.ExtensionManager.IExtensionHeader h = i.Header;
-                        if (!h.SystemComponent)
+                        if (h.Name == "Microsoft Reporting Services Projects" || string.Compare(h.Identifier, "717ad572-c4b7-435c-c166-c2969777f718", true) == 0)
                         {
-                            if (h.Name == "Microsoft Reporting Services Projects" || string.Compare(h.Identifier, "717ad572-c4b7-435c-c166-c2969777f718", true) == 0)
-                            {
-                                SSRSExtensionVersion = h.Version;
-                                Log.Debug("SSRS extension v" + h.Version + " is installed");
-                            }
-                            else if (h.Name == "Microsoft Integration Services Projects" || string.Compare(h.Identifier, "D1B09713-C12E-43CC-9EF4-6562298285AB", true) == 0)
-                            {
-                                SSISExtensionVersion = h.Version;
-                                Log.Debug("SSIS extension v" + h.Version + " is installed");
-                            }
-                            else if (h.Name == "Microsoft Analysis Services Projects" || string.Compare(h.Identifier, "04a86fc2-dbd5-4222-848e-911638e487fe", true) == 0)
-                            {
-                                SSASExtensionVersion = h.Version;
-                                Log.Debug("SSAS extension v" + h.Version + " is installed");
-                            }
-                            result += h.Name + " (by " + h.Author + ") v" + h.Version + " " + h.Identifier + " " + h.MoreInfoUrl + System.Environment.NewLine;
+                            SSRSExtensionVersion = h.Version;
+                            SSRSExtensionInstallPath = i.InstallPath;
+                            Log.Debug("SSRS extension v" + h.Version + " is installed at " + i.InstallPath);
                         }
+                        else if (h.Name == "Microsoft Integration Services Projects" || string.Compare(h.Identifier, "D1B09713-C12E-43CC-9EF4-6562298285AB", true) == 0)
+                        {
+                            SSISExtensionVersion = h.Version;
+                            SSISExtensionInstallPath = i.InstallPath;
+                            Log.Debug("SSIS extension v" + h.Version + " is installed at " + i.InstallPath);
+                        }
+                        else if (h.Name == "Microsoft Analysis Services Projects" || string.Compare(h.Identifier, "04a86fc2-dbd5-4222-848e-911638e487fe", true) == 0)
+                        {
+                            SSASExtensionVersion = h.Version;
+                            SSASExtensionInstallPath = i.InstallPath;
+                            Log.Debug("SSAS extension v" + h.Version + " is installed at " + i.InstallPath);
+                        }
+                        else if (h.Name == "Microsoft BI Shared Components for Visual Studio" || string.Compare(h.Identifier, "BAB64743-DA65-4501-B3A3-A73171C73D77", true) == 0)
+                        {
+                            BISharedExtensionInstallPath = i.InstallPath;
+                            Log.Debug("BI Shared extension v" + h.Version + " is installed at " + i.InstallPath);
+                        }
+                        result += h.Name + " (by " + h.Author + ") v" + h.Version + " " + h.Identifier + " " + h.MoreInfoUrl + " " + i.InstallPath + System.Environment.NewLine;
                     }
                     catch { }
                 }
@@ -662,39 +667,63 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                 System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
                 DateTime dtStart = DateTime.Now;
                 if (
-                    args.Name.StartsWith("Microsoft.AnalysisServices.")
+                    args.Name.StartsWith("Microsoft.AnalysisServices")
                     || args.Name.ToLower().StartsWith("microsoft.sqlserver.")
                     || args.Name.StartsWith("Microsoft.ReportViewer.")
-                    || args.Name.StartsWith("Microsoft.DataWarehouse.")
+                    || args.Name.StartsWith("Microsoft.DataWarehouse")
                     || args.Name.StartsWith("Microsoft.DataTransformationServices.")
                 )
                 {
                     var assemblyname = new AssemblyName(args.Name);
-                    Version originalVersion = (Version)assemblyname.Version.Clone();
-                    for (int i = 0; i < 500; i++)
+                    System.Collections.Generic.List<string> pathsToCheck = new System.Collections.Generic.List<string>();
+                    var bidsHelperPath = new System.IO.FileInfo(typeof(BIDSHelperPackage).Assembly.Location);
+                    pathsToCheck.Add(bidsHelperPath.DirectoryName + "\\");
+                    if (SSASExtensionInstallPath != null) pathsToCheck.Add(SSASExtensionInstallPath);
+                    if (SSISExtensionInstallPath != null) pathsToCheck.Add(SSISExtensionInstallPath);
+                    if (SSRSExtensionInstallPath != null) pathsToCheck.Add(SSRSExtensionInstallPath);
+                    if (BISharedExtensionInstallPath != null) pathsToCheck.Add(BISharedExtensionInstallPath);
+                    foreach (string extensionfolder in pathsToCheck)
                     {
-                        assemblyname.Version = new Version(originalVersion.Major, i, 0, 0);
-                        string sAssemblyName = assemblyname.ToString();
-                        if (_assemblyLoadsFailed.Contains(sAssemblyName)) continue;
-                        try
+                        string sPath = extensionfolder + assemblyname.Name + ".dll";
+                        if (System.IO.File.Exists(sPath))
                         {
-                            _recursiveAssemblyResolveNameToSkip = sAssemblyName;
-                            var assembly = Assembly.Load(assemblyname);
-                            System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                            var assembly = Assembly.LoadFile(sPath);
+                            System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to version " + assembly.GetName().Version.ToString() + " at " + sPath + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
                             return assembly;
-                        }
-                        catch
-                        {
-                            if (!_assemblyLoadsFailed.Contains(sAssemblyName))
-                                _assemblyLoadsFailed.Add(sAssemblyName);
-                        }
-                        finally
-                        {
-                            _recursiveAssemblyResolveNameToSkip = null;
                         }
                     }
                     System.Diagnostics.Debug.WriteLine("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
                     return null;
+
+                    //Version originalVersion = (Version)assemblyname.Version.Clone();
+                    //for (int i = 0; i < 500; i++)
+                    //{
+                    //    for (int j = 0; j <= (i >= originalVersion.Minor && i <= originalVersion.Minor + 10 ? 5 : 0); j++)
+                    //    {
+                    //        assemblyname.Version = new Version(originalVersion.Major, i, j, 0);
+                    //        string sAssemblyName = assemblyname.ToString();
+                    //        if (_assemblyLoadsFailed.Contains(sAssemblyName)) continue;
+                    //        try
+                    //        {
+                    //            _recursiveAssemblyResolveNameToSkip = sAssemblyName;
+                    //            var assembly = Assembly.Load(assemblyname);
+                    //            System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    //            return assembly;
+                    //        }
+                    //        catch
+                    //        {
+                    //            if (!_assemblyLoadsFailed.Contains(sAssemblyName))
+                    //                _assemblyLoadsFailed.Add(sAssemblyName);
+                    //            System.Diagnostics.Debug.WriteLine("AssemblyResolveTried: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    //        }
+                    //        finally
+                    //        {
+                    //            _recursiveAssemblyResolveNameToSkip = null;
+                    //        }
+                    //    }
+                    //}
+                    //System.Diagnostics.Debug.WriteLine("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    //return null;
                 }
                 else
                 {
@@ -737,6 +766,10 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
         public static Version SSISExtensionVersion = null;
         public static Version SSASExtensionVersion = null;
         public static Version SSRSExtensionVersion = null;
+        public static string SSISExtensionInstallPath = null;
+        public static string SSASExtensionInstallPath = null;
+        public static string SSRSExtensionInstallPath = null;
+        public static string BISharedExtensionInstallPath = null;
 
         internal System.IServiceProvider ServiceProvider { get { return (System.IServiceProvider)this; } }
 
