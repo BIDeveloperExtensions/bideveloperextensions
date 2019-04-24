@@ -149,7 +149,7 @@ namespace BIDSHelper.Core
                     return false;
 
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
-                return (((ProjectItem)hierItem.Object).Object.GetType() == objectType);
+                return hierItem.Object is ProjectItem && ((ProjectItem)hierItem.Object).Object != null && (((ProjectItem)hierItem.Object).Object.GetType() == objectType);
             }
             catch (Exception ex)
             {

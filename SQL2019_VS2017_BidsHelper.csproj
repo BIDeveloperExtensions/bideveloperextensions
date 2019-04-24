@@ -719,19 +719,29 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2019\ExpressionEditor.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <Private>False</Private>
+    <Reference Include="Microsoft.AnalysisServices, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
+      <SpecificVersion>True</SpecificVersion>
       <Aliases>localAdomdClient</Aliases>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Tabular.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.DataWarehouse.AS, Version=15.1.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.AS.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
       <Aliases>asAlias</Aliases>
       <Private>False</Private>
     </Reference>
@@ -740,14 +750,6 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.RS.dll</HintPath>
       <Aliases>rsAlias</Aliases>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <Private>False</Private>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <Private>False</Private>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Tabular.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.BackEnd">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.BackEnd.dll</HintPath>

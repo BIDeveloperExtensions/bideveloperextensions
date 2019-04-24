@@ -134,6 +134,30 @@ namespace BIDSHelper.Core
                      (BIDSHelperPackage.SSISExtensionVersion == null ? "N/A" : BIDSHelperPackage.SSISExtensionVersion.ToString()),
                      (BIDSHelperPackage.SSRSExtensionVersion == null ? "N/A" : BIDSHelperPackage.SSRSExtensionVersion.ToString()));
 
+                //release 2.3.0 expected: 2.8.11 SSAS extension or higher, version 2.5.6 SSRS extension or higher, and 2.1 SSIS extension or higher
+                Version SSASExpectedVersion = new Version("2.8.11");
+                Version SSRSExpectedVersion = new Version("2.5.6");
+                Version SSISExpectedVersion = new Version("2.1");
+
+                string sUpgradeSSDTMessage = string.Empty;
+                if (BIDSHelperPackage.SSASExtensionVersion != null && BIDSHelperPackage.SSASExtensionVersion < SSASExpectedVersion)
+                {
+                    if (sUpgradeSSDTMessage != string.Empty) sUpgradeSSDTMessage += ", ";
+                    sUpgradeSSDTMessage += "SSAS to " + SSASExpectedVersion;
+                }
+                if (BIDSHelperPackage.SSRSExtensionVersion != null && BIDSHelperPackage.SSRSExtensionVersion < SSRSExpectedVersion)
+                {
+                    if (sUpgradeSSDTMessage != string.Empty) sUpgradeSSDTMessage += ", ";
+                    sUpgradeSSDTMessage += "SSRS to " + SSRSExpectedVersion;
+                }
+                if (BIDSHelperPackage.SSISExtensionVersion != null && BIDSHelperPackage.SSISExtensionVersion < SSISExpectedVersion)
+                {
+                    if (sUpgradeSSDTMessage != string.Empty) sUpgradeSSDTMessage += ", ";
+                    sUpgradeSSDTMessage += "SSIS to " + SSISExpectedVersion;
+                }
+                if (sUpgradeSSDTMessage != string.Empty)
+                    this.lblSqlVersion.Text += "\r\n" + "Please upgrade " + sUpgradeSSDTMessage;
+
                 // First check we have a valid instance, the add-in may be disabled.
                 if (VersionCheckPlugin.Instance == null)
                 {

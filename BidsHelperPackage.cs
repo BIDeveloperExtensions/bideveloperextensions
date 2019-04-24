@@ -262,9 +262,6 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                         }
 
 
-
-
-
                         Log.Verbose(string.Format("Loading Plugin: {0}", sAddInTypeName));
 
                         BIDSHelperPluginBase feature;
@@ -664,7 +661,7 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
             {
                 if (_recursiveAssemblyResolveNameToSkip == args.Name)
                     return null; //skip recursion
-                System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
+                Log.Debug("AssemblyResolve: " + args.Name);
                 DateTime dtStart = DateTime.Now;
                 if (
                     args.Name.StartsWith("Microsoft.AnalysisServices")
@@ -688,11 +685,23 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                         if (System.IO.File.Exists(sPath))
                         {
                             var assembly = Assembly.LoadFile(sPath);
-                            System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to version " + assembly.GetName().Version.ToString() + " at " + sPath + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                            Log.Debug("AssemblyResolveSuccess: " + args.Name + " to version " + assembly.GetName().Version.ToString() + " at " + sPath + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
                             return assembly;
                         }
                     }
-                    System.Diagnostics.Debug.WriteLine("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    if (SSISExtensionInstallPath != null)
+                    {
+                        foreach (string sPath in System.IO.Directory.GetFiles(SSISExtensionInstallPath, assemblyname.Name + ".dll", System.IO.SearchOption.AllDirectories))
+                        {
+                            var assembly = Assembly.Load(System.IO.File.ReadAllBytes(sPath));
+                            if (assembly.GetName().Version.Major == assemblyname.Version.Major) //some SSIS subfolders have multiple versions of the assembly... make sure we match the major version number... it appears there may be an assembly redirect in operation, but this is probably safer
+                            {
+                                Log.Debug("AssemblyResolveSuccessSSIS: " + args.Name + " to version " + assembly.GetName().Version.ToString() + " at " + sPath + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                                return assembly;
+                            }
+                        }
+                    }
+                    Log.Debug("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
                     return null;
 
                     //Version originalVersion = (Version)assemblyname.Version.Clone();
@@ -812,12 +821,19 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
             int hr;
 
             // Get the output window
-            outputWindow = base.GetService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+            if (Microsoft.VisualStudio.Shell.ThreadHelper.CheckAccess())
+                outputWindow = base.GetService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+            else
+            {
+                System.Threading.Tasks.Task<object> task = base.GetServiceAsync(typeof(SVsOutputWindow));
+                task.Wait();
+                outputWindow = task.Result as IVsOutputWindow;
+            }
 
             // The General pane is not created by default. We must force its creation
             //if (guidPane == Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid)
             //{
-                hr = outputWindow.CreatePane(guidPane, "BIDS Helper", VISIBLE, DO_NOT_CLEAR_WITH_SOLUTION);
+            hr = outputWindow.CreatePane(guidPane, "BIDS Helper", VISIBLE, DO_NOT_CLEAR_WITH_SOLUTION);
                 Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
             //}
 

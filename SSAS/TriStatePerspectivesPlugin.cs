@@ -47,7 +47,7 @@ namespace BIDSHelper
         public override void OnDisable()
         {
             base.OnDisable();
-            package.Log.Debug("TriStatPerspectives OnDisable fired");
+            package.Log.Debug("TriStatePerspectives OnDisable fired");
             foreach (EditorWindow win in windowHandlesFixedForGridEvents.Values)
             {
                 win.ActiveViewChanged -= win_ActiveViewChanged;            
@@ -122,7 +122,7 @@ namespace BIDSHelper
         {
             try
             {
-                package.Log.Debug("TriStatPerspectives OnWindowActivated fired");
+                package.Log.Debug("TriStatePerspectives OnWindowActivated fired");
                 if (GotFocus == null) return;
                 IDesignerHost designer = GotFocus.Object as IDesignerHost;
                 if (designer == null) return;
@@ -497,7 +497,7 @@ namespace BIDSHelper
         {
             try
             {
-                package.Log.Debug("TriStatPerspectives grid_MouseClick fired");
+                package.Log.Debug("TriStatePerspectives grid_MouseClick fired");
                 OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
             }
             catch { }
