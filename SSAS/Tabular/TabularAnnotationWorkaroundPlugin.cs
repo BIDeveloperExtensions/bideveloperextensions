@@ -11,6 +11,7 @@ using BIDSHelper.SSAS;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularAnnotationWorkaroundPlugin : BIDSHelperPluginBase
     {
         

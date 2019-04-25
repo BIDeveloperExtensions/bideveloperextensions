@@ -13,6 +13,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class RelativePathsPlugin : BIDSHelperPluginBase
     {
         private EnvDTE.CommandEvents cmdPackageConfigurations;

@@ -293,6 +293,8 @@ namespace AggManager
                             EventSubclass = TraceEventSubclass.DmxQuery;
                         else if (Convert.ToInt64(reader["EventSubclass"]) == 2)
                             EventSubclass = TraceEventSubclass.SqlQuery;
+                        else if (Convert.ToInt64(reader["EventSubclass"]) == 3)
+                            EventSubclass = TraceEventSubclass.DAXQuery;
                         else
                             EventSubclass = TraceEventSubclass.NotAvailable;
                     }
@@ -302,6 +304,7 @@ namespace AggManager
                 {
                     string[] pathParts = reader["ObjectPath"].ToString().Split('.');
                     DatabaseName = pathParts[1];
+                    //TODO: path contains ID... won't match name?
                 }
                 else if (ReaderContainsColumn(reader, "DatabaseName") && !Convert.IsDBNull(reader["DatabaseName"]))
                 {
@@ -439,7 +442,10 @@ namespace AggManager
 
         void HandleTraceEvent(MyTraceEventArgs e)
         {
-            if (e.EventClass == TraceEventClass.QueryEnd && e.EventSubclass == TraceEventSubclass.MdxQuery && e.DatabaseName == liveDB.Name)
+            if (e.EventClass == TraceEventClass.QueryEnd 
+                && (e.EventSubclass == TraceEventSubclass.MdxQuery 
+                 || e.EventSubclass == TraceEventSubclass.DAXQuery) 
+                && e.DatabaseName == liveDB.Name)
                 iQueries++;
             else if (e.EventClass == TraceEventClass.GetDataFromAggregation && e.DatabaseName == liveDB.Name && e.ObjectPath.StartsWith(sCubePath))
             {

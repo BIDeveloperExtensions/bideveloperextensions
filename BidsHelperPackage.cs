@@ -15,6 +15,7 @@ using BIDSHelper.Core.VsIntegration;
 using System.Linq;
 using Microsoft.VisualStudio;
 using BIDSHelper.Core.Logger;
+using Task = System.Threading.Tasks.Task;
 
 namespace BIDSHelper
 {
@@ -43,9 +44,9 @@ namespace BIDSHelper
     /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
     /// </para>
     /// </remarks>
-    [ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82")]
+    [ProvideAutoLoad("f1536ef8-92ec-443c-9ed7-fdadf150da82", PackageAutoLoadFlags.BackgroundLoad)]
     //[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112", VersionInfo.Version, IconResourceID = 400)] // Info on this package for Help/About
     [Guid(BIDSHelperPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
@@ -53,7 +54,7 @@ namespace BIDSHelper
     [ProvideOptionPage(typeof(BIDSHelperOptionsFeatures), "BIDS Helper", "Features", 0, 0, true)]
     [ProvideOptionPage(typeof(BIDSHelperPreferencesDialogPage), "BIDS Helper", "Preferences", 0, 0, true)]
     [ProvideOptionPage(typeof(BIDSHelperOptionsVersion), "BIDS Helper", "Version", 0, 0, true)]
-    public sealed class BIDSHelperPackage : Package, IVsDebuggerEvents
+    public sealed class BIDSHelperPackage : AsyncPackage, IVsDebuggerEvents
     {
         /// <summary>
         /// BidsHelperPackage GUID string.
@@ -75,7 +76,7 @@ namespace BIDSHelper
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
         }
-        
+
 
         #region Package Members
 
@@ -83,7 +84,22 @@ namespace BIDSHelper
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override void Initialize()
+        protected override async Task InitializeAsync(System.Threading.CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        //protected override void Initialize()
+        {
+            // runs in the background thread and doesn't affect the responsiveness of the UI thread.
+            //await Task.Delay(100);
+            
+            // Switches to the UI thread in order to consume some services used in command initialization
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+
+
+            OriginalInitialize();
+
+        }
+
+        private void OriginalInitialize()
         {
             bool bQuitting = false;
             base.Initialize();
@@ -96,6 +112,72 @@ namespace BIDSHelper
             Log.LogLevel = LogLevels.Warning;
 #endif
             Log.Debug("BIDSHelper Package Initialize Starting");
+
+
+            //var bidsHelperPath = new System.IO.FileInfo(typeof(BIDSHelperPackage).Assembly.Location);
+
+//#pragma warning disable 0618 //ignore the fact this is an obsolete method
+//            AppDomain.CurrentDomain.AppendPrivatePath(bidsHelperPath.DirectoryName);
+//            AppDomain.CurrentDomain.SetupInformation.ApplicationBase = bidsHelperPath.DirectoryName;
+//#pragma warning restore 0618
+
+            //(AppDomain.CurrentDomain.SetupInformation.PrivateBinPath + ";" ?? "") + 
+            /*
+             * VS2019
+             * Microsoft Reporting Services Projects (by Microsoft) v2.5.6 717ad572-c4b7-435c-c166-c2969777f718 
+Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-848e-911638e487fe 
+
+            VS2017
+            Microsoft Reporting Services Projects (by Microsoft) v2.5.6 717ad572-c4b7-435c-c166-c2969777f718 
+Microsoft Integration Services Projects (by Microsoft) v2.1 D1B09713-C12E-43CC-9EF4-6562298285AB 
+Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-848e-911638e487fe 
+
+             */
+            try
+            {
+                System.IServiceProvider serviceProvider = this as System.IServiceProvider;
+                Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager em =
+                   (Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager)serviceProvider.GetService(
+                        typeof(Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager));
+
+                string result = "";
+                foreach (Microsoft.VisualStudio.ExtensionManager.IInstalledExtension i in em.GetInstalledExtensions())
+                {
+                    try
+                    {
+                        Microsoft.VisualStudio.ExtensionManager.IExtensionHeader h = i.Header;
+                        if (h.Name == "Microsoft Reporting Services Projects" || string.Compare(h.Identifier, "717ad572-c4b7-435c-c166-c2969777f718", true) == 0)
+                        {
+                            SSRSExtensionVersion = h.Version;
+                            SSRSExtensionInstallPath = i.InstallPath;
+                            Log.Debug("SSRS extension v" + h.Version + " is installed at " + i.InstallPath);
+                        }
+                        else if (h.Name == "Microsoft Integration Services Projects" || string.Compare(h.Identifier, "D1B09713-C12E-43CC-9EF4-6562298285AB", true) == 0)
+                        {
+                            SSISExtensionVersion = h.Version;
+                            SSISExtensionInstallPath = i.InstallPath;
+                            Log.Debug("SSIS extension v" + h.Version + " is installed at " + i.InstallPath);
+                        }
+                        else if (h.Name == "Microsoft Analysis Services Projects" || string.Compare(h.Identifier, "04a86fc2-dbd5-4222-848e-911638e487fe", true) == 0)
+                        {
+                            SSASExtensionVersion = h.Version;
+                            SSASExtensionInstallPath = i.InstallPath;
+                            Log.Debug("SSAS extension v" + h.Version + " is installed at " + i.InstallPath);
+                        }
+                        else if (h.Name == "Microsoft BI Shared Components for Visual Studio" || string.Compare(h.Identifier, "BAB64743-DA65-4501-B3A3-A73171C73D77", true) == 0)
+                        {
+                            BISharedExtensionInstallPath = i.InstallPath;
+                            Log.Debug("BI Shared extension v" + h.Version + " is installed at " + i.InstallPath);
+                        }
+                        result += h.Name + " (by " + h.Author + ") v" + h.Version + " " + h.Identifier + " " + h.MoreInfoUrl + " " + i.InstallPath + System.Environment.NewLine;
+                    }
+                    catch { }
+                }
+                Log.Debug(result);
+            }
+            catch { }
+
+
             string sAddInTypeName = string.Empty;
             try
             {
@@ -128,9 +210,20 @@ namespace BIDSHelper
                 catch (ReflectionTypeLoadException loadEx)
                 {
                     types = loadEx.Types; //if some types can't be loaded (possibly because SSIS SSDT isn't installed, just SSAS?) then proceed with the types that work
-                    pluginExceptions.Add(loadEx);
-                    Log.Exception("Problem loading BIDS Helper types list", loadEx);
+                    //pluginExceptions.Add(loadEx); //in testing it appears that this does return the complete list of types so there's no need to display this exception to the user, I don't think since we will individually load plugins below and log exceptions
+                    //Log.Exception("Problem loading BIDS Helper types list", loadEx);
+                    //Log.Error(FormatLoaderException(loadEx));
                 }
+                Log.Debug($"Found {types.Length} types");
+
+                //can be used for debugging which types couldn't be loaded above
+                //for (int i = 0; i < types.Length; i++)
+                //{
+                //    if (types[i] == null)
+                //        Log.Error("types[" + i + "] is null");
+                //    else
+                //        Log.Debug("types[" + i + "]\t" + types[i].FullName);
+                //}
 
                 foreach (Type t in types)
                 {
@@ -141,6 +234,34 @@ namespace BIDSHelper
                         && (!t.IsAbstract))
                     {
                         sAddInTypeName = t.Name;
+
+                        //new... only load SSIS to test this works
+                        //load any not marked
+                        var categoryAttribute = t.GetCustomAttributes(typeof(FeatureCategory), true).FirstOrDefault() as FeatureCategory;
+                        if (categoryAttribute != null)
+                        {
+                            if (SSISExtensionVersion == null && categoryAttribute.Category == BIDSFeatureCategories.SSIS)
+                            {
+                                Log.Verbose(string.Format("Skipping Plugin: {0}", sAddInTypeName));
+                                continue;
+                            }
+                            else if (SSASExtensionVersion == null && (categoryAttribute.Category == BIDSFeatureCategories.SSASMulti || categoryAttribute.Category == BIDSFeatureCategories.SSASTabular))
+                            {
+                                Log.Verbose(string.Format("Skipping Plugin: {0}", sAddInTypeName));
+                                continue;
+                            }
+                            else if (SSRSExtensionVersion == null && categoryAttribute.Category == BIDSFeatureCategories.SSRS)
+                            {
+                                Log.Verbose(string.Format("Skipping Plugin: {0}", sAddInTypeName));
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            Log.Verbose(string.Format("Warning: Plugin FeatureCategory not set: {0}", sAddInTypeName));
+                        }
+
+
                         Log.Verbose(string.Format("Loading Plugin: {0}", sAddInTypeName));
 
                         BIDSHelperPluginBase feature;
@@ -173,41 +294,7 @@ namespace BIDSHelper
                     string sException = "";
                     foreach (Exception pluginEx in pluginExceptions)
                     {
-                        sException += string.Format("BIDS Helper encountered an error when Visual Studio started:\r\n{0}\r\n{1}"
-                        , pluginEx.Message
-                        , pluginEx.StackTrace);
-
-                        Exception innerEx = pluginEx.InnerException;
-                        while (innerEx != null)
-                        {
-                            sException += string.Format("\r\nInner exception:\r\n{0}\r\n{1}"
-                            , innerEx.Message
-                            , innerEx.StackTrace);
-                            innerEx = innerEx.InnerException;
-                        }
-
-                        ReflectionTypeLoadException ex = pluginEx as ReflectionTypeLoadException;
-                        if (ex == null) ex = pluginEx.InnerException as ReflectionTypeLoadException;
-                        if (ex != null)
-                        {
-                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                            foreach (Exception exSub in ex.LoaderExceptions)
-                            {
-                                sb.AppendLine();
-                                sb.AppendLine(exSub.Message);
-                                System.IO.FileNotFoundException exFileNotFound = exSub as System.IO.FileNotFoundException;
-                                if (exFileNotFound != null)
-                                {
-                                    if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
-                                    {
-                                        sb.AppendLine("Fusion Log:");
-                                        sb.AppendLine(exFileNotFound.FusionLog);
-                                    }
-                                }
-                                sb.AppendLine();
-                            }
-                            sException += sb.ToString();
-                        }
+                        sException += FormatLoaderException(pluginEx);
                     }
                     AddInLoadException = new Exception(sException);
                 }
@@ -242,6 +329,51 @@ namespace BIDSHelper
                     StatusBar.Clear();
             }
 
+        }
+
+        public static string FormatLoaderException(Exception pluginEx)
+        {
+            string sException = "";
+            sException += string.Format("BIDS Helper encountered an error when Visual Studio started:\r\n{0}\r\n{1}"
+                , pluginEx.Message
+                , pluginEx.StackTrace);
+
+            Exception innerEx = pluginEx.InnerException;
+            while (innerEx != null)
+            {
+                sException += string.Format("\r\nInner exception:\r\n{0}\r\n{1}"
+                , innerEx.Message
+                , innerEx.StackTrace);
+                innerEx = innerEx.InnerException;
+            }
+
+            ReflectionTypeLoadException ex = pluginEx as ReflectionTypeLoadException;
+            if (ex == null) ex = pluginEx.InnerException as ReflectionTypeLoadException;
+            if (ex != null)
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                foreach (Exception exSub in ex.LoaderExceptions)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine(exSub.GetType().FullName);
+                    sb.AppendLine(exSub.Message);
+                    sb.AppendLine(exSub.StackTrace);
+                    System.IO.FileNotFoundException exFileNotFound = exSub as System.IO.FileNotFoundException;
+                    if (exFileNotFound != null)
+                    {
+                        if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
+                        {
+                            sb.AppendLine("Fusion Log:");
+                            sb.AppendLine(exFileNotFound.FusionLog);
+                        }
+                        sb.AppendLine(string.Format("Source: {0}", exFileNotFound.Source));
+                        sb.AppendLine(string.Format("TargetSite: {0}", exFileNotFound.TargetSite));
+                    }
+                    sb.AppendLine();
+                }
+                sException += sb.ToString();
+            }
+            return sException;
         }
 
 //        private bool SwitchVsixManifest()
@@ -515,6 +647,7 @@ namespace BIDSHelper
         }
 #else
         string _recursiveAssemblyResolveNameToSkip = null;
+        System.Collections.Generic.List<string> _assemblyLoadsFailed = new System.Collections.Generic.List<string>();
 
         /// <summary>
         /// Only fires if an assembly fails to load. This gives us a chance to redirect to a DLL that does exist.
@@ -528,36 +661,78 @@ namespace BIDSHelper
             {
                 if (_recursiveAssemblyResolveNameToSkip == args.Name)
                     return null; //skip recursion
-                System.Diagnostics.Debug.WriteLine("AssemblyResolve: " + args.Name);
+                Log.Debug("AssemblyResolve: " + args.Name);
                 DateTime dtStart = DateTime.Now;
                 if (
-                    args.Name.StartsWith("Microsoft.AnalysisServices.")
+                    args.Name.StartsWith("Microsoft.AnalysisServices")
                     || args.Name.ToLower().StartsWith("microsoft.sqlserver.")
                     || args.Name.StartsWith("Microsoft.ReportViewer.")
-                    || args.Name.StartsWith("Microsoft.DataWarehouse.")
+                    || args.Name.StartsWith("Microsoft.DataWarehouse")
                     || args.Name.StartsWith("Microsoft.DataTransformationServices.")
                 )
                 {
                     var assemblyname = new AssemblyName(args.Name);
-                    Version originalVersion = (Version)assemblyname.Version.Clone();
-                    for (int i = 0; i < 500; i++)
+                    System.Collections.Generic.List<string> pathsToCheck = new System.Collections.Generic.List<string>();
+                    var bidsHelperPath = new System.IO.FileInfo(typeof(BIDSHelperPackage).Assembly.Location);
+                    pathsToCheck.Add(bidsHelperPath.DirectoryName + "\\");
+                    if (SSASExtensionInstallPath != null) pathsToCheck.Add(SSASExtensionInstallPath);
+                    if (SSISExtensionInstallPath != null) pathsToCheck.Add(SSISExtensionInstallPath);
+                    if (SSRSExtensionInstallPath != null) pathsToCheck.Add(SSRSExtensionInstallPath);
+                    if (BISharedExtensionInstallPath != null) pathsToCheck.Add(BISharedExtensionInstallPath);
+                    foreach (string extensionfolder in pathsToCheck)
                     {
-                        assemblyname.Version = new Version(originalVersion.Major, i, 0, 0);
-                        try
+                        string sPath = extensionfolder + assemblyname.Name + ".dll";
+                        if (System.IO.File.Exists(sPath))
                         {
-                            _recursiveAssemblyResolveNameToSkip = assemblyname.ToString();
-                            var assembly = Assembly.Load(assemblyname);
-                            System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                            var assembly = Assembly.LoadFile(sPath);
+                            Log.Debug("AssemblyResolveSuccess: " + args.Name + " to version " + assembly.GetName().Version.ToString() + " at " + sPath + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
                             return assembly;
                         }
-                        catch { }
-                        finally
+                    }
+                    if (SSISExtensionInstallPath != null)
+                    {
+                        foreach (string sPath in System.IO.Directory.GetFiles(SSISExtensionInstallPath, assemblyname.Name + ".dll", System.IO.SearchOption.AllDirectories))
                         {
-                            _recursiveAssemblyResolveNameToSkip = null;
+                            var assembly = Assembly.Load(System.IO.File.ReadAllBytes(sPath));
+                            if (assembly.GetName().Version.Major == assemblyname.Version.Major) //some SSIS subfolders have multiple versions of the assembly... make sure we match the major version number... it appears there may be an assembly redirect in operation, but this is probably safer
+                            {
+                                Log.Debug("AssemblyResolveSuccessSSIS: " + args.Name + " to version " + assembly.GetName().Version.ToString() + " at " + sPath + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                                return assembly;
+                            }
                         }
                     }
-                    System.Diagnostics.Debug.WriteLine("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    Log.Debug("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
                     return null;
+
+                    //Version originalVersion = (Version)assemblyname.Version.Clone();
+                    //for (int i = 0; i < 500; i++)
+                    //{
+                    //    for (int j = 0; j <= (i >= originalVersion.Minor && i <= originalVersion.Minor + 10 ? 5 : 0); j++)
+                    //    {
+                    //        assemblyname.Version = new Version(originalVersion.Major, i, j, 0);
+                    //        string sAssemblyName = assemblyname.ToString();
+                    //        if (_assemblyLoadsFailed.Contains(sAssemblyName)) continue;
+                    //        try
+                    //        {
+                    //            _recursiveAssemblyResolveNameToSkip = sAssemblyName;
+                    //            var assembly = Assembly.Load(assemblyname);
+                    //            System.Diagnostics.Debug.WriteLine("AssemblyResolveSuccess: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    //            return assembly;
+                    //        }
+                    //        catch
+                    //        {
+                    //            if (!_assemblyLoadsFailed.Contains(sAssemblyName))
+                    //                _assemblyLoadsFailed.Add(sAssemblyName);
+                    //            System.Diagnostics.Debug.WriteLine("AssemblyResolveTried: " + args.Name + " to " + assemblyname.Version + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    //        }
+                    //        finally
+                    //        {
+                    //            _recursiveAssemblyResolveNameToSkip = null;
+                    //        }
+                    //    }
+                    //}
+                    //System.Diagnostics.Debug.WriteLine("AssemblyResolveFail: " + args.Name + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    //return null;
                 }
                 else
                 {
@@ -597,6 +772,13 @@ namespace BIDSHelper
 
         public static Exception AddInLoadException = null;
         private uint debugEventCookie;
+        public static Version SSISExtensionVersion = null;
+        public static Version SSASExtensionVersion = null;
+        public static Version SSRSExtensionVersion = null;
+        public static string SSISExtensionInstallPath = null;
+        public static string SSASExtensionInstallPath = null;
+        public static string SSRSExtensionInstallPath = null;
+        public static string BISharedExtensionInstallPath = null;
 
         internal System.IServiceProvider ServiceProvider { get { return (System.IServiceProvider)this; } }
 
@@ -639,12 +821,19 @@ namespace BIDSHelper
             int hr;
 
             // Get the output window
-            outputWindow = base.GetService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+            if (Microsoft.VisualStudio.Shell.ThreadHelper.CheckAccess())
+                outputWindow = base.GetService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+            else
+            {
+                System.Threading.Tasks.Task<object> task = base.GetServiceAsync(typeof(SVsOutputWindow));
+                task.Wait();
+                outputWindow = task.Result as IVsOutputWindow;
+            }
 
             // The General pane is not created by default. We must force its creation
             //if (guidPane == Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid)
             //{
-                hr = outputWindow.CreatePane(guidPane, "BIDS Helper", VISIBLE, DO_NOT_CLEAR_WITH_SOLUTION);
+            hr = outputWindow.CreatePane(guidPane, "BIDS Helper", VISIBLE, DO_NOT_CLEAR_WITH_SOLUTION);
                 Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
             //}
 

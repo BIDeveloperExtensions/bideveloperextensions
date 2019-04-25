@@ -4,7 +4,8 @@ namespace BIDSHelper.SSIS
     using System.Windows.Forms;
     using EnvDTE;
     using EnvDTE80;
-    
+
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class dtsConfigFormatterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         //private WindowEvents windowEvents;

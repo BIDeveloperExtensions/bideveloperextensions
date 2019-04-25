@@ -9,6 +9,7 @@ namespace BIDSHelper.SSIS.Biml
     using Microsoft.DataWarehouse.Design;
     using Varigence.Flow.FlowFramework.Validation;
 
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class BimlCheckForErrorsPlugin : BimlFeaturePluginBase
     {
         public BimlCheckForErrorsPlugin(BIDSHelperPackage package)

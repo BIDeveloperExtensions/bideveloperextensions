@@ -12,6 +12,7 @@ namespace BIDSHelper.SSIS
     using System.Reflection;
     using System.Windows.Forms;
 
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public partial class ParametersWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
 

@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class ExpressionListPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private const string REGISTRY_EXTENDED_PATH = "ExpressionListPlugin";

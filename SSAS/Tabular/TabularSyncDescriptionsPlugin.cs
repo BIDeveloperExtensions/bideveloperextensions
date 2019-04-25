@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularSyncDescriptionsPlugin : BIDSHelperWindowActivatedPluginBase
     {
         #region Standard Plugin Overrides

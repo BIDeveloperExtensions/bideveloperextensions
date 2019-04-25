@@ -14,6 +14,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class DataTypeDiscrepancyCheckPlugin : BIDSHelperPluginBase
     {
         private const System.Reflection.BindingFlags getfieldflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;

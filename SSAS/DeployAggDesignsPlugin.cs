@@ -20,6 +20,7 @@ using System;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class DeployAggDesignsPlugin : BIDSHelperPluginBase
     {
 

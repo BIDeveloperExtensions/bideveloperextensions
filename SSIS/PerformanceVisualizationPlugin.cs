@@ -13,6 +13,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class PerformanceVisualizationPlugin : BIDSHelperPluginBase
     {
         //private DTEEvents events;

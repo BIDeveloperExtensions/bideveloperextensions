@@ -3,6 +3,7 @@ using EnvDTE80;
 
 namespace BIDSHelper.SSIS.Biml
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class HelpWithBimlPlugin : BimlFeaturePluginBase
     {
         public HelpWithBimlPlugin(BIDSHelperPackage package)

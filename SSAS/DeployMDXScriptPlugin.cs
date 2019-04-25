@@ -30,6 +30,7 @@ namespace BIDSHelper.SSAS
     /// <summary>
     /// Command handler
     /// </summary>
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     internal sealed class DeployMdxScriptPlugin : BIDSHelperPluginBase
     {
 

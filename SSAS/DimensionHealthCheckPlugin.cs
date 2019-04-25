@@ -11,6 +11,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class DimensionHealthCheckPlugin : BIDSHelperPluginBase
     {
         private Dimension oLastDimension;

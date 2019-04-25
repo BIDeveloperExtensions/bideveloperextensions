@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularHideMemberIfPlugin : BIDSHelperWindowActivatedPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         public const string HIDEMEMBERIF_ANNOTATION = "BIDS_Helper_Tabular_HideMemberIf_Backups";

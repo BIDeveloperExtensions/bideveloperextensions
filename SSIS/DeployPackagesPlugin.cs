@@ -18,6 +18,7 @@ using BIDSHelper.SSAS;
 
 namespace BIDSHelper.SSIS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class DeployPackagesPlugin : BIDSHelperPluginBase
     {
         private CommandBarButton cmdButtonProperties = null;
