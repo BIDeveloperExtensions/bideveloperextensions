@@ -73,7 +73,9 @@ namespace BIDSHelper.Core
                     case 14:
                         return "2015";
                     case 15:
-                        return "2017";    // Unofficial
+                        return "2017";
+                    case 16:
+                        return "2019";
                     default:
                         return string.Format("(VS Unknown {0})", VisualStudioVersion.ToString());
                 }

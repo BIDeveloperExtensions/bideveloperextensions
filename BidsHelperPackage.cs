@@ -152,7 +152,9 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                             SSRSExtensionInstallPath = i.InstallPath;
                             Log.Debug("SSRS extension v" + h.Version + " is installed at " + i.InstallPath);
                         }
-                        else if (h.Name == "Microsoft Integration Services Projects" || string.Compare(h.Identifier, "D1B09713-C12E-43CC-9EF4-6562298285AB", true) == 0)
+                        else if (h.Name == "Microsoft Integration Services Projects" || string.Compare(h.Identifier, "D1B09713-C12E-43CC-9EF4-6562298285AB", true) == 0 //2.2 (VS2017)
+                            || h.Name == "SQL Server Integration Services Projects" || string.Compare(h.Identifier, "851E7A09-7B2B-4F06-A15D-BABFCB26B970", true) == 0 //3.0 (VS2019)
+                            )
                         {
                             SSISExtensionVersion = h.Version;
                             SSISExtensionInstallPath = i.InstallPath;
