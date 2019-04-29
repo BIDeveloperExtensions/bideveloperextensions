@@ -196,19 +196,26 @@ namespace BIDSHelper.SSIS
 
         private void grid_MouseButtonClicked(object sender, MouseButtonClickedEventArgs args)
         {
-            // Fragile, as relies on hardcoded index. We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
-            if (args.Button == MouseButtons.Left && args.ColumnIndex == 6)
+            try
             {
-                // Dumbass, the args.RowIndex is a long, but all the grid methods that accept a row index are int!
-                EditExpressionButtonClick((int)args.RowIndex, args.ColumnIndex);
-            }
+                // Fragile, as relies on hardcoded index. We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
+                if (args.Button == MouseButtons.Left && args.ColumnIndex == 6)
+                {
+                    // Dumbass, the args.RowIndex is a long, but all the grid methods that accept a row index are int!
+                    EditExpressionButtonClick((int)args.RowIndex, args.ColumnIndex);
+                }
+            } catch { }
         }
 
         //only way I could find to monitor when row data in the grid changes
         void grid_Invalidated(object sender, InvalidateEventArgs e)
         {
-            CheckButtonIcons();
-            RefreshHighlights();
+            try
+            {
+                CheckButtonIcons();
+                RefreshHighlights();
+            }
+            catch { }
         }
 
         private void CheckButtonIcons()
