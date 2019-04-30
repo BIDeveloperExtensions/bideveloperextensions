@@ -509,9 +509,19 @@ namespace BIDSHelper.SSIS
 
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt proj = GetSelectedProjectReference();
 
-                    if (proj == null || proj.Kind != BIDSProjectKinds.SSIS) return;
+                    if (proj == null || proj.Kind != BIDSProjectKinds.SSIS)
+                    {
+                        CancelDefault = false; //let the Microsoft code fire
+                        return;
+                    }
 
                     sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                    if (settings == null)
+                    {
+                        CancelDefault = false; //let the Microsoft code fire
+                        return;
+                    }
+
                     projectManager = (Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                     if (!IsLegacyDeploymentMode(projectManager))
