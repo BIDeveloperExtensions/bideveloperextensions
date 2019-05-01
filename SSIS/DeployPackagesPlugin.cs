@@ -154,6 +154,11 @@ namespace BIDSHelper.SSIS
                 }
 
                 sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)projects[0]).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                if (settings == null)
+                {
+                    MessageBox.Show("Could not get IConfigurationSettings");
+                    return;
+                }
                 DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                 this.ApplicationObject.ToolWindows.OutputWindow.Parent.SetFocus();
@@ -201,6 +206,11 @@ namespace BIDSHelper.SSIS
         private void DeployProject(Project proj, IOutputWindow outputWindow, System.Array selectedItems, bool bCreateBat)
         {
             sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            if (settings == null)
+            {
+                MessageBox.Show("Could not get IConfigurationSettings");
+                return;
+            }
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
             StringBuilder sBatFileContents = new StringBuilder();
