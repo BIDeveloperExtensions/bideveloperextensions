@@ -108,7 +108,19 @@ namespace BIDSHelper.SSIS
                         continue;
                     }
 
-                    IDesignerToolWindowService service = (IDesignerToolWindowService)designer.GetService(typeof(IDesignerToolWindowService));
+
+                    package.Log.Debug(designer.GetType().FullName + " from " + designer.GetType().Assembly.Location);
+                    package.Log.Debug(typeof(IDesignerToolWindowService).FullName + " from " + typeof(IDesignerToolWindowService).Assembly.Location);
+                    var obj = designer.GetService(typeof(IDesignerToolWindowService));
+                    if (obj != null)
+                        package.Log.Debug(obj.GetType().FullName + " from " + obj.GetType().Assembly.Location);
+                    else
+                        package.Log.Debug("obj is null");
+
+
+
+
+                    IDesignerToolWindowService service = designer.GetService(typeof(IDesignerToolWindowService)) as IDesignerToolWindowService;
                     if (service == null) continue;
                     IDesignerToolWindow toolWindow = service.GetToolWindow(new Guid(SSIS_VARIABLES_TOOL_WINDOW_KIND), 0);
                     if (toolWindow == null) continue;
@@ -190,7 +202,8 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                package.Log.Exception("Problem in HookupVariablesWindow", ex);
+                //MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

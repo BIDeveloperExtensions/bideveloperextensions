@@ -745,6 +745,17 @@
       <Aliases>asAlias</Aliases>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.Interfaces.DLL</HintPath>
+      <Aliases>sharedDataWarehouseInterfaces</Aliases>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.DataWarehouse.Interfaces.AS, Version=15.2.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>DLLs\SQL2019\Reference\FromASFolder\Microsoft.DataWarehouse.Interfaces.AS.DLL</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Aliases>asDataWarehouseInterfaces</Aliases>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.DataWarehouse.RS, Version=15.1.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.RS.dll</HintPath>
@@ -833,7 +844,7 @@
     <Reference Include="Microsoft.SqlServer.DlgGrid, Version=15.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.DlgGrid.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=15.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
@@ -896,12 +907,6 @@
     <Reference Include="Microsoft.DataWarehouse">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.DLL</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=15.1.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.Interfaces.DLL</HintPath>
-      <Private>False</Private>
-      <Aliases>sharedDataWarehouseInterfaces</Aliases>
     </Reference>
     <Reference Include="Microsoft.DataWarehouse.VsIntegration">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
