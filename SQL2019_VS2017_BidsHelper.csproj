@@ -103,6 +103,7 @@
     <Compile Include="Core\EditorWindowTag.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\FeatureCategory.cs" />
+    <Compile Include="Core\GitHelper.cs" />
     <Compile Include="Core\IWindowActivatedPlugin.cs" />
     <Compile Include="Core\Logger\LogLevels.cs" />
     <Compile Include="Core\Logger\NullLogger.cs" />
@@ -525,6 +526,8 @@
     <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Winforms.AppLocal.dll" />
     <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.GridControl.dll" />
     <Content Include="DLLs\SQL2019\ExpressionEditor.dll" />
+    <Content Include="DLLs\SQL2019\Reference\FromASFolder\Microsoft.DataWarehouse.Interfaces.AS.DLL" />
+    <Content Include="DLLs\SQL2019\Reference\LibGit2Sharp.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.BackEnd.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Common.FrontEnd.dll" />
@@ -718,6 +721,10 @@
     <Reference Include="ExpressionEditor, Version=7.1.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2019\ExpressionEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="LibGit2Sharp">
+      <HintPath>DLLs\SQL2019\Reference\LibGit2Sharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.dll</HintPath>
