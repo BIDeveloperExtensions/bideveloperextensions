@@ -34,7 +34,7 @@ namespace BIDSHelper.SSIS
             try
             {
                 bContextButton1 = true;
-                if (!string.IsNullOrEmpty(SourceSafeIniDirectory))
+                if (!string.IsNullOrEmpty(SourceControlProvider))
                     this.browseContextMenuStrip1.Show(this, new Point(button1.Left, button1.Bottom));
                 else
                     windowsFolderToolStripMenuItem_Click(null, null);
@@ -50,7 +50,7 @@ namespace BIDSHelper.SSIS
             try
             {
                 bContextButton1 = false;
-                if (!string.IsNullOrEmpty(SourceSafeIniDirectory))
+                if (!string.IsNullOrEmpty(SourceControlProvider))
                     this.browseContextMenuStrip1.Show(this, new Point(button2.Left, button2.Bottom));
                 else
                     windowsFolderToolStripMenuItem_Click(null, null);
@@ -86,12 +86,12 @@ namespace BIDSHelper.SSIS
                 versionForm.Controls.Add(combo);
 
                 string sSourceSafePath = (bContextButton1 ? txtCompare.Text : txtTo.Text);
-                int iVersion = -1;
+                string sVersion = "";
                 if (sSourceSafePath.StartsWith("$/"))
                 {
                     if (sSourceSafePath.Contains(":"))
                     {
-                        iVersion = int.Parse(sSourceSafePath.Substring(sSourceSafePath.IndexOf(':') + 1));
+                        sVersion = sSourceSafePath.Substring(sSourceSafePath.IndexOf(':') + 1);
                         sSourceSafePath = sSourceSafePath.Substring(0, sSourceSafePath.IndexOf(':'));
                     }
                 }
@@ -110,7 +110,7 @@ namespace BIDSHelper.SSIS
                 foreach (string option in SmartDiffPlugin.GetSourceControlVersions(SourceSafeIniDirectory, sSourceSafePath, SourceControlProvider))
                 {
                     int i = combo.Items.Add(option);
-                    if (option.StartsWith(iVersion + " "))
+                    if (option.StartsWith(sVersion + " "))
                     {
                         combo.SelectedIndex = i;
                         bFoundVersion = true;
@@ -135,8 +135,8 @@ namespace BIDSHelper.SSIS
                 string sVersionSuffix = "";
                 if (combo.SelectedIndex > 0)
                 {
-                    iVersion = int.Parse(combo.Items[combo.SelectedIndex].ToString().Substring(0, combo.Items[combo.SelectedIndex].ToString().IndexOf(' ')));
-                    sVersionSuffix = ":" + iVersion;
+                        sVersion = combo.Items[combo.SelectedIndex].ToString().Substring(0, combo.Items[combo.SelectedIndex].ToString().IndexOf(' '));
+                        sVersionSuffix = ":" + sVersion;
                 }
 
                 if (bContextButton1)
