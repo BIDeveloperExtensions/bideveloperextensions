@@ -8,7 +8,8 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSRS
 {
-   
+
+    [FeatureCategory(BIDSFeatureCategories.SSRS)]
     public class UsedDatasetsPlugin : BIDSHelperPluginBase
     {
         public UsedDatasetsPlugin(BIDSHelperPackage package)

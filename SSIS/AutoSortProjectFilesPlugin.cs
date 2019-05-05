@@ -14,6 +14,7 @@ namespace BIDSHelper.SSIS
     /// <summary>
     ///     Automatically sort packages in SSIS project. Sorting will not get persisted with Project deployment projects.
     /// </summary>
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class AutoSortProjectFilesPlugin : BIDSHelperPluginBase, IVsSolutionEvents
     {
         // Declare as field, we need to keep the reference alive for it to work

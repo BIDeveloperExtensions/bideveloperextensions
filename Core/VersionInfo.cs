@@ -9,7 +9,7 @@ namespace BIDSHelper.Core
     {
         // BIDS Helper Assembly & VSIX Version
         // N.B. Manually update the manifest file, if you change this - See source.extension.vsixmanifest
-        public const string Version = "2.3.0";
+        public const string Version = "2.3.2";
 
         private static readonly object lockResource = new object();
         private static Version visualStudioVersion;
@@ -73,7 +73,9 @@ namespace BIDSHelper.Core
                     case 14:
                         return "2015";
                     case 15:
-                        return "2017";    // Unofficial
+                        return "2017";
+                    case 16:
+                        return "2019";
                     default:
                         return string.Format("(VS Unknown {0})", VisualStudioVersion.ToString());
                 }

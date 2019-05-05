@@ -8,6 +8,8 @@ namespace BIDSHelper
     using EnvDTE80;
     using Microsoft.Win32;
     using Core;
+
+    [FeatureCategory(BIDSFeatureCategories.General)]
     public class VersionCheckPlugin : BIDSHelperPluginBase, IDisposable
     {
 //#if SQL2016

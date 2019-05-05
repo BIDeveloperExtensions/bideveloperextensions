@@ -18,6 +18,7 @@ namespace BIDSHelper.SSIS
     using System.Windows.Forms;
     using IDTSInfoEventsXX = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSInfoEvents100;
 
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public partial class VariablesWindowPlugin : BIDSHelperWindowActivatedPluginBase
     {
         /// <summary>
@@ -107,7 +108,19 @@ namespace BIDSHelper.SSIS
                         continue;
                     }
 
-                    IDesignerToolWindowService service = (IDesignerToolWindowService)designer.GetService(typeof(IDesignerToolWindowService));
+
+                    package.Log.Debug(designer.GetType().FullName + " from " + designer.GetType().Assembly.Location);
+                    package.Log.Debug(typeof(IDesignerToolWindowService).FullName + " from " + typeof(IDesignerToolWindowService).Assembly.Location);
+                    var obj = designer.GetService(typeof(IDesignerToolWindowService));
+                    if (obj != null)
+                        package.Log.Debug(obj.GetType().FullName + " from " + obj.GetType().Assembly.Location);
+                    else
+                        package.Log.Debug("obj is null");
+
+
+
+
+                    IDesignerToolWindowService service = designer.GetService(typeof(IDesignerToolWindowService)) as IDesignerToolWindowService;
                     if (service == null) continue;
                     IDesignerToolWindow toolWindow = service.GetToolWindow(new Guid(SSIS_VARIABLES_TOOL_WINDOW_KIND), 0);
                     if (toolWindow == null) continue;
@@ -189,25 +202,33 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                package.Log.Exception("Problem in HookupVariablesWindow", ex);
+                //MessageBox.Show(ex.Message + "\r\n\r\n" + ex.StackTrace, DefaultMessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void grid_MouseButtonClicked(object sender, MouseButtonClickedEventArgs args)
         {
-            // Fragile, as relies on hardcoded index. We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
-            if (args.Button == MouseButtons.Left && args.ColumnIndex == 6)
+            try
             {
-                // Dumbass, the args.RowIndex is a long, but all the grid methods that accept a row index are int!
-                EditExpressionButtonClick((int)args.RowIndex, args.ColumnIndex);
-            }
+                // Fragile, as relies on hardcoded index. We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
+                if (args.Button == MouseButtons.Left && args.ColumnIndex == 6)
+                {
+                    // Dumbass, the args.RowIndex is a long, but all the grid methods that accept a row index are int!
+                    EditExpressionButtonClick((int)args.RowIndex, args.ColumnIndex);
+                }
+            } catch { }
         }
 
         //only way I could find to monitor when row data in the grid changes
         void grid_Invalidated(object sender, InvalidateEventArgs e)
         {
-            CheckButtonIcons();
-            RefreshHighlights();
+            try
+            {
+                CheckButtonIcons();
+                RefreshHighlights();
+            }
+            catch { }
         }
 
         private void CheckButtonIcons()

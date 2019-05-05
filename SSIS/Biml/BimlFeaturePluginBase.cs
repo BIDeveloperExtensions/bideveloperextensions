@@ -4,6 +4,7 @@ using EnvDTE80;
 
 namespace BIDSHelper.SSIS.Biml
 {
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public abstract class BimlFeaturePluginBase : BIDSHelperPluginBase
     {
         public BimlFeaturePluginBase(BIDSHelperPackage package)

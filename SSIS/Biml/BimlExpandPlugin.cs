@@ -9,7 +9,8 @@ namespace BIDSHelper.SSIS.Biml
     using EnvDTE80;
     using Microsoft.DataWarehouse.Design;
     using Varigence.Flow.FlowFramework.Validation;
-    
+
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class BimlExpandPlugin : BimlFeaturePluginBase
     {
         public BimlExpandPlugin(BIDSHelperPackage package)

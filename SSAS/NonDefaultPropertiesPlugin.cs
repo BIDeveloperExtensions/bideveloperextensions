@@ -23,6 +23,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.General)]
     public class NonDefaultPropertiesPlugin : BIDSHelperPluginBase
     {
         private List<NonDefaultProperty> listNonDefaultProperties;
@@ -30,7 +31,9 @@ namespace BIDSHelper.SSAS
         private bool SSASProject = true;
         private string PackagePathPrefix;
         private Package packageDefault;
-        private Dictionary<string, DtsObject> dictCachedDtsObjects = new Dictionary<string, DtsObject>();
+        private Dictionary<string, DtsObject> dictCachedDtsObjects;
+        ProjectItem piCurrent = null;
+
 
         #region Standard Plugin Overrides
         public NonDefaultPropertiesPlugin(BIDSHelperPackage package)
@@ -104,7 +107,8 @@ namespace BIDSHelper.SSAS
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 var proj = GetSelectedProjectReference();
-                var projAS = GetSelectedProjectReferenceAS();
+                EnvDTE.Project projAS = null;
+                if (BIDSHelperPackage.SSASExtensionVersion != null) projAS = GetSelectedProjectReferenceAS();
 
                 if (proj != null)
                 {
@@ -114,7 +118,7 @@ namespace BIDSHelper.SSAS
                 }
                 else if (projAS != null)
                 {
-                    if (!(projAS.Object is Database)) return false;
+                    if (projAS.Object == null || projAS.Object.GetType().FullName != "Microsoft.AnalysisServices.Database") return false;
                     //asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)projAS;
                     return (projAS.Kind == BIDSProjectKinds.SSAS || projAS.Kind == BIDSProjectKinds.SSIS);
                 }
@@ -126,20 +130,40 @@ namespace BIDSHelper.SSAS
                     }
                     return (solution.Projects.Count > 0);
                 }
-                else
+                else if (hierItem.Object is ProjectItem)
                 {
                     string sFileName = ((ProjectItem)hierItem.Object).Name.ToLower();
                     return (sFileName.EndsWith(".dtsx"));
                 }
+                else
+                {
+                    return false;
+                }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                this.package.Log.Exception("Error in NonDefaultPropertiesPlugin ShouldDisplayCommand", ex);
+                this.package.Log.Error(ex.Message + "\r\n" + ex.StackTrace);
+            }
             return false;
         }
         #endregion
 
+        private bool ExecAS(EnvDTE.Project p)
+        {
+            asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExtAS = p as asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
+            if (projExtAS != null && projExtAS.Kind == BIDSProjectKinds.SSAS)
+            {
+                Database db = (Database)p.Object;
+                ScanAnalysisServicesProperties(db);
+                return true;
+            }
+            return false;
+        }
+
         public override void Exec()
         {
-            ProjectItem piCurrent = null;
+            piCurrent = null;
             try
             {
                 listNonDefaultProperties = new List<NonDefaultProperty>();
@@ -148,15 +172,13 @@ namespace BIDSHelper.SSAS
                 UIHierarchyItem hierItem = ((UIHierarchyItem)((System.Array)solExplorer.SelectedItems).GetValue(0));
                 SolutionClass solution = hierItem.Object as SolutionClass;
                 EnvDTE.Project p = GetSelectedProjectReference();
-                if (p == null) p = GetSelectedProjectReferenceAS();
+                if (p == null && BIDSHelperPackage.SSASExtensionVersion != null) p = GetSelectedProjectReferenceAS();
                 if (p != null)
                 {
                     Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = p as Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
-                    asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExtAS = p as asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt;
-                    if (projExtAS != null && projExtAS.Kind == BIDSProjectKinds.SSAS)
+                    if (BIDSHelperPackage.SSASExtensionVersion != null && ExecAS(p))
                     {
-                        Database db = (Database)p.Object;
-                        ScanAnalysisServicesProperties(db);
+                        //ExecAS has already done all there is to do
                     }
                     else
                     {
@@ -167,23 +189,9 @@ namespace BIDSHelper.SSAS
                         {
                             using (WaitCursor cursor1 = new WaitCursor())
                             {
-                                SSIS.PackageHelper.SetTargetServerVersion(p);
-                                int iProgress = 0;
                                 ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
-                                Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
-                                foreach (ProjectItem pi in p.ProjectItems)
-                                {
-                                    if (hierItem.Name != null && hierItem.Name.ToLower().EndsWith(".dtsx") && hierItem.Name != pi.Name) continue;
-                                    ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, p.ProjectItems.Count);
-                                    string sFileName = pi.Name.ToLower();
-                                    if (!sFileName.EndsWith(".dtsx")) continue;
-                                    piCurrent = pi;
-                                    this.PackagePathPrefix = pi.Name;
-                                    Package package = GetPackageFromIntegrationServicesProjectItem(pi);
-                                    ScanIntegrationServicesProperties(package);
-                                }
+                                OrchestrateSSISProjectScan(p, hierItem);
                             }
-
                         }
                         finally
                         {
@@ -212,25 +220,7 @@ namespace BIDSHelper.SSAS
                         using (WaitCursor cursor1 = new WaitCursor())
                         {
                             ApplicationObject.StatusBar.Animate(true, vsStatusAnimation.vsStatusAnimationGeneral);
-                            foreach (EnvDTE.Project proj in solution.Projects)
-                            {
-                                Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
-                                if (projExt.Kind == BIDSProjectKinds.SSIS)
-                                {
-                                    int iProgress = 0;
-                                    Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion;
-                                    foreach (ProjectItem pi in proj.ProjectItems)
-                                    {
-                                        ApplicationObject.StatusBar.Progress(true, "Scanning project " + proj.Name + " package " + pi.Name, iProgress++, proj.ProjectItems.Count);
-                                        string sFileName = pi.Name.ToLower();
-                                        if (!sFileName.EndsWith(".dtsx")) continue;
-                                        piCurrent = pi;
-                                        this.PackagePathPrefix = proj.Name + "\\" + pi.Name;
-                                        Package package = GetPackageFromIntegrationServicesProjectItem(pi);
-                                        ScanIntegrationServicesProperties(package);
-                                    }
-                                }
-                            }
+                            OrchestrateSSISSolutionScan(solution);
                         }
                     }
                     finally
@@ -245,20 +235,14 @@ namespace BIDSHelper.SSAS
                 }
                 else
                 {
-                    ProjectItem pi = (ProjectItem)hierItem.Object;
-                    piCurrent = pi;
-                    Package package = GetPackageFromIntegrationServicesProjectItem(pi);
-
-                    this.DatabaseName = "Package: " + package.Name;
-                    this.SSASProject = false;
-                    this.PackagePathPrefix = string.Empty;
-
-                    ScanIntegrationServicesProperties(package);
+                    OrchestrateSSISPackageScan(hierItem);
                 }
 
                 //clear the cache
-                this.packageDefault = null;
-                this.dictCachedDtsObjects.Clear();
+                if (BIDSHelperPackage.SSISExtensionVersion != null)
+                {
+                    ClearSSISCacheObjects();
+                }
 
                 if (listNonDefaultProperties.Count == 0)
                 {
@@ -320,21 +304,89 @@ namespace BIDSHelper.SSAS
                     frm.Show();
                 }
             }
-            catch (DtsRuntimeException ex)
-            {
-                if (ex.ErrorCode == -1073659849L)
-                {
-                    MessageBox.Show((piCurrent == null ? "This package" : piCurrent.Name) + " has a package password. Please open the package designer, specify the password when the dialog prompts you, then rerun the Non-Default Properties report.\r\n\r\nDetailed error was:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Password Not Specified");
-                }
-                else
-                {
-                    MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error" + (piCurrent == null ? string.Empty : " scanning " + piCurrent.Name));
-                }
-            }
             catch (System.Exception ex)
+            {
+                if (ex.GetType().Name == "DtsRuntimeException")
+                    HandleDtsRuntimeException(ex);
+                else
+                    MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error" + (piCurrent == null ? string.Empty : " scanning " + piCurrent.Name));
+            }
+        }
+
+        private void HandleDtsRuntimeException(Exception exGeneric)
+        {
+            DtsRuntimeException ex = (DtsRuntimeException)exGeneric;
+            if (ex.ErrorCode == -1073659849L)
+            {
+                MessageBox.Show((piCurrent == null ? "This package" : piCurrent.Name) + " has a package password. Please open the package designer, specify the password when the dialog prompts you, then rerun the Non-Default Properties report.\r\n\r\nDetailed error was:\r\n" + ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Password Not Specified");
+            }
+            else
             {
                 MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, "BIDS Helper - Error" + (piCurrent == null ? string.Empty : " scanning " + piCurrent.Name));
             }
+        }
+
+        private void OrchestrateSSISPackageScan(UIHierarchyItem hierItem)
+        {
+            ProjectItem pi = (ProjectItem)hierItem.Object;
+            piCurrent = pi;
+            Package package = GetPackageFromIntegrationServicesProjectItem(pi);
+
+            this.DatabaseName = "Package: " + package.Name;
+            this.SSASProject = false;
+            this.PackagePathPrefix = string.Empty;
+
+            ScanIntegrationServicesProperties(package);
+        }
+
+        private void OrchestrateSSISProjectScan(EnvDTE.Project p, UIHierarchyItem hierItem)
+        {
+            SSIS.PackageHelper.SetTargetServerVersion(p);
+            int iProgress = 0;
+            Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion
+            foreach (ProjectItem pi in p.ProjectItems)
+            {
+                if (hierItem.Name != null && hierItem.Name.ToLower().EndsWith(".dtsx") && hierItem.Name != pi.Name) continue;
+                ApplicationObject.StatusBar.Progress(true, "Scanning package " + pi.Name, iProgress++, p.ProjectItems.Count);
+                string sFileName = pi.Name.ToLower();
+                if (!sFileName.EndsWith(".dtsx")) continue;
+                piCurrent = pi;
+                this.PackagePathPrefix = pi.Name;
+                Package package = GetPackageFromIntegrationServicesProjectItem(pi);
+                ScanIntegrationServicesProperties(package);
+            }
+        }
+
+
+        private void OrchestrateSSISSolutionScan(SolutionClass solution)
+        {
+            foreach (EnvDTE.Project proj in solution.Projects)
+            {
+                SSIS.PackageHelper.SetTargetServerVersion(proj);
+                Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt projExt = (Microsoft.DataWarehouse.VsIntegration.Shell.Project.Extensibility.ProjectExt)proj;
+                if (projExt.Kind == BIDSProjectKinds.SSIS)
+                {
+                    int iProgress = 0;
+                    Microsoft.SqlServer.Dts.Runtime.Application app = SSIS.PackageHelper.Application; //sets the proper TargetServerVersion;
+                    foreach (ProjectItem pi in proj.ProjectItems)
+                    {
+                        ApplicationObject.StatusBar.Progress(true, "Scanning project " + proj.Name + " package " + pi.Name, iProgress++, proj.ProjectItems.Count);
+                        string sFileName = pi.Name.ToLower();
+                        if (!sFileName.EndsWith(".dtsx")) continue;
+                        piCurrent = pi;
+                        this.PackagePathPrefix = proj.Name + "\\" + pi.Name;
+                        Package package = GetPackageFromIntegrationServicesProjectItem(pi);
+                        ScanIntegrationServicesProperties(package);
+                    }
+                }
+            }
+        }
+
+        private void ClearSSISCacheObjects()
+        {
+            this.packageDefault = null;
+            if (this.dictCachedDtsObjects != null)
+                this.dictCachedDtsObjects.Clear();
         }
 
         /// <summary>
@@ -424,11 +476,15 @@ namespace BIDSHelper.SSAS
             {
                 packageDefault = new Package();
             }
+            if (dictCachedDtsObjects == null)
+            {
+                dictCachedDtsObjects = new Dictionary<string, DtsObject>();
+            }
 
             DtsObject defaultObject;
             if (o is Package)
             {
-                defaultObject = packageDefault;
+                defaultObject = (Package)packageDefault;
             }
             else if (o is IDTSName)
             {
@@ -438,17 +494,17 @@ namespace BIDSHelper.SSAS
                 }
                 else if (o is DtsEventHandler)
                 {
-                    defaultObject = (DtsObject)packageDefault.EventHandlers.Add(((IDTSName)o).CreationName);
+                    defaultObject = (DtsObject)((Package)packageDefault).EventHandlers.Add(((IDTSName)o).CreationName);
                     dictCachedDtsObjects.Add(((IDTSName)o).CreationName, defaultObject);
                 }
                 else if (o is ConnectionManager)
                 {
-                    defaultObject = (DtsObject)packageDefault.Connections.Add(((IDTSName)o).CreationName);
+                    defaultObject = (DtsObject)((Package)packageDefault).Connections.Add(((IDTSName)o).CreationName);
                     dictCachedDtsObjects.Add(((IDTSName)o).CreationName, defaultObject);
                 }
                 else
                 {
-                    defaultObject = packageDefault.Executables.Add(((IDTSName)o).CreationName);
+                    defaultObject = ((Package)packageDefault).Executables.Add(((IDTSName)o).CreationName);
                     dictCachedDtsObjects.Add(((IDTSName)o).CreationName, defaultObject);
                 }
             }

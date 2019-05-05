@@ -10,6 +10,7 @@ using Microsoft.AnalysisServices.BackEnd;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularDisplayFolderPlugin : BIDSHelperPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         public const string DISPLAY_FOLDER_ANNOTATION = "BIDS_Helper_Tabular_Display_Folder_Backups";

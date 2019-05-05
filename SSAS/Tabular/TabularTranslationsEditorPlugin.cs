@@ -10,6 +10,7 @@ using BIDSHelper.SSAS;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASTabular)]
     public class TabularTranslationsEditorPlugin : BIDSHelperPluginBase, ITabularOnPreBuildAnnotationCheck
     {
         public const string TRANSLATIONS_ANNOTATION = "BIDS_Helper_Tabular_Translations_Backups";

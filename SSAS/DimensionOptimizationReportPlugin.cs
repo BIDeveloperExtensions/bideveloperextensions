@@ -7,6 +7,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class DimensionOptimizationReportPlugin : BIDSHelperPluginBase
     {
         public DimensionOptimizationReportPlugin(BIDSHelperPackage package)

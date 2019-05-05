@@ -11,6 +11,7 @@ using System.DirectoryServices;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class RolesReportPlugin : BIDSHelperPluginBase
     {
         private string _deploymentTargetServer;

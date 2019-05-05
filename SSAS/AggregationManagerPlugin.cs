@@ -10,6 +10,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     public class AggregationManagerPlugin : BIDSHelperPluginBase
     {
         public AggregationManagerPlugin(BIDSHelperPackage package)

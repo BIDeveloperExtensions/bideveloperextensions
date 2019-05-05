@@ -11,6 +11,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper
 {
+    [FeatureCategory(BIDSFeatureCategories.General)]
     public class SmartDiffPlugin : BIDSHelperPluginBase
     {
         private static string _VisualStudioRegistryPath;
@@ -116,8 +117,31 @@ namespace BIDSHelper
 
         public static string PROVIDER_NAME_SOURCESAFE = "MSSCCI:Microsoft Visual SourceSafe";
         public static string PROVIDER_NAME_TFS = "{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}";
+        public static string PROVIDER_NAME_GIT = "Git"; //made up this provider name for integration with the previous flow
 
         public override void Exec()
+        {
+            try
+            {
+                ExecInternal();
+            }
+            catch (Exception ex)
+            {
+                string sError = "";
+                Exception exLoop = ex;
+                while (exLoop != null)
+                {
+                    sError += exLoop.Message + "\r\n";
+                    exLoop = exLoop.InnerException;
+                }
+                sError += ex.StackTrace;
+                MessageBox.Show(sError, "BIDS Helper Smart Diff Error");
+            }
+        }
+
+       
+
+        private void ExecInternal()
         {
             try
             {
@@ -129,10 +153,9 @@ namespace BIDSHelper
                 if (projItem.Name.ToLower().EndsWith(".bim"))
                 {
                     var sandboxWrapper = new BIDSHelper.SSAS.DataModelingSandboxWrapper(this);
-                    if (sandboxWrapper.GetSandbox() == null) throw new Exception("Can't get Sandbox!");
-                    if (sandboxWrapper.GetSandbox().IsTabularMetadata)
+                    if (sandboxWrapper.IsTabularMetadata)
                     {
-                        string compatibility = sandboxWrapper.GetSandbox().DatabaseCompatibilityLevel.ToString();
+                        string compatibility = sandboxWrapper.DatabaseCompatibilityLevel.ToString();
                         System.Windows.Forms.MessageBox.Show("BIDS Helper Smart Diff is not supported for " + compatibility + " compatibility level models yet.", "BIDS Helper Smart Diff");
                         return;
                     }
@@ -182,6 +205,23 @@ namespace BIDSHelper
                             }
                         }
                     }
+                    else
+                    {
+                        try
+                        {
+                            if (GitHelper.IsPathInGitRepository(projItem.get_FileNames(0)))
+                            {
+                                sSourceControlServerName = GitHelper.GetGitRepositoryPath(projItem.get_FileNames(0));
+                                sDefaultSourceSafePath = "$/" + GitHelper.GetRelativePath(projItem.get_FileNames(0));
+                                sProvider = PROVIDER_NAME_GIT;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            package.Log.Exception("Could not check whether solution is a Git repository", ex);
+                        }
+                        
+                    }
                 }
 
                 if (projItem.Document != null && !projItem.Document.Saved)
@@ -193,7 +233,7 @@ namespace BIDSHelper
                 SSIS.SmartDiff form = new BIDSHelper.SSIS.SmartDiff();
                 form.SourceControlProvider = sProvider;
                 form.DefaultWindowsPath = projItem.get_FileNames(0);
-                if (sProvider == PROVIDER_NAME_SOURCESAFE || sProvider == PROVIDER_NAME_TFS)
+                if (sProvider == PROVIDER_NAME_SOURCESAFE || sProvider == PROVIDER_NAME_TFS || sProvider == PROVIDER_NAME_GIT)
                 {
                     form.DefaultSourceSafePath = sDefaultSourceSafePath;
                     form.SourceSafeIniDirectory = sSourceControlServerName;
@@ -246,6 +286,8 @@ namespace BIDSHelper
                             GetSourceSafeFile(sSourceControlServerName, form.txtCompare.Text, sOldFile);
                         else if (sProvider == PROVIDER_NAME_TFS)
                             GetTFSFile(sSourceControlServerName, form.txtCompare.Text, sOldFile);
+                        else if (sProvider == PROVIDER_NAME_GIT)
+                            GetGitFile(sSourceControlServerName, form.txtCompare.Text, sOldFile);
                         sOldFileName += " (server)";
                     }
                     else
@@ -260,6 +302,8 @@ namespace BIDSHelper
                             GetSourceSafeFile(sSourceControlServerName, form.txtTo.Text, sNewFile);
                         else if (sProvider == PROVIDER_NAME_TFS)
                             GetTFSFile(sSourceControlServerName, form.txtTo.Text, sNewFile);
+                        else if (sProvider == PROVIDER_NAME_GIT)
+                            GetGitFile(sSourceControlServerName, form.txtTo.Text, sNewFile);
                         sNewFileName += " (server)";
                     }
                     else
@@ -308,9 +352,28 @@ namespace BIDSHelper
             {
                 return GetTFSVersions(sIniDirectory, sSourceSafePath);
             }
+            else if (sProvider == PROVIDER_NAME_GIT)
+            {
+                return GitHelper.GetHistoryOfFile(sIniDirectory, sSourceSafePath);
+            }
             throw new Exception("Invalid provider");
         }
 
+
+        #region Git Access Methods
+        private static void GetGitFile(string sRepositoryPath, string sGitPath, string sLocalPath)
+        {
+            string sha = null;
+            if (sGitPath.Contains(":"))
+            {
+                sha = sGitPath.Substring(sGitPath.IndexOf(':') + 1);
+                sGitPath = sGitPath.Substring(0, sGitPath.IndexOf(':'));
+            }
+
+            bool bResult = GitHelper.GetSpecificVersionOfFile(sRepositoryPath, sGitPath, sLocalPath, sha);
+            if (!bResult) throw new Exception("Could not get file from Git");
+        }
+        #endregion
 
         #region SourceSafe Access Methods
         //allows late-binding so that you don't have to have SourceSafe installed to compile BIDS Helper
@@ -712,16 +775,15 @@ namespace BIDSHelper
                     ProjectItem projItem = (ProjectItem)hierItem.Object;
                     string sTabName = projItem.Name + " (BIDS Helper Smart Diff)";
 
-                    System.IServiceProvider provider = null;
-                    if (projItem.ContainingProject is System.IServiceProvider)
-                    {
-                        provider = (System.IServiceProvider)projItem.ContainingProject;
-                    }
-                    else
-                    {
-                        provider = TabularHelpers.GetTabularServiceProviderFromBimFile(hierItem, false);
-                    }
-                    //TODO: test .rdlc inside C# projects
+                    System.IServiceProvider provider = package.ServiceProvider; //works in all project types even C# projects
+                    //if (projItem.ContainingProject is System.IServiceProvider)
+                    //{
+                    //    provider = (System.IServiceProvider)projItem.ContainingProject;
+                    //}
+                    //else
+                    //{
+                    //    provider = TabularHelpers.GetTabularServiceProviderFromBimFile(hierItem, false);
+                    //}
 
                     Type t = vsAssembly.GetType("Microsoft.VisualStudio.Shell.Interop.IVsDifferenceService");
                     object oVsDifferenceService = provider.GetService(vsAssembly.GetType("Microsoft.VisualStudio.Shell.Interop.SVsDifferenceService"));
@@ -872,6 +934,5 @@ namespace BIDSHelper
             }
         }
     }
-
-
+    
 }

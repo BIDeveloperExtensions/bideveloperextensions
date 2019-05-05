@@ -102,8 +102,15 @@ namespace BIDSHelper
             package.Log.Debug("BIDSHelperWindowActivatedPluginBase OnEnable fired");
             base.OnEnable();
             this.HookWindowActivation();
-            // force OnWindowActivate to fire
-            OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
+            try
+            {
+                // force OnWindowActivate to fire
+                OnWindowActivated(this.ApplicationObject.ActiveWindow, null);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public override void OnDisable()

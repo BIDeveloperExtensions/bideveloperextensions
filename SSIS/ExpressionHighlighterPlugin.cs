@@ -13,6 +13,8 @@ namespace BIDSHelper.SSIS
     using Microsoft.SqlServer.IntegrationServices.Designer.Model;
     using Microsoft.SqlServer.IntegrationServices.Designer.ConnectionManagers;
     using Core;
+
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class ExpressionHighlighterPlugin : BIDSHelperWindowActivatedPluginBase
     {
         private static System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;

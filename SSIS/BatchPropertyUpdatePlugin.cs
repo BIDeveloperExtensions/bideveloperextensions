@@ -15,6 +15,7 @@ namespace BIDSHelper.SSIS
     /// <summary>
     /// SSIS plugin that supports updating a property across multiple packages
     /// </summary>
+    [FeatureCategory(BIDSFeatureCategories.SSIS)]
     public class BatchPropertyUpdatePlugin : BIDSHelperPluginBase
     {
         private IComponentChangeService changesvc;

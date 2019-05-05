@@ -6,6 +6,7 @@ using BIDSHelper.Core;
 
 namespace BIDSHelper.SSAS
 {
+    [FeatureCategory(BIDSFeatureCategories.SSASMulti)]
     class DuplicateRole : BIDSHelperPluginBase
     {
            public DuplicateRole(BIDSHelperPackage package)
