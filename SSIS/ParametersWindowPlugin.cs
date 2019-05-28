@@ -133,7 +133,7 @@ namespace BIDSHelper.SSIS
         private ToolBarButton findReferencesButton;
         private ToolBarButton findUnusedButton;
         private UserControl variablesToolWindowControl;
-        private DlgGridControl grid;
+        private Microsoft.DataTransformationServices.Controls.DlgGridControl grid;
         private EditorWindow editorWindow;
         private bool setupComplete;
 
@@ -199,7 +199,7 @@ namespace BIDSHelper.SSIS
             toolbar.Wrappable = false;
 
             // "tableLayoutPanelMain" - "tableLayoutPanelParameter" - "parameterGridControl"
-            grid = (DlgGridControl)variablesToolWindowControl.Controls[0].Controls[1].Controls[0];
+            grid = (Microsoft.DataTransformationServices.Controls.DlgGridControl)variablesToolWindowControl.Controls[0].Controls[1].Controls[0];
             grid.SelectionChanged += new SelectionChangedEventHandler(grid_SelectionChanged);
             grid.Invalidated += new InvalidateEventHandler(grid_Invalidated);
 
