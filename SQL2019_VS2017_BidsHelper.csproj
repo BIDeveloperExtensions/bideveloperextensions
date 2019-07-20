@@ -726,19 +726,20 @@
       <HintPath>DLLs\SQL2019\Reference\LibGit2Sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Aliases>localAdomdClient</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=15.17.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Core.dll</HintPath>
+      <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Tabular, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -789,16 +790,6 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Project.AS.DLL</HintPath>
       <Private>False</Private>
       <Aliases>asAlias</Aliases>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Server.Tabular, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
-      <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Server.Tabular.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Server.Tabular.Json, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
-      <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Server.Tabular.Json.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.VSHost">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.VSHost.dll</HintPath>

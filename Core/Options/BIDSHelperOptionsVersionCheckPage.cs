@@ -134,9 +134,9 @@ namespace BIDSHelper.Core
                      (BIDSHelperPackage.SSISExtensionVersion == null ? "N/A" : BIDSHelperPackage.SSISExtensionVersion.ToString()),
                      (BIDSHelperPackage.SSRSExtensionVersion == null ? "N/A" : BIDSHelperPackage.SSRSExtensionVersion.ToString()));
 
-                //release 2.3.0 expected: 2.8.11 SSAS extension or higher, version 2.5.6 SSRS extension or higher, and 2.1 SSIS extension or higher
-                Version SSASExpectedVersion = new Version("2.8.11");
-                Version SSRSExpectedVersion = new Version("2.5.6");
+                //the current BI Developer Extensions version is compatible with the following versions or higher of SSDT extensions
+                Version SSASExpectedVersion = new Version("2.8.15");
+                Version SSRSExpectedVersion = new Version("2.5.9");
                 Version SSISExpectedVersion = new Version("2.1");
 
                 string sUpgradeSSDTMessage = string.Empty;
