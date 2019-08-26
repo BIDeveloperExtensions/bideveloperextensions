@@ -7,14 +7,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace BIDSHelper.SSIS
 {
     internal class FindVariables
     {
-        private string[] expressionMatches = null;
-        private string[] properytMatches = null;
+        private string[] expressionCandidateMatches = null;
+        private string[] properytCandidateMatches = null;
         private TreeView treeView;
 
         public const string IconKeyFolder = "Folder";
@@ -76,8 +77,8 @@ namespace BIDSHelper.SSIS
             }
 
             // Convert interim lists to arrays
-            this.expressionMatches = expressions.ToArray();
-            this.properytMatches = properties.ToArray();
+            expressionCandidateMatches = expressions.ToArray();
+            properytCandidateMatches = properties.ToArray();
 
             this.treeView = treeView;
 
@@ -529,25 +530,12 @@ namespace BIDSHelper.SSIS
                 if (string.IsNullOrEmpty(value))
                     continue;
 
-                string match;
                 if (property.ExpressionType == DTSCustomPropertyExpressionType.CPET_NOTIFY)
                 {
                     // Check the expression string for our matching variable name
                     // We ignore the Task level properties derived from these expressions, because here we have much more context. 
-                    // Could have expression properties (CPET_NOTIFY) entirely, call it Darren's OCD in action.
-                    if (ExpressionMatch(value, out match))
-                    {
-                        // For the "FriendlyExpression" property, rename to be Expression
-                        if (friendlyExpressionValid && property.Name == "FriendlyExpression")
-                        {
-                            propertyName = "Expression";
-                        }
-
-                        VariableFoundEventArgs info = new VariableFoundEventArgs();
-                        info.Match = match;
-                        OnRaiseVariableFound(info);
-                        AddNode(parent, propertyName, GetImageIndex(IconKeyPropertyExpression), new PropertyExpression(propertyName, value, property.Value.GetType()), true);
-                    }
+                    // Could have expression properties (CPET_NOTIFY) entirely, call it Darren's OCD in action.                    
+                    ExpressionMatchCustomProperty(parent, friendlyExpressionValid, property, propertyName, value);
                 }
                 else
                 {
@@ -558,6 +546,23 @@ namespace BIDSHelper.SSIS
 
                     PropertyMatch(parent, property, propertyName, value);
                 }
+            }
+        }
+
+        private void ExpressionMatchCustomProperty(TreeNode parent, bool friendlyExpressionValid, IDTSCustomProperty100 property, string propertyName, string value)
+        {
+            foreach (string match in expressionCandidateMatches.Where(matchCandidate => value.Contains(matchCandidate)).ToList())
+            {
+                // For the "FriendlyExpression" property, rename to be Expression
+                if (friendlyExpressionValid && property.Name == "FriendlyExpression")
+                {
+                    propertyName = "Expression";
+                }
+
+                VariableFoundEventArgs info = new VariableFoundEventArgs();
+                info.Match = match;
+                OnRaiseVariableFound(info);
+                AddNode(parent, propertyName, GetImageIndex(IconKeyPropertyExpression), new PropertyExpression(propertyName, value, property.Value.GetType()), true);
             }
         }
 
@@ -585,14 +590,18 @@ namespace BIDSHelper.SSIS
                     continue;
                 }
 
-                string match;
-                if (ExpressionMatch(constraint.Expression, out match))
-                {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs();
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
-                    AddNode(constraintsNode, "Expression", GetImageIndex(IconKeyPrecedenceConstraint), constraint, true);
-                }
+                ExpressionMatchConstraint(constraintsNode, constraint);
+            }
+        }
+
+        private void ExpressionMatchConstraint(TreeNode constraintsNode, PrecedenceConstraint constraint)
+        {
+            foreach (string match in expressionCandidateMatches.Where(matchCandidate => constraint.Expression.Contains(matchCandidate)).ToList())
+            {
+                VariableFoundEventArgs info = new VariableFoundEventArgs();
+                info.Match = match;
+                OnRaiseVariableFound(info);
+                AddNode(constraintsNode, "Expression", GetImageIndex(IconKeyPrecedenceConstraint), constraint, true);
             }
         }
 
@@ -620,14 +629,18 @@ namespace BIDSHelper.SSIS
                     continue;
                 }
 
-                string match;
-                if (ExpressionMatch(variable.Expression, out match))
-                {
-                    VariableFoundEventArgs info = new VariableFoundEventArgs();
-                    info.Match = match;
-                    OnRaiseVariableFound(info);
-                    AddNode(variablesFolder, variable.QualifiedName, imageIndex, variable, true);
-                }
+                ExpressionMatchVariable(variablesFolder, imageIndex, variable);
+            }
+        }
+
+        private void ExpressionMatchVariable(TreeNode variablesFolder, int imageIndex, Variable variable)
+        {
+            foreach (string match in expressionCandidateMatches.Where(matchCandidate => variable.Expression.Contains(matchCandidate)).ToList())
+            {
+                VariableFoundEventArgs info = new VariableFoundEventArgs();
+                info.Match = match;
+                OnRaiseVariableFound(info);
+                AddNode(variablesFolder, variable.QualifiedName, imageIndex, variable, true);
             }
         }
 
@@ -657,7 +670,6 @@ namespace BIDSHelper.SSIS
                 string propertyName = property.Name;
 
                 #region Check property value
-                string match;
                 if (property.Type == TypeCode.String && property.Get)
                 {
                     string value = property.GetValue(provider) as string;
@@ -678,33 +690,22 @@ namespace BIDSHelper.SSIS
                 // Check this for a while, before we trust it, simce it is undocumented.
                 System.Diagnostics.Debug.Assert(hasExpressions, "HasExpressions was false, but we have an expression.");
 
-                if (ExpressionMatch(expression, out match))
-                {
-                    VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
-                    foundArgument.Match = match;
-                    OnRaiseVariableFound(foundArgument);
-                    AddNode(expressions, propertyName, GetImageIndex(IconKeyVariableExpression), new PropertyExpression(propertyName, expression, PackageHelper.GetTypeFromTypeCode(property.Type)), true);
-                }
+                ExpressionMatchProperty(expressions, property, propertyName, expression);
                 #endregion
 
             }
         }
 
-        private bool ExpressionMatch(string expression, out string match)
+        private void ExpressionMatchProperty(TreeNode expressions, DtsProperty property, string propertyName, string expression)
         {
-            foreach (string test in this.expressionMatches)
+            foreach (string match in expressionCandidateMatches.Where(matchCandidate => expression.Contains(matchCandidate)).ToList())
             {
-                if (expression.Contains(test))
-                {
-                    match = test;
-                    return true;
-                }
+                VariableFoundEventArgs foundArgument = new VariableFoundEventArgs();
+                foundArgument.Match = match;
+                OnRaiseVariableFound(foundArgument);
+                AddNode(expressions, propertyName, GetImageIndex(IconKeyVariableExpression), new PropertyExpression(propertyName, expression, PackageHelper.GetTypeFromTypeCode(property.Type)), true);
             }
-
-            match = null;
-            return false;
         }
-
 
         private void PropertyMatch(TreeNode parent, object property, string propertyName, string value)
         {
@@ -736,7 +737,7 @@ namespace BIDSHelper.SSIS
 
         private bool PropertyMatchEval(string value, out string match)
         {            
-            foreach (string test in this.properytMatches)
+            foreach (string test in this.properytCandidateMatches)
             {
                 if (test == value)
                 {
@@ -902,8 +903,7 @@ namespace BIDSHelper.SSIS
 
         private void PropertyAsExpressionMatch(DtsProperty property, string expression, TreeNode parent)
         {
-            string match;
-            if (ExpressionMatch(expression, out match))
+            foreach (string match in expressionCandidateMatches.Where(matchCandidate => expression.Contains(matchCandidate)).ToList())
             {
                 VariableFoundEventArgs info = new VariableFoundEventArgs();
                 info.Match = match;
