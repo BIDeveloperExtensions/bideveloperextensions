@@ -490,16 +490,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="BIDSHelper.snk" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AdomdClient.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.Json.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Common.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.DataVisualization.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Design.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.ProcessingObjectModel.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Winforms.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.GridControl.dll" />
     <Content Include="DLLs\SQL2019\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2019\Reference\FromASFolder\Microsoft.DataWarehouse.Interfaces.AS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\LibGit2Sharp.dll" />
@@ -562,33 +552,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="DLLs\SQL2017\ExpressionEditor.dll" />
-    <Content Include="DLLs\SQL2017\msddsp.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.Core.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.Tabular.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.BackEnd.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Common.FrontEnd.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Controls.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Design.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.MPFProjectBase.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Project.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.VSHost.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.Controls.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.Design.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.VsIntegration.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.Interfaces.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.VsIntegration.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.DlgGrid.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.Dts.Design.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SQLServer.DTSPipelineWrap.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.DTSRuntimeWrap.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.ExecPackageTaskWrap.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.Graph.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.IntegrationServices.Design.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.IntegrationServices.Graph.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.ManagedDTS.dll" />
     <Content Include="Resources\2012\DataFlow.ico" />
     <Content Include="Resources\2012\DestinationComponent.ico" />
     <Content Include="Resources\2012\EditVariable.ico" />
