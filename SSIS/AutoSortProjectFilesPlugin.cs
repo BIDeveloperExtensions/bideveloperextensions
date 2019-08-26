@@ -86,7 +86,7 @@ namespace BIDSHelper.SSIS
             }
             catch (Exception ex)
             {
-                ShowErrorMessageBox(ex.ToString(), "AutoSortProjectFilesPlugin.SolutionOpened");
+                MessageBox.Show(ex.ToString(), "AutoSortProjectFilesPlugin.SolutionOpened", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
