@@ -575,9 +575,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.SQL2019_VS2019_BidsHelper.config" />
     <None Include="Properties\vsix-compress.props" />
     <None Include="Manifest\SQL2019\source.extension.vsixmanifest">
       <SubType>Designer</SubType>
