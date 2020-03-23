@@ -136,10 +136,13 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
             try
             {
                 System.IServiceProvider serviceProvider = this as System.IServiceProvider;
-                Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager em =
-                   (Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager)serviceProvider.GetService(
+                //Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager em =
+                //   (Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager)serviceProvider.GetService(
+                //        typeof(Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager));
+                var em1 =
+                   serviceProvider.GetService(
                         typeof(Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager));
-
+                Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager em = em1 as Microsoft.VisualStudio.ExtensionManager.IVsExtensionManager;
                 string result = "";
                 foreach (Microsoft.VisualStudio.ExtensionManager.IInstalledExtension i in em.GetInstalledExtensions())
                 {
@@ -173,11 +176,13 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                         }
                         result += h.Name + " (by " + h.Author + ") v" + h.Version + " " + h.Identifier + " " + h.MoreInfoUrl + " " + i.InstallPath + System.Environment.NewLine;
                     }
-                    catch { }
+                    catch (Exception ex){ Log.Debug($"Error iterating other extensions: {ex.Message}"); }
                 }
                 Log.Debug(result);
             }
-            catch { }
+            catch (Exception ex) {
+                Log.Debug($"Error getting extension manager: {ex.Message}");
+            }
 
 
             string sAddInTypeName = string.Empty;
