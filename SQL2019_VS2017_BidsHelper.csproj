@@ -727,23 +727,23 @@
       <HintPath>DLLs\SQL2019\Reference\LibGit2Sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices, Version=18.4.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices, Version=18.4.8.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=18.4.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=18.4.8.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Aliases>localAdomdClient</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=18.4.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=18.4.8.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Core.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=18.4.0.3, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=18.4.8.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Tabular.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
@@ -765,7 +765,7 @@
       <Aliases>asDataWarehouseInterfaces</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataWarehouse.RS, Version=15.8.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.DataWarehouse.RS, Version=15.11.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.RS.dll</HintPath>
       <Aliases>rsAlias</Aliases>

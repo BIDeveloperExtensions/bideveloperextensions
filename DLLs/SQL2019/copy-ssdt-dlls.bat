@@ -26,7 +26,7 @@ REM copy /Y /B "Microsoft.AnalysisServices.Server.Tabular.dll" "%dest%"
 REM copy /Y /B "Microsoft.AnalysisServices.Server.Tabular.Json.dll" "%dest%"
 
 cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\BIShared"
-copy /Y /B "Microsoft.AnalysisServices.Design.dll" "%dest%"
+REM copy /Y /B "Microsoft.AnalysisServices.Design.dll" "%dest%"
 
 
 cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\SSIS\150\Binn"
@@ -41,6 +41,7 @@ copy /Y /B "Microsoft.DataWarehouse.dll" "%dest%"
 copy /Y /B "Microsoft.AnalysisServices.Project.dll" "%dest%"
 copy /Y /B "Microsoft.DataWarehouse.VsIntegration.dll" "%dest%"
 copy /Y /B "Microsoft.AnalysisServices.Controls.dll" "%dest%"
+copy /Y /B "Microsoft.AnalysisServices.Design.dll" "%dest%"
 
 
 cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\SSIS"
