@@ -287,11 +287,13 @@ namespace BIDSHelper.SSAS
                 int hotItem = (int)typeof(ToolBar).InvokeMember("hotItem", getflags, null, toolbar, null);
                 ToolBarButton button = toolbar.Buttons[hotItem];
                 //if (button.ToolTipText == "Script View")
-                if(((MenuCommandToolBarButton)button).AssociatedCommandID.ID == (int)BIDSToolbarButtonID.ScriptView)
+                MenuCommandToolBarButton menubutton = button as MenuCommandToolBarButton;
+                if (menubutton == null) return;
+                if (menubutton.AssociatedCommandID.ID == (int)BIDSToolbarButtonID.ScriptView)
                 {
                     ScriptViewDefault = true;
                 }
-                else if (((MenuCommandToolBarButton)button).AssociatedCommandID.ID == (int)BIDSToolbarButtonID.FormView)//if (button.ToolTipText == "Form View")
+                else if (menubutton.AssociatedCommandID.ID == (int)BIDSToolbarButtonID.FormView)//if (button.ToolTipText == "Form View")
                 {
                     ScriptViewDefault = false;
                 }
