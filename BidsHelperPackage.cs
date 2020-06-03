@@ -192,6 +192,36 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                 //given the version numbers seem to be changing frequently, try this approach to increment version numbers of references
                 AppDomain currentDomain = AppDomain.CurrentDomain;
                 currentDomain.AssemblyResolve += new ResolveEventHandler(currentDomain_AssemblyResolve);
+
+
+
+
+                try
+                {
+                    MulticastDelegate handler = (MulticastDelegate)AppDomain.CurrentDomain.GetType().InvokeMember("_AssemblyResolve", System.Reflection.BindingFlags.GetField | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, AppDomain.CurrentDomain, null);
+                    System.Collections.Generic.List<object> invocationList = new System.Collections.Generic.List<object>(handler.GetInvocationList());
+                    int cnt = invocationList.Count;
+                    for (int i = 0; i < cnt; i++)
+                    {
+                        System.ResolveEventHandler info = (System.ResolveEventHandler)invocationList[i];
+                        Log.Debug(info.Method.ToString() + " - " + info.Method.DeclaringType.ToString());
+                        if (info.Method.DeclaringType.FullName.StartsWith("Microsoft.DataWarehouse.")) //remove this event handler. We will call it from our AssemblyResolve code
+                        {
+                            Log.Debug("removed this AssemblyResolve event handler from the list and will call in our AssemblyResolve event handler");
+                            invocationList.RemoveAt(i);
+                            _microsoftEventHandlersToIgnoreErrors.Add(info);
+                            cnt--;
+                            i--;
+                        }
+                    }
+
+                    typeof(MulticastDelegate).InvokeMember("_invocationList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.SetField, null, handler, new object[] { invocationList.ToArray() });
+                    typeof(MulticastDelegate).InvokeMember("_invocationCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.SetField, null, handler, new object[] { new IntPtr(invocationList.Count) });
+                }
+                catch
+                {
+
+                }
 #endif
 
                 StatusBar = new Core.VsIntegration.StatusBar(this);
@@ -655,6 +685,7 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
 #else
         string _recursiveAssemblyResolveNameToSkip = null;
         System.Collections.Generic.List<string> _assemblyLoadsFailed = new System.Collections.Generic.List<string>();
+        System.Collections.Generic.List<System.ResolveEventHandler> _microsoftEventHandlersToIgnoreErrors = new System.Collections.Generic.List<ResolveEventHandler>();
 
         /// <summary>
         /// Only fires if an assembly fails to load. This gives us a chance to redirect to a DLL that does exist.
@@ -666,6 +697,22 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
         {
             try
             {
+                //we removed the Microsoft AssemblyResolve event handler from the list and are now calling theirs at the top of ours
+                //we do this to swallow an error due to a bug in their AssemblyResolve event handler as of May 2020
+                foreach (System.ResolveEventHandler handler in _microsoftEventHandlersToIgnoreErrors)
+                {
+                    try
+                    {
+                        Assembly a = handler.Invoke(sender, args);
+                        if (a != null)
+                            return a;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Debug("Caught error in Microsoft AssemblyResolve and skipped: " + ex.Message);
+                    }
+                }
+
                 if (_recursiveAssemblyResolveNameToSkip == args.Name)
                     return null; //skip recursion
                 Log.Debug("AssemblyResolve: " + args.Name);
@@ -679,6 +726,15 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                 )
                 {
                     var assemblyname = new AssemblyName(args.Name);
+
+                    //first see if this assembly is loaded already... if so, don't scan folders for an assembly... just reuse the previously loaded assembly
+                    foreach (Assembly loadedAlready in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        if (loadedAlready.GetName().Name == assemblyname.Name
+                            && loadedAlready.GetName().Version.Major == assemblyname.Version.Major)
+                            return loadedAlready;
+                    }
+
                     System.Collections.Generic.List<string> pathsToCheck = new System.Collections.Generic.List<string>();
                     var bidsHelperPath = new System.IO.FileInfo(typeof(BIDSHelperPackage).Assembly.Location);
                     pathsToCheck.Add(bidsHelperPath.DirectoryName + "\\");
@@ -686,6 +742,20 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                     if (SSISExtensionInstallPath != null) pathsToCheck.Add(SSISExtensionInstallPath);
                     if (SSRSExtensionInstallPath != null) pathsToCheck.Add(SSRSExtensionInstallPath);
                     if (BISharedExtensionInstallPath != null) pathsToCheck.Add(BISharedExtensionInstallPath);
+
+                    //if (SSISExtensionInstallPath != null)
+                    //{
+                    //    foreach (string sPath in System.IO.Directory.GetFiles(SSISExtensionInstallPath, assemblyname.Name + ".dll", System.IO.SearchOption.AllDirectories))
+                    //    {
+                    //        if (!sPath.ToUpper().Contains("\\BISHARED\\")) continue;
+                    //        var assembly = Assembly.Load(System.IO.File.ReadAllBytes(sPath));
+                    //        if (assembly.GetName().Version.Major == assemblyname.Version.Major) //some SSIS subfolders have multiple versions of the assembly... make sure we match the major version number... it appears there may be an assembly redirect in operation, but this is probably safer
+                    //        {
+                    //            Log.Debug("AssemblyResolveSuccessSSIS-BIShared: " + args.Name + " to version " + assembly.GetName().Version.ToString() + " at " + sPath + " in " + DateTime.Now.Subtract(dtStart).TotalMilliseconds + "ms");
+                    //            return assembly;
+                    //        }
+                    //    }
+                    //}
                     foreach (string extensionfolder in pathsToCheck)
                     {
                         string sPath = extensionfolder + assemblyname.Name + ".dll";
@@ -700,6 +770,7 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                     {
                         foreach (string sPath in System.IO.Directory.GetFiles(SSISExtensionInstallPath, assemblyname.Name + ".dll", System.IO.SearchOption.AllDirectories))
                         {
+                            //if (sPath.ToUpper().Contains("\\BISHARED\\")) continue;
                             var assembly = Assembly.Load(System.IO.File.ReadAllBytes(sPath));
                             if (assembly.GetName().Version.Major == assemblyname.Version.Major) //some SSIS subfolders have multiple versions of the assembly... make sure we match the major version number... it appears there may be an assembly redirect in operation, but this is probably safer
                             {
