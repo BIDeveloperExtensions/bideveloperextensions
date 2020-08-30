@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="BIDSHelper_VSIX.b6deed2d-6c6f-46d4-94be-28027bf7d873" Version="2.3.6" Language="en-US" Publisher="bideveloperextensions.github.io" />
+        <Identity Id="BIDSHelper_VSIX.b6deed2d-6c6f-46d4-94be-28027bf7d873" Version="2.3.9" Language="en-US" Publisher="bideveloperextensions.github.io" />
         <DisplayName>BI Developer Extensions for Visual Studio 2017</DisplayName>
         <Description xml:space="preserve">BI Developer Extensions (formerly BIDS Helper) is an extension for BIDS / SSDT that includes numerous enhancements for SQL Server BI projects</Description>
         <MoreInfo>https://bideveloperextensions.github.io</MoreInfo>
