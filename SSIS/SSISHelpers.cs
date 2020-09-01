@@ -1,4 +1,7 @@
 ﻿extern alias sharedDataWarehouseInterfaces;
+extern alias asDataWarehouseInterfaces;
+
+using EnvDTE;
 using Microsoft.DataWarehouse.Design;
 using Microsoft.DataWarehouse.Project;
 using Microsoft.SqlServer.Dts.Runtime;
@@ -87,24 +90,26 @@ namespace BIDSHelper.SSIS
             }
         }
 
-    /// <summary>
-    /// Get the SsisTargetServerVersion of a project. See PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion or actual usage.
-    /// </summary>
-    /// <param name="project">The project to get the version of</param>
-    /// <returns>The DTSTargetServerVersion of the project specified.</returns>
-    /// <remarks>Do not use directly, see PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion for actual usage.</remarks>
-    internal static SsisTargetServerVersion GetTargetServerVersion(EnvDTE.Project project)
+        /// <summary>
+        /// Get the SsisTargetServerVersion of a project. See PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion or actual usage.
+        /// </summary>
+        /// <param name="project">The project to get the version of</param>
+        /// <returns>The DTSTargetServerVersion of the project specified.</returns>
+        /// <remarks>Do not use directly, see PackageHelper.SetTargetServerVersion and PackageHelper.TargetServerVersion for actual usage.</remarks>
+        internal static SsisTargetServerVersion GetTargetServerVersion(EnvDTE.Project project)
         {
 #if DENALI || SQL2014
             return CompilationVersion;
 #else
             // TODO: If this doesn't work <2016, we can just hardcode, based on conditional compiation
-            sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            object settings = project.GetIConfigurationSettings();
             DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)PackageHelper.GetPropertyValue(settings, "ProjectManager");
             Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions options = (Microsoft.DataTransformationServices.Project.DataTransformationsProjectConfigurationOptions)projectManager.ConfigurationManager.CurrentConfiguration.Options;
-            return (SsisTargetServerVersion)options.TargetServerVersion;         
-#endif              
+            return (SsisTargetServerVersion)options.TargetServerVersion;
+#endif
         }
+
+
 
         /// <summary>s
         /// Get the DTSTargetServerVersion of a package.
@@ -201,6 +206,49 @@ namespace BIDSHelper.SSIS
             }
 
             return null;
+        }
+    }
+
+}
+
+namespace EnvDTE
+{
+
+    public static class ProjectExtensions
+    {
+        public static object GetIConfigurationSettings(this EnvDTE.Project project)
+        {
+            sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            if (settings != null)
+            {
+                return settings;
+            }
+            else
+            {
+                return (asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)project).GetService(typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+            }
+
+        }
+
+        public static bool GetOfflineMode(this EnvDTE.Project project)
+        {
+            bool bOfflineMode = false;
+            try
+            {
+                object settings = project.GetIConfigurationSettings();
+                sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings2 = settings as sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings;
+                if (settings2 != null)
+                {
+                    bOfflineMode = (bool)settings2.GetSetting("OfflineMode");
+                }
+                else
+                {
+                    asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings3 = settings as asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings;
+                    bOfflineMode = (bool)settings3.GetSetting("OfflineMode");
+                }
+            }
+            catch { }
+            return bOfflineMode;
         }
     }
 }

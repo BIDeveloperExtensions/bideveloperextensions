@@ -17,6 +17,29 @@ using Microsoft.VisualStudio;
 using BIDSHelper.Core.Logger;
 using Task = System.Threading.Tasks.Task;
 
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+namespace mscoree
+{
+    [CompilerGenerated]
+    [Guid("CB2F6722-AB3A-11D2-9C40-00C04FA30A3E")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [TypeIdentifier]
+    [ComImport]
+    [CLSCompliant(false)]
+    public interface ICorRuntimeHost
+    {
+        void _VtblGap1_11();
+
+        void EnumDomains(out IntPtr enumHandle);
+
+        void NextDomain([In] IntPtr enumHandle, [MarshalAs(UnmanagedType.IUnknown)] out object appDomain);
+
+        void CloseEnum([In] IntPtr enumHandle);
+    }
+}
+
 namespace BIDSHelper
 {
 
@@ -686,6 +709,45 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
         string _recursiveAssemblyResolveNameToSkip = null;
         System.Collections.Generic.List<string> _assemblyLoadsFailed = new System.Collections.Generic.List<string>();
         System.Collections.Generic.List<System.ResolveEventHandler> _microsoftEventHandlersToIgnoreErrors = new System.Collections.Generic.List<ResolveEventHandler>();
+        AppDomain _defaultAppDomain = null;
+
+        private static mscoree.ICorRuntimeHost GetCorRuntimeHost()
+        {
+            return (mscoree.ICorRuntimeHost)Activator.CreateInstance(Marshal.GetTypeFromCLSID(new Guid("CB2F6723-AB3A-11D2-9C40-00C04FA30A3E")));
+        }
+
+        public AppDomain GetDefaultAppDomain()
+        {
+            IntPtr enumHandle = IntPtr.Zero;
+            mscoree.ICorRuntimeHost host = GetCorRuntimeHost();
+            try
+            {
+                host.EnumDomains(out enumHandle);
+
+                object domain = null;
+                while (true)
+                {
+                    host.NextDomain(enumHandle, out domain);
+
+                    if (domain == null) break;
+
+                    AppDomain appDomain = (AppDomain)domain;
+                    if (appDomain.IsDefaultAppDomain()) 
+                        return appDomain;
+                }
+                return null;
+            }
+            catch (Exception e)
+            {
+                Log.Debug("Caught error in Microsoft AssemblyResolve and skipped: " + e.Message);
+                return null;
+            }
+            finally
+            {
+                host.CloseEnum(enumHandle);
+                Marshal.ReleaseComObject(host);
+            }
+        }
 
         /// <summary>
         /// Only fires if an assembly fails to load. This gives us a chance to redirect to a DLL that does exist.
@@ -732,8 +794,21 @@ Microsoft Analysis Services Projects (by Microsoft) v2.8.11 04a86fc2-dbd5-4222-8
                     {
                         if (loadedAlready.GetName().Name == assemblyname.Name
                             && loadedAlready.GetName().Version.Major == assemblyname.Version.Major)
+                            //&& loadedAlready.GetName().Version.Minor == assemblyname.Version.Minor
+                            //&& loadedAlready.GetName().Version.MinorRevision == assemblyname.Version.MinorRevision)
                             return loadedAlready;
                     }
+
+                    //if (_defaultAppDomain == null)
+                    //    _defaultAppDomain = GetDefaultAppDomain();
+                    //foreach (Assembly loadedAlready in _defaultAppDomain.GetAssemblies())
+                    //{
+                    //    if (loadedAlready.GetName().Name == assemblyname.Name
+                    //        && loadedAlready.GetName().Version.Major == assemblyname.Version.Major
+                    //        && loadedAlready.GetName().Version.Minor == assemblyname.Version.Minor
+                    //        && loadedAlready.GetName().Version.MinorRevision == assemblyname.Version.MinorRevision)
+                    //        return loadedAlready;
+                    //}
 
                     System.Collections.Generic.List<string> pathsToCheck = new System.Collections.Generic.List<string>();
                     var bidsHelperPath = new System.IO.FileInfo(typeof(BIDSHelperPackage).Assembly.Location);
