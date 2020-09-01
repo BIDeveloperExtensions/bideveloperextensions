@@ -1,5 +1,10 @@
 namespace BIDSHelper.SSIS
 {
+
+    extern alias asAlias;
+    extern alias sharedDataWarehouseInterfaces;
+    extern alias asDataWarehouseInterfaces;
+
     using Core;
     using EnvDTE;
     using Microsoft.DataTransformationServices.Design;
@@ -66,11 +71,29 @@ namespace BIDSHelper.SSIS
                 }
 
                 // We want the DtsPackageView, an EditorWindow, Microsoft.DataTransformationServices.Design.DtsPackageView
-                EditorWindow editorWindow = (EditorWindow)designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
-                if (editorWindow == null)
-                    return;
+                object obj = null;
+                try
+                {
+                    obj = designer.GetService(typeof(Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                } catch { }
+                if (obj != null)
+                {
+                    EditorWindow editorWindow = (EditorWindow)obj;
+                    if (editorWindow == null)
+                        return;
 
-                editorWindow.SetTagParametersWindowManager();
+                    editorWindow.SetTagParametersWindowManager();
+                }
+                else
+                {
+                    obj = designer.GetService(typeof(asAlias::Microsoft.DataWarehouse.ComponentModel.IComponentNavigator));
+                    EditorWindow editorWindow = (Microsoft.DataWarehouse.Design.EditorWindow)obj;
+                    if (editorWindow == null)
+                        return;
+
+                    editorWindow.SetTagParametersWindowManager();
+
+                }
             }
             catch (Exception ex)
             {

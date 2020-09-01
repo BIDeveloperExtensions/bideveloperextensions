@@ -120,8 +120,7 @@ namespace BIDSHelper.SSIS
                 children.Sort();
 
                 // Mark the project as dirty
-                var settings =
-                    (IConfigurationSettings) ((IServiceProvider) p).GetService(typeof (IConfigurationSettings));
+                var settings = p.GetIConfigurationSettings();
                 var projectManager =
                     (DataWarehouseProjectManager)
                         settings.GetType()

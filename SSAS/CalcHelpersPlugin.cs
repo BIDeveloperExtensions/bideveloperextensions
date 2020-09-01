@@ -1,6 +1,7 @@
 #if SQL2019
 extern alias asAlias;
 extern alias sharedDataWarehouseInterfaces;
+extern alias asDataWarehouseInterfaces;
 using asAlias::Microsoft.DataWarehouse.Design;
 using asAlias::Microsoft.DataWarehouse.Controls;
 using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Design;
@@ -308,14 +309,30 @@ namespace BIDSHelper.SSAS
             System.IServiceProvider provider = (System.IServiceProvider)this.ApplicationObject.ActiveWindow.ProjectItem.ContainingProject;
             using (WaitCursor cursor1 = new WaitCursor())
             {
-                IUserPromptService oService = (IUserPromptService)provider.GetService(typeof(IUserPromptService));
-
-                foreach (Type t in System.Reflection.Assembly.GetAssembly(typeof(Scripts)).GetTypes())
+                try
                 {
-                    if (t.FullName == "Microsoft.AnalysisServices.Design.Calculations.CalcPropertiesEditorForm")
+                    IUserPromptService oService = (IUserPromptService)provider.GetService(typeof(IUserPromptService));
+
+                    foreach (Type t in System.Reflection.Assembly.GetAssembly(typeof(Scripts)).GetTypes())
                     {
-                        form1 = (Form)t.GetConstructor(new Type[] { typeof(IUserPromptService) }).Invoke(new object[] { oService });
-                        break;
+                        if (t.FullName == "Microsoft.AnalysisServices.Design.Calculations.CalcPropertiesEditorForm")
+                        {
+                            form1 = (Form)t.GetConstructor(new Type[] { typeof(IUserPromptService) }).Invoke(new object[] { oService });
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService oService = (asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService)provider.GetService(typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService));
+
+                    foreach (Type t in System.Reflection.Assembly.GetAssembly(typeof(Scripts)).GetTypes())
+                    {
+                        if (t.FullName == "Microsoft.AnalysisServices.Design.Calculations.CalcPropertiesEditorForm")
+                        {
+                            form1 = (Form)t.GetConstructor(new Type[] { typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService) }).Invoke(new object[] { oService });
+                            break;
+                        }
                     }
                 }
                 if (form1 == null) throw new Exception("Couldn't create instance of CalcPropertiesEditorForm");

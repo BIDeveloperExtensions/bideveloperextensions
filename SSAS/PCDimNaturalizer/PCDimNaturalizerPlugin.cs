@@ -178,7 +178,9 @@ namespace PCDimNaturalizer
                     Program.SQLFlattener = null;
 
                     asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy projectService = (asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(asAlias::Microsoft.DataWarehouse.VsIntegration.Shell.Project.IFileProjectHierarchy));
-                    sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)pi.ContainingProject).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                    object settings = pi.ContainingProject.GetIConfigurationSettings();
+                    if (settings == null) throw new Exception("Could not GetService IConfigurationSettings in project from " + pi.ContainingProject.GetType().Assembly.Location);
+
                     asAlias::Microsoft.DataWarehouse.Project.DataWarehouseProjectManager projectManager = (asAlias::Microsoft.DataWarehouse.Project.DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                     Dimension dimNew = dim.Clone();

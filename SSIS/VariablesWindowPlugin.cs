@@ -1,6 +1,7 @@
 namespace BIDSHelper.SSIS
 {
     extern alias sharedDataWarehouseInterfaces;
+    extern alias asDataWarehouseInterfaces;
     using EnvDTE;
     using EnvDTE80;
     using Microsoft.DataTransformationServices.Design;
@@ -121,11 +122,20 @@ namespace BIDSHelper.SSIS
 
 
                     IDesignerToolWindowService service = designer.GetService(typeof(IDesignerToolWindowService)) as IDesignerToolWindowService;
-                    if (service == null) continue;
-                    IDesignerToolWindow toolWindow = service.GetToolWindow(new Guid(SSIS_VARIABLES_TOOL_WINDOW_KIND), 0);
-                    if (toolWindow == null) continue;
-                    variablesToolWindowControl = (UserControl)toolWindow.Client; //actually Microsoft.DataTransformationServices.Design.VariablesToolWindow which is internal
-
+                    if (service == null)
+                    {
+                        asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IDesignerToolWindowService service2 = designer.GetService(typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IDesignerToolWindowService)) as asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IDesignerToolWindowService;
+                        if (service2 == null) continue;
+                        asDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IDesignerToolWindow toolWindow = service2.GetToolWindow(new Guid(SSIS_VARIABLES_TOOL_WINDOW_KIND), 0);
+                        if (toolWindow == null) continue;
+                        variablesToolWindowControl = (UserControl)toolWindow.Client; //actually Microsoft.DataTransformationServices.Design.VariablesToolWindow which is internal
+                    }
+                    else
+                    {
+                        IDesignerToolWindow toolWindow = service.GetToolWindow(new Guid(SSIS_VARIABLES_TOOL_WINDOW_KIND), 0);
+                        if (toolWindow == null) continue;
+                        variablesToolWindowControl = (UserControl)toolWindow.Client; //actually Microsoft.DataTransformationServices.Design.VariablesToolWindow which is internal
+                    }
                     serviceProvider = designer;
                     changesvc = (IComponentChangeService)designer.GetService(typeof(IComponentChangeService));
 
