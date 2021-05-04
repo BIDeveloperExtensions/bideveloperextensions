@@ -394,6 +394,7 @@
         /// <returns>The value of the named property from the target object.</returns>
         internal static object GetPropertyValue(object target, string propertyName)
         {
+            if (target == null || propertyName == null) return null;
             Type type = target.GetType();
             PropertyInfo property = type.GetProperty(propertyName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             object result = property.GetValue(target, null);

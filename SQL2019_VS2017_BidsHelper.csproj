@@ -1167,8 +1167,9 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy "C:\projects\BIDS Helper\GitHub\bideveloperextensions2\bin\Debug\BidsHelper2019.dll" "C:\Users\ggalloway\AppData\Local\Microsoft\VisualStudio\15.0_849621d1Exp\Extensions\yh2cp5be.3c3"
+copy "C:\projects\BIDS Helper\GitHub\bideveloperextensions2\bin\Debug\BidsHelper2019.pdb" "C:\Users\ggalloway\AppData\Local\Microsoft\VisualStudio\15.0_849621d1Exp\Extensions\yh2cp5be.3c3"
+</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Label="VsixCompress">
     <VsixCompressTargets Condition=" '$(VsixCompressTargets)'=='' ">$([System.IO.Path]::GetFullPath( $(MSBuildProjectDirectory)\.\packages\VsixCompress.1.0.1\tools\vsix-compress.targets ))</VsixCompressTargets>

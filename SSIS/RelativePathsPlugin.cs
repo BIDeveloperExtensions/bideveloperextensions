@@ -230,7 +230,7 @@ namespace BIDSHelper.SSIS
                 this.ApplicationObject.StatusBar.Text = "Fixing relative paths...";
 
                 EnvDTE.Project proj = GetSelectedProjectReference();
-                sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings settings = (sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings)((System.IServiceProvider)proj).GetService(typeof(sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces.IConfigurationSettings));
+                object settings = proj.GetIConfigurationSettings();
                 DataWarehouseProjectManager projectManager = (DataWarehouseProjectManager)settings.GetType().InvokeMember("ProjectManager", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.FlattenHierarchy, null, settings, null);
 
                 this.ApplicationObject.ToolWindows.OutputWindow.Parent.SetFocus();
