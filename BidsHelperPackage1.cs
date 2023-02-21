@@ -79,10 +79,6 @@ namespace BIDSHelper
         public const int BatchPropertyUpdateId = 0x011A;
         public const int PerformanceVisualizationId = 0x011B;
         public const int DesignPracticeScannerId = 0x011C;
-        public const int AddNewBimlFileId = 0x011D;
-        public const int ExpandBimlFileId = 0x011E;
-        public const int LearnMoreAboutBimlId = 0x011F;
-        public const int CheckBimlForErrorsId = 0x0120;
         public const int FixedWidthColumnsId = 0x0121;
         public const int PerformanceBreakdownId = 0x0122;
         public const int SortablePackagePropertiesId = 0x0123;
@@ -123,10 +119,6 @@ namespace BIDSHelper
         public const int picTabularAnnotationWorkaround = 0x0016;
         public const int picTabularHideMemberIf = 0x0017;
         public const int picBatchProperties = 0x0001;
-        public const int picBiml = 0x0002;
-        public const int picBimlFile = 0x0003;
-        public const int picBimlCheck = 0x0004;
-        public const int picBimlHelp = 0x0005;
         public const int picDesignScanner = 0x0006;
         public const int picSsisDeploy = 0x0007;
         public const int picExpressionList = 0x0008;

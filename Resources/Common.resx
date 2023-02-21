@@ -226,29 +226,8 @@
   <data name="Function" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Function.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Biml" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Biml.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="BimlFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\BimlFile.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Question" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\question.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="CheckBiml" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\CheckBiml.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="BimlFrameworkVersionAlert" xml:space="preserve">
-    <value>http://www.varigence.com/documentation/bidshelper/frameworkversion</value>
-  </data>
-  <data name="BimlHelpUrl" xml:space="preserve">
-    <value>http://www.varigence.com/documentation/bidshelper</value>
-  </data>
-  <data name="BimlOverwriteConfirmationHelpUrl" xml:space="preserve">
-    <value>http://www.varigence.com/documentation/bidshelper/overwrite</value>
-  </data>
-  <data name="BimlValidationHelpUrl" xml:space="preserve">
-    <value>http://www.varigence.com/documentation/bidshelper/validation</value>
   </data>
   <data name="NoIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NoIcon.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

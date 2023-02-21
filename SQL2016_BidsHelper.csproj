@@ -390,31 +390,6 @@
       <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlAddNewFilePlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlCheckForErrorsPlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlExpandPlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlFeaturePluginBase.cs" />
-    <Compile Include="SSIS\Biml\BimlUtility.cs" />
-    <Compile Include="SSIS\Biml\BimlValidationListForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\Biml\BimlValidationListForm.Designer.cs">
-      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.Designer.cs">
-      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSIS\Biml\HelpWithBimlPlugin.cs" />
-    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.Designer.cs">
-      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSIS\Biml\ProjectConnectionManagerInfo.cs" />
     <Compile Include="SSIS\ComponentInfo.cs" />
     <Compile Include="SSIS\DeployPackagesPlugin.cs" />
     <Compile Include="SSIS\DesignPracticeScanner\ConnectionConfigurationPractice.cs" />
@@ -585,9 +560,6 @@
     </Content>
     <Content Include="Resources\arrowUp.bmp" />
     <Content Include="Resources\BIDSHelperIcons.png" />
-    <Content Include="Resources\Biml.ico" />
-    <Content Include="Resources\BimlFile.ico" />
-    <Content Include="Resources\CheckBiml.ico" />
     <Content Include="Resources\Connection.ico" />
     <Content Include="Resources\Copy.ico" />
     <Content Include="Resources\DeployAggDesigns.ico" />
@@ -648,11 +620,6 @@
     <None Include="Resources\DeployMdxScript.xslt" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
@@ -664,11 +631,6 @@
     </Reference>
     <Reference Include="EnvDTE90, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="ExpressionEditor, Version=5.1.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=x86">
       <HintPath>DLLs\SQL2016\ExpressionEditor.dll</HintPath>
@@ -1064,15 +1026,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
       <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\Biml\BimlValidationListForm.resx">
-      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\Biml\FrameworkVersionAlertDialog.resx">
-      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\Biml\MultipleSelectionConfirmationDialog.resx">
-      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.resx">
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
