@@ -180,7 +180,7 @@ namespace BIDSHelper.Core
         /// Gets the full description used for the features options dialog.
         /// </summary>
         /// <value>The feature description.</value>
-        /// <remarks>If not overridden then the <see cref="ToolTip"/> will be used instead. Multiple plug-ins can form one feature. The description of teh last plug-in to be enumerated will take precedence, consider using a base class to tie a feature together e.g. <see cref="BIDSHelper.SSIS.Biml.BimlFeaturePluginBase"/>.</remarks>
+        /// <remarks>If not overridden then the <see cref="ToolTip"/> will be used instead. Multiple plug-ins can form one feature. The description of the last plug-in to be enumerated will take precedence, consider using a base class to tie a feature together.</remarks>
         public virtual string FeatureDescription
         {
             get { return this.ToolTip; }
@@ -215,7 +215,7 @@ namespace BIDSHelper.Core
         /// <remarks>
         ///     If not overridden then the <see cref="ButtonText"/> will be used instead.
         ///     The feature name is the default page title used for by the HelpUrl.
-        ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together. The BIML Package Generator feature includes 4 commandfs/plug-ins, Add New File, Expand, Validate and Help.
+        ///     Using a friendly name accross multiple plug-ins allows you to group commands (each a plug-in) together.
         /// </remarks>
         public abstract string FeatureName { get; }
 

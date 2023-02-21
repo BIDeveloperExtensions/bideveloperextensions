@@ -74,31 +74,9 @@ Section "MainSection" SEC01
   #  File "..\bin\BIDSHelper.dll"
   !define LIBRARY_IGNORE_VERSION
   !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BIDSHelper.dll" "$INSTDIR\BIDSHelper.dll" $INSTDIR\Temp
-  !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\Antlr3.Runtime.dll" "$INSTDIR\Antlr3.Runtime.dll" $INSTDIR\Temp
-  !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\BimlEngine.dll" "$INSTDIR\BimlEngine.dll" $INSTDIR\Temp
   !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\ExpressionEditor.dll" "$INSTDIR\ExpressionEditor.dll" $INSTDIR\Temp
-  !insertmacro InstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED "..\bin\PostSharp.dll" "$INSTDIR\PostSharp.dll" $INSTDIR\Temp
   !undef LIBRARY_IGNORE_VERSION
   File "..\BIDSHelper2012.AddIn"
-
-
-  ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\10.0" InstallDir
-  ${If} $0 != ""
-	  File "/oname=$0..\..\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
-  ${Else}
-	  #if VS2010 is not installed, then just put the Biml.xsd in what will probably be the VS2010 install directory... that way once they install it, they won't have to reinstall BIDS Helper
-	  CreateDirectory "$PROGRAMFILES\Microsoft Visual Studio 10.0\Xml\Schemas"
-	  File "/oname=$PROGRAMFILES\Microsoft Visual Studio 10.0\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
-  ${EndIf}
-
-  ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\11.0" InstallDir
-  ${If} $0 != ""
-	  File "/oname=$0..\..\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
-  ${Else}
-	  #if VS2012 is not installed, then just put the Biml.xsd in what will probably be the VS2012 install directory... that way once they install it, they won't have to reinstall BIDS Helper
-	  CreateDirectory "$PROGRAMFILES\Microsoft Visual Studio 11.0\Xml\Schemas"
-	  File "/oname=$PROGRAMFILES\Microsoft Visual Studio 11.0\Xml\Schemas\Biml.xsd" "..\bin\DLLs\Biml\Biml.xsd"
-  ${EndIf}
 
 SectionEnd
 
@@ -112,14 +90,6 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-
-  ReadRegStr $0 HKCR ".biml" ""
-  ${If} $0 == ""
-  WriteRegStr HKCR ".biml" "" "BIDSHelper.Biml"
-  WriteRegStr HKCR "BIDSHelper.Biml" "" "Business Intelligence Markup Language File"
-  WriteRegStr HKCR "BIDSHelper.Biml\DefaultIcon" "" "$INSTDIR\BimlEngine.dll,0"
-  System::Call 'shell32.dll::SHChangeNotify(i, i, i, i) v (${SHCNE_ASSOCCHANGED}, ${SHCNF_IDLIST}, 0, 0)'
-  ${EndIf}
 
   #if VS2012 is installed, then we have to also run devenv /setup so that it will pick up the registry changes
   ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\11.0" InstallDir
@@ -149,8 +119,6 @@ Section Uninstall
 # cannot fully uninstall if VS.Net is running and has the dll open.
 #  Delete "$INSTDIR\BIDSHelper.dll"
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\BIDSHelper.dll
-  !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\Antlr3.Runtime.dll
-  !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\BimlEngine.dll
   !insertmacro UnInstallLib DLL NOTSHARED NOREBOOT_NOTPROTECTED $INSTDIR\ExpressionEditor.dll
 
   Delete "$INSTDIR\BIDSHelper2012.Addin"
@@ -158,13 +126,6 @@ Section Uninstall
   DeleteRegValue ${PRODUCT_UNINST_ROOT_KEY} "${VSLOOK_IN_FOLDERS2}" "$INSTDIR"
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey ${PRODUCT_SETTINGS_ROOT_KEY} "${PRODUCT_SETTINGS_KEY}"
-  
-  ReadRegStr $0 HKCR ".biml" ""
-  ${If} $0 == "BIDSHelper.Biml"
-  DeleteRegKey HKCR ".biml"
-  DeleteRegKey HKCR "BIDSHelper.Biml"
-  System::Call 'shell32.dll::SHChangeNotify(i, i, i, i) v (${SHCNE_ASSOCCHANGED}, ${SHCNF_IDLIST}, 0, 0)'
-  ${EndIf}
   
   Delete "$INSTDIR\uninst.exe"
   RMDir "$INSTDIR"

@@ -436,46 +436,6 @@
         </Strings>
       </Button>
       
-      <Button guid="guidBidsHelperPackageCmdSet" id="AddNewBimlFileId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myProjectMenuGroupTop" />
-        <Icon guid="guidSsisImages" id="picBimlFile" />
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <ButtonText>Add New Biml File</ButtonText>
-        </Strings>
-      </Button>
-    
-      <Button guid="guidBidsHelperPackageCmdSet" id="ExpandBimlFileId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
-        <Icon guid="guidSsisImages" id="picBiml" />
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <ButtonText>Expand Biml File</ButtonText>
-        </Strings>
-      </Button>
-  
-      <Button guid="guidBidsHelperPackageCmdSet" id="LearnMoreAboutBimlId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
-        <Icon guid="guidSsisImages" id="picBimlHelp" />
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <ButtonText>Learn More About Biml</ButtonText>
-        </Strings>
-      </Button>
-            
-      <Button guid="guidBidsHelperPackageCmdSet" id="CheckBimlForErrorsId" priority="0x0100" type="Button">
-        <Parent guid="guidBidsHelperPackageCmdSet" id="myMenuGroupBottom" />
-        <Icon guid="guidSsisImages" id="picBimlCheck" />
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <ButtonText>Check Biml for Errors</ButtonText>
-        </Strings>
-      </Button>
-       
       <Button guid="guidBidsHelperPackageCmdSet" id="FixedWidthColumnsId" priority="0x0100" type="Button">
         <Parent guid="guidBidsHelperPackageCmdSet" id="mySsisConnectionMenuGroup" />
         <Icon guid="guidSsisImages" id="picFixedColumns" />
@@ -606,7 +566,7 @@
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
       <Bitmap guid="guidImages" href="Resources\BIDSHelperIcons.png" usedList="picBlank, picDeployMdxScriptOld, picEditAggs, picPrinterFriendlyDimUsageOld"/>
       <Bitmap guid="guidSsasImages" href="Resources\ssas-icons.png" usedList="picAggManager, picUsedColumns, picUnusedColumns, picDeleteAggs, picDeleteIndexes, picDeployMdxScript, picDimDataTypeCheck, picDimensionHealthCheck, picDimOptimizationReport, picDuplicateRole, picMeasureGroupHealthCheck, picNonDefaultProperties, picPCDimNaturalize, picPrinterFriendlyDimUsage, picRolesReport, picSmartDiff, picVisualizeAttributeLattice, picSyncDescriptions, picTabularActions, picTabularFolders, picTabularTranslations, picTabularAnnotationWorkaround, picTabularHideMemberIf" />
-      <Bitmap guid="guidSsisImages" href="Resources\ssis-icons.png" usedList="picBatchProperties, picBiml, picBimlFile, picBimlCheck, picBimlHelp, picDesignScanner, picSsisDeploy, picExpressionList, picRelativePaths, picSsisPerformance, picNewGuid, picFixedColumns, picSortPackages"  />
+      <Bitmap guid="guidSsisImages" href="Resources\ssis-icons.png" usedList="picBatchProperties, picDesignScanner, picSsisDeploy, picExpressionList, picRelativePaths, picSsisPerformance, picNewGuid, picFixedColumns, picSortPackages"  />
     </Bitmaps>
   </Commands>
 
@@ -673,10 +633,6 @@
       <IDSymbol name="BatchPropertyUpdateId" value="0x011A"/>
       <IDSymbol name="PerformanceVisualizationId" value="0x011B" />
       <IDSymbol name="DesignPracticeScannerId" value="0x11C" />
-      <IDSymbol name="AddNewBimlFileId" value="0x011D" />
-      <IDSymbol name="ExpandBimlFileId" value="0x011E" />
-      <IDSymbol name="LearnMoreAboutBimlId" value="0x011F" />
-      <IDSymbol name="CheckBimlForErrorsId" value="0x0120" />
       <IDSymbol name="FixedWidthColumnsId" value="0x0121" />
       <IDSymbol name="PerformanceBreakdownId" value="0x0122" />
       <IDSymbol name="SortablePackagePropertiesId" value="0x0123" />
@@ -730,18 +686,14 @@
     </GuidSymbol>
       <GuidSymbol name="guidSsisImages" value="{feec21bd-6b4e-4eca-9c2f-14772de9478f}" >
       <IDSymbol name="picBatchProperties" value="1" />
-      <IDSymbol name="picBiml" value="2" />
-      <IDSymbol name="picBimlFile" value="3" />
-      <IDSymbol name="picBimlCheck" value="4" />
-      <IDSymbol name="picBimlHelp" value="5" />
-      <IDSymbol name="picDesignScanner" value="6" />
-      <IDSymbol name="picSsisDeploy" value="7" />
-      <IDSymbol name="picExpressionList" value="8" />
-      <IDSymbol name="picRelativePaths" value="9" />
-      <IDSymbol name="picSsisPerformance" value="10" />
-      <IDSymbol name="picNewGuid" value="11" />
-      <IDSymbol name="picFixedColumns" value="12" />
-      <IDSymbol name="picSortPackages" value="13" />
+      <IDSymbol name="picDesignScanner" value="2" />
+      <IDSymbol name="picSsisDeploy" value="3" />
+      <IDSymbol name="picExpressionList" value="4" />
+      <IDSymbol name="picRelativePaths" value="5" />
+      <IDSymbol name="picSsisPerformance" value="6" />
+      <IDSymbol name="picNewGuid" value="7" />
+      <IDSymbol name="picFixedColumns" value="8" />
+      <IDSymbol name="picSortPackages" value="9" />
       
     </GuidSymbol>
   </Symbols>

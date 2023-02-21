@@ -87,14 +87,6 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\Biml\Antlr3.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="BimlEngine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=dd4a9bc4187e1297, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\Biml\BimlEngine.dll</HintPath>
-    </Reference>
     <Reference Include="ExpressionEditor, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\SQL2014\ExpressionEditor.dll</HintPath>
@@ -216,10 +208,6 @@
     <Reference Include="msddsp, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2014\msddsp.dll</HintPath>
-    </Reference>
-    <Reference Include="PostSharp, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b13fd38b8f9c99d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\Biml\PostSharp.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -464,31 +452,6 @@
     <Compile Include="SSAS\PCDimNaturalizer\Program.cs" />
     <Compile Include="SSAS\SyncDescriptionsPlugin.cs" />
     <Compile Include="SSIS\BatchPropertyUpdatePlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlAddNewFilePlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlCheckForErrorsPlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlExpandPlugin.cs" />
-    <Compile Include="SSIS\Biml\BimlFeaturePluginBase.cs" />
-    <Compile Include="SSIS\Biml\BimlUtility.cs" />
-    <Compile Include="SSIS\Biml\BimlValidationListForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\Biml\BimlValidationListForm.Designer.cs">
-      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\Biml\FrameworkVersionAlertDialog.Designer.cs">
-      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSIS\Biml\HelpWithBimlPlugin.cs" />
-    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SSIS\Biml\MultipleSelectionConfirmationDialog.Designer.cs">
-      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SSIS\Biml\ProjectConnectionManagerInfo.cs" />
     <Compile Include="SSIS\ComponentInfo.cs">
     </Compile>
     <Compile Include="SSIS\DesignPracticeScanner\ControlFlowPractices.cs" />
@@ -716,10 +679,6 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
-    <None Include="DLLs\Biml\Biml.xsd">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Properties\DataSources\Microsoft.AnalysisServices.ReportParameter.datasource" />
     <None Include="Properties\DataSources\TabularActionsEditorPlugin.DrillthroughColumn.datasource" />
     <None Include="Resources\DeployAggDesigns.xslt" />
@@ -748,14 +707,8 @@
     <None Include="DLLs\SQL2014\ExpressionEditor.dll" />
     <None Include="Resources\Connection.ico" />
     <None Include="Resources\Function.ico" />
-    <None Include="Resources\Biml.ico" />
-    <None Include="Resources\BimlFile.ico" />
     <None Include="Resources\Question.ico" />
-    <None Include="Resources\CheckBiml.ico" />
-    <None Include="DLLs\Biml\Antlr3.Runtime.dll" />
-    <None Include="DLLs\Biml\BimlEngine.dll" />
     <None Include="Resources\NoIcon.ico" />
-    <None Include="DLLs\Biml\PostSharp.dll" />
     <Content Include="Resources\2014\DataFlow.ico" />
     <Content Include="Resources\2014\DestinationComponent.ico" />
     <Content Include="Resources\2014\EditVariable.ico" />
@@ -947,15 +900,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\BatchPropertyUpdateForm.resx">
       <DependentUpon>BatchPropertyUpdateForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\Biml\BimlValidationListForm.resx">
-      <DependentUpon>BimlValidationListForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\Biml\FrameworkVersionAlertDialog.resx">
-      <DependentUpon>FrameworkVersionAlertDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SSIS\Biml\MultipleSelectionConfirmationDialog.resx">
-      <DependentUpon>MultipleSelectionConfirmationDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SSIS\DesignPracticeScanner\DesignWarningsOptionsPage.resx">
       <DependentUpon>DesignWarningsOptionsPage.cs</DependentUpon>
