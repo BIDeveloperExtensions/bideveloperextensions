@@ -26,7 +26,9 @@ namespace BIDSHelper.SSIS
         /// TODO: Make thks a base class, and inherit for variables and parameters window controls
         /// </summary>
         /// See vNextDebugCode comment below on how to get this GUID
-#if SQL2017 //also good for SQL2019 in VS2017
+#if SQL2022
+        internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{F4E46F1E-CF83-40AA-B568-A627394BC994}";
+#elif SQL2017 //also good for SQL2019 in VS2017
         internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{DDC39177-57E8-413D-9382-9E92CE5DA83B}";
 #elif SQL2016
         internal const string SSIS_VARIABLES_TOOL_WINDOW_KIND = "{9F0B409F-14B8-4D44-AFD0-1099A3FB8BA3}";
@@ -221,8 +223,10 @@ namespace BIDSHelper.SSIS
         {
             try
             {
-                // Fragile, as relies on hardcoded index. We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
-                if (args.Button == MouseButtons.Left && args.ColumnIndex == 6)
+                // We are trying to replicate Microsoft.DataTransformationServices.Design.VariablesToolWindow.dlgGridControl1_MouseButtonClicked method check
+                var gridColumns = variablesToolWindowControl.GetType().InvokeMember("gridColumns", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.FlattenHierarchy | BindingFlags.Instance, null, variablesToolWindowControl, new object[] { });
+                int index = (int)gridColumns.GetType().GetMethod("GetGridIndex", BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Invoke(gridColumns, new object[] { 8 }); //(Microsoft.DataTransformationServices.Design.ColumnIndices)8
+                if (args.Button == MouseButtons.Left && args.ColumnIndex == index)
                 {
                     // Dumbass, the args.RowIndex is a long, but all the grid methods that accept a row index are int!
                     EditExpressionButtonClick((int)args.RowIndex, args.ColumnIndex);

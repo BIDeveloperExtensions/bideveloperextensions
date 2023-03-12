@@ -333,8 +333,8 @@ namespace AggManager
                     else if ((string)e.Node.Parent.Tag == "Aggregation Designs")
                         contextMenuStripAggDes.Show(treeView1, pt);
 
-                    if (((string)e.Node.Parent.Parent.Tag == "Aggregation Designs") &&
-                        ((string)e.Node.Parent.Tag != TagNoAggdesign))
+                    if (((e.Node.Parent?.Parent?.Tag as string) == "Aggregation Designs") &&
+                        ((e.Node.Parent?.Tag as string) != TagNoAggdesign))
                         contextMenuStripPartitionAggs.Show(treeView1, pt);
 
                 }

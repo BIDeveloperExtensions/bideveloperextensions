@@ -1,10 +1,10 @@
 #if SQL2019
 extern alias asAlias;
-extern alias sharedDataWarehouseInterfaces;
+//extern alias sharedDataWarehouseInterfaces;
 extern alias asDataWarehouseInterfaces;
 using asAlias::Microsoft.DataWarehouse.Design;
 using asAlias::Microsoft.DataWarehouse.Controls;
-using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Design;
+//using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Design;
 using asAlias::Microsoft.AnalysisServices.Design;
 using asAlias::Microsoft.DataWarehouse.ComponentModel;
 #else
@@ -34,9 +34,10 @@ namespace BIDSHelper.SSAS
         private const System.Reflection.BindingFlags getflags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Instance;
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedForCalcProperties = new System.Collections.Generic.Dictionary<string,EditorWindow>();
         private System.Collections.Generic.Dictionary<string,EditorWindow> windowHandlesFixedDefaultCalcScriptView = new System.Collections.Generic.Dictionary<string,EditorWindow>();
-        
+
         private ToolBarButton newCalcPropButton = null;
         private ToolBarButton newDeployMdxScriptButton = null;
+        private object userPromptService = null;
 
         private const string REGISTRY_EXTENDED_PATH = "CalcHelpersPlugin";
         private const string REGISTRY_SCRIPT_VIEW_SETTING_NAME = "CalcScriptDefaultView";
@@ -117,6 +118,14 @@ namespace BIDSHelper.SSAS
                 ProjectItem pi = GotFocus.ProjectItem;
                 if ((pi==null) || (!(pi.Object is Cube))) return;
                 EditorWindow win = (EditorWindow)designer.GetService(typeof(IComponentNavigator));
+
+                try
+                {
+                    BaseDesigner winDesigner = win.GetType().InvokeMember("designer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetField, null, win, new object[] { }) as BaseDesigner;
+                    this.userPromptService = winDesigner.GetType().InvokeMember("UserPromptService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.GetProperty, null, winDesigner, new object[] { });
+                }
+                catch { }
+
                 VsStyleToolBar toolbar = (VsStyleToolBar)win.SelectedView.GetType().InvokeMember("ToolBar", getflags, null, win.SelectedView, null);
 
                 IntPtr ptr = win.Handle;
@@ -311,27 +320,56 @@ namespace BIDSHelper.SSAS
             {
                 try
                 {
-                    IUserPromptService oService = (IUserPromptService)provider.GetService(typeof(IUserPromptService));
 
                     foreach (Type t in System.Reflection.Assembly.GetAssembly(typeof(Scripts)).GetTypes())
                     {
                         if (t.FullName == "Microsoft.AnalysisServices.Design.Calculations.CalcPropertiesEditorForm")
                         {
-                            form1 = (Form)t.GetConstructor(new Type[] { typeof(IUserPromptService) }).Invoke(new object[] { oService });
-                            break;
+                            //form1 = (Form)t.GetConstructor(new Type[] { typeof(IUserPromptService) }).Invoke(new object[] { oService });
+                            var constructor = t.GetConstructors()[0];
+                            try
+                            {
+                                var paramType = constructor.GetParameters()[0].ParameterType;
+                                var oService = provider.GetService(paramType);
+                                form1 = (Form)constructor.Invoke(new object[] { oService });
+                                break;
+                            }
+                            catch
+                            {
+                                form1 = (Form)constructor.Invoke(new object[] { userPromptService });
+                                break;
+                            }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService oService = (asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService)provider.GetService(typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService));
-
-                    foreach (Type t in System.Reflection.Assembly.GetAssembly(typeof(Scripts)).GetTypes())
+                    try
                     {
-                        if (t.FullName == "Microsoft.AnalysisServices.Design.Calculations.CalcPropertiesEditorForm")
+                        //asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService
+                        var oService = provider.GetService(typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService));
+                        //var oService = provider.GetService(typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService));
+
+                        foreach (Type t in System.Reflection.Assembly.GetAssembly(typeof(Scripts)).GetTypes())
                         {
-                            form1 = (Form)t.GetConstructor(new Type[] { typeof(asDataWarehouseInterfaces::Microsoft.DataWarehouse.Design.IUserPromptService) }).Invoke(new object[] { oService });
-                            break;
+                            if (t.FullName == "Microsoft.AnalysisServices.Design.Calculations.CalcPropertiesEditorForm")
+                            {
+                                form1 = (Form)t.GetConstructor(new Type[] { oService.GetType() }).Invoke(new object[] { oService });
+                                break;
+                            }
+                        }
+
+                    }
+                    catch (Exception ex2)
+                    {
+                        if (MessageBox.Show("Error displaying BI Developer Extensions Calculation Properties dialog. Do you want to disable this feature?\r\n\r\n" + ex2.Message + "\r\n" + ex2.StackTrace, "BI Developer Extensions Error", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        {
+                            OnDisable();
+                            return;
+                        }
+                        else
+                        {
+                            return;
                         }
                     }
                 }
@@ -415,6 +453,7 @@ namespace BIDSHelper.SSAS
                 }
             }
         }
+
 
         void descButton_Click(object sender, EventArgs e)
         {

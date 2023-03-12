@@ -30,7 +30,7 @@ namespace BIDSHelper
         public static string SSAS = "{d2abab84-bf74-430a-b69e-9dc6d40dda17}";
 
         // DENALI || SQL2014 || SQL2016 - Alternative conditional value assumed to be 2008 and below, so now removed, "{d183a3d8-5fd8-494b-b014-37f57b35e655}"
-        public static string SSIS = "{159641d6-6404-4a2a-ae62-294de0fe8301}";
+        public static string SSIS = "{c9674dcb-5085-4a16-b785-4c70dd1589bd}"; //former SQL2019 value removed "{159641d6-6404-4a2a-ae62-294de0fe8301}";
 
         public static string SSRS = "{f14b399a-7131-4c87-9e4b-1186c45ef12d}";
     }

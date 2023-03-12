@@ -1,4 +1,4 @@
-extern alias sharedDataWarehouseInterfaces;
+//extern alias sharedDataWarehouseInterfaces;
 extern alias asDataWarehouseInterfaces;
 using System;
 using System.Xml;
@@ -6,7 +6,7 @@ using System.Xml;
 using EnvDTE;
 using EnvDTE80;
 using System.IO;
-using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces;
+//using sharedDataWarehouseInterfaces::Microsoft.DataWarehouse.Interfaces;
 
 // =========================================================================================
 // Class      : DeploymentSettings.cs

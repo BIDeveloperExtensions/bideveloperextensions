@@ -111,22 +111,29 @@ namespace AggManager
 
         private void btnExecute_Click(object sender, EventArgs e)
         {
-            if (bExecuting)
+            if (btnExecute.InvokeRequired)
             {
-                bStopped = true;
-                timer1_Tick(null, null);
+                btnExecute.BeginInvoke(new System.Windows.Forms.MethodInvoker(delegate () { btnExecute_Click(sender, e); }));
             }
             else
             {
-                if (radioTraceTypeSQL.Checked)
+                if (bExecuting)
                 {
-                    if (string.IsNullOrEmpty(ConnectionString) || string.IsNullOrEmpty(Table))
-                        btnSQLConnection_Click(null, null);
-                    if (string.IsNullOrEmpty(ConnectionString) || string.IsNullOrEmpty(Table))
-                        return; //if they still haven't entered it, then just cancel out of the execute
+                    bStopped = true;
+                    timer1_Tick(null, null);
                 }
-                bStopped = false;
-                Execute();
+                else
+                {
+                    if (radioTraceTypeSQL.Checked)
+                    {
+                        if (string.IsNullOrEmpty(ConnectionString) || string.IsNullOrEmpty(Table))
+                            btnSQLConnection_Click(null, null);
+                        if (string.IsNullOrEmpty(ConnectionString) || string.IsNullOrEmpty(Table))
+                            return; //if they still haven't entered it, then just cancel out of the execute
+                    }
+                    bStopped = false;
+                    Execute();
+                }
             }
         }
 
@@ -323,6 +330,12 @@ namespace AggManager
 
         private void FinishExecute(bool bShowResults)
         {
+            if (btnExecute.InvokeRequired)
+            {
+                btnExecute.BeginInvoke(new System.Windows.Forms.MethodInvoker(delegate () { FinishExecute(bShowResults); }));
+                return;
+            }
+
             try
             {
                 if (trc != null)

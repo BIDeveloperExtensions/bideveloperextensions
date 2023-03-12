@@ -66,7 +66,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;SQL2016,SQL2017,SQL2019,VS2017</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;SQL2016,SQL2017,SQL2019,VS2017,SQL2022</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CopyVsixExtensionFiles>True</CopyVsixExtensionFiles>
@@ -82,7 +82,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;SQL2016,SQL2017,SQL2019,VS2017</DefineConstants>
+    <DefineConstants>TRACE;SQL2016,SQL2017,SQL2019,VS2017,SQL2022</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -517,16 +517,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="BIDSHelper.snk" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AdomdClient.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.AdomdClient.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Server.Tabular.Json.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Common.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.DataVisualization.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Design.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.ProcessingObjectModel.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.ReportViewer.Winforms.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.GridControl.dll" />
     <Content Include="DLLs\SQL2019\ExpressionEditor.dll" />
     <Content Include="DLLs\SQL2019\Reference\FromASFolder\Microsoft.DataWarehouse.Interfaces.AS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\LibGit2Sharp.dll" />
@@ -550,8 +540,6 @@
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataTransformationServices.Design.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataTransformationServices.VsIntegration.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.AS.dll" />
-    <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.dll" />
-    <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.Interfaces.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.RS.dll" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.AS.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.DLL" />
@@ -571,10 +559,22 @@
     <Content Include="DLLs\SQL2019\Reference\Microsoft.SqlServer.IntegrationServices.Design.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.SqlServer.IntegrationServices.Graph.DLL" />
     <Content Include="DLLs\SQL2019\Reference\Microsoft.SqlServer.ManagedDTS.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.AnalysisServices.Controls.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.AnalysisServices.Design.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.AnalysisServices.Project.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.DataTransformationServices.Controls.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.DataWarehouse.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.DataWarehouse.Interfaces.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.DataWarehouse.VsIntegration.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.SQLServer.DTSPipelineWrap.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.SqlServer.DTSRuntimeWrap.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.SqlServer.ExecPackageTaskWrap.dll" />
+    <Content Include="DLLs\SQL2022\Reference\Microsoft.SqlServer.ManagedDTS.dll" />
     <Content Include="License.rtf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="DLLs\SQL2022\copy-ssdt-dlls.bat" />
     <None Include="packages.SQL2019_VS2019_BidsHelper.config" />
     <None Include="Properties\vsix-compress.props" />
     <None Include="Manifest\SQL2019\source.extension.vsixmanifest">
@@ -592,33 +592,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="DLLs\SQL2017\ExpressionEditor.dll" />
-    <Content Include="DLLs\SQL2017\msddsp.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.Core.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.AppLocal.Tabular.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.BackEnd.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Common.FrontEnd.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Controls.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Design.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.MPFProjectBase.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.Project.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.AnalysisServices.VSHost.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.Controls.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.Design.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataTransformationServices.VsIntegration.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.Interfaces.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.DataWarehouse.VsIntegration.DLL" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.DlgGrid.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.Dts.Design.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SQLServer.DTSPipelineWrap.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.DTSRuntimeWrap.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.ExecPackageTaskWrap.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.Graph.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.IntegrationServices.Design.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.IntegrationServices.Graph.dll" />
-    <Content Include="DLLs\SQL2017\Reference\Microsoft.SqlServer.ManagedDTS.dll" />
     <Content Include="Resources\2012\DataFlow.ico" />
     <Content Include="Resources\2012\DestinationComponent.ico" />
     <Content Include="Resources\2012\EditVariable.ico" />
@@ -727,44 +700,44 @@
       <HintPath>DLLs\SQL2019\Reference\LibGit2Sharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices, Version=19.5.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices, Version=19.22.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=19.5.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.AdomdClient, Version=19.22.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.AdomdClient.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Aliases>localAdomdClient</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Core, Version=19.5.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.Core, Version=19.22.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Core.dll</HintPath>
       <SpecificVersion>True</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.5.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.AnalysisServices.Tabular, Version=19.22.0.1, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Tabular.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataWarehouse.AS, Version=15.15.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.DataWarehouse.AS, Version=15.21.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.AS.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Aliases>asAlias</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataWarehouse.Interfaces">
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.Interfaces.DLL</HintPath>
+    <Reference Include="Microsoft.DataWarehouse.Interfaces, Version=16.2.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.DataWarehouse.Interfaces.DLL</HintPath>
       <Aliases>sharedDataWarehouseInterfaces</Aliases>
     </Reference>
-    <Reference Include="Microsoft.DataWarehouse.Interfaces.AS, Version=15.2.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.DataWarehouse.Interfaces.AS, Version=15.21.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>DLLs\SQL2019\Reference\FromASFolder\Microsoft.DataWarehouse.Interfaces.AS.DLL</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Aliases>asDataWarehouseInterfaces</Aliases>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataWarehouse.RS, Version=15.14.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.DataWarehouse.RS, Version=15.20.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.RS.dll</HintPath>
       <Aliases>rsAlias</Aliases>
@@ -782,8 +755,9 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.MPFProjectBase.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Project">
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Project.DLL</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.Project, Version=16.2.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.AnalysisServices.Project.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Project.AS">
@@ -795,12 +769,12 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.VSHost.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataTransformationServices.Controls, Version=15.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+    <Reference Include="Microsoft.DataTransformationServices.Controls, Version=16.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <SpecificVersion>True</SpecificVersion>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataTransformationServices.Controls.DLL</HintPath>
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.DataTransformationServices.Controls.DLL</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataTransformationServices.Design">
+    <Reference Include="Microsoft.DataTransformationServices.Design, Version=16.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
       <HintPath>DLLs\SQL2019\Reference\Microsoft.DataTransformationServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
@@ -844,25 +818,25 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.DlgGrid.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.Dts.Design, Version=15.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.SqlServer.Dts.Design, Version=16.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
       <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.Dts.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.SQLServer.DTSPipelineWrap">
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.SQLServer.DTSPipelineWrap.dll</HintPath>
+    <Reference Include="Microsoft.SqlServer.DTSPipelineWrap, Version=16.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.SQLServer.DTSPipelineWrap.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.DTSRuntimeWrap, Version=15.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
+    <Reference Include="Microsoft.SqlServer.DTSRuntimeWrap, Version=16.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
       <SpecificVersion>True</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.DTSRuntimeWrap.dll</HintPath>
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.SqlServer.DTSRuntimeWrap.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.ExecPackageTaskWrap, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.SqlServer.ExecPackageTaskWrap, Version=16.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.ExecPackageTaskWrap.dll</HintPath>
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.SqlServer.ExecPackageTaskWrap.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.SqlServer.Graph, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -877,17 +851,17 @@
       <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.IntegrationServices.Graph.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.ManagedDTS, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.SqlServer.ManagedDTS.dll</HintPath>
+    <Reference Include="Microsoft.SqlServer.ManagedDTS, Version=16.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>True</SpecificVersion>
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.SqlServer.ManagedDTS.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.AnalysisServices.Controls">
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Controls.DLL</HintPath>
+    <Reference Include="Microsoft.AnalysisServices.Controls, Version=16.2.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.AnalysisServices.Controls.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Design">
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.AnalysisServices.Design.DLL</HintPath>
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.AnalysisServices.Design.DLL</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AnalysisServices.Controls.AS">
@@ -902,12 +876,12 @@
     </Reference>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.DataWarehouse">
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.DLL</HintPath>
+    <Reference Include="Microsoft.DataWarehouse, Version=16.2.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.DataWarehouse.DLL</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.DataWarehouse.VsIntegration">
-      <HintPath>DLLs\SQL2019\Reference\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
+    <Reference Include="Microsoft.DataWarehouse.VsIntegration, Version=16.2.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <HintPath>DLLs\SQL2022\Reference\Microsoft.DataWarehouse.VsIntegration.DLL</HintPath>
       <Private>False</Private>
       <Aliases>global</Aliases>
     </Reference>
